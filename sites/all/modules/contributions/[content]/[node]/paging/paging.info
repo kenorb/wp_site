@@ -1,0 +1,11 @@
+; $Id: paging.info,v 1.3 2008/08/17 18:16:35 Gurpartap Exp $
+name = Paging
+description = "Allows users to use a tag to break up a node into multiple pages."
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-01-27
+version = "6.x-1.0-beta3"
+core = "6.x"
+project = "paging"
+datestamp = "1233060925"
+

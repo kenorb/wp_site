@@ -1,0 +1,29 @@
+$Id: INSTALL.TXT,v 1.5 2008/10/28 00:05:45 greggles Exp $
+
+INSTALLATION
+------------
+
+1. Enable module on the Administer > Site Building > Modules
+
+2. Grant permission to use this module:
+
+http://example.com/admin/user/permissions#module-comment_notify
+
+3. Configure the settings for comments, especially
+    -comment moderation on/off
+    -users must leave their contact info (set to yes, or optional)
+
+4. Configure this module at Administer > Site configuraiton > Comment Notify
+
+  -Determine which content types to activate it for
+  -Determine which subscription modes are allowed
+  -Configure the templates for the e-mails
+  
+OPTIONAL MODULES
+----------------
+
+Performance: If you notice that your site is very slow when submitting
+new comments it is possible that the problem is with sending the mails. 
+One option is to use the Queue Mail module
+http://drupal.org/project/queue_mail
+

@@ -1,0 +1,17 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Install and uninstall schema and functions for the admin_links module.
+ */
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function admin_links_uninstall() {
+  $variables = array_keys(admin_links_variables());
+  foreach ($variables as $variable) {
+    variable_del($variable);
+  }
+}

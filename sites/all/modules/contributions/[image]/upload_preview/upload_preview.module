@@ -1,0 +1,347 @@
+<?php
+// $Id: upload_preview.module,v 1.13 2008/12/29 03:27:08 rmiddle Exp $
+
+/**
+ * @file
+ * Adds image preview thumbnails to the file attachment section.
+ */
+
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function upload_preview_form_alter(&$form, $form_state, $form_id) {
+  if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id && variable_get('upload_'. $form['type']['#value'], 1)) {
+    _upload_preview_node_form($form['attachments']['wrapper']['files'], $form['#node']->vid);
+  }
+  else {
+    switch ($form_id) {
+      case 'upload_admin_settings':
+        // Add configuration options to the upload settings page.
+        _upload_preview_admin_form($form);
+        break;
+      case 'upload_js':
+        _upload_preview_node_form($form['files'], $form['current']['vid']['#value']);
+        break;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_cron().
+ */
+function upload_preview_cron() {
+  $previews = variable_get('upload_preview_files', array());
+  $threshold = time() - variable_get('upload_preview_lifetime', 1000000000);
+
+  // Delete all files that are older than the maximum preview file lifetime.
+  foreach ($previews as $file => $timestamp) {
+    if ($timestamp < $threshold) {
+      file_delete($file);
+      unset($previews[$file]);
+    }
+  }
+
+  variable_set('upload_preview_files', $previews);
+}
+
+/**
+ * Helper function for hook_form_alter().
+ */
+function _upload_preview_node_form(&$files, $vid) {
+  // Overwrite the theme function with the two-row theme which includes the
+  // preview image.
+  $files['#theme'] = 'upload_preview_form_current';
+
+  foreach (element_children($files) as $id) {
+    $file = new stdClass();
+    $file->fid = $files[$id]['fid']['#value'];
+    $file->filename = $files[$id]['filename']['#value'];
+    $file->filepath = $files[$id]['filepath']['#value'];
+    $file->filemime = $files[$id]['filemime']['#value'];
+    $file->filesize = $files[$id]['filesize']['#value'];
+    $file->vid = $vid;
+    $file->description = $files[$id]['description']['#default_value'];
+    $file->list = $files[$id]['list']['#default_value'];
+
+    $files[$id]['preview'] = module_invoke_all('upload_preview', $file);
+
+    if (empty($files[$id]['preview'])) {
+      // When there is no preview (image could not be created or the file is not
+      // an image), add an info text stating that fact.
+      $files[$id]['preview'] = array(
+        '#value' => '('. t('No preview') .')',
+      );
+    }
+
+    // Add the values for our custom theme function.
+    $files[$id]['remove']['#title'] = t('Delete');
+    $files[$id]['list']['#title'] = t('List');
+    $files[$id]['size']['#prefix'] = t('Size') .': ';
+
+    // Check if the file is already saved or still in the temp directory.
+    $dirty = !is_numeric($file->fid);
+    $url = file_create_url($dirty ? file_create_filename($file->filename, file_create_path()) : $file->filepath);
+
+    // Modify the description field to be a textarea and change its description text.
+    $files[$id]['description']['#type'] = 'textarea';
+    $files[$id]['description']['#rows'] = 3;
+    $files[$id]['description']['#resizable'] = FALSE;
+    if ($dirty) {
+      $files[$id]['description']['#description'] = t('This file is not yet saved, but will be available at <a href="@url">@url</a>', array('@url' => $url));
+    }
+    else {
+      $files[$id]['description']['#description'] = t('This file can be found at <a href="@url">@url</a>.', array('@url' => $url));
+    }
+  }
+}
+
+/**
+ * Implementation of hook_upload_preview().
+ */
+function upload_preview_upload_preview($file) {
+  // Only check for images
+  if (strpos($file->filemime, 'image/') === 0) {
+    // Create the preview image file path based on the actual filename or the
+    // preliminary filename (in the temp directory).
+    $path = file_create_path(variable_get('upload_preview_path', 'preview')) .'/';
+    $path .= md5($file->filepath) .'.'. _upload_preview_mime_to_extension($file->filemime);
+
+    // If the file does not exist, try to scale it down
+    if (!file_exists($path)) {
+      $size = explode('x', variable_get('upload_preview_size', '150x150'));
+      if (!image_scale($file->filepath, $path, $size[0], $size[1])) {
+        // Scaling failed, now try copying the original file over.
+        if (!file_copy($file->filepath, $path, FILE_EXISTS_ERROR)) {
+          // If every attempt failed, don't show a preview.
+          $path = NULL;
+        }
+      }
+      else {
+        // The image creation succeeded. Now, add the image to the preview files
+        // array so that we can delete it later when it's not needed anymore.
+        $previews = variable_get('upload_preview_files', array());
+        $previews[$path] = time();
+        variable_set('upload_preview_files', $previews);
+      }
+    }
+
+    if ($path) {
+      // The image exists and the preview can be added.
+      $image = theme('upload_preview_image', file_create_url($path), $file->description);
+      return array(
+        '#value' => l($image, file_create_url($file->filepath), array('html' => TRUE)),
+      );
+    }
+  }
+}
+
+function upload_preview_nodeapi(&$node, $op, $teaser) {
+  switch ($op) {
+    case 'view':
+      if (isset($node->content['files'])) {
+        $node->content['files'] = array(
+          '#theme' => 'upload_preview_attachments',
+          '#files' => $node->files,
+          '#weight' => $node->content['files']['#weight'],
+        );
+        if ($node->nid) {
+          foreach ($node->content['files']['#files'] as $fid => $file) {
+            $node->content['files']['#files'][$fid]->preview = module_invoke_all('upload_preview', $file);
+          }
+        }
+      }
+      break;
+  }
+}
+
+/**
+ * Displays an extended file attachments in table
+ */
+function theme_upload_preview_attachments($element) {
+  $header = array(t('Preview'), t('Attachment'), t('Size'));
+  $rows = array();
+  foreach ($element['#files'] as $file) {
+    $file = (object)$file;
+    if ($file->list && !$file->remove) {
+      // Generate valid URL for both existing attachments and preview of new attachments (these have 'upload' in fid)
+      $href = file_create_url((strpos($file->fid, 'upload') === FALSE ? $file->filepath : file_create_filename($file->filename, file_create_path())));
+      $text = $file->description ? $file->description : $file->filename;
+      $rows[] = array(drupal_render($file->preview), l($text, $href), format_size($file->filesize));
+    }
+  }
+  if (count($rows)) {
+    return theme('table', $header, $rows, array('id' => 'attachments'));
+  }
+}
+
+/**
+ * Implementation of hook_file_download().
+ */
+function upload_preview_file_download($file) {
+  $preview = file_create_path(variable_get('upload_preview_path', 'preview'));
+  $file_info = pathinfo(file_create_path($file));
+  if ($file_info['dirname'] == $preview) {
+    return array('Content-Type: image/'. drupal_strtolower($file_info['extension']));
+  }
+}
+
+/**
+ * Helper function. Returns the correct file ending for an image mime type.
+ */
+function _upload_preview_mime_to_extension($mime) {
+  switch ($mime) {
+    case 'image/jpeg':
+    case 'image/jpg':
+      return 'jpg';
+      break;
+    case 'image/gif':
+      return 'gif';
+      break;
+    case 'image/png':
+    default:
+      return 'png';
+  }
+}
+
+/**
+ * Helper function for hook_form_alter().
+ */
+function _upload_preview_admin_form(&$form) {
+  // Ensure that the buttons are at the very bottom.
+  $form['buttons']['#weight'] = 50;
+
+  $mode = variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC);
+  $path = file_directory_path();
+  $preview = file_create_path(variable_get('upload_preview_path', 'preview'));
+
+  $form['preview'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Previews'),
+    '#weight' => 5,
+    '#description' => t('Controls the behavior of previews in the file attachment section.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['preview']['upload_preview_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Preview path'),
+    '#default_value' => drupal_substr($preview, drupal_strlen($path) + 1),
+    '#field_prefix' => $mode == FILE_DOWNLOADS_PUBLIC ? file_create_url('') : '&lt;'. t('Private') .'&gt;/',
+    '#description' => t('Subdirectory in the global file directory where previews will be stored.'),
+  );
+
+  $form['preview']['upload_preview_size'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Image size'),
+    '#default_value' => variable_get('upload_preview_size', '150x150'),
+    '#size' => 15,
+    '#maxlength' => 10,
+    '#description' => t('The image size for the preview images (e.g. 150x150). The aspect ratio will be maintained while resizing.'),
+    '#field_suffix' => '<kbd>'. t('WIDTHxHEIGHT') .'</kbd>'
+  );
+
+  $period = drupal_map_assoc(array(600, 1800, 3600, 7200, 14400, 28800, 86400, 172800, 604800), 'format_interval');
+  $period['1000000000'] = t('Never');
+  $form['preview']['upload_preview_lifetime'] = array(
+    '#type' => 'select',
+    '#title' => t('File lifetime'),
+    '#description' => t('The period until upload preview files are deleted. In case they get deleted before the user saved the post, they are regenerated automatically. Requires crontab.'),
+    '#default_value' => variable_get('upload_preview_lifetime', 1000000000),
+    '#options' => $period,
+  );
+
+  if (!isset($form['#validate'])) {
+    $form['#validate'] = array();
+  }
+
+  $form['#validate'][] = '_upload_preview_admin_form_validate';
+  _upload_preview_prerequisites($preview);
+}
+
+/**
+ * Validate the preview image size.
+ */
+function _upload_preview_admin_form_validate($form, &$form_state) {
+  if (!preg_match('~^[1-9]\d*x[1-9]\d*$~', $form_state['values']['upload_preview_size'])) {
+    form_set_error('upload_preview_size', t('The specified preview image size is invalid.'));
+  }
+}
+
+/**
+ * Ensure that the preview image directory exists. If it doesn't, try to create it.
+ */
+function _upload_preview_prerequisites(&$preview) {
+  if (!file_check_directory($preview, FILE_CREATE_DIRECTORY)) {
+    drupal_set_message(t('Attachment previews are disabled. The preview directory %directory has not been properly configured.', array('%directory' => $preview)), 'error');
+    form_set_error('upload_preview_path');
+  }
+
+  // Also ensure, that we have a image toolkit available.
+  if (!image_get_toolkit()) {
+    drupal_set_message(t('Make sure you have a working image toolkit installed and enabled. Further information can be found on the <a href="@url">Image toolkit settings page</a>.', array('@url' => url('admin/settings/image-toolkit'))), 'error');
+  }
+}
+
+/**
+ * Theme the attachments list.
+ */
+function theme_upload_preview_form_current(&$form) {
+  $header = array(t('Preview'), t('Description'), t('Weight'));
+  drupal_add_tabledrag('upload-attachments', 'order', 'sibling', 'upload-weight');
+
+  foreach (element_children($form) as $key) {
+    // Add class to group weight fields for drag and drop.
+    $form[$key]['weight']['#attributes']['class'] = 'upload-weight';
+    $form[$key]['description']['#cols'] = 20;
+
+    // Split up in two rows as the addition image would make the table too wide.
+    // The first row contains the image and the description...
+    $divs = array();
+    $divs[] = drupal_render($form[$key]['remove']);
+    $divs[] = drupal_render($form[$key]['list']);
+    $divs[] = drupal_render($form[$key]['size']);
+
+    $divs = '<br /><div style="float: left;margin-right:20px;">'. implode('</div><div style="float: left;margin-right:20px;">', $divs) .'</div>';
+
+    $row = array();
+    $row[] = array('data' => drupal_render($form[$key]['preview']));
+    $row[] = array('data' => drupal_render($form[$key]['description']) .  $divs);
+    $row[] = array('data' => drupal_render($form[$key]['weight']));
+    $rows[] = array('data' => $row, 'class' => 'draggable');
+
+    // ... and the second row contains the list/remove checkboxes and the size information.
+  }
+
+  if (count($rows)) {
+    $output = theme('table', $header, $rows, array('id' => 'upload-attachments'));
+    $output .= drupal_render($form);
+  }
+
+  return $output;
+}
+
+/**
+ * Theme a file upload preview image.
+ */
+function theme_upload_preview_image($url, $alt) {
+  return '<img src="'. $url .'" alt="'. $alt .'" class="upload_preview_image" />';
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function upload_preview_theme() {
+  return array(
+    'upload_preview_form_current' => array(
+      'arguments' => array('form' => NULL),
+      /* 'file' => 'upload_preview.module' */
+    ),
+    'upload_preview_image' => array(
+      'arguments' => array('element' => NULL),
+      /* 'file' => 'upload_preview.module' */
+    )
+    );
+}
+

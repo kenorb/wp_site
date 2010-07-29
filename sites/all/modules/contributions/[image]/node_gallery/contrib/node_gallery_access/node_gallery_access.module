@@ -1,0 +1,241 @@
+<?php
+
+define("NODE_GALLERY_ACCESS_PERM_ACCESSS_PROTECTED_CONTENTS", 'access protected contents');
+define("NODE_GALLERY_ACCESS_PERM_EDIT_PROTECTED_CONTENTS", 'edit protected contents');
+
+define("NODE_GALLERY_ACCESS_TYPE_PUBLIC", 0);
+define("NODE_GALLERY_ACCESS_TYPE_PRIVATE", 1);
+define("NODE_GALLERY_ACCESS_TYPE_PASSWORD", 2);
+
+module_load_include('inc', 'node_gallery_access');
+
+function node_gallery_access_perm() {
+  return array(NODE_GALLERY_ACCESS_PERM_ACCESSS_PROTECTED_CONTENTS, NODE_GALLERY_ACCESS_PERM_EDIT_PROTECTED_CONTENTS);
+}
+
+function node_gallery_access_menu() {
+  $items['node_gallery_access/passwd/js'] = array(
+    'title' => 'Setting Password',
+    'page callback' => 'node_gallery_access_setting_form_js',
+    'access callback' => true,
+    'file' => 'node_gallery_access.pages.inc',
+  );
+  
+  $items['node_gallery/enterpassword'] = array(      
+    'title' => 'Protected Gallery - Enter Password',      
+    'description' => 'Here you can enter the password for the gallery.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('node_gallery_access_enterpassword'),      
+    'access callback' => true,
+    'file' => 'node_gallery_access.pages.inc',
+    'type' => MENU_CALLBACK
+  );
+  
+  return $items;
+}
+
+function node_gallery_access_menu_alter(&$callbacks) {
+  $callbacks['node/%node']['access callback'] = 'node_gallery_node_access';
+  $callbacks['node/%node/edit']['access callback'] = 'node_gallery_node_access';
+  //strange: if not add this line, 'update' couldn't be sent to arguments.
+  $callbacks['node/%node/edit']['access arguments'] = array('update', 1);
+  $callbacks['node/%node/delete']['access callback'] = 'node_gallery_node_access';
+}
+
+/**
+ * Enter description here...
+ *
+ * @param unknown_type $op
+ * @param unknown_type $node
+ * @param unknown_type $account
+ */
+function node_gallery_node_access($op, $node, $account = NULL) {
+  static $access;
+  
+  if (empty($access[$node->nid])) {
+    if (GalleryConfigGateway::getTypes('image', $node->type) && $node->gid) {
+      $gallery_node = node_load($node->gid);
+      $access[$node->nid] = node_access($op, $gallery_node, $account) && node_access($op, $node, $account);
+    }
+    else {
+      $access[$node->nid] = node_access($op, $node, $account);
+    }
+  }
+  return $access[$node->nid];
+}
+
+function node_gallery_access_form_alter(&$form, $form_state, $form_id) {
+  if ($form_id == $form['type']['#value'].'_node_form') {
+    $gallery_types = GalleryConfigGateway::getTypes();
+    if (!empty($gallery_types) && in_array($form['type']['#value'], array_keys($gallery_types))) {
+      $form['ng_access'] = array(
+  			'#type' => 'fieldset',
+  			'#title' => t('Node Gallery Access Setting'),
+  			'#collapsible' => false,
+      );
+      $form['ng_access']['access_type'] = array(
+        '#type' => 'radios',
+        '#title' => t('Access Type'),
+        '#options' => array(t('Public'), t('Private'), t('Password')),
+        '#default_value' => empty($form['#node']->access_type) ? 0 : $form['#node']->access_type,
+        '#ahah' => array(
+          'path' => 'node_gallery_access/passwd/js',
+          'wrapper' => 'ng-access-wrapper',
+        ),
+      );
+      $form['ng_access']['wrapper'] = array(
+        '#prefix' => "<div id='ng-access-wrapper'>",
+  			'#suffix' => "</div>",
+  			'#value' => ' ',
+      );
+      if ($form['#node']->access_type == NODE_GALLERY_ACCESS_TYPE_PASSWORD) {
+        $form['ng_access']['wrapper']['chgpwd'] = array(
+          '#type' => 'submit',
+          '#value' => t('Change Password'),
+          '#description' => t('Click here to change password.'),
+          '#ahah' => array(
+            'path' => 'node_gallery_access/passwd/js',
+            'wrapper' => 'ng-access-wrapper',
+          ),
+        );
+      }
+    }
+  }
+}
+
+function node_gallery_access_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  global $user;
+  
+  if (GalleryConfigGateway::getTypes('gallery', $node->type)) {
+    switch ($op) {
+      case 'load':
+        $access = NgAccessGateway::find($node->nid);
+        if (!empty($access)) {
+          foreach (get_object_vars($access) as $k => $v) {
+            $node->$k = $v;
+          }
+        }
+        break;
+      case 'delete':
+        NgAccessGateway::delete($node->nid);
+        break;
+      case 'insert':
+      case 'update':
+        NgAccessGateway::save($node);
+        break;
+      case 'view':
+        if ($node->access_type == NODE_GALLERY_ACCESS_TYPE_PASSWORD) {
+          _node_gallery_access_redirect($node, $a3);
+        }
+        break;
+    }
+  }
+  
+  //this is a image node;
+  if (GalleryConfigGateway::getTypes('image', $node->type)) {
+    switch ($op) {
+      case 'view':
+        $gallery_access = NgAccessGateway::find($node->gid);
+        if ($gallery_access->access_type == NODE_GALLERY_ACCESS_TYPE_PASSWORD) {
+          _node_gallery_access_redirect($node, $a3, $node->gid);
+        }
+        break;
+    }
+  }
+}
+
+function node_gallery_access_node_access_records($node) {
+  //if node is private type
+  if (GalleryConfigGateway::getTypes('gallery', $node->type) && $node->access_type == 1) {
+    $grants = array();
+    $grants[] = array(
+      'realm' => 'ng_private',
+      'gid' => TRUE,
+      'grant_view' => TRUE,
+      'grant_update' => FALSE,
+      'grant_delete' => FALSE,
+      'priority' => 0,
+    );
+    $grants[] = array(
+      'realm' => 'ng_private_admin',
+      'gid' => true,
+      'grant_view' => TRUE,
+      'grant_update' => TRUE,
+      'grant_delete' => TRUE,
+      'priority' => 0,
+    );
+    $grants[] = array(
+      'realm' => 'ng_private_author',
+      'gid' => $node->uid,
+      'grant_view' => TRUE,
+      'grant_update' => TRUE,
+      'grant_delete' => TRUE,
+      'priority' => 0,
+    );
+    return $grants;
+  }
+}
+
+function node_gallery_access_node_grants($account, $op) {
+  if ($op == 'view' && user_access(NODE_GALLERY_ACCESS_PERM_ACCESSS_PROTECTED_CONTENTS, $account)) {
+    $grants['ng_private'] = array(1);
+  }
+
+  if (user_access(NODE_GALLERY_ACCESS_PERM_EDIT_PROTECTED_CONTENTS, $account)) {
+    $grants['ng_private_admin'] = array(1);
+  }
+
+  $grants['ng_private_author'] = array($account->uid);
+  return $grants;
+}
+
+function node_gallery_access_db_rewrite_sql($query, $primary_table, $primary_field, $args) {
+  switch ($primary_field) {
+    case 'nid':
+      // this query deals with node objects
+      $return = array();
+      if (!empty($args[0])) {
+        $node = $args[0];
+        if (GalleryConfigGateway::getTypes('gallery', $node->type)) {
+          $return['join'] = "INNER JOIN {ng_access} nga ON $primary_table.nid = nga.nid";
+          $return['where'] = "nga.access_type = 0";
+        }
+      }
+      return $return;
+      break;
+  }
+}
+
+function _node_gallery_access_redirect(&$node, $teaser, $gid = NULL) {
+  global $user;
+  
+  // If we have been accessed from cron.php (f.e. search indexing)				
+	if (variable_get('cron_semaphore', FALSE)) {
+	   $node->title = '';	      		
+	   $node->teaser = '';
+	   $node->body = '';
+	   $node->content = array();				    
+	}
+	else {
+  	if (!$user->uid && variable_get('cache', 0)) {
+  			$GLOBALS['conf']['cache'] = FALSE;
+  	}
+  	if ($user->uid != $node->uid) {
+  	  $id = (!empty($gid) && is_numeric($gid)) ? $gid : $node->nid;
+	   	// If node is protected and not teaser nor page view and not owner of node
+	    if (!isset($_SESSION['_node_gallery']['passwords'][$id])) {
+	      //a4 for page
+	      if (!$teaser) {
+	        $_SESSION['_node_gallery']['current'] = $id;
+				  drupal_goto('node_gallery/enterpassword', 'destination=' . $_GET['q']);
+	      }
+	      //teaser
+				else {
+				 	$node->teaser = '';
+				 	$node->body = '';
+				 	$node->content = array();	
+			  }
+	    }
+  	}
+	}
+}

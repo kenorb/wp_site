@@ -1,0 +1,18 @@
+; Information file for the G2 Glossary module
+; @version $Id: g2.info,v 1.1 2007/08/19 21:24:39 fgm Exp $
+; @copyright 2007 Ouest Systemes Informatiques
+; @license CeCILL 2.0
+;
+name = G2 glossary
+description = Manage a node-based glossary
+dependencies[] = taxonomy
+package = Content
+core = 6.x
+php = 5.1
+
+; Information added by drupal.org packaging script on 2007-08-26
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "g2"
+datestamp = "1188086614"
+

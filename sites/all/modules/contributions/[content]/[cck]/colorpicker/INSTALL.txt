@@ -1,0 +1,4 @@
+; $Id$
+
+To install this module, navigate to admin/build/modules and enable the module.  This module does nothing by itself but provide another form type called a 'colorpicker'.
+See the colorpicker_example.module for an example usage.

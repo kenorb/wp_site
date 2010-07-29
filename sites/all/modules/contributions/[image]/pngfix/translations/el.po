@@ -1,0 +1,45 @@
+# translation of el.po to Greek
+# Greek translation of pngfix (5.x-3.0)
+# Copyright (c) 2008 by the Greek translation team
+# Generated from files:
+#  pngfix/pngfix.module: n/a
+#  pngfix.info,v 1.2 2007/10/24 20:00:43 robloach
+#
+# Vasileios Lourdas <drupal@lourdas.name>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: el\n"
+"POT-Creation-Date: 2008-10-26 09:52+0200\n"
+"PO-Revision-Date: 2008-10-26 09:54+0200\n"
+"Last-Translator: Vasileios Lourdas <drupal@lourdas.name>\n"
+"Language-Team: Greek <el@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#: pngfix.admin.inc:16
+msgid "CSS Classes"
+msgstr "CSS Κλάσεις"
+
+#: pngfix.admin.inc:18
+msgid "Comma seperated list of CSS classes to apply the PNG Fix to (use <a href=\"@jqueryselector\">jQuery Selectors</a>).  The CSS class must be for the element that surrounds the image, and not for the image itself.  In the case of <code>&lt;div class=\"pngfix\"&gt;&lt;img ... /&gt;&lt;/div&gt;</code>, use .pngfix to apply the PNG Fix to the image."
+msgstr "Λίστα των CSS κλάσεων διαχωρισμένων με κόμμα στις οποίες θα εφαρμοστεί η επιδιόρθωση PNG (χρησιμοποιήστε <a href=\"@jqueryselector\">jQuery Selectors</a>).  Η CSS κλάση πρέπει να είναι για το στοιχείο που περιλαμβάνει την εικόνα και όχι για την ίδια την εικόνα. Στην περίπτωση &lt;div class=\"pngfix\"&gt;&lt;img ... /&gt;&lt;/div&gt;, χρησιμοποιήστε .pngfix για να εφαρμόσετε την επιδιόρθωση PNG στην εικόνα."
+
+#: pngfix.module:12 pngfix.info:0
+msgid "Includes a fix to correctly handle PNG transparency in Windows IE 5.5 & 6."
+msgstr "Περιλαμβάνει μια διόρθωση για την σωστή λειτουργία της διαφάνειας των εικόνων PNG σε Windows IE 5.5 & 6."
+
+#: pngfix.module:37 pngfix.info:0
+msgid "PNG Fix"
+msgstr "Επιδιόρθωση PNG"
+
+#: pngfix.module:38
+msgid "Configure how the PNG Fix operates."
+msgstr "Ρύθμιση λειτουργίας της επιδιόρθωσης PNG."
+
+#: pngfix.module:0
+msgid "pngfix"
+msgstr "pngfix"
+

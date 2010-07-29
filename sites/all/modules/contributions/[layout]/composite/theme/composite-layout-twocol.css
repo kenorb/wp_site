@@ -1,0 +1,32 @@
+/* $Id: composite-layout-twocol.css,v 1.1.2.1 2009/01/15 02:41:13 bengtan Exp $ */
+
+.composite-twocol {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.composite-twocol .composite-row {
+  width: 100%; 
+  clear: both;
+}
+
+.composite-twocol .composite-row-top .composite-zone-inner {
+  margin-bottom: 1em;
+}
+
+.composite-twocol .composite-column {
+  float: left; 
+  width: 50%; 
+}
+
+* html .composite-twocol .composite-column {
+  width: 49.9%; 
+}
+
+.composite-twocol .composite-column-first .composite-zone-inner {
+  margin: 0 .5em 1em 0;
+}
+
+.composite-twocol .composite-column-last .composite-zone-inner {
+  margin: 0 0 1em .5em;
+}

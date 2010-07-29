@@ -1,0 +1,41 @@
+<?php
+// $Id: coherent_access.install,v 1.2 2008/06/06 22:35:05 jgraham Exp $
+
+
+/*
+ * @file
+ * Provides installation directives for coherent access module
+*/
+function coherent_access_install() {
+  drupal_install_schema('coherent_access');
+}
+
+function coherent_access_schema() {
+  $schema['coherent_access_gid'] = array(
+    'fields' => array(
+      'gid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'mode' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+    ),
+    'indexes' => array(
+      'nid' => array('nid'),
+    ),
+    'primary key' => array('gid'),
+  );
+  
+  $schema['coherent_access_user'] = array(
+    'fields' => array(
+      'uid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'gid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+    ),
+    'primary key' => array('uid', 'gid'), // TEST: make sure this is proper style for a multi-field key
+  );
+  return $schema;
+}
+
+/*
+ * Implementation of hook_uninstall
+ */
+function coherent_access_uninstall() {
+  drupal_uninstall_schema('coherent_access');
+}

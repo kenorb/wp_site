@@ -1,0 +1,9 @@
+; $Id: inactive_user.info,v 1.1.2.2 2007/06/18 23:06:46 dww Exp $
+name = Inactive User
+description = Automatic handling of inactive users.
+
+; Information added by drupal.org packaging script on 2008-06-09
+version = "6.x-1.4"
+project = "inactive_user"
+datestamp = "1213027810"
+core=6.x

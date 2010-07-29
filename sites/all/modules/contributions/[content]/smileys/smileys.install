@@ -1,0 +1,173 @@
+<?php
+// $Id: smileys.install,v 1.3.2.9 2009/01/05 08:50:25 Gurpartap Exp $
+
+/**
+ * Implementation of hook_schema().
+ */
+function smileys_schema() {
+  $schema['smileys'] = array(
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'acronyms' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 255,
+      ),
+      'image' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 255,
+      ),
+      'description' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 64,
+      ),
+      'weight' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'standalone' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+      ),
+      'promote_to_box' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+        'size' => 'tiny',
+      ),
+      'package' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => 'Miscellaneous',
+        'length' => 64,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function smileys_install() {
+  // Create tables.
+  $result = drupal_install_schema('smileys');
+
+  // Feed sample data.
+  if ($result) {
+    $path = drupal_get_path('module', 'smileys') . '/packs/Roving/';
+    $examples = array(
+      array(':) :-) :smile:', 'smile.png', 'Smile', 1),
+      array(':D :-D :lol:', 'lol.png', 'Laughing out loud', 1),
+      array(':bigsmile:', 'bigsmile.png', 'Big smile', 1),
+      array(';) ;-) :wink:', 'wink.png', 'Wink', 1),
+      array(':p :-p :tongue:', 'tongue.png', 'Tongue', 1),
+      array(':O :-O :shock:', 'shock.png', 'Shock', 1),
+      array(':| :-| :stare:', 'flat.png', 'Stare', 1),
+      array(':( :-( :sad:', 'aw.png', 'Sad', 1),
+      array(':~ :-~ :puzzled:', 'puzzled.png', 'Puzzled', 1),
+      array(':(( :-(( :cry:', 'sad.png', 'Crying', 1),
+      array('8) 8-) :cool:', 'cool.png', 'Cool', 1),
+      array(':steve:', 'steve.png', 'Steve', 1),
+      array('J) J-) :crazy:', 'crazy.png', 'Crazy', 1),
+      array(':glasses:', 'glasses.png', 'Glasses', 1),
+      array(':party:', 'party.png', 'Party', 1),
+      array(':love:', 'love.png', 'Love', 1),
+      array(':X :-X :oups:', 'oups.png', 'Oups', 0),
+      array(':8) :8-) :shy:', 'shy.png', 'Shy', 0),
+      array('0:) 0) 0:-) :innocent:', 'innocent.png', 'Innocent', 0),
+      array(':* :-* :sexy:', 'sexy.png', 'Sexy', 0),
+      array('|( \\( :angry:', 'angry.png', 'Angry', 0),
+      array(':Sp :-S) :sick:', 'sick.png', 'Sick', 0),
+      array(':tired:', 'tired.png', 'Tired', 0),
+      array(':santa:', 'santa.png', 'Santa', 0),
+      array(':mail:', 'mail.png', 'Mail', 0),
+      array(':sushi:', 'sushi.png', 'Sushi', 0),
+      array(':hat:', 'hat.png', 'Hat', 0),
+      array('H) H:) H:-) :grade:', 'grade.png', 'Grade', 0),
+      array(':ghost:', 'ghost.png', 'Ghost', 0),
+      array('$) $-) :cash:', 'cash.png', 'Cash', 0),
+      array(':crown:', 'crown.png', 'Crown', 0),
+      array(':davie:', 'davie.png', 'Davie', 0),
+      array('S) S) :drunk:', 'drunk.png', 'Drunk', 0),
+      array('>) >-) :evil:', 'evil.png', 'Evil', 0),
+      array(':beer:', 'beer.png', 'Beer', 0),
+      array(':star:', 'star.png', 'Star', 0),
+      array(':arrow:', 'arrow.png', 'Arrow', 0),
+      array(':quest:', 'quest.png', 'Quest', 0),
+      array(':exmark:', 'mark.png', 'Exclamation Mark', 0),
+    );
+
+    foreach ($examples as $example) {
+      db_query("INSERT INTO {smileys} (acronyms, image, description, standalone, promote_to_box, package) VALUES ('%s', '%s', '%s', 1, '%d', '%s');", $example[0], $path . $example[1], $example[2], $example[3], 'Roving');
+    }
+  }
+}
+
+/**
+* Implementation of hook_uninstall().
+*/
+function smileys_uninstall() {
+  // Remove variables.
+  variable_del('smileys_enable_for_comments');
+  variable_del('smileys_enable_for_nodes');
+  variable_del('smileys_node_types_content');
+  variable_del('smileys_select_box_expanded');
+  variable_del('smileys_enable_dialog');
+  variable_del('smileys_dialog_titles');
+  variable_del('smileys_dialog_draggable');
+  variable_del('smileys_dialog_resizable');
+  variable_del('smileys_dialog_height');
+  variable_del('smileys_dialog_width');
+  // Remove tables.
+  drupal_uninstall_schema('smileys');
+}
+
+/**
+ * Implementation(s) of hook_update_N().
+ */
+function smileys_update_6000() {
+  $ret = array();
+
+  if (!db_column_exists('smileys', 'promote_to_box')) {
+    // For users who upgraded from Drupal 5 version of smileys, without first upgrading to latest snap for Drupal 5.
+    $ret[] = update_sql("ALTER TABLE {smileys} ADD promote_to_box TINYINT(1) UNSIGNED NOT NULL DEFAULT '1' AFTER standalone");
+  }
+
+  // Change the default value for "package" column, from "Uncategorized" to "Miscellaneous".
+  $ret[] = update_sql("UPDATE {smileys} SET package = 'Miscellaneous' WHERE package = 'Uncategorized'");
+  $ret[] = update_sql("ALTER TABLE {smileys} ALTER package SET DEFAULT 'Miscellaneous'");
+
+  // Change package name to reflect changed name.
+  $ret[] = update_sql("UPDATE {smileys} SET package = 'Example' WHERE package = 'example'");
+  $ret[] = update_sql("UPDATE {smileys} SET image = REPLACE(image, 'example', 'Example')");
+
+  return array_merge($ret);
+}
+
+/**
+ * Implementation(s) of hook_update_N().
+ */
+function smileys_update_6001() {
+  $ret = array();
+
+  if (!db_column_exists('smileys', 'weight')) {
+    $ret[] = update_sql("ALTER TABLE {smileys} ADD weight TINYINT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER description");
+  }
+
+  return $ret;
+}

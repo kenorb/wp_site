@@ -1,0 +1,57 @@
+<?php
+// $Id: feedapi_comments_emfield.module,v 1.2 2008/12/01 14:58:23 alexb Exp $
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function feedapi_comments_emfield_form_alter(&$form, &$form_state, $form_id) {
+  // Now hide it if user doesn't have the permissions to set it.
+  // @todo: move this to _preprocess_node_form
+  if (!user_access('advanced feedapi options') && isset($form['feedapi'])) {
+    // Register feedapi_comments_emfield_validate() first to do our trick before feedapi gets a chance.
+    $form['#validate'] = array_merge(array('feedapi_comments_emfield_validate'), $form['#validate']);
+    _feedapi_comments_emfield_hide_field($form['feedapi']);
+  }
+}
+
+/**
+ * Custom validation handler for blog post form.
+ * Here we copy the URL of the video embed field into 
+ * the feedapi field.
+ */
+function feedapi_comments_emfield_validate($form, &$form_state) {
+  foreach ($form_state['values'] as $field_name => $field) {
+    if (feedapi_comments_emfield_is_emfield($field)) {
+      $form['feedapi']['feedapi_url']['#parents'] = array('feedapi', 'feedapi_url');
+      form_set_value($form['feedapi']['feedapi_url'], $form_state['values'][$field_name][0]['embed'], $form_state);
+      break;
+    }
+  }
+}
+
+/**
+ * Determine whether given field is an emfield.
+ * 
+ * @todo: find more reliable method to detect whether field is emfield.
+ */
+function feedapi_comments_emfield_is_emfield($field) {
+  if (is_array($field)) {
+    foreach ($field as $k => $v) {
+      if ($k == 'embed') {
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+
+
+/**
+ * Helper function for hiding a field.
+ *
+ * @param The field to hide.
+ */
+function _feedapi_comments_emfield_hide_field(&$field) {
+  $field['#type'] = 'value';
+  $field['#value'] = $field['#default_value'];
+}

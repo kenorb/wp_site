@@ -1,0 +1,82 @@
+<?php
+
+/* This file is part of "Broken Anchor for Node comments Module".
+ *    Copyright 2009, arNuméral
+ *    Author : Yoran Brault
+ *    eMail  : yoran.brault@bad_arnumeral.fr (remove bad_ before sending an email)
+ *    Site   : http://www.arnumeral.fr/node/2
+ *
+ * "Broken Anchor for Node comments Module" is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * "Broken Anchor for Node comments Module" is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with "Broken Anchor for Node comments Module"; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+/**
+ * Implementation of hook_menu
+ */
+function broken_anchor_comment_menu() {
+  $items = array (
+  'admin/settings/broken_anchor/comments' => array (
+      'title' => t('Comments'), 
+      'description' => t('Broken anchor settings.'), 
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array ('broken_anchor_comment_admin_settings'),
+      'access arguments' => array ('administer site configuration'),
+      'file' => 'broken_anchor_comment.admin.inc',
+      'type' => MENU_LOCAL_TASK,
+    ),
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_broken_anchor_info
+ */
+function broken_anchor_comment_broken_anchor_info() {
+  return array('description'=> "Comments");
+}
+
+function broken_anchor_comment_broken_anchor_link($id) {
+  return l("comment #".$id, "comment/edit/$id",array('attributes'=>array('target'=>'broken_anchor')));
+}
+
+function broken_anchor_comment_broken_anchor_get_progress($id) {
+  $total=db_result(db_query("select count(*) from {comments} where status=%d",COMMENT_PUBLISHED));
+  $passed=db_result(db_query("select count(*) from {comments} where cid < %d and status=%d",$id,COMMENT_PUBLISHED));
+  return array('passed'=>$passed, 'total'=>$total);
+}
+
+/**
+ * Implementation of hook_broken_anchor_get_contents
+ */
+function broken_anchor_comment_broken_anchor_get_contents($start_id, $limit) {
+  $cursor=db_query("
+    select * 
+    from {comments} 
+    where 
+      cid >= %d and 
+      status = %d 
+      order by cid 
+      limit %d", 
+    $start_id, COMMENT_PUBLISHED, $limit);
+  $comments=array();
+  while ($comment=db_fetch_array($cursor)) {
+    $result=array();
+    $result['content']=check_markup($comment['comment'], $comment['format'], FALSE);
+    $result['id']=$comment['cid'];
+    $comments[]=$result;
+  }
+  return $comments;
+}
+

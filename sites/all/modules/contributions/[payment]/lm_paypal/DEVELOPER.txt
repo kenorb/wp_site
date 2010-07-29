@@ -1,0 +1,98 @@
+OVERVIEW
+
+This document attempts to collection the documentation about how PayPal works,
+and how LM Paypal integrates with it. LM Paypal uses the "Simple Integration"
+mode with paypal.com.  This is described at:
+
+  https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/howto_html_landing
+
+In particular, the module makes use of the IPN (Instant Payment Notification)
+method to receive information from paypal as transactions proceed. See:
+
+  https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/howto_html_instantpaymentnotif
+
+Briefly, this works by:
+* user submits a form on your site that contains all the transaction information
+  (amounts, subscriptions, unique identifier, etc - but NOT credit cart
+  information). This form actually goes to paypal.com, where it asks the user
+  for payment details.
+* once this is completed, paypal posts an IPN to your server
+* your server sends this to a known (paypal) URL to check the incoming
+  notification is valid
+* if accepted take transaction-specific actions on your site (update
+  subscriptions, record the operation, etc)
+
+
+
+TRICKS AND TIPS
+
+- subscription modules will only allow logged-in users to make payments
+  (otherwise we have nobody to attribute the payment to)
+
+- in order for paypal payments/subscriptions to work, paypal MUST be able to
+  contact your webserver at $base_url/lm_paypal/ipn.  This is because the way
+  IPN works is by posting data back to your server
+
+- if you have a non-accessible webserver (presumably for development), there are
+  a couple of alternatives for getting this working:
+
+   * Add a "port forward" or exposed service to your DSL router / modem / etc
+     If you have a dynamic IP address (it changes every so often), use a free
+     DNS service like dyndns.com to follow your IP address.
+
+   * If you have access to an internet-accessible server, either:
+     - set up mod_proxy to proxy requests to your server set up as above
+     - ssh to the server, with a _remote_ TCP tunnel, at configure mod_proxy
+       to use that to access your server
+       See the "-R" option of ssh - http://www.openbsd.org/cgi-bin/man.cgi?query=ssh
+
+       eg: ssh -g -R 7080:localhost:80 yourserver.com
+       eg: Add the following to your httpd.conf
+
+          <VirtualHost *:80>
+              ServerName proxy.yourserver.com
+              ProxyPass /drupal-6.6 http://localhost:7080/drupal-6.6
+              ProxyPassReverse /drupal-6.6 http://localhost:7080/drupal-6.6
+          </VirtualHost>
+
+
+
+     - ssh to the server, and set up a remote TCP tunnel that accepts external
+       connections
+
+
+
+
+
+
+TECHNICAL DETAILS
+
+For a complete list of possible values in the POST sent to paypal to start the
+transaction, see:
+
+  https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_html_Appx_websitestandard_htmlvariables
+
+For a complete list of the possible variables that can be included in the IPN
+post that PayPal sends to your server, see:
+
+  https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_html_IPNandPDTVariables
+
+
+
+TODO LIST
+
+- Develop tests for this module. Use IPN Simulator tool?
+
+    https://developer.paypal.com/cgi-bin/devscr?cmd=_ipn-link-session
+
+- Provide Actions and Triggers. See LM Paypal issue http://drupal.org/node/328730
+  for further discussion.
+
+- Use drupal_write_record to save records based on the schema, instead of lots
+  of manually constructed SQL
+
+- Save the blob from the incoming IPNs, not just selected fields
+
+- Get modules "schema API happy"
+
+- Get modules E_ALL tidy

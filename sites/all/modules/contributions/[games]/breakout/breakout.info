@@ -1,0 +1,20 @@
+; $Id: breakout.info,v 1.2 2008/12/06 06:59:08 skinhat Exp $
+
+name = "Breakout"
+description = "Breakout game for drupal"
+version = "$Name: DRUPAL-6--1-4 $"
+core = 6.x
+
+; Information added by drupal.org packaging script on 2007-03-04
+version = "6.x-1.0"
+project = "breakout"
+
+
+
+
+; Information added by drupal.org packaging script on 2009-01-25
+version = "6.x-1.4"
+core = "6.x"
+project = "breakout"
+datestamp = "1232847305"
+

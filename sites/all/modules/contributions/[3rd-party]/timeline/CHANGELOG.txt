@@ -1,0 +1,58 @@
+// $Id: CHANGELOG.txt,v 1.2 2008/07/06 01:29:46 jmiccolis Exp $
+
+2008/07/05 - 5.x-1.0
+----------------------
+- Fixed various bugs related to timeline controls. (Thanks to franskuipers)
+- #165634 Fixed link array format in timeline_link.
+- #135658 Patch by KarenS - Adds date module support and end date auto-detection. 
+          You may need to update your views.
+- #99552: Update for Drupal 5.x
+
+2006/12/09 - 4.7.x-1.0
+----------------------
+- Added an option for specifying which event/date the timeline views should
+  initially be centered on after loading.
+- Fixed widget creation so that the 'Loading...' bubble is displayed.
+- #94031: Allow using custom CCK fields as the start/end date, title and
+          description of timeline events (kudos to John Stalcup).
+- #79472: Fix asynchronous timeline loading problems occuring in IE6 (kudos
+          to John Stalcup and Erwin Lion).
+- #91081: Corrected the timeline popup node links (kudos to Eric Charikane).
+- #90660: Prevented other modules (e.g. devel.module) from intefering with
+          timeline JSON or XML feed output (kudos to Steve Yelvington).
+- #90272: Extended the module's installation and usage instructions, and
+          reorganized the code for better extensibility.
+- #90272: Implemented an installation hook which verifies that the required
+          Views module is installed and enabled, and outputs a warning in
+          case it is not.
+- #90272: Implemented JSON output and added a setting for specifying whether
+          to use JSON or XML for loading the timeline data feed.
+- #90272: Simplified the XML output code by making use Drupal's built-in
+          function format_xml_elements().
+- #90272: Changed dates/times in data feed to use the ISO-8601 format, and
+          added explicit date format specifier to data feeds.
+- #90272: Added a setting for specifying the base URL to load the timeline
+          JavaScript widget from.
+- #90272: Added a setting and cache control implementation for specifying the
+          client-side cache lifetime for timeline data feeds.
+- #90272: Changed timeline data feed loading to use a relative, instead of
+          absolute, URL to counteract problems when accessing a site via
+          HTTP/HTTPS both.
+- #90272: Added an explicit UTF-8 character set specifier to the HTTP
+          Content-Type header of the data feeds.
+- #90272: Implemented some initial Simpletest unit tests for verifying the
+          well-formedness of the data feeds provided by the timeline module.
+- #90272: Implemented a best-effort workaround for the widget's timezone
+          display bugs, claiming dates are GMT while they're in fact
+          explicitly adjusted to the current user's timezone.
+- #90272: Added a wrapper DIV element around timeline DIV for easier control
+          over theming, and added a visible border around the timeline
+          widget for stylistic effect.
+- #90272: Changed the default timeline CSS class name and width, and set the
+          timeline XHTML element ID to the name of the current timeline view
+          in order to facilitate custom theming.
+- #90272: Separated timeline creation JavaScript code out of the module and
+          into a file called timeline.js; also added an initial timeline.css
+          stylesheet file.
+- #90272: Successfully tested vertical timeline views (with newest version
+          of the timeline widget).

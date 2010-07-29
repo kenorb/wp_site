@@ -1,0 +1,58 @@
+// $Id$
+
+INSTALLATION
+------------
+1. BACKUP YOUR DATABASE (if something goes wrong)
+
+2. INSTALL ADMIN MESSAGE
+   
+   Unpack the module in your sites module directory. Then browse to 
+   "Administer" -> "Site building" -> "Modules" and enable the module.
+   
+3. CONFIGURE ADMIN MESSAGE
+
+   The module provides the block "Admin messages" where the messages are listed 
+   and can be closed by the users. Enable it at "Administer" -> 
+   "Site building" -> "Blocks". You probably want to hide the block for
+   anonymous users: configure the block and check "authenticated user" at
+   "Show block for specific roles".
+   
+   You will also have to grant the "close admin messages" permission to roles
+   you would like to be able to close your admin messages.
+   
+4. CREATE A MESSAGE
+    
+   Go to "Create content" -> "Admin message" and enter a message.
+   Optionally set "Message visibility" options. It should show up in the
+   block when saved.
+   
+   NOTE: There is no access control included, just the standard access provided 
+   by Drupal, which means that all users with "access content" permission can 
+   view messages. So don't provide any sensitive information.
+
+ 5. THEMING
+ 
+   Admin messages are themed via a single theme fuction. Copy this function to
+   your theme's template.php, replace 'theme' with your theme's name, and configure
+   as needed.
+   
+   /*
+    * Theme the admin message's output
+    * 
+    * @param $node
+    *   The entire admin message node object
+    * @param $close_link
+    *   A boolean value of whether or not user has access to close the message
+    * @return
+    *   The themed output for display within the admin message block
+    */
+   function theme_admin_message_message($node, $close_link) {
+     $output  = '<div class="admin-message sticky">';
+     if($close_link) {
+       // Changing the class on the link will make the javascript no longer function.
+       $output .= l(t('Close'), 'admin_message/close/'. $node->nid, array('attributes'=>array('class' => 'admin-message-close', 'title' => t('Close this message'))));
+     }
+     $output .= node_view($node);
+     $output .= '</div>';
+     return $output;
+   }

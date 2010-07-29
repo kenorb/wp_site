@@ -1,0 +1,499 @@
+# $Id: general.pot,v 1.3.2.4 2008/07/09 14:52:43 gmarus Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  job-posting-node.tpl.php: n/a
+#  job_posting.module: n/a
+#  job_posting.info: n/a
+#  job_posting.install: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-07-09 07:31-0700\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: job-posting-node.tpl.php:24
+msgid "Reference: "
+msgstr ""
+
+#: job-posting-node.tpl.php:30
+msgid "Location: "
+msgstr ""
+
+#: job-posting-node.tpl.php:37
+msgid "Employer: "
+msgstr ""
+
+#: job-posting-node.tpl.php:44
+msgid "Application deadline: "
+msgstr ""
+
+#: job-posting-node.tpl.php:52
+msgid "Contact: "
+msgstr ""
+
+#: job-posting-node.tpl.php:59
+msgid "Url: "
+msgstr ""
+
+#: job_posting.module:38 job_posting.info:0
+msgid "Job Posting"
+msgstr ""
+
+#: job_posting.module:42
+msgid "Create a job posting announcement."
+msgstr ""
+
+#: job_posting.module:46;592
+msgid "Title"
+msgstr ""
+
+#: job_posting.module:50
+msgid "Description"
+msgstr ""
+
+#: job_posting.module:119;889;917
+msgid "Current jobs"
+msgstr ""
+
+#: job_posting.module:125;1034
+msgid "Submit an application"
+msgstr ""
+
+#: job_posting.module:132
+msgid "Job posting settings"
+msgstr ""
+
+#: job_posting.module:154
+msgid "Job reference number prefix"
+msgstr ""
+
+#: job_posting.module:155
+msgid "Enter a text string to be used as a prefix for identifying\r\n      each job posting. The full reference id is a combination of this prefix and\r\n      the job posting node id number (e.g. JOB33)."
+msgstr ""
+
+#: job_posting.module:164
+msgid "Job posting sort order"
+msgstr ""
+
+#: job_posting.module:165
+msgid "Choose whether you want job posting lists sorted by\r\n      the newest first or oldest first."
+msgstr ""
+
+#: job_posting.module:167
+msgid "Newest first"
+msgstr ""
+
+#: job_posting.module:167
+msgid "Oldest first"
+msgstr ""
+
+#: job_posting.module:174
+msgid "Job posting summaries per page"
+msgstr ""
+
+#: job_posting.module:175
+msgid "Enter the number of job posting summaries to show on the\r\n      job listing pages."
+msgstr ""
+
+#: job_posting.module:182
+msgid "Save"
+msgstr ""
+
+#: job_posting.module:195
+msgid "Per page limit must be a number greater than zero."
+msgstr ""
+
+#: job_posting.module:200
+msgid "Reference prefix must be an alphabetic string."
+msgstr ""
+
+#: job_posting.module:218
+msgid "Settings have been saved."
+msgstr ""
+
+#: job_posting.module:233
+msgid "--"
+msgstr ""
+
+#: job_posting.module:257
+msgid "Required"
+msgstr ""
+
+#: job_posting.module:258
+msgid "These fields are required and comprise the minimum\r\n      information needed to handle job posting display and processing."
+msgstr ""
+
+#: job_posting.module:270
+msgid "Provide the job title or position"
+msgstr ""
+
+#: job_posting.module:289
+msgid "Provide detailed description for this job posting"
+msgstr ""
+
+#: job_posting.module:304
+msgid "Email address"
+msgstr ""
+
+#: job_posting.module:305
+msgid "Provide a valid employer email address. This address \r\n      is not displayed in postings but is used as the destination address for\r\n      job application processing so it must be valid."
+msgstr ""
+
+#: job_posting.module:315
+msgid "Application processing"
+msgstr ""
+
+#: job_posting.module:316
+msgid "Choose whether you want job application processing\r\n      to be enabled for this job posting. Enabled nodes provide applicants\r\n      with a link for applying to a particular job by email. Pick disabled if\r\n      you'd prefer to provide the posting as 'information only'."
+msgstr ""
+
+#: job_posting.module:320
+msgid "Enabled"
+msgstr ""
+
+#: job_posting.module:320
+msgid "Disabled"
+msgstr ""
+
+#: job_posting.module:327
+msgid "Expires"
+msgstr ""
+
+#: job_posting.module:328
+msgid "Choose whether you want this job posting to have an\r\n      application deadline associated with it. Expiring nodes are automatically \r\n      de-activated and purged from display views once the specified deadline \r\n      passes. Pick false if you want this posting to remain active until manually \r\n      removed."
+msgstr ""
+
+#: job_posting.module:333
+msgid "True"
+msgstr ""
+
+#: job_posting.module:333
+msgid "False"
+msgstr ""
+
+#: job_posting.module:340
+msgid "Application deadline"
+msgstr ""
+
+#: job_posting.module:341
+msgid "Set an application deadline for this posting, unless\r\n      you chose 'false' for the 'expires' field listed above (in which case\r\n      these fields are ignored). This value is used to determine the amount \r\n      of time remaining before the posting will be removed from list/block views \r\n      and hence, no longer eligible for job application processing."
+msgstr ""
+
+#: job_posting.module:350
+msgid "Deadline date"
+msgstr ""
+
+#: job_posting.module:351
+msgid "Set the deadline date."
+msgstr ""
+
+#: job_posting.module:373
+msgid "Deadline hour"
+msgstr ""
+
+#: job_posting.module:374
+msgid "Set the deadline hour of day."
+msgstr ""
+
+#: job_posting.module:386
+msgid "Optional"
+msgstr ""
+
+#: job_posting.module:387
+msgid "These fields are optional and not needed for application\r\n      processing. Any empty fields will be omitted from display."
+msgstr ""
+
+#: job_posting.module:393
+msgid "Location"
+msgstr ""
+
+#: job_posting.module:394
+msgid "The geographical location associated with this job posting."
+msgstr ""
+
+#: job_posting.module:401
+msgid "City"
+msgstr ""
+
+#: job_posting.module:403
+msgid "Provide the city location for this job posting"
+msgstr ""
+
+#: job_posting.module:414
+msgid "State/Province"
+msgstr ""
+
+#: job_posting.module:415
+msgid "Provide the state or province location for this job posting"
+msgstr ""
+
+#: job_posting.module:422
+msgid "Country"
+msgstr ""
+
+#: job_posting.module:423
+msgid "Select the country location for this job posting"
+msgstr ""
+
+#: job_posting.module:431
+msgid "Employer"
+msgstr ""
+
+#: job_posting.module:432
+msgid "The person or organization sponsoring this job posting."
+msgstr ""
+
+#: job_posting.module:437
+msgid "Name"
+msgstr ""
+
+#: job_posting.module:438
+msgid "Enter the employer or organization name or leave blank\r\n      if the site only supports its own job listings"
+msgstr ""
+
+#: job_posting.module:446
+msgid "Website url"
+msgstr ""
+
+#: job_posting.module:447
+msgid "Supply a valid website url for the employer"
+msgstr ""
+
+#: job_posting.module:454
+msgid "Contact person"
+msgstr ""
+
+#: job_posting.module:455
+msgid "Supply the name of the employer contact person \r\n      related to the job posting"
+msgstr ""
+
+#: job_posting.module:478
+msgid "Deadline date must be set \r\n        for some time in the future."
+msgstr ""
+
+#: job_posting.module:488
+msgid "Deadline hour must be set \r\n        for some time in the future."
+msgstr ""
+
+#: job_posting.module:495
+msgid "That email address does not \r\n        appear to be valid."
+msgstr ""
+
+#: job_posting.module:502
+msgid "The website address you provided must be in\r\n        proper url format (e.g. http://www.example.com)"
+msgstr ""
+
+#: job_posting.module:550
+msgid "The application deadline for this job posting has passed. \r\n        Although you can still view the information no new applications for\r\n        this job are currently being accepted."
+msgstr ""
+
+#: job_posting.module:593
+msgid "@title (@reference)"
+msgstr ""
+
+#: job_posting.module:598
+msgid "Applicant"
+msgstr ""
+
+#: job_posting.module:604
+msgid "Cover letter"
+msgstr ""
+
+#: job_posting.module:605
+msgid "@coverletter"
+msgstr ""
+
+#: job_posting.module:608
+msgid "Enter your introductory covering letter."
+msgstr ""
+
+#: job_posting.module:614
+msgid "Attach resume"
+msgstr ""
+
+#: job_posting.module:615
+msgid "Choose a resume file to upload along with your \r\n      covering letter. Files must not exceed 1M in size and can use only \r\n      the following extensions: txt doc pdf."
+msgstr ""
+
+#: job_posting.module:620
+msgid "Send"
+msgstr ""
+
+#: job_posting.module:668;674
+msgid "!error"
+msgstr ""
+
+#: job_posting.module:726
+msgid "Your application has been submitted. Thank you."
+msgstr ""
+
+#: job_posting.module:730
+msgid "A confirmation message has been sent to "
+msgstr ""
+
+#: job_posting.module:747;758
+msgid "!subject"
+msgstr ""
+
+#: job_posting.module:749
+msgid "!content"
+msgstr ""
+
+#: job_posting.module:760
+msgid "!message"
+msgstr ""
+
+#: job_posting.module:895
+msgid "Number of job postings to display"
+msgstr ""
+
+#: job_posting.module:922;945
+msgid "No job postings to display"
+msgstr ""
+
+#: job_posting.module:1021
+msgid "CLOSED"
+msgstr ""
+
+#: job_posting.module:1042
+msgid "<a href=\"@login\">Login</a> or <a href=\"@register\">register</a> to submit an application"
+msgstr ""
+
+#: job_posting.module:1048
+msgid "<a href=\"@login\">Login</a> to submit an application"
+msgstr ""
+
+#: job_posting.module:1066
+msgid "More jobs"
+msgstr ""
+
+#: job_posting.module:1067
+msgid "View more job postings"
+msgstr ""
+
+#: job_posting.module:1167
+msgid "1 week "
+msgid_plural "@count weeks "
+msgstr[0] ""
+msgstr[1] ""
+
+#: job_posting.module:1171
+msgid " 1 day "
+msgid_plural " @count days "
+msgstr[0] ""
+msgstr[1] ""
+
+#: job_posting.module:1175
+msgid " 1 hour "
+msgid_plural " @count hours "
+msgstr[0] ""
+msgstr[1] ""
+
+#: job_posting.module:1179
+msgid " 1 minute"
+msgid_plural " @count minutes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: job_posting.module:71
+msgid "create job posting"
+msgstr ""
+
+#: job_posting.module:73
+msgid "edit job posting"
+msgstr ""
+
+#: job_posting.module:75
+msgid "edit own job posting"
+msgstr ""
+
+#: job_posting.module:136
+msgid "Change administrative settings for job postings."
+msgstr ""
+
+#: job_posting.module:0
+msgid "job_posting"
+msgstr ""
+
+#: job_posting.install:320
+msgid "Stores node data particular to job postings."
+msgstr ""
+
+#: job_posting.install:334
+msgid "Holds the {node}.nid this posting refers to."
+msgstr ""
+
+#: job_posting.install:348
+msgid "Holds the most recent {node_revisions}.vid \r\n          for this nid."
+msgstr ""
+
+#: job_posting.install:358
+msgid "Holds the string identifying the city location \r\n          for the job posting."
+msgstr ""
+
+#: job_posting.install:366
+msgid "Holds the string identifing the state/province \r\n          location for the job posting."
+msgstr ""
+
+#: job_posting.install:374
+msgid "Holds the {job_posting_country}.cid country \r\n          location for the job posting."
+msgstr ""
+
+#: job_posting.install:382
+msgid "Holds the string employer name sponsoring the job \r\n          posting."
+msgstr ""
+
+#: job_posting.install:390
+msgid "Holds the string identifying the employer \r\n          website url."
+msgstr ""
+
+#: job_posting.install:398
+msgid "Holds string identifying the name of the \r\n          main contact person."
+msgstr ""
+
+#: job_posting.install:406
+msgid "Holds string identifying contact person email address."
+msgstr ""
+
+#: job_posting.install:416
+msgid "Holds an integer unix timestamp denoting the \r\n          deadline for job posting applications, in the poster's localtime."
+msgstr ""
+
+#: job_posting.install:426
+msgid "Holds an int representing a boolean denoting whether\r\n          a node should expire after the timestamp in {job_posting}.deadline has passed."
+msgstr ""
+
+#: job_posting.install:450
+msgid "Stores information on countries."
+msgstr ""
+
+#: job_posting.install:456
+msgid "Holds an autoincrementing primary id for each country."
+msgstr ""
+
+#: job_posting.install:463
+msgid "Holds a string denoting the official country name."
+msgstr ""
+
+#: job_posting.install:487
+msgid "Holds an int representing a boolean denoting whether\r\n        a node should expire after the timestamp in {job_posting}.deadline has passed."
+msgstr ""
+
+#: job_posting.install:503
+msgid "Holds an int representing a boolean denoting whether\r\n        a node should provide application processing (1) or for information only (0)."
+msgstr ""
+
+#: job_posting.info:0
+msgid "Lightweight module for the creation of job posting nodes and basic job application processing"
+msgstr ""
+

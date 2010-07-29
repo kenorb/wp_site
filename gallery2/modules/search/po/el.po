@@ -1,0 +1,108 @@
+# $Id: el.po 18174 2008-10-17 07:52:33Z andy_st $
+#
+# Gallery - a web based photo album viewer and editor
+# Copyright (C) 2000-2008 Bharat Mediratta
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA  02110-1301, USA.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Gallery: Search 1.0.8\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-09-15 18:28+0000\n"
+"PO-Revision-Date: 2007-03-24 22:29+0200\n"
+"Last-Translator: Anthi Andreou <tp_s@hotmail.com>\n"
+"Language-Team: Greek <gallery-devel@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Greek\n"
+"X-Poedit-Country: GREECE\n"
+
+msgid "Gallery Search"
+msgstr "Αναζήτηση Γκαλερί"
+
+msgid "Search"
+msgstr "Αναζήτηση"
+
+msgid "Search your Gallery"
+msgstr "Αναζητήστε στην Γκαλερί σας"
+
+msgid "Gallery"
+msgstr "Γκαλερί"
+
+msgid "Search the Gallery"
+msgstr "Αναζητήστε στην Γκαλερί"
+
+msgid "You must enter some text to search for!"
+msgstr "Πρέπει να γράψετε κάποιο κείμενο για αναζήτηση!"
+
+msgid "Check All"
+msgstr "Επιλογή Όλων"
+
+msgid "Uncheck All"
+msgstr "Καμία Επιλογή"
+
+msgid "Invert"
+msgstr "Αντιστροφή"
+
+#, c-format
+msgid "Results %d - %d"
+msgstr "Αποτελέσματα %d - %d"
+
+#, c-format
+msgid "Show all %d"
+msgstr "Προβολή Όλων %d"
+
+msgid "No thumbnail"
+msgstr "Καμία Μικρογραφία"
+
+msgid "No results found for"
+msgstr "Δεν βρέθηκε κανένα αποτέλεσμα για"
+
+msgid "View these results in a slideshow"
+msgstr "Δέστε τα αποτελέσματα σε slideshow"
+
+#, c-format
+msgid "%s Search Results for "
+msgstr "%s Αποτελέσματα αναζήτησης για"
+
+msgid "Search All Modules"
+msgstr "Αναζήτησε σε όλα τα modules"
+
+#, c-format
+msgid "Results %d - %d of %d, Page %d of %d"
+msgstr "Αποτελέσματα %d - %d από %d, Σελίδα %d από %d"
+
+msgid "&laquo; Back"
+msgstr "&laquo; Πίσω"
+
+msgid "Next &raquo;"
+msgstr "Επόμενη &raquo;"
+
+msgid "Please enter a search term."
+msgstr "Παρακαλούμε δώστε τον όρο αναζήτησης"
+
+msgid "Searching in progress, please wait!"
+msgstr ""
+
+msgid "Advanced Search"
+msgstr "Προχωρημένη Αναζήτηση"
+
+msgid "Search box"
+msgstr "Κουτί Αναζήτησης"
+
+msgid "Show advanced link"
+msgstr "Εμφάνιση συνδέσμου προχωρημένης αναζήτησης"

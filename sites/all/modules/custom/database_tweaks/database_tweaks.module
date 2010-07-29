@@ -1,0 +1,98 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Database tweaks MySQL settings on heavy websites
+ *
+ * @author Rafal Wieczorek <kenorb@gmail.com>
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function database_tweaks_menu() { 
+  // This is the minimum information you can provide for a menu item.
+  $items['admin/settings/db_tweaks'] = array(
+    'title' => 'Database Tweaks',
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('database_tweaks_settings_form'), 
+    'access arguments' => array('administer database'),
+    'type' => MENU_NORMAL_ITEM, // One of MENU_NORMAL_ITEM / MENU_CALLBACK / MENU_SUGGESTED_ITEM / MENU_LOCAL_TASK / MENU_DEFAULT_LOCAL_TASK
+    'weight' => 10,
+    'file' => 'database_tweaks.admin.inc', 
+);
+
+  return $items;
+}
+
+
+/**
+ * Implementation of hook_init().
+ */
+function database_tweaks_init() {
+    global $db_type;
+    switch ($db_type) {
+        case 'mysql':
+        case 'mysqli':
+            // get actual variables from database
+            $default_sql_big_selects = database_tweaks_get_mysql_sql_big_selects();
+            $default_max_join_size = database_tweaks_get_mysql_max_join_size();
+            $default_max_allowed_packet = database_tweaks_get_mysql_max_allowed_packet();
+
+            // get actual variables from configuration
+            $sql_big_selects = variable_get('mysql_sql_big_selects', $default_sql_big_selects);
+            $max_join_size = variable_get('mysql_max_join_size', $default_max_join_size);
+            $max_allowed_packet = variable_get('max_allowed_packet', $default_max_allowed_packet);
+
+            // update mysql settings if necessary
+            if ($default_sql_big_selects !== $sql_big_selects) {
+                db_query("SET SESSION sql_big_selects=%d",$sql_big_selects);
+            }
+            if (!$sql_big_selects && $default_max_join_size !== $max_join_size && is_numeric($max_join_size)) {
+                db_query("SET SESSION sql_max_join_size=%d",$max_join_size);
+            }
+            if ($default_max_allowed_packet !== $max_allowed_packet && is_numeric($max_allowed_packet)) {
+                db_query("SET SESSION max_allowed_packet=%d",$max_allowed_packet*1024);
+            }
+        case 'pgsql':
+    }
+}
+
+
+/**
+ * Implementation of hook_perm().
+ */
+function database_tweaks_perm() {
+   return array('administer database');
+}
+
+/**
+ * Implementation of form callback
+ */
+function database_tweaks_form() {
+   return array('administer database');
+}
+
+/**
+ * Return MySQL global MAX_JOIN_SIZE value
+ */
+function database_tweaks_get_mysql_max_join_size() {
+    return db_fetch_object(db_query('SHOW GLOBAL VARIABLES LIKE "max_join_size"'))->Value;
+}
+
+/**
+ * Return MySQL global SQL_BIG_SELECTS value
+ */
+function database_tweaks_get_mysql_sql_big_selects() {
+    $big_selects = db_fetch_object(db_query('SHOW GLOBAL VARIABLES LIKE "sql_big_selects"'))->Value;
+    return $big_selects == 'ON' ? TRUE : FALSE;
+}
+
+/**
+ * Return MySQL global MAX_ALLOWED_PACKET value
+ */
+function database_tweaks_get_mysql_max_allowed_packet() {
+    return db_fetch_object(db_query('SHOW SESSION VARIABLES LIKE "max_allowed_packet"'))->Value/1024;
+}
+

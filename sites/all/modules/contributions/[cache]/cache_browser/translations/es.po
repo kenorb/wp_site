@@ -1,0 +1,182 @@
+# $Id: es.po,v 1.1.2.1 2008/10/26 02:44:11 markuspetrux Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  cache_browser.pages.inc,v 1.1.2.2 2008/09/18 01:29:53 markuspetrux
+#  cache_browser.module,v 1.1.2.3 2008/09/18 01:29:53 markuspetrux
+#  cache_browser.info,v 1.1 2008/09/15 02:55:44 markuspetrux
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: cache_browser 6.x-1.x\n"
+"POT-Creation-Date: 2008-10-26 02:55+0100\n"
+"PO-Revision-Date: 2008-10-26 02:55+0100\n"
+"Last-Translator: markus_petrux <EMAIL@ADDRESS>\n"
+"Language-Team: Spanish <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\\n\n"
+
+#: cache_browser.pages.inc:24
+msgid "Table"
+msgstr "Tabla"
+
+#: cache_browser.pages.inc:25
+msgid "Description"
+msgstr "Descripción"
+
+#: cache_browser.pages.inc:26
+msgid "Entries"
+msgstr "Objetos"
+
+#: cache_browser.pages.inc:27;93
+msgid "Size (KB)"
+msgstr "Tamaño (KB)"
+
+#: cache_browser.pages.inc:28
+msgid "Last updated"
+msgstr "Última actualización"
+
+#: cache_browser.pages.inc:29;96
+msgid "Actions"
+msgstr "Acciones"
+
+#: cache_browser.pages.inc:49;113;393;587;596
+msgid "bytes"
+msgstr "bytes"
+
+#: cache_browser.pages.inc:53;57
+msgid "N/A"
+msgstr "N/D"
+
+#: cache_browser.pages.inc:57
+msgid "Reset"
+msgstr "Restablecer"
+
+#: cache_browser.pages.inc:92
+msgid "Entry ID"
+msgstr "ID del Objeto"
+
+#: cache_browser.pages.inc:94;391
+msgid "Created"
+msgstr "Creado"
+
+#: cache_browser.pages.inc:95;392
+msgid "Expires"
+msgstr "Expira"
+
+#: cache_browser.pages.inc:125;255
+msgid "Delete"
+msgstr "Borrar"
+
+#: cache_browser.pages.inc:135
+msgid "No cache tables found."
+msgstr "No se han encontrado tablas de cache."
+
+#: cache_browser.pages.inc:135
+msgid "No cache entries found."
+msgstr "No se han encontrado objetos en esta tabla de cache."
+
+#: cache_browser.pages.inc:216
+msgid "Are you sure you want to reset table <strong>!cache_table</strong>?"
+msgstr "¿Está seguro que quiere borrar el contenido de la tabla <strong>!cache_table</strong>?"
+
+#: cache_browser.pages.inc:218;255
+msgid "This action cannot be undone."
+msgstr "Esta acción no puede revertirse."
+
+#: cache_browser.pages.inc:218
+msgid "Confirm"
+msgstr "Confirmar"
+
+#: cache_browser.pages.inc:218;255
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: cache_browser.pages.inc:253
+msgid "Are you sure you want to delete the entry <strong>!entry</strong> from table <strong>!cache_table</strong>?"
+msgstr "¿Está seguro que quiere borrar el objeto <strong>!entry</strong> de la tabla <strong>!cache_table</strong>?"
+
+#: cache_browser.pages.inc:339
+msgid "Permanent"
+msgstr "Permanente"
+
+#: cache_browser.pages.inc:342
+msgid "Temporary"
+msgstr "Temporal"
+
+#: cache_browser.pages.inc:393;596
+msgid "Size"
+msgstr "Tamaño"
+
+#: cache_browser.pages.inc:394
+msgid "Cache entry"
+msgstr "Objeto de cache"
+
+#: cache_browser.pages.inc:402
+msgid "Cached headers"
+msgstr "Cabeceras del objeto en cache"
+
+#: cache_browser.pages.inc:447;490
+msgid "RECURSION"
+msgstr ""
+
+#: cache_browser.pages.inc:455;498
+msgid "NESTING-TOO-DEEP"
+msgstr ""
+
+#: cache_browser.pages.inc:546
+msgid "Expand all"
+msgstr "Expandir todo"
+
+#: cache_browser.pages.inc:548
+msgid "Collapse all"
+msgstr "Contraer todo"
+
+#: cache_browser.pages.inc:561
+msgid "Data dump"
+msgstr "Volcado de datos"
+
+#: cache_browser.pages.inc:573
+msgid "Cache"
+msgstr ""
+
+#: cache_browser.pages.inc:583
+msgid "Tables"
+msgstr "Tablas"
+
+#: cache_browser.pages.inc:583
+msgid "Items"
+msgstr "Elementos"
+
+#: cache_browser.pages.inc:602
+msgid "Current time"
+msgstr "Hora actual"
+
+#: cache_browser.module:22
+msgid "This module allows authorized users browse, dump and reset the content of Drupal cache tables. For developers, function <code>cbdump($mixed [,$varname])</code> is provided as an alternative to <code>var_dump()</code> for debugging purposes."
+msgstr "Este módulo permite a usuarios autorizados visualizar y gestionar el contenido de la tablas de cache de Drupal. Para desarrolladores, también se proporciona la función <code>cbdump($mixed [,$varname])</code> como alternativa a <code>var_dump()</code> para la depuración del código."
+
+#: cache_browser.module:30
+msgid "administer cache tables"
+msgstr "administrar tablas de cache"
+
+#: cache_browser.module:39 cache_browser.info:0
+msgid "Cache browser"
+msgstr ""
+
+#: cache_browser.module:0
+msgid "cache_browser"
+msgstr ""
+
+#: cache_browser.info:0
+msgid "Visualizar y gestionar el contenido de la tablas de cache de Drupal. Para desarrolladores, también se proporciona la función <code>cbdump($mixed [,$varname])</code> como alternativa a <code>var_dump()</code> para la depuración del código."
+msgstr ""
+
+#: cache_browser.info:0
+msgid "Administration"
+msgstr "Administración"
+

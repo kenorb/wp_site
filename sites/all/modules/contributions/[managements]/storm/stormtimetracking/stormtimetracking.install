@@ -1,0 +1,46 @@
+<?php
+// $Id: stormtimetracking.install,v 1.2.4.1 2008/07/21 07:28:34 robertogerola Exp $
+
+/**
+ * @file
+ */
+
+function stormtimetracking_install() {
+  drupal_install_schema('stormtimetracking');
+}
+
+function stormtimetracking_uninstall() {
+  drupal_uninstall_schema('stormtimetracking');
+}
+
+function stormtimetracking_schema() {
+  $schema['stormtimetracking'] = array(
+    'fields'                => array(
+      'vid'                 => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'nid'                 => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'organization_nid'    => array('type' => 'int'),
+      'organization_title'  => array('type' => 'varchar', 'length' => 128),
+      'project_nid'         => array('type' => 'int'),
+      'project_title'       => array('type' => 'varchar', 'length' => 128),
+      'task_nid'            => array('type' => 'int'),
+      'task_stepno'         => array('type' => 'varchar', 'length' => 128),
+      'task_title'          => array('type' => 'varchar', 'length' => 128),
+      'ticket_nid'          => array('type' => 'int'),
+      'ticket_title'        => array('type' => 'varchar', 'length' => 128),
+      'trackingdate'        => array('type' => 'int'),
+      'timebegin'           => array('type' => 'varchar', 'length' => 5),
+      'timeend'             => array('type' => 'varchar', 'length' => 5),
+      'duration'            => array('type' => 'float'),
+      'billable'            => array('type' => 'int'),
+    ),
+    'primary key' => array('vid', 'nid'),
+  );
+
+  return $schema;
+}
+
+function stormtimetracking_update_1() {
+  $ret = array();
+  db_add_field($ret, 'stormtimetracking', 'billable', array('type' => 'int'));
+  return $ret;
+}

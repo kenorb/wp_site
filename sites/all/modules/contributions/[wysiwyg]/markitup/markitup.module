@@ -1,0 +1,410 @@
+<?php
+// $Id: 
+
+/**
+ * @file
+ * Enables the markitup universal content editor jQuery plugin.
+ */
+
+// Define the path for the module.
+define("MARKITUP_PATH", drupal_get_path('module', 'markitup'));
+
+/**
+ * Implementation of hook_perm().
+ */
+function markitup_perm() {
+  return array('administer markitup', 'use markitup editor');
+}
+
+
+/**
+ * Implementation of hook_menu().
+ */
+function markitup_menu() {
+  $items['admin/settings/markitup'] = array(
+    'title' => 'markItUp Editor',
+    'description' => 'Edit content editor settings.',
+    'page callback' => 'markitup_admin_overview',
+    'access arguments' => array('administer markitup'),
+    'file' => 'markitup.admin.inc',
+  );
+  $items['admin/settings/markitup/overview'] = array(
+    'title' => 'Overview',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
+  );
+  $items['admin/settings/markitup/add'] = array(
+    'title' => 'Add markItUp Editor',
+    'page callback' => 'markitup_editor_page',
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => array('administer markitup'),
+    'file' => 'markitup.admin.inc',
+    'weight' => 1,
+  );
+  $items['admin/settings/markitup/%markitup_editor/edit'] = array(
+    'title' => 'Edit markItUp Editor',
+    'page callback' => 'markitup_editor_page',
+    'page arguments' => array(3),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('administer markitup'),
+    'file' => 'markitup.admin.inc',
+  );
+  $items['admin/settings/markitup/delete'] = array(
+    'title' => 'Delete markItUp Editor',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('markitup_editor_delete'),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('administer markitup'),
+    'file' => 'markitup.admin.inc',
+  );
+
+  return $items;
+}
+
+
+/**
+* Menu callback; menu wildcard loader for markItUp Editors.
+*/
+function markitup_editor_load($meid) {
+
+  if (!is_numeric($meid)) {
+    return FALSE;
+  }
+
+  // Use markitup_editors to check for an editor with matching $meid
+  $editors = markitup_editors($meid);
+  //drupal_set_message('<pre>'. var_export($editors,TRUE) .'</pre>');
+  if (!isset($editors)) {
+    return FALSE;
+  }
+
+  return $editors;
+}
+
+
+/**
+ * Retrieve a list of markItUp Editors.
+ */
+function markitup_editors($meid = NULL) {
+
+  $query = "SELECT * FROM {markitup_editors}";
+  $results = db_query($query);
+  while ($editor = db_fetch_array($results)) {
+    $editors[$editor['meid']] = $editor;
+  }
+
+  if (isset($meid)) {
+    // See if we've gotten a $meid argument (probably from menu callack) and if
+    // so, return just the one editor's meid.
+    return isset($editors[$meid]) ? $editors[$meid] : FALSE;
+  }
+  // return an array of editors
+  return $editors;
+}
+
+
+/**
+ * Retrieve a list of markItUp Editor and Input Format associations.
+ */
+function markitup_editors_formats($full = FALSE) {
+  if ($full) {
+    // if $full is TRUE, we also want the info from the markitup_editors table.
+    $query = "SELECT * FROM {markitup_editors_formats} a LEFT OUTER JOIN {markitup_editors} b ON a.meid = b.meid;";
+  }
+  else {
+    $query = "SELECT * FROM {markitup_editors_formats} order by format";
+  }
+  $results = db_query($query);
+  $editors_formats = array();
+  while ($editor_format = db_fetch_array($results)) {
+    $editors_formats[$editor_format['format']] = $editor_format;
+  }
+  // return an array of editor and format associations.
+  return $editors_formats;
+}
+
+
+/**
+ * Internal function to get and then clean up directories lists.
+ */
+function _markitup_dirs($dir) {
+  // Use $dir (which will be a plugin directory either skins or sets) to get
+  // a listing of sub-directories and feed them to $dirs.
+  $subdirs = scandir(MARKITUP_PATH .'/markitup/'. $dir);
+  $options = array();
+  // Clean our paths for security, since they'll be displayed in HTML.
+  // Also, we want an array where the key and value match.
+  foreach ($subdirs as $subdir) {
+  	if (strpos($subdir, '.') !== 0 /*&& (file_exists(MARKITUP_PATH . "/markitup/{$subdir}/set.js") || file_exists(MARKITUP_PATH . "/markitup/{$subdir}/style.css"))*/) {  		
+	    $options[$subdir] = $subdir;
+  	}
+  }
+  return $options;
+}
+
+
+/**
+ * Invoke the markItUp plugin. Setup js and css.
+ */
+function markitup() {
+
+  // Main markItUp js package.
+//  drupal_add_js(MARKITUP_PATH ."/markitup/jquery.markitup.pack.js", 'module', $scope = 'footer');
+  drupal_add_js(MARKITUP_PATH ."/markitup/jquery.markitup.js", 'module', $scope = 'footer');
+
+  $editors_formats = markitup_editors_formats($full = TRUE);
+
+  // We want to add all the js and css (for skins and sets) for each editor
+  // associated with an input format, since the editor will switch with the input
+  // format selected. In the case of users who don't have perms to change input
+  // formats, they'll just use the default input format and matching editor.
+  foreach ($editors_formats as $editor_format) {
+    // If an meid == 0, skip it. It was a "- none -" selection, i.e. no editor
+    // associated with the format.
+    if ($editor_format['meid'] != 0) {
+      $editors = markitup_editors($editor_format['meid']);
+    //  print_r($editor_format['meid']);
+      drupal_add_css(MARKITUP_PATH ."/markitup/skins/{$editors['skin']}/style.css", $type = 'theme');
+      drupal_add_css(MARKITUP_PATH ."/markitup/sets/{$editors['miu_set']}/style.css", $type = 'theme');
+    
+      drupal_add_js(MARKITUP_PATH ."/markitup/sets/{$editors['miu_set']}/set.js", 'module', $scope = 'footer');  
+    }
+  }
+  
+  // CSS for Drupal integration
+  drupal_add_css(MARKITUP_PATH ."/markitup.css", $type = 'module', $media = 'all', $preprocess = TRUE); 
+
+  // Build js to invoke markitup.
+  $invoke_markitup = 'if (Drupal.jsEnabled) {';
+  $invoke_markitup .= "\n";
+  
+  // Retrieve our textarea IDs.
+  $ids = variable_get('markitup_ids', '');
+
+  $textareas = array();
+  if (!empty($ids)) {
+    $textareas = explode("\r\n", $ids);
+  }
+  else {
+    $textareas[] = 'edit-body';
+  }
+
+  // Set up the textareaIDs array for our js.  
+  $invoke_markitup .= 'var textareaIDs = new Array();';
+  $invoke_markitup .= "\n";
+  foreach($textareas as $id) {
+    static $i = 0; // IS STARTING AT ZERO OKAY? OR WILL IT MISMATCH US SOMEWHERE?
+    // Write a selector for the textarea.
+    $invoke_markitup .= 'textareaIDs['. $i .'] = "'. $id .'";';
+    $invoke_markitup .= "\n";
+    $i++;
+  }
+
+// Setup our array associating formats and editor details - the editorsFormats
+// array.
+
+  // Write JS array for use in editor switching.
+  $invoke_markitup .= 'var editorsFormats = new Array();';
+  $invoke_markitup .= "\n";
+
+  foreach ($editors_formats as $js_editor_format) {
+    // add to our array.
+    $invoke_markitup .= 'editorsFormats['. $js_editor_format['format'] .'] = [\''. $js_editor_format['skin'] .'\', \''. $js_editor_format['miu_set'] .'\'];';
+    $invoke_markitup .= "\n";
+  }
+
+// Set up our default editor values for the js. We can draw upon the PHP
+// $defaults object we setup, for variables like defaultSet.
+
+  $default_format = variable_get('filter_default_format', 1);
+
+  $results = db_query("SELECT * FROM {markitup_editors_formats} a LEFT OUTER JOIN {markitup_editors} b ON a.meid = b.meid WHERE a.format = '%s';", $default_format);
+  $defaults = db_fetch_object($results);
+
+  // Set up our default set.
+  $invoke_markitup .= 'var defaultSet';
+  $invoke_markitup .= "\n";
+  $invoke_markitup .= 'defaultSet = "'. $defaults->miu_set .'"';
+  $invoke_markitup .= "\n";
+
+// The function used to invoke markitup.
+  $invoke_markitup .= '
+    var miuSet;
+    
+    
+    function markitup_invoke(textareaIDs, defaultSet, miuSet) {
+      //alert("textareaIDs: "+textareaIDs);
+      //alert("defaultSet: "+defaultSet);
+      //alert("miuSet: "+miuSet);
+      (miuSet) ? (miuSet = miuSet) : (miuSet = defaultSet);
+      
+      $(document).ready(function() {
+        // Invoke the markItUp editor for all visible textareas (preventing)
+        // trouble with the Drupal teaser splitter.
+        
+        function markitup_call(textareaID, set) {
+          // markItUp wants the name of the set presented to it as an object.
+          // So evaluate the set name in variable variable fashion.
+          setArg = eval("mySettings");
+          
+          // Call the markitup plugin.
+          $("textarea#" + textareaID + ":visible").markItUp(setArg);
+        }
+        
+        // Iterate through our list of textareaIDs setting up the calls.
+        $.each(textareaIDs, function(i, n) {
+          markitup_call(n, miuSet);
+        });
+        
+        // Remove the Drupal grippie textarea resizer, since markItUp! comes
+        // with its own.
+        $("div.grippie").remove();
+      });
+    }';
+  
+  $invoke_markitup .= '
+    // Trigger markItUp for first time. It will invoke the editor for the
+    // default input format.
+    //alert("textareaIDs" + textareaIDs);
+    //alert("defaultSet: " + defaultSet);
+    markitup_invoke(textareaIDs, defaultSet);
+  }';
+
+  drupal_add_js($invoke_markitup, 'inline', $scope = 'footer'); 
+
+  // If we've invoked markitup, turn off the teaser.
+  if (!empty($invoke_markitup)) {
+    // Let's avoid the issues that arise if the textarea splitter is on.
+    $turnoff_teaser = ' 	 
+      if (Drupal.jsEnabled) { 	 
+        // Skip out of teaser splitter as defined in teaser.js. 	 
+        Drupal.behaviors.teaser = function(context) { 	 
+          return;
+        }
+      }
+    '; 	 
+    drupal_add_js($turnoff_teaser, 'inline', $scope = 'footer');
+  }
+
+  // Get the default input format, if it's not been set, default to 1 - filtered HTML.
+  // TO DO: In the future we could add input format default matching.
+  $default_format = variable_get('filter_default_format', 1);
+
+  // For stylesheet switching (aka, changing editors) we want to turn off all editors, then turn only one on
+  $editor_switching = '
+    if (Drupal.jsEnabled) {
+      // set our default
+      var defaultEditor = editorsFormats['. $default_format .'];
+      
+      // turn off editor skin css files
+      function markitup_editors_off() {
+        // onclick of input format, disable all skin css
+        $("link[@href*=markitup/skins]").each(function() {
+          this.disabled = true;
+        });
+        // disable all set css as well
+        $("link[@href*=markitup/sets]").each(function() {
+          this.disabled = true;
+        });
+        
+      }
+      
+      // turn on editor skin css file
+      function markitup_editor_css_on(skin, muiSet) {
+        // find each link where the href contains a string match and then iterate through each
+        $("link[@href*="+skin+"/style.css]").each(function() {
+          this.disabled = false;
+        });
+        
+        $("link[@href*="+muiSet+"/style.css]").each(function() {
+          this.disabled = false;
+        });
+        
+        //alert("skin: "+skin);
+        //alert("set: "+miuSet);
+      }
+      
+      // initial state. we load all the editors on the page, but only want one on by default
+      markitup_editors_off();
+      markitup_editor_css_on(defaultEditor[0], defaultEditor[1]);
+      //alert("0 (skin): "+defaultEditor[0]);
+      //alert("1 (set): "+defaultEditor[1]);
+      
+      // if user clicks on div with id containing format-[n]-wrapper, switch editor to match the clicked on format
+      function markitup_editor_switch(i) {
+        //alert(i);
+        // Listen for clicks...
+        $("div[@id*=format-" + i + "-wrapper]").click(function() {
+          //alert(i);
+          
+          markitup_editors_off();
+          
+          //remove formatting....
+          $("textarea").markItUpRemove();
+          
+          markitup_editor_css_on(editorsFormats[i][0], editorsFormats[i][1]);
+          //alert(editorsFormats[i][0]);
+          //alert(editorsFormats[i][1]);
+          
+          // Invoke markItUp if we have values for the editor
+          if ((editorsFormats[i][0] != \'\') || (editorsFormats[i][1] != \'\')) {
+            miuSet = editorsFormats[i][1];
+            markitup_invoke(textareaIDs, defaultSet, miuSet);
+          }
+        } );
+      }
+      
+      // iterate through our editorsFormats relationships and setup the switch code
+      $.each(editorsFormats, function(i, n) {
+        //alert("sending you i: "+i);
+        markitup_editor_switch(i);
+      });
+
+    }
+  ';
+  drupal_add_js($editor_switching, 'inline', $scope = 'footer');
+
+}
+
+
+/**
+ * Implmentation of hook_init().
+ */
+function markitup_init() {
+  // Invoke the loading of our js and css if user has permission.
+  if (user_access('use markitup editor')) {
+    //  Thank you block.module (and yui_editor module :P )
+    $path = drupal_get_path_alias($_GET['q']);
+    $regexp = '/^('. preg_replace(array('/(\r\n?|\n)/', '/\\\\\*/', '/(^|\|)\\\\<front\\\\>($|\|)/'), array('|', '.*', '\1'. preg_quote(variable_get('site_frontpage', 'node'), '/') .'\2'), preg_quote(variable_get("markitup_include", ''), '/')) .')$/';
+   
+    $markitup_include = variable_get("markitup_include", "");
+    if(preg_match($regexp, $path) or empty($markitup_include)) {
+      markitup();
+    }
+  }
+}
+
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function markitup_form_alter(&$form, $form_state, $form_id){
+//drupal_set_message('<pre>$form = '. var_export($form,TRUE) .'</pre>');
+
+  switch($form_id) {
+    case 'filter_admin_delete':
+      // If an input format is deleted via the input formats section, clean up
+      // the markitup_editors_formats table.
+      $form['#submit'][] = 'markitup_format_delete';
+     break;
+  }
+}
+
+/**
+ * Custom submit handler, overriding filter_admin_delete(). (See
+ * markitup_form_alter()).
+ */
+function markitup_format_delete($form, &$form_state) {
+  db_query("DELETE FROM {markitup_editors_formats} WHERE format = %d", $form_state['values']['format']);
+  $form_state['redirect'] = 'admin/settings/filters';
+}

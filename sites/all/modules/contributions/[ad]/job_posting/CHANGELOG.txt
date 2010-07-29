@@ -1,0 +1,64 @@
+// $Id: CHANGELOG.txt,v 1.2.2.13 2008/10/15 18:30:48 gmarus Exp $
+
+job_posting 6.x-1.x-dev, 2008-10-15
+- #321636 by gmarus: fixed bug preventing use of WYSIWIG module with job_posting
+  description field. Credit to rheenen for report and remedy.
+
+job_posting 6.x-1.x-dev, 2008-10-09
+- fixed bug that was preventing proper sender header from being populated during
+  application email-processing
+
+job_posting 6.x-1.x-dev, 2008-07-13
+- fixed bug that was leading to improper schema insert on install
+
+job_posting 6.x-1.x-dev, 2008-07-10
+- fixed bug whereby an attached file in job posting application form was being
+  truncated on display in recipient's email client if it contained a space
+
+job_posting 6.x-1.x-dev, 2008-07-09
+- #272312 by gmarus: added ability to enable/disable job application processing
+  for each job posting node on create/edit
+- added a warning in README.txt to alert users of a potential problem using
+  PHP 4 as a result of discussion at http://drupal.org/node/278778
+
+job_posting 6.x-1.x-dev, 2008-05-23
+-----------------------------------
+- #261970 by gmarus: fixed overzealous tag stripping in node description field
+- reworked remaining node field filtering by removing unnecessary calls to
+  check_plain() that were cause output display issues
+
+job_posting 6.x-1.x-dev, 2008-05-08
+- added new node list template
+- fixed link href query in node display preprocessor so login link
+  properly redirects user to application form instead of profile page
+- fixed incorrect path discovery for module default stylesheet
+- minor changes to the text of some theme links and update of general.pot
+
+job_posting 6.x-1.5, 2008-05-01
+-------------------------------
+ADDITIONS:
+- added new 'expires' setting on node forms so posting creator can decide
+  whether or not a particular posting should be associated with a deadline or
+  made 'permanent'. 
+- schema change: new 'expires' field added to job_posting table to accommodate
+  the new 'expires' feature above.
+- added new admin setting for toggling between ascending and descending sort order
+  by creation date for node listings.
+
+FIXES:
+- fixed erroneous 'access denied' notice to new users registering via links
+  provided on job posting nodes.
+- improved field display ordering in default node template.
+- improved (i.e. more helpful) confirmation email message content.
+
+job_posting 6.x-1.3/1.4, 2008-04-28
+-------------------------------
+ #252464 by gmarus: fixed redundant 'read more' links on node teasers
+
+job_posting 6.x-1.2, 2008-04-18
+-------------------------------
+ #248256 by gmarus: fixed incorrect sorting order on nodelist and block views
+
+job_posting 6.x-1.0/1.1, 2008-04-16
+-------------------------------
+Initial release.

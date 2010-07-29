@@ -1,0 +1,13 @@
+; $Id: referral_trigger.info,v 1.1 2008/12/01 01:50:35 kbahey Exp $
+name = Referral Trigger
+description = Exposes Referrals as Triggers (Experimental)
+dependencies[] = referral
+dependencies[] = trigger
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-12-04
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "referral"
+datestamp = "1228349653"
+

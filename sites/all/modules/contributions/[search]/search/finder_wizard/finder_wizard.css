@@ -1,0 +1,23 @@
+/* $Id: finder_wizard.css,v 1.2.2.3 2008/11/08 05:37:05 danielb Exp $ */
+
+table#finder-wizard-admin-edit-steps-table div.finder-wizard-step {
+  margin-left: 3em;
+}
+
+div.finder-wizard-form label {
+  font-weight: bold;
+}
+
+div.finder-wizard-header {
+  margin: 0 0 5px;
+  padding: 5px;
+  background: #f1ddff none repeat scroll 0 0;
+  border: 1px solid #6920f0;
+  color: #1f00aa;
+}
+
+td.finder-wizard-title,
+td.finder-wizard-summary {
+	width: 34%;
+	overflow-x: hidden;
+}

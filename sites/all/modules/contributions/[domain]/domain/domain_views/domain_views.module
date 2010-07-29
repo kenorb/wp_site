@@ -1,0 +1,29 @@
+<?php
+// $Id: domain_views.module,v 1.7 2008/10/11 23:18:00 agentken Exp $
+
+/**
+ * @defgroup domain_views Domain Views: provides a views filter
+ *
+ * Views integration for Domain Access.
+ */
+
+/**
+ * @file
+ * Provides a Views filter for the Domain Access module.
+ *
+ * Original code by mrichar1 see http://drupal.org/node/200714
+ *
+ * @ingroup domain_views
+ */
+
+/**
+ * This module file is a stub, all the work is done by domain_views.views.inc.
+ */
+
+/**
+ * Implements hook_views_api().
+ */
+function domain_views_views_api() {
+
+  return array('api' => 2.0);
+}

@@ -1,0 +1,370 @@
+<?php
+// $Id: atom.module,v 1.22.2.2 2007/12/05 14:22:11 deekayen Exp $
+
+/**
+ * @file
+ * Provides an Atom 1.0 feed
+ *
+ * @author David Kent Norman
+ * @link http://deekayen.net/
+ * @author Kristjan Jansen
+ * @link http://kika.trip.ee/
+ */
+
+define('ATOM_DISPLAY_SUMMARY', true);
+define('ATOM_DISPLAY_CONTENT', true);
+
+/**
+ * Valid permissions for the atom module
+ *
+ * @return array An array of valid permissions for the atom module
+ */
+function atom_perm() {
+  return array('administer atom');
+}
+
+function atom_init() {
+  $title = variable_get('site_name', 'Drupal');
+  $title = strlen($title) == 0 ? 'Atom' : "$title Atom";
+
+  if (arg(0) == 'blog' && is_numeric(arg(1))) {
+    drupal_set_html_head('<link rel="alternate" type="application/atom+xml" title="'. $title .'" href="'. url(drupal_get_path_alias('blog/'. arg(1) .'/atom/feed')) .'" />');
+  }
+  elseif (arg(0) == 'node' && is_numeric(arg(1))) {
+    drupal_set_html_head('<link rel="alternate" type="application/atom+xml" title="'. $title .'" href="'. url(drupal_get_path_alias('node/'. arg(1) .'/atom/feed')) .'" />');
+  }
+  elseif (arg(0) == 'taxonomy' && arg(1) == 'term' && is_numeric(arg(2))) {
+    drupal_set_html_head('<link rel="alternate" type="application/atom+xml" title="'. $title .'" href="'. url(drupal_get_path_alias('taxonomy/term/'. arg(2) .'/atom/feed')) .'" />');
+  }
+  elseif (arg(0) == 'blog') {
+    drupal_set_html_head('<link rel="alternate" type="application/atom+xml" title="'. $title .'" href="'. url(drupal_get_path_alias('blog/atom/feed')) .'" />');
+  }
+  else {
+    drupal_set_html_head('<link rel="alternate" type="application/atom+xml" title="'. $title .'" href="'. url(drupal_get_path_alias('atom/feed'), array('absolute' => true)) .'" />');
+  }
+}
+
+/**
+ * Implementation of hook_menu()
+ *
+ * @return array
+ */
+function atom_menu() {
+  $items = array();
+
+  $items['atom/feed'] = array(
+    'title' => 'atom feed',
+    'page callback' => 'atom_feed',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  $items['blog/atom/feed'] = array(
+    'title' => 'atom blog feed',
+    'page callback' => 'atom_blog_feed',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  $items['admin/settings/atom'] = array(
+    'title' => 'Atom',
+    'description' => 'Configure number of entries in the feed and ad insertion.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('atom_admin_settings'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer atom'),
+    'type' => MENU_NORMAL_ITEM
+  );
+  $items['node/%/atom/feed'] = array(
+    'title' => 'atom node feed',
+    'page callback' => 'atom_node_feed',
+    'page arguments' => array(1),
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  $items['blog/%/atom/feed'] = array(
+    'title' => 'atom blog feed',
+    'page callback' => 'atom_user_blog_feed',
+    'page arguments' => array(1),
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  $items['taxonomy/term/%/atom/feed'] = array(
+    'title' => 'atom taxonomy feed',
+    'page callback' => 'atom_taxonomy_feed',
+    'page arguments' => array(2),
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+
+  return $items;
+}
+
+/**
+ * Produces an atom 1.0 feed for the front page content.
+ */
+function atom_feed() {
+  if (strpos(arg(2), 'atom') === 0 || strpos(arg(2), 'feed') === 0) {
+    die(drupal_not_found());
+  }
+  global $base_url;
+  $nodes = db_query_range("SELECT n.nid FROM {node} n WHERE n.promote = '1' AND n.status = '1' ORDER BY n.created DESC", 0, variable_get('atom_feed_entries', 15));
+
+  $feed_info = array();
+  $feed_info['title']    = strip_tags(variable_get('site_name', 'Drupal'));
+  $feed_info['subtitle'] = strip_tags(variable_get('site_slogan', ''));
+  $feed_info['html_url'] = $base_url;
+  $feed_info['atom_url'] = url('atom/feed', array('absolute' => true));
+  _atom_print_feed($nodes, $feed_info);
+}
+
+function atom_blog_feed() {
+  if (strpos(arg(3), 'atom') === 0 || strpos(arg(3), 'feed') === 0) {
+    die(drupal_not_found());
+  }
+  $nodes = db_query_range("SELECT n.nid FROM {node} n WHERE n.type = 'blog' AND n.status = '1' ORDER BY n.created DESC", 0, variable_get('atom_feed_entries', 15));
+
+  $feed_info = array();
+  $feed_info['title']    = strip_tags(sprintf(t('%s blogs'), variable_get('site_name', 'Drupal')));
+  $feed_info['subtitle'] = strip_tags(variable_get('site_slogan', ''));
+  $feed_info['html_url'] = url('blog', array('absolute' => true));
+  $feed_info['atom_url'] = url('blog/atom/feed', array('absolute' => true));
+  _atom_print_feed($nodes, $feed_info);
+}
+
+function atom_node_feed($nid) {
+  if (strpos(arg(4), 'atom') === 0 || strpos(arg(4), 'feed') === 0) {
+    die(drupal_not_found());
+  }
+  $nodes = db_query("SELECT n.nid FROM {node} n WHERE n.nid = %d AND n.status = '1' ORDER BY n.created DESC LIMIT 1", $nid);
+
+  $feed_info = array();
+  $feed_info['title']    = variable_get('site_name', 'Drupal');
+  $feed_info['subtitle'] = strip_tags(variable_get('site_slogan', ''));
+  $feed_info['html_url'] = url("node/$nid", array('absolute' => true));
+  $feed_info['atom_url'] = url("node/$nid/atom/feed", array('absolute' => true));
+  _atom_print_feed($nodes, $feed_info);
+}
+
+function atom_user_blog_feed($uid) {
+  if (strpos(arg(4), 'atom') === 0 || strpos(arg(4), 'feed') === 0) {
+    die(drupal_not_found());
+  }
+  $user_result = db_query_range("SELECT u.name FROM {users} u WHERE u.uid = %d", $uid, 0, 1);
+  if (!$user = db_result($user_result)) {
+    return t('User does not exist.');
+  }
+
+  $nodes = db_query_range("SELECT n.nid FROM {node} n WHERE n.type = 'blog' AND n.uid = %d AND n.status = '1' ORDER BY n.created DESC", $uid, 0, variable_get('atom_feed_entries', 15));
+
+  $feed_info = array();
+  $feed_info['title']    = sprintf(t("%s's blog"), $user);
+  $feed_info['subtitle'] = '';
+  $feed_info['html_url'] = url("blog/$uid", array('absolute' => true));
+  $feed_info['atom_url'] = url("blog/$uid/atom/feed", array('absolute' => true));
+  _atom_print_feed($nodes, $feed_info);
+}
+
+function atom_taxonomy_feed($str_tids) {
+  if (!module_exists('taxonomy') || strpos(arg(5), 'atom') === 0 || strpos(arg(6), 'feed') === 0) {
+    die(drupal_not_found());
+  }
+  $terms = taxonomy_terms_parse_string($str_tids);
+  $result = db_query(db_rewrite_sql('SELECT t.tid FROM {term_data} t WHERE t.tid IN ('. db_placeholders($terms['tids']) .')', 't', 'tid'), $terms['tids']);
+  $tids = array();
+  while ($term = db_fetch_object($result)) {
+    $tids[] = $term->tid;
+  }
+  $nodes = taxonomy_select_nodes($tids, $terms['operator'], 0, TRUE);
+
+  $feed_info = array();
+  if (count($tids) == 1) {
+    $term = taxonomy_get_term($tids[0]);
+    $feed_info['title']    = $term->name;
+    $feed_info['subtitle'] = $term->description;
+  }
+  else {
+    $feed_info['title']    = variable_get('site_name', 'Drupal');
+    $feed_info['subtitle'] = '';
+  }
+  $feed_info['html_url'] = url("taxonomy/term/$str_tids", array('absolute' => true));
+  $feed_info['atom_url'] = url("taxonomy/term/$str_tids/atom/feed", array('absolute' => true));
+  _atom_print_feed($nodes, $feed_info);
+}
+
+/**
+ * prints feed information from query of either front page or blog content
+ *
+ * @param object $nodes query result
+ * @param array feed information
+ */
+function _atom_print_feed($nodes, $feed_info) {
+  $output = '';
+  $last_mod = 0;
+  while ($node = db_fetch_object($nodes)) {
+    $item = node_load(array('nid' => $node->nid));
+    if (!node_access('view', $item)) {
+      continue;
+    }
+
+    $link = url("node/$node->nid", array('absolute' => true));
+
+    if (node_hook($item, 'view')) {
+      node_invoke($item, 'view', TRUE, FALSE);
+    }
+    else {
+      $item = node_prepare($item, TRUE);
+    }
+
+    // Allow modules to change $node->teaser before viewing.
+    node_invoke_nodeapi($item, 'view', true, false);
+
+    $output .= "  <entry>\n";
+    $output .= '    <title>'. check_plain(strip_tags($item->title)) ."</title>\n";
+    $output .= '    <link rel="alternate" type="text/html" href="'. $link .'" />'. "\n";
+    $output .= '    <id>'. $link ."</id>\n";
+    $output .= '    <published>'. _atom_timestamp2w3dtf($item->created) ."</published>\n";
+    $output .= '    <updated>'. _atom_timestamp2w3dtf($item->changed) ."</updated>\n";
+    $last_mod = $item->changed;
+    $output .= "    <author>\n";
+    if ($item->name) {
+      $output .= '      <name>'. $item->name ."</name>\n";
+    }
+    else {
+      $output .= '      <name>'. variable_get('anonymous', 'Anonymous') ."</name>\n";
+    }
+    $output .= "    </author>\n";
+    if (module_exists('taxonomy')) {
+      $terms = taxonomy_node_get_terms($item);
+      foreach ($terms as $term) {
+        $output .= '    <category term="'. check_plain(strip_tags($term->name)) . '" />'. "\n";
+      }
+    }
+
+    if (variable_get('atom_display_summary', ATOM_DISPLAY_SUMMARY)) {
+      // Summary
+      $output .= '    <summary type="html"><![CDATA[';
+      $output .= variable_get('atom_ad_location', 'off') == 'prepend' ? str_replace('%link', urlencode($link), str_replace('%id', $node->nid, variable_get('atom_ad_code', ''))) : '';
+      $output .= check_markup($item->teaser, $item->format, FALSE);
+      $output .= variable_get('atom_ad_location', 'off') == 'append' ? str_replace('%link', urlencode($link), str_replace('%id', $node->nid, variable_get('atom_ad_code', ''))) : '';
+      $output .= "    ]]></summary>\n";
+    }
+
+
+    if (variable_get('atom_display_content', ATOM_DISPLAY_CONTENT)) {
+      // Body
+      $output .= '    <content type="html"><![CDATA[';
+      $output .= variable_get('atom_ad_location', 'off') == 'prepend' ? str_replace('%link', urlencode($link), str_replace('%id', $node->nid, variable_get('atom_ad_code', ''))) : '';
+      $output .= check_markup($item->body, $item->format, FALSE);
+      $output .= variable_get('atom_ad_location', 'off') == 'append' ? str_replace('%link', urlencode($link), str_replace('%id', $node->nid, variable_get('atom_ad_code', ''))) : '';
+      $output .= "    ]]></content>\n";
+    }
+    $output .= "  </entry>\n";
+  }
+
+  print theme('atom_feed', $feed_info, $last_mod, $output);
+}
+
+/**
+ * Implementation of hook_theme()
+ *
+ * @return array
+ */
+function atom_theme() {
+  return array(
+    'atom_feed' => array(
+      'arguments' => array(
+        'feed_info' => array(),
+        'last_mod' => 0,
+        'output' => ''
+      )
+    )
+  );
+}
+
+function theme_atom_feed($feed_info, $last_mod, $output) {
+  drupal_set_header('Content-Type: application/xml');
+
+  $feed = '<?xml version="1.0" encoding="utf-8"?>'. "\n";
+  $feed .= '<feed xmlns="http://www.w3.org/2005/Atom">'. "\n";
+  $feed .= '  <title>'. $feed_info['title'] ."</title>\n";
+  $feed .= $feed_info['subtitle'] == '' ? '' : '  <subtitle>'. $feed_info['subtitle'] . "</subtitle>\n";
+  $feed .= '  <link rel="alternate" type="text/html" href="'.$feed_info['html_url'] .'"/>'. "\n";
+  $feed .= '  <link rel="self" type="application/atom+xml" href="'. $feed_info['atom_url'] .'"/>'. "\n";
+  $feed .= '  <id>'. $feed_info['atom_url'] ."</id>\n";
+  $feed .= '  <updated>'. _atom_timestamp2w3dtf($last_mod) ."</updated>\n";
+  $feed .= $output;
+  $feed .= "</feed>\n";
+
+  return $feed;
+}
+
+/**
+ * @return string
+ */
+function _atom_timestamp2w3dtf($timestamp) {
+  $tz = date("O", $timestamp);
+  return date("Y-m-d", $timestamp) .'T'. date("H:i:s", $timestamp) . substr($tz, 0, 3) . ':' . substr($tz, 3, 2);
+}
+
+/**
+ * Module configuration settings
+ *
+ * @return array of settings form options or deny access
+ */
+function atom_admin_settings() {
+  $form = array();
+
+  $form['atom_feed_options'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Feed display options'),
+    '#collapsible' => true,
+    '#collapsed' => true
+  );
+  $form['atom_feed_options']['atom_feed_entries'] = array(
+    '#type' => 'select',
+    '#title' => t('Maximum number of entries to include in feeds'),
+    '#default_value' => variable_get('atom_feed_entries', 15),
+    '#options' => drupal_map_assoc(range(1, 30))
+  );
+  $form['atom_feed_options']['atom_display_summary'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Output the summary'),
+    '#description' => t('aka the teaser'),
+    '#default_value' => variable_get('atom_display_summary', ATOM_DISPLAY_SUMMARY)
+  );
+  $form['atom_feed_options']['atom_display_content'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Output the content'),
+    '#description' => t('aka the body'),
+    '#default_value' => variable_get('atom_display_content', ATOM_DISPLAY_CONTENT)
+  );
+
+  $form['atom_ad_options'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Ad unit insertion'),
+    '#description' => t('Ad unit insertion currently only works with Yahoo! Publisher Network. When inserting Yahoo! RSS ad unit code, select Wordpress format, replace instances of &lt;?php the_ID() ?&gt; with %id, and &lt;?php echo urlencode(get_permalink()) ?&gt; with %link to properly insert substitutes. For example, a correct Yahoo! RSS ad unit would look similar to the following, only with your unique rss number and pid:<br /><blockquote>&lt;a href="http://ypn-rss.overture.com/rss/31384/%id/click/"&gt;&lt;img src="http://ypn-rss.overture.com/rss/31384/%id/img/?url=%link&amp;pid=1426196321" border="0" /&gt;&lt;/a&gt;</blockquote>'),
+    '#collapsible' => true,
+    '#collapsed' => true
+  );
+  $form['atom_ad_options']['atom_ad_location'] = array(
+    '#type'=> 'radios',
+    '#title' => t('Ad unit insertion location'),
+    '#default_value' => variable_get('atom_ad_location', 'off'),
+    '#options' => array(
+      'off' => 'Turned off',
+      'prepend' => 'Prepend',
+      'append' => 'Append'),
+    '#description' => t('Insert the ad unit before or after the feed content')
+  );
+  $form['atom_ad_options']['atom_ad_code'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Ad unit code'),
+    '#default_value' => variable_get('atom_ad_code', ''),
+    '#cols' => 40, '#rows' => 10
+  );
+  return system_settings_form($form);
+}

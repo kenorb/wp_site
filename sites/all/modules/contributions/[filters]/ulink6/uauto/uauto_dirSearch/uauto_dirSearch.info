@@ -1,0 +1,15 @@
+;$Id: uauto_dirSearch.info,v 1.1 2008/03/08 10:37:18 garthee Exp $
+name = uAuto - Directory Search Extension
+description = Enable search for local files even if there is no entry in the files table in database.
+package = "Input filters"
+requirements[] = uauto
+project = "uAuto-extensions"
+core = 6.x
+
+
+; Information added by drupal.org packaging script on 2008-03-08
+version = "6.x-1.1"
+core = "6.x"
+project = "ulink6"
+datestamp = "1204973110"
+

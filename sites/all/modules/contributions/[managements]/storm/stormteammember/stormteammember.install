@@ -1,0 +1,40 @@
+<?php
+// $Id: stormteammember.install,v 1.1.2.1 2008/12/15 13:23:53 robertogerola Exp $
+
+/**
+ * @file
+ */
+
+function stormteammember_install() {
+  drupal_install_schema('stormteammember');
+}
+
+function stormteammember_uninstall() {
+  drupal_uninstall_schema('stormteammember');
+}
+
+function stormteammember_schema() {
+  $schema['stormteammember'] = array(
+    'fields'                => array(
+      'tid'                       => array('type' => 'serial', 'not null' => TRUE),
+      'organization_nid'          => array('type' => 'int'),
+      'organization_title'        => array('type' => 'varchar', 'length' => 128),
+      'project_nid'               => array('type' => 'int'),
+      'project_title'             => array('type' => 'varchar', 'length' => 128),
+      'task_nid'                  => array('type' => 'int'),
+      'task_stepno'               => array('type' => 'varchar', 'length' => 128),
+      'task_title'                => array('type' => 'varchar', 'length' => 128),
+      'ticket_nid'                => array('type' => 'int'),
+      'ticket_title'              => array('type' => 'varchar', 'length' => 128),
+      'person_organization_nid'   => array('type' => 'int'),
+      'person_organization_title' => array('type' => 'varchar', 'length' => 128),
+      'person_nid'                => array('type' => 'int'),
+      'person_title'              => array('type' => 'varchar', 'length' => 128),
+      'role'                      => array('type' => 'varchar', 'length' => 50),
+    ),
+    'primary key' => array('tid'),
+  );
+
+  return $schema;
+}
+

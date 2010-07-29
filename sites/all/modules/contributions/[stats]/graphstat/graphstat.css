@@ -1,0 +1,13 @@
+/* $Id: graphstat.css,v 1.2.4.2 2009/01/25 21:08:34 profix898 Exp $ */
+
+.graphstat-container {
+  margin: 10px 0px;
+  padding: 5px;
+}
+
+.graphstat-image {
+}
+
+.graphstat-legend {
+  text-align: left;
+}

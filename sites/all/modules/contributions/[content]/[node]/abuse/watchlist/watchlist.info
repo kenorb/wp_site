@@ -1,0 +1,13 @@
+; $Id: watchlist.info,v 1.4.6.4 2008/10/15 17:50:58 btmash Exp $
+name = watchlist
+description = A filter/check system to validate content on the site
+package = "Administration"
+version = VERSION
+core = 6.x
+dependencies[] = abuse
+; Information added by drupal.org packaging script on 2008-11-06
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "abuse"
+datestamp = "1225929615"
+

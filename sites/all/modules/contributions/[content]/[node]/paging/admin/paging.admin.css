@@ -1,0 +1,141 @@
+/* $Id: paging.admin.css,v 1.1 2008/08/17 18:16:35 Gurpartap Exp $ */
+
+/**
+ * Vertical tabs, aka drawers.
+ * @author Bevan Rudge drupal.geek.nz
+ * @author Joakim Stai
+ * @license GPL 2
+ */
+
+/* Container */
+
+div.paging-warning {
+  background-image: url(paging-warning.png);
+  background-position: 5px 50%;
+  background-repeat: no-repeat;
+  padding: 5px 25px;
+}
+
+#paging-vertical-tabs {
+  background: none;
+}
+
+#paging-vertical-tabs:after { /* Clearing without presentational markup, IE gets extra treatment */
+  display: block;
+  clear: both;
+  content: " ";
+}
+
+.paging-fieldset {
+  width: inherit;
+}
+
+.paging-left {
+  background: none;
+  border: none;
+  float: left;
+  margin: 0;
+  padding: 0;
+  width: 44%;
+}
+
+.paging-right {
+  background: none;
+  border: none;
+  float: right;
+  margin: 0;
+  padding: 0;
+  width: 54%;
+}
+
+/* Tabs */
+.ui-tabs-hide {
+  display: none;
+}
+
+.ui-tabs-nav {
+  float: left;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border-top: 1px solid #D6DBDE;
+  border-left: 1px solid #D6DBDE;
+  list-style-image: none !important;
+  list-style-type: none !important;
+  position: relative;
+  top: 12px;
+}
+.ui-tabs-nav .paging-enabled {
+  display: inline;
+}
+
+.ui-tabs-nav li {
+  cursor: pointer;
+  margin: 0;
+  padding: 0 20px 0 0;
+  background: #efefef none;
+  border-right: none;
+  border-bottom: 1px solid #D6DBDE;
+  min-width: 118px;
+}
+
+.ui-tabs-nav li.ui-tabs-selected, .ui-tabs-nav li.ui-tabs-selected:hover {
+  background: #fff url(arrow-active.png) no-repeat scroll right center;
+  border-right: none;
+  cursor: default;
+  margin-right: -1px;
+  position: relative;
+}
+
+.ui-tabs-nav a, .ui-tabs-nav a:visited {
+  color: #777;
+  display: inline;
+  font-size: 90%;
+  font-weight: normal;
+  line-height: 2em;
+  margin: 0;
+  padding: 0;
+  outline: 0; /* Prevent dotted border in Firefox */
+  vertical-align: text-bottom;
+  white-space: nowrap; /* Required in IE 6 */  
+}
+
+.ui-tabs-nav .ui-tabs-selected a {
+  background-color: #fff url(arrow-active.png) no-repeat scroll right center;  
+  font-weight: bold;
+  color: #000;
+}
+
+.ui-tabs-nav .ui-tabs-selected a:link,
+.ui-tabs-nav .ui-tabs-selected a:visited { /* @ Opera, use pseudo classes otherwise it confuses cursor... */
+  background-color: #fff;
+  cursor: default;
+  text-decoration: none;
+}
+
+.ui-tabs-nav li:hover,
+.ui-tabs-nav li:focus,
+.ui-tabs-nav a:hover,
+.ui-tabs-nav a:focus,
+.ui-tabs-nav a:active { /* @ Opera, we need to be explicit again here now... */
+  background-color: #f6f6f6;
+  text-decoration: none;
+}
+
+/* Panels */
+.ui-tabs-panel > legend {
+  display: none; /* Hiding is not good for accessibility, but text-indent: -5000px had an annoying side effect... */
+}
+
+.ui-tabs-panel {
+  height: auto;
+  margin: 0 0 0 -1px;
+  padding-top: 0;
+  background: transparent none;
+}
+
+/* Adjusting some elements */
+.ui-tabs-panel .form-checkboxes,
+.ui-tabs-panel .form-radios {
+  margin: 1em 0;
+}

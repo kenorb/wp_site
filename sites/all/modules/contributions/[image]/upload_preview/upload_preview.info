@@ -1,0 +1,12 @@
+; $Id: upload_preview.info,v 1.2 2008/12/29 03:27:08 rmiddle Exp $
+name = Upload preview
+description = Adds image preview thumbnails to the file attachment section.
+dependencies[] = upload
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-12-29
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "upload_preview"
+datestamp = "1230553044"
+

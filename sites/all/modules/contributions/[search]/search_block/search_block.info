@@ -1,0 +1,15 @@
+; Information added by drupal.org packaging script on 2008-04-24
+version = "6.x-1.x-dev"
+project = "search_block"
+
+name = Restricted Search
+description = "Enables restricting entire content types or nodes from the search engine"
+core = 6.x
+package = "Search"
+dependencies[] = search
+; Information added by drupal.org packaging script on 2008-11-27
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "search_block"
+datestamp = "1227744874"
+

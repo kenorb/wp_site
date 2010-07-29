@@ -1,0 +1,5 @@
+; $Id$
+
+name = Admin message
+description = Display messages that can be individually closed by logged in users.
+core = 6.x

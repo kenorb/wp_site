@@ -1,0 +1,71 @@
+<?php
+// $Id: gallery_service.module,v 1.1 2008/03/15 18:41:54 profix898 Exp $
+
+require_once(drupal_get_path('module', 'gallery_service') .'/gallery_service_base.inc');
+
+/**
+ * Implementation of hook_service().
+ */
+function gallery_service_service() {
+  // Basic services
+  $services = gallery_service_base_service();
+  // Services wrapper for GalleryCoreApi
+  if (variable_get('gallery_service_coreapi', FALSE)) {
+    require_once(drupal_get_path('module', 'gallery_service') .'/gallery_service_core.inc');
+    $services = array_merge($services, gallery_service_core_service());
+  }
+  // Services wrapper for GalleryEmbed
+  if (variable_get('gallery_service_embedapi', FALSE)) {
+    require_once(drupal_get_path('module', 'gallery_service') .'/gallery_service_embed.inc');
+    $services = array_merge($services, gallery_service_embed_service());
+  }
+  
+  return $services;
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function gallery_service_form_alter(&$form, $form_state, $form_id) {  
+  if ($form_id == 'services_admin_settings') {
+    // Add gallery settings to the services settings form
+    array_splice($form, 1, 0, _gallery_service_settings());    
+    $form['#submit'][] = '_gallery_service_settings_submit';
+  }
+}
+
+/**
+ * Function _gallery_service_settings().
+ */
+function _gallery_service_settings() {
+  // Gallery service settings
+  $form['service'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Gallery service settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#description' => t('Settings for embedded Gallery2 services. Only basic functionality as
+                         implemented in gallery.module and gallery_base.inc is available by default.
+                         Here you can enable services wrappers for GalleryEmbed and GalleryCoreApi methods.')
+  );
+  $form['service']['gallery_service_coreapi'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable GalleryCoreApi service methods'),
+    '#default_value' => variable_get('gallery_service_coreapi', FALSE)
+  );
+  $form['service']['gallery_service_embedapi'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable GalleryEmbed service methods'),
+    '#default_value' => variable_get('gallery_service_embedapi', FALSE)
+  );
+  
+  return $form;
+}
+
+/**
+ * Function _gallery_service_settings_submit().
+ */
+function _gallery_service_settings_submit($form_id, $form_values) {
+  variable_get('gallery_service_coreapi', $form_values['gallery_service_coreapi']);
+  variable_get('gallery_service_embedapi', $form_values['gallery_service_embedapi']);
+}

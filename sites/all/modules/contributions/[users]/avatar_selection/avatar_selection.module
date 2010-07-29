@@ -1,0 +1,618 @@
+<?php
+// $Id: avatar_selection.module,v 1.1.2.22.2.53 2008/08/06 21:29:13 snpower Exp $
+
+/**
+ * @file
+ * The Avatar Selection module allows the user to pick an avatar image from a
+ * list already loaded by an administrative user, and to the administrator to
+ * disable uploading other avatar files by the user.
+ */
+
+
+/**
+ * Implementation of hook_help().
+ */
+function avatar_selection_help($path, $arg) {
+
+  $output = '';
+
+  switch ($path) {
+    case "admin/help#avatar_selection":
+      $output .= '<p>'. t("Allows the user to pick an avatar from a list.") .'</p>';
+      return $output;
+    case "admin/modules#description":
+      return t("Allows the user to pick an avatar from a list.");
+    case "admin/settings/avatar_selection/images":
+      return t("Upload images to display as a user avatar.  These images can be anything you like, but it is recommended that you maintain a uniform icon size for all of your avatars.  Maximum dimensions are 85x85 and the maximum size is 30 kB.");
+  }
+
+}
+
+/**
+ * Implementation of hook_perm().
+ *
+ * Define the permissions this module uses.
+ */
+function avatar_selection_perm() {
+  return array('administer avatar selection', 'access avatars');
+}
+
+
+/**
+ * Implementation of hook_access().
+ *
+ * Define what does each permission means :
+ * 'view' is included in the 'access avatars' permission; while 'create',
+ * 'update' and 'delete' are included in the 'administrer avatar selection'.
+ *
+ * @param $op
+ *   The action the user wants to do after the function checks the permission.
+ * @param $node
+ *   The node where the specific permission is requested.
+ * @return
+ *   The access needed to perform a certain operation.
+ */
+function avatar_selection_access($op, $node, $account) {
+  if ($op == 'view') {
+    return user_access('access avatars');
+  }
+  elseif ($op == 'create' || $op == 'update' || $op == 'delete') {
+    return user_access('administer avatar selection');
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function avatar_selection_menu() {
+  $items = array();
+
+  $items['admin/settings/avatar_selection'] = array(
+    'title' => 'Avatar Selection',
+    'description' => 'Allows the user to upload and delete avatars.',
+    'file' => 'avatar_selection.admin.inc',
+    'page callback' => 'avatar_selection_settings_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer avatar selection'),
+  );
+  $items['admin/settings/avatar_selection/config'] = array(
+    'title' => 'Configure',
+    'description' => 'Allows the user to configure avatar settings.',
+    'file' => 'avatar_selection.admin.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('avatar_selection_config_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer avatar selection'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['admin/settings/avatar_selection/upload'] = array(
+    'title' => 'Upload',
+    'description' => 'Allows the user to upload avatars.',
+    'file' => 'avatar_selection.admin.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('avatar_selection_upload_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer avatar selection'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -9,
+  );
+  $items['admin/settings/avatar_selection/edit'] = array(
+    'title' => 'Manage avatars',
+    'description' => 'Allows the user to modify or delete an avatar from a list.',
+    'file' => 'avatar_selection.admin.inc',
+    'page callback' => 'avatar_selection_roles_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer avatar selection'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['admin/settings/avatar_selection/edit/role/%'] = array(
+    'title' => 'Manage avatars',
+    'description' => 'Allows the user to modify or delete an avatar from a list.',
+    'file' => 'avatar_selection.admin.inc',
+    'page callback' => 'avatar_selection_roles_page',
+    'page arguments' => array('op' => 'role'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer avatar selection'),
+  );
+  if (module_exists("og")) {
+    $items['admin/settings/avatar_selection/edit/og/%'] = array(
+      'title' => 'Manage avatars',
+      'description' => 'Allows the user to modify or delete an avatar from a list.',
+      'file' => 'avatar_selection.admin.inc',
+      'page callback' => 'avatar_selection_roles_page',
+      'page arguments' => array('op' => 'og'),
+      'access callback' => 'user_access',
+      'access arguments' => array('administer avatar selection'),
+    );
+  }
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_form_alter().
+ *
+ * Create the form structure for adding an avatar in the user registration page.
+ *
+ * @param &$form
+ *   General reference used in drupal, defining the structure & the fields of
+ *   a form.
+ * @param $form_state
+ *   General variable, used to control the processing of the form.
+ * @param $form_id
+ *   The default is "user_register"; hold the page where the function is being
+ *   used.
+ * @return
+ *   Return the structure of the form.
+ */
+function avatar_selection_form_user_register_alter(&$form, $form_state, $form_id="user_register") {
+  // We need the pager global variables.
+  global $_GET;
+
+  // If user pictures aren't enabled, nothing to do here.
+  if (!variable_get('user_pictures', 0)) {
+    return;
+  }
+
+  $anon_user = drupal_anonymous_user();
+
+  // See if user has access to avatars.
+  $disable_upload = variable_get('avatar_selection_disable_user_upload', 0);
+  if (!user_access('access avatars')) {
+    // If uploads also disabled, remove the field altogether.
+    if ($disable_upload) {
+      unset($form['picture']);
+    }
+    return;
+  }
+
+  // We find out the current page number.
+  $page = 0;
+  if (isset($_GET['page']) && is_numeric($_GET['page'])) {
+    $page = $_GET['page'];
+  }
+
+  $force_choose = variable_get('avatar_selection_force_user_avatar_reg', 0);
+  $avatars_per_page = variable_get('avatar_selection_avatar_per_page', 30);
+  $selects = _avatar_selection_image_list($anon_user, "", 0, $page * $avatars_per_page, $avatars_per_page);
+  $js_file = drupal_get_path('module', 'avatar_selection') .'/js/avatar_selection.js';
+
+  if (count($selects['avatars'])) {
+    drupal_add_css(drupal_get_path('module', 'avatar_selection') .'/avatar_selection.css');
+    $upload = 1;
+    if (!is_array($form['picture'])) {
+      $upload = 0; // I.e. Not provided by "register with picture" contributed module.
+      $form['picture'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Picture'),
+        '#weight' => 1,
+      );
+    }
+    drupal_add_js(drupal_get_path('module', 'avatar_selection') .'/js/avatar_selection_pager.js', 'module', 'header');
+    $form['picture']['select_avatar'] = array(
+      '#type' => 'radios',
+      '#title' => ($upload == 0 ? t('Select an avatar') : t('Or simply select an icon')),
+      '#description' => $upload ? '' : t('Your virtual face or picture.'),
+      '#options' => $selects['avatars'],
+      '#required' => $force_choose ? TRUE : FALSE,
+      '#attributes' => array('class' => 'user_avatar_select'),
+      '#suffix' => theme('avatar_selection_pager', 'form#user-register', 'div.user_avatar_select', $selects['total'], $avatars_per_page, '/'. $js_file),
+    );
+    $form['#validate'][] = 'avatar_selection_validate_user_avatar';
+  }
+  else {
+    $form['#validate'][] = 'avatar_selection_validate_user_avatar';
+  }
+  drupal_add_js($js_file, 'module', 'header');
+
+  return $form;
+}
+
+
+/**
+ * Implementation of hook_form_alter().
+ *
+ * Create the form structure for adding an avatar in the user profile page.
+ *
+ * @param &$form
+ *   General reference used in drupal, defining the structure & the fields of
+ *   a form.
+ * @param $form_state
+ *   General variable, used to control the processing of the form.
+ * @param $form_id
+ *   The default is "user_profile_form"; holds the form name.
+ * @return
+ *   Return the structure of the form.
+ */
+function avatar_selection_form_user_profile_form_alter(&$form, $form_state, $form_id="user_profile_form") {
+  // We need the pager global variables.
+  global $_GET;
+
+  // If user pictures aren't enabled, nothing to do here.
+  if (!variable_get('user_pictures', 0)) {
+    return;
+  }
+  $user = user_load(array("uid" => $form['#uid']));
+
+  // See if user has access to avatars.
+  $disable_upload = variable_get('avatar_selection_disable_user_upload', 0);
+  if (!user_access('access avatars')) {
+    // If uploads also disabled, remove the field altogether.
+    if ($disable_upload) {
+      unset($form['picture']);
+    }
+    return;
+  }
+
+  // We find out the current page number.
+  $page = 0;
+  if (isset($_GET['page']) && is_numeric($_GET['page'])) {
+    $page = $_GET['page'];
+  }
+
+  if (is_array($form['picture'])) {
+    drupal_add_css(drupal_get_path('module', 'avatar_selection') .'/avatar_selection.css');
+    $force_choose = variable_get('avatar_selection_force_user_avatar', 0);
+
+    // If upload support has been disabled, remove the ability to upload and
+    // delete pictures.
+    if ($disable_upload) {
+      unset($form['picture']['picture_delete']);
+      unset($form['picture']['picture_upload']);
+    }
+    else {
+      $force_choose = 0;
+    }
+
+    // Show selection options.
+    if (!isset($user->og_groups)) $user->og_groups = '';
+    $avatars_per_page = variable_get('avatar_selection_avatar_per_page', 30);
+    $selects = _avatar_selection_image_list($user, "", 0, $page * $avatars_per_page, $avatars_per_page);
+    $js_file = drupal_get_path('module', 'avatar_selection') .'/js/avatar_selection.js';
+
+    if (count($selects['avatars'])) {
+      $current_avatar = basename($user->picture);
+      drupal_add_js(drupal_get_path('module', 'avatar_selection') .'/js/avatar_selection_pager.js', 'module', 'header');
+      $form['picture']['select_avatar'] = array(
+        '#type' => 'radios',
+        '#title' => $disable_upload ? t('Select an avatar') : t('Or simply select an icon'),
+        '#description' => $disable_upload ? t('Your virtual face or picture.') : '',
+        '#options' => $selects['avatars'],
+        '#default_value' => array_key_exists($current_avatar, $selects['avatars']) ? $current_avatar : '',
+        '#required' => $force_choose ? TRUE : FALSE,
+        '#attributes' => array('class' => 'user_avatar_select'),
+        '#suffix' => theme('avatar_selection_pager', 'form#user-profile-form', 'div.user_avatar_select', $selects['total'], $avatars_per_page, '/'. $js_file),
+      );
+      if (array_key_exists($current_avatar, $selects['avatars'])) {
+        $form['_account']['#value']->picture = NULL;
+      }
+      $form['#validate'][] = 'avatar_selection_validate_user_avatar';
+    }
+    else {
+      $form['#validate'][] = 'avatar_selection_validate_user_avatar';
+    }
+
+    // Don't allow user to delete a selected avatar.
+    $path = '/avatar_selection/';
+    if (!empty($form['picture']['current_picture']['#value'])
+      && preg_match($path, $form['picture']['current_picture']['#value'])) {
+      unset($form['picture']['picture_delete']);
+    }
+
+    drupal_add_js($js_file, 'module', 'header');
+  }
+
+  return $form;
+}
+
+/**
+ * Validate and upload the user's picture.
+ *
+ * @param &$form
+ *   General reference used in drupal, defining the structure & the fields of a
+ *   form.
+ * @param &$form_state
+ *   General reference, used to control the processing of the form.
+ */
+function avatar_selection_validate_user_avatar(&$form, &$form_state) {
+  // If required, validate the uploaded picture.
+  $validators = array(
+    'file_validate_is_image' => array(),
+    'file_validate_image_resolution' => array(variable_get('user_picture_dimensions', '85x85')),
+    'file_validate_size' => array(variable_get('user_picture_file_size', 30) * 1024),
+  );
+
+  $file = file_save_upload('picture_upload', $validators);
+
+  if (!$file && !empty($form_state['values']['select_avatar'])) {
+    unset($form_state['values']['picture_delete']);
+    $path = file_create_path('avatar_selection') .'/';
+    $form_state['values']['picture'] = $path . $form_state['values']['select_avatar'];
+  }
+  elseif (!$file && variable_get('avatar_selection_set_random_default', FALSE)) {
+    if (isset($form_state['values']['_account'])) {
+      $user = $form_state['values']['_account'];
+    }
+    else {
+      $user = drupal_anonymous_user();
+    }
+    if ($user->picture && $form_state['values']['picture_delete'] != 1) {
+      $form_state['values']['picture'] = $user->picture;
+    }
+    else {
+      unset($form_state['values']['picture_delete']);
+      $form_state['values']['picture'] = avatar_selection_get_random_image($user);
+    }
+  }
+}
+
+/**
+ * Select a random avatar picture for a certain user.
+ *
+ * @param $user
+ *   User object.
+ * @return
+ *   Return the path to the image to be shown as avatar.
+ */
+function avatar_selection_get_random_image($user) {
+  $avatars = _avatar_selection_image_list($user);
+  if ($avatars['total'] > 0) {
+    $avatar = array_rand($avatars['avatars'], 1);
+    if ($avatar) {
+      $path = file_create_path('avatar_selection');
+      $avatar = $path .'/'. $avatar;
+      return $avatar;
+    }
+  }
+  return ' ';
+}
+
+
+/**
+ * Get the list of avatars available to a certain user.
+ *
+ * @param $user
+ *   User object (optional).
+ * @param $set_type
+ *   Set type, can be 'role' or 'og' (optional).
+ * @param $set_id
+ *   The unique identifier of the set (optional).
+ * @param $from
+ *   The offset.
+ * @param $count
+ *   Number of avatars to return.
+ * @return
+ *   Return an array with the list of avatars for the current user, together
+ *   with the number of avatars.
+ */
+function _avatar_selection_image_list($user = "", $set_type = "", $set_id = 0, $from = 0, $count = 0) {
+  $avatars = array();
+  $dir = file_create_path('avatar_selection');
+  $url = file_create_url($dir);
+  $total = 0;
+
+  // If we're searching on a particular role.
+  if ($set_type =='role') {
+    if ($set_id) {
+      $total = db_result(db_query("SELECT count(*) FROM {avatar_selection} avs, {avatar_selection_roles} avsr WHERE avs.aid = avsr.aid AND avsr.rid = %d ORDER BY weight, name, avatar", $set_id));
+      $result = db_query_range("SELECT DISTINCT avatar, name, weight FROM {avatar_selection} avs, {avatar_selection_roles} avsr WHERE avs.aid = avsr.aid AND avsr.rid = %d ORDER BY weight, name, avatar", $set_id, $from, $count);
+    }
+    else {
+      $total = db_result(db_query("SELECT count(*) FROM {avatar_selection} avs LEFT JOIN {avatar_selection_roles} avsr ON avs.aid = avsr.aid WHERE avsr.rid IS NULL ORDER BY weight, name, avatar"));
+      $result = db_query_range("SELECT DISTINCT avatar, name, weight FROM {avatar_selection} avs LEFT JOIN {avatar_selection_roles} avsr ON avs.aid = avsr.aid WHERE avsr.rid IS NULL ORDER BY weight, name, avatar", $from, $count);
+    }
+  }
+
+  // If we're searching on a particular organic group.
+  elseif ($set_type =='og') {
+    if ($set_id) {
+      $total = db_result(db_query("SELECT count(*) FROM {avatar_selection} avs, {avatar_selection_og} og WHERE avs.aid = og.aid AND og.ogid = %d ORDER BY weight, name, avatar", $set_id));
+      $result = db_query_range("SELECT DISTINCT avatar, name, weight FROM {avatar_selection} avs, {avatar_selection_og} og WHERE avs.aid = og.aid AND og.ogid = %d ORDER BY weight, name, avatar", $set_id, $from
+, $count);
+    }
+    else {
+      $total = db_result(db_query("SELECT count(*) FROM {avatar_selection} avs LEFT JOIN {avatar_selection_og} og ON avs.aid = og.aid WHERE og.ogid IS NULL ORDER BY weight, name, avatar"));
+      $result = db_query_range("SELECT DISTINCT avatar, name, weight FROM {avatar_selection} avs LEFT JOIN {avatar_selection_og} og ON avs.aid = og.aid WHERE og.ogid IS NULL ORDER BY weight, name, avatar", $from, $count);
+    }
+  }  // Searching for available avatars for a particular user.
+  elseif (!empty($user)) {
+    // Set up some variables.
+    $user_roles = array_keys($user->roles);
+    $user_og = array();
+    if (module_exists("og")) {
+      if (!empty($user->og_groups) && is_array($user->og_groups)) {
+        $user_og = array_keys($user->og_groups);
+      }
+    }
+
+    // Distinct avatars are enabled.
+    if (variable_get('avatar_selection_distinctive_avatars', FALSE)) {
+      // Organic groups enabled.
+      if (module_exists("og") && !empty($user_og)) {
+        $total = db_result(db_query("SELECT count(*) FROM {avatar_selection} avs LEFT JOIN {users} u ON u.picture = concat('%s/', avs.avatar) LEFT JOIN {avatar_selection_roles} avsr ON avs.aid = avsr.aid LEFT JOIN {avatar_selection_og} avso ON avs.aid = avso.aid WHERE u.picture IS NULL AND (avsr.rid IS NULL OR avsr.rid IN (". db_placeholders($user_roles) .")) AND (avso.ogid IS NULL OR avso.ogid IN (". db_placeholders($user_og) .")) ORDER BY avs.weight, avs.name, avatar", $dir, $user_roles, $user_og));
+        if ($count == 0) $count = $total;
+        $result = db_query_range("SELECT DISTINCT avatar, avs.name, avs.weight FROM {avatar_selection} avs LEFT JOIN {users} u ON u.picture = concat('%s/', avs.avatar) LEFT JOIN {avatar_selection_roles} avsr ON avs.aid = avsr.aid LEFT JOIN {avatar_selection_og} avso ON avs.aid = avso.aid WHERE u.picture IS NULL AND (avsr.rid IS NULL OR avsr.rid IN (". db_placeholders($user_roles) .")) AND (avso.ogid IS NULL OR avso.ogid IN (". db_placeholders($user_og) .")) ORDER BY avs.weight, avs.name, avatar", $dir, $user_roles, $user_og, $from, $count);
+      }
+      else {
+        $total = db_result(db_query("SELECT count(*) FROM {avatar_selection} avs LEFT JOIN {users} u ON u.picture = concat('%s/', avs.avatar) LEFT JOIN {avatar_selection_roles} avsr ON avs.aid = avsr.aid WHERE u.picture IS NULL AND avsr.rid IS NULL OR avsr.rid IN (". db_placeholders($user_roles) .") ORDER BY avs.weight, avs.name, avatar", $dir, $user_roles));
+        if ($count == 0) $count = $total;
+        $result = db_query_range("SELECT DISTINCT avatar, avs.name, avs.weight FROM {avatar_selection} avs LEFT JOIN {users} u ON u.picture = concat('%s/', avs.avatar) LEFT JOIN {avatar_selection_roles} avsr ON avs.aid = avsr.aid WHERE u.picture IS NULL AND avsr.rid IS NULL OR avsr.rid IN (". db_placeholders($user_roles) .") ORDER BY avs.weight, avs.name, avatar", $dir, $user_roles, $from, $count);
+      }
+    }
+
+    // Not root user, check permissions.
+    elseif ($user->uid != 0) {
+      // Organic groups enabled.
+      if (module_exists("og") && !empty($user_og)) {
+        $total = db_result(db_query("SELECT count(*) FROM {avatar_selection} avs LEFT JOIN {avatar_selection_roles} avsr ON avs.aid = avsr.aid LEFT JOIN {avatar_selection_og} avso ON avs.aid = avso.aid WHERE (avsr.rid IS NULL OR avsr.rid IN (". db_placeholders($user_roles) .")) AND (avso.ogid IS NULL OR avso.ogid IN (". db_placeholders($user_og) .")) ORDER BY weight, name, avatar", $user_roles, $user_og));
+        if ($count == 0) $count = $total;
+        $result = db_query_range("SELECT DISTINCT avatar, name, weight FROM {avatar_selection} avs LEFT JOIN {avatar_selection_roles} avsr ON avs.aid = avsr.aid LEFT JOIN {avatar_selection_og} avso ON avs.aid = avso.aid WHERE (avsr.rid IS NULL OR avsr.rid IN (". db_placeholders($user_roles) .")) AND (avso.ogid IS NULL OR avso.ogid IN (". db_placeholders($user_og) .")) ORDER BY weight, name, avatar", $user_roles, $user_og, $from, $count);
+      }
+      else {
+        $total = db_result(db_query("SELECT count(*) FROM {avatar_selection} avs LEFT JOIN {avatar_selection_roles} avsr ON avs.aid = avsr.aid WHERE avsr.rid IS NULL OR avsr.rid IN (". db_placeholders($user_roles) .") ORDER BY weight, name, avatar", $user_roles));
+        if ($count == 0) $count = $total;
+        $result = db_query_range("SELECT DISTINCT avatar, name, weight FROM {avatar_selection} avs LEFT JOIN {avatar_selection_roles} avsr ON avs.aid = avsr.aid WHERE avsr.rid IS NULL OR avsr.rid IN (". db_placeholders($user_roles) .") ORDER BY weight, name, avatar", $user_roles, $from, $count);
+      }
+    }
+
+    // Root user, so just fetch all avatars.
+    else {
+      $total = db_result(db_query("SELECT count(*) FROM {avatar_selection} avs ORDER BY weight, name, avatar"));
+      if ($count == 0) $count = $total;
+      $result = db_query_range("SELECT aid, avatar, name, weight FROM {avatar_selection} avs ORDER BY weight, name, avatar", $from, $count);
+    }
+  }
+
+  while ($avatar = db_fetch_object($result)) {
+    $avs_image = $avatar->avatar;
+    $name = $avatar->name;
+    $avatars[$avs_image] = theme('image', $url .'/'. $avs_image, $name, $name, NULL, FALSE);
+  }
+  $selects['avatars'] = $avatars;
+  $selects['total'] = $total;
+
+  return $selects;
+}
+
+/**
+ * Implementation of hook_file_download().
+ *
+ * Ensure that user pictures (avatars) are always downloadable.
+ *
+ * @param $file
+ *   The path to the file that will be checked if downloadable.
+ * @return
+ *   An array containing the file mime type and size, generated by the array()
+ *   function, if everything is fine.  NULL, if the file is not downloadable.
+ */
+function avatar_selection_file_download($file) {
+  if (user_access('access content')) {
+    $data = explode('/', $file);
+    $icon = array_pop($data);
+    $folder = implode('/', $data);
+    if ('avatar_selection' == $folder) {
+      $info = image_get_info(file_create_path($file));
+      return array(
+        'Content-type: '. $info['mime_type'],
+        'Content-length: '. $info['file_size'],
+      );
+    }
+    else {
+      return NULL;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function avatar_selection_theme() {
+  return array(
+    'avatar_selection_pager' => array(
+      'arguments' => array('form_id' => NULL, 'class' => NULL, 'total' => 10, 'limit' => 10, 'js_file' => NULL),
+    ),
+    'avatar_selection_pager_link' => array(
+      'arguments' => array('text' => NULL, 'url' => NULL, 'page' => 0, 'form_id' => NULL, 'dom_identifier' => NULL, 'js_file' => NULL),
+    ),
+  );
+}
+
+/**
+ * Output themed pager navigation.
+ *
+ * @param $form_id
+ *   CSS identifier for the form to modify.
+ * @param $dom_identifier
+ *   CSS identifier of form element to replace.
+ * @param $total
+ *   Total number of elements to navigate through.
+ * @param $limit
+ *   Maximum number of elements to show on one page.
+ * @param $js_file
+ *   Javascript file to load and execute after successful ajax call.
+ * @return
+ *   HTML formatted pager navigation.
+ */
+function theme_avatar_selection_pager($form_id, $dom_identifier, $total = 10, $limit = 10, $js_file = NULL) {
+
+  $path = $_GET['q'];
+
+  $total_pages = ceil($total / $limit);
+  $current_page = isset($_GET['page']) ? $_GET['page'] : 0;
+
+  // Calculate various markers within this pager piece:
+  // Middle is used to "center" pages around the current page.
+  $middle_page = 5;
+  $first_page = $current_page - $middle_page + 1;
+  $last_page = $current_page + $middle_page + 1;
+
+  $output = '<div class="avatar_selection_pager_nav">';
+  if ($current_page > 0) {
+    $output .= theme('avatar_selection_pager_link', t('« first'), $path, 0, $form_id, $dom_identifier, $js_file);
+    $output .= theme('avatar_selection_pager_link', t('‹ previous'), $path, ($current_page - 1), $form_id, $dom_identifier, $js_file);
+  }
+
+  $i = $first_page;
+
+  // Adjust "center" if at end of query.
+  if ($last_page > $total_pages) {
+    $i = $i + ($total_pages - $last_page);
+    $last_page = $total_pages;
+  }
+
+  // Adjust "center" if at start of query.
+  if ($i <= 0) {
+    $last_page = $last_page + (1 - $i);
+    $i = 1;
+  }
+
+  // When there is more than one page, create the pager list.
+  if ($total_pages > 1) {
+    for (; $i <= $last_page && $i <= $total_pages; $i++) {
+      if ($i < $current_page + 1) {
+        $output .= theme('avatar_selection_pager_link', $i, $path, $i - 1, $form_id, $dom_identifier, $js_file);
+      }
+      if ($i == $current_page + 1) {
+        $output .= '<strong class="pager-current">'. $i .'</strong>';
+      }
+      if ($i > $current_page + 1) {
+        $output .= theme('avatar_selection_pager_link', $i, $path, ($i - 1), $form_id, $dom_identifier, $js_file);
+      }
+    }
+  }
+
+  if ($current_page + 1 < $total_pages) {
+    $output .= theme('avatar_selection_pager_link', t('next ›'), $path, ($current_page + 1), $form_id, $dom_identifier, $js_file);
+    $output .= theme('avatar_selection_pager_link', t('last »'), $path, ($total_pages - 1), $form_id, $dom_identifier, $js_file);
+  }
+  $output .= '</div>';
+
+  return $output;
+}
+
+/**
+ * Output themed pager navigation link.
+ *
+ * @param $text
+ *   Link (human-readable) text.
+ * @param $path
+ *   Current page.
+ * @param $page
+ *   Page number to display.
+ * @param $form_id
+ *   CSS identifier for the form to modify.
+ * @param $dom_identifier
+ *   CSS identifier of form element to replace.
+ * @param $js_file
+ *   Javascript file to load and execute after successful ajax call.
+ * @return
+ *   HTML formatted link for pager.
+ */
+function theme_avatar_selection_pager_link($text, $path, $page, $form_id, $dom_identifier, $js_file) {
+  $url = url($path);
+  $onclick = "return fetchPage('$form_id', '$dom_identifier', '$url', ". $page .", '$js_file');";
+  $output .= l($text, $path, array('attributes' => array('onclick' => $onclick), 'query' => "page=$page"));
+  return $output;
+}
+

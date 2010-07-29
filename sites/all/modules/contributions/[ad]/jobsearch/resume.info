@@ -1,0 +1,11 @@
+; $Id: resume.info,v 1.3 2009/01/02 02:49:22 kbahey Exp $
+name = Resume
+description = Allows job seekers to post resumes and use them to apply for jobs posted.
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-01-03
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "jobsearch"
+datestamp = "1230941311"
+

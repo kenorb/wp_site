@@ -1,0 +1,25 @@
+; $Id: user_badges_products.info,v 1.1.2.2 2008/12/06 13:37:04 nunoveloso18 Exp $
+name = User Product Badges
+description = Enables assignment of graphical badges to users and roles.
+dependencies[] = user_badges
+dependencies[] = product
+
+; Information added by drupal.org packaging script on 2007-06-19
+version = "6.x-1.x-dev"
+project = "user_badges"
+datestamp = "1182212765"
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-11-21
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "user_badges"
+datestamp = "1227269754"
+
+
+; Information added by drupal.org packaging script on 2009-01-06
+version = "6.x-1.4"
+core = "6.x"
+project = "user_badges"
+datestamp = "1231264242"
+

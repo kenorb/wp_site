@@ -1,0 +1,50 @@
+<?php
+// $Id: 
+
+/**
+ * @file
+ * markItUp module install file.
+ */
+/**
+ * Implementation of hook_schema.
+ */
+function markitup_schema() {
+  $schema['markitup_editors'] = array(
+    'fields' => array(
+      'meid'         => array('type' => 'serial', 'not null' => TRUE, 'description' => t('Primary Key: A unique ID for a markItUp editor configuration.')),
+      'name'         => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => '', 'description' => t('The name for this markItUp editor configuration.')),
+      'miu_set'          => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => '', 'description' => t('The markItUp set defined for this markItUp editor configuration.')),
+      'skin'         => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => '', 'description' => t('The markItUp skin defined for this markItUp editor configuration.')),
+      'description'  => array('type' => 'text', 'size' => 'medium', 'not null' => TRUE),
+    ),
+    'primary key' => array('meid'),
+  );
+  $schema['markitup_editors_formats'] = array(
+    'fields' => array(
+      'meid'         => array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'description' => t('Composite Key from foreign key: The unique ID for a markItUp editor configuration.')),
+      'format'       => array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'description' => t('Composite Key from foreign key: The {filter_formats}.format configuration of filters.')),
+    ),
+    'primary key' => array('meid', 'format'),
+  );
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function markitup_install() {
+  drupal_install_schema('markitup');
+  // Set up the default markItUp editor.
+  // Set variable values for paths and textarea ids.
+  variable_set('markitup_include', "node/add/*\r\nnode/*/edit\r\nadmin/settings/site-information\r\ncomment/edit/*\r\ncomment/reply/*");
+  variable_set('markitup_ids', "edit-body\r\nedit-site-footer\r\nedit-comment");
+  db_query("INSERT INTO {markitup_editors} (name, description, skin, miu_set) VALUES ('default', 'The default markItUp editor. Works well with the Filtered HTML input format.', 'simple', 'default')");
+  // We're not setting up any default editor-to-format associations, because we'll handle that fallback elsewhere
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function markitup_uninstall() {
+  drupal_uninstall_schema('markitup');
+}

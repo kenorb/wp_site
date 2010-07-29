@@ -1,0 +1,10 @@
+name = Arcade
+description = Identify nodes as games and store Score info
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-08-21
+version = "6.x-0.6-beta"
+core = "6.x"
+project = "arcade"
+datestamp = "1219341606"
+package = "Games" 

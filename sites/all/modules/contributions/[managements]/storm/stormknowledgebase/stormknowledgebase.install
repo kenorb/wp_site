@@ -1,0 +1,34 @@
+<?php
+// $Id: stormknowledgebase.install,v 1.1.4.1 2008/12/04 17:18:44 robertogerola Exp $
+
+/**
+ * @file
+ */
+
+function stormknowledgebase_install() {
+  drupal_install_schema('stormknowledgebase');
+}
+
+function stormknowledgebase_uninstall() {
+  drupal_uninstall_schema('stormknowledgebase');
+}
+
+function stormknowledgebase_schema() {
+  $schema['stormknowledgebase'] = array(
+    'fields' => array(
+      'vid' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'nid' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'topic' => array('type' => 'varchar', 'length' => 20),
+    ),
+    'primary key' => array('vid', 'nid'),
+  );
+
+  return $schema;
+}
+
+function stormknowledgebase_update_1() {
+  drupal_install_schema('stormknowledgebase');
+
+  $ret = array();
+  return $ret;
+}

@@ -1,0 +1,15 @@
+; $Id: parser_comments.info,v 1.1 2008/09/29 19:06:19 aronnovak Exp $
+name = "Parser Comments"
+description = "Scrapes comments from other sites"
+package = FeedAPI Comment Scraper
+dependencies[] = feedapi
+dependencies[] = parser_common_syndication
+core = 6.x
+php = 5.0
+
+; Information added by drupal.org packaging script on 2008-12-01
+version = "6.x-1.0"
+core = "6.x"
+project = "feedapi_comments"
+datestamp = "1228148712"
+

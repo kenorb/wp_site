@@ -1,0 +1,244 @@
+<?php
+// $Id: microsummary.module,v 1.7.2.3 2008/06/09 21:40:29 greggles Exp $
+
+/**
+ * @file
+ * microsummary.module - basically provides module integration to Drupal
+ * and inserts the microsummary link into your site's pages.
+ */
+
+
+/**
+ * Implementation of hook_help().
+ */
+function microsummary_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#microsummary':
+      return t('Creates a simple microsummary for your site showing one of a couple things.
+          The default is to provide three different microsummaries.
+          The module can also be configured to show other microsummaries based upon
+          nodes that the administrator has created.');
+    case 'admin/modules#description':
+      return t('Provides microsummaries for your site.');
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function microsummary_menu() {
+  $items = array();
+
+  $items['microsummary_posts'] = array(
+    'title' => 'Microsummary posts page',
+    'page callback' => 'microsummary_page',
+    'page arguments' => array('posts'),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+  );
+  $items['microsummary_users'] = array(
+    'title' => 'Microsummary users page',
+    'page callback' => 'microsummary_page',
+    'page arguments' => array('users'),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+  );
+  $items['microsummary_latest_blog'] = array(
+    'title' => 'Microsummary latest blog page',
+    'page callback' => 'microsummary_page',
+    'page arguments' => array('blog'),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+  );
+  $items['admin/settings/microsummary'] = array(
+    'title' => 'Microsummary Settings',
+    'description' => 'Configure microsummaries.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('microsummary_admin_settings'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  // Show the custom microsummary nodes if configured.
+  $nids = variable_get('microsummary_nids', FALSE);
+  if ($nids) {
+    foreach (explode(',', $nids) as $nid) {
+      $node = node_load($nid);
+      if ($node->nid) {
+        $items['microsummary/'. $node->nid] = array(
+          'title' => 'Custom Microsummary',
+          'description' => 'Microsummary Pages.',
+          'page callback' => 'microsummary_page',
+          'page arguments' => array('node'),
+          'access' => 'access content',
+          'type' => MENU_CALLBACK,
+        );
+      }
+    }
+  }
+  return $items;
+}
+
+/**
+ * Implementation of hook_init().
+ */
+function microsummary_init() {
+  if (variable_get('microsummary_default_inclusion', TRUE)) {
+    drupal_set_html_head(microsummary_get_links());
+  }
+}
+
+/**
+ * Implementation of hook_settings().
+ */
+function microsummary_admin_settings() {
+  if (user_access('administer site configuration')) {
+  $form["general"]["microsummary_show_defaults"] = array('#type' => 'checkbox',
+    '#title' => t('Show default microsummaries'),
+    '#default_value' => variable_get('microsummary_show_defaults', TRUE),
+    '#description' => t('Should this website show the default microsumaries.'),
+    );
+
+  $form["general"]["microsummary_default_inclusion"] = array('#type' => 'checkbox',
+    '#title' => t('Default linking method'),
+    '#default_value' => variable_get('microsummary_default_inclusion', TRUE),
+    '#description' => t("Using microsummary's default inclusion method is easier but may be a performance problem on busy websites.  If you use the block method then you should shut this off to remove duplicate microsummaries."),
+    );
+
+
+  $form["general"]["microsummary_nids"] = array('#type' => 'textarea',
+      '#title' => t('Microsummary nodes'), '#default_value' => variable_get('microsummary_nids', ''),
+      '#description' => t('List of node IDs that have php bodies designed specifically to provide a microsummary.  Separate each node id with commas like "2,5,7" (but without the quotes).')
+    );
+
+  $form["general"]["microsummary_prefix"] = array('#type' => 'textfield',
+    '#title' => t('Microsummary prefix'), '#size' => 20, '#maxlength' => 30,
+    '#default_value' => variable_get('microsummary_prefix', ''),
+    '#description' => t('An optional prefix for the microsummary.  This value will be placed at the beginning of the microsummary bookmark. Firefox shows the user as few as the first 24 characters so it is recommended to keep this value short.'),
+    );
+
+  $form["general"]["microsummary_suffix"] = array('#type' => 'textfield',
+    '#title' => t('Microsummary suffix'), '#size' => 20, '#maxlength' => 30,
+    '#default_value' => variable_get('microsummary_suffix', ''),
+    '#description' => t('An optional suffix for the microsummary.  This value will be placed at the end of the microsummary bookmark. Firefox shows the user as few as the first 24 characters so this value may not be seen.'),
+    );
+
+  }
+  return system_settings_form($form);
+}
+
+/**
+ * callback for microsummary pages
+ *
+ */
+function microsummary_page($type) {
+  global $user;
+  switch ($type) {
+  case 'posts':
+    $node_count = 0;
+
+    // Get some information about content.
+    if (!$user->uid) {
+      // Return count new/updated nodes in last week.
+      $new = db_result(db_query(db_rewrite_sql("SELECT COUNT(DISTINCT n.nid) FROM {node} n WHERE n.created > %d"), time() - 30 * 24 * 60 * 60));
+      $updated = db_result(db_query(db_rewrite_sql("SELECT COUNT(DISTINCT n.nid) FROM {node} n WHERE n.changed > %d"), time() - 30 * 24 * 60 * 60));
+    }
+    else {
+      //return count new/updated nodes for this user
+      $new = db_result(db_query(db_rewrite_sql("SELECT COUNT(DISTINCT n.nid) FROM {node} n LEFT OUTER JOIN {history} h ON n.nid = h.nid AND h.uid = %d WHERE h.nid IS NULL"), $user->uid));
+      $updated = db_result(db_query(db_rewrite_sql("SELECT COUNT(DISTINCT n.nid) FROM {node} n INNER JOIN {history} h ON n.nid = h.nid WHERE h.uid = %d AND h.timestamp < n.changed"), $user->uid));
+      //TODO: return count new comments for this user
+    }
+    $output = t('posts %new new %updated updated',
+      array('%new' => $new, '%updated' => $updated));
+
+    break;
+
+  case 'users':
+    //get some status on users
+    $registered = db_result(db_query(db_rewrite_sql("SELECT COUNT(uid) FROM {users} WHERE status = 1;")));
+    $active = db_result(db_query(db_rewrite_sql("SELECT COUNT(uid) FROM {users} WHERE login > 0")));
+    $output = t('users: %registered registered %active active',
+      array('%new' => $new, '%updated' => $updated , '%registered' => $registered , '%active' => $active));
+    break;
+
+  case 'blog':
+    $rec = db_fetch_object(db_query_range("SELECT title, created FROM {node} WHERE status = 1 ORDER BY created DESC", 0, 1));
+    $posted = format_date($rec->created, 'custom', variable_get('date_format_short', 'm/d/Y - H:i'));
+    $output = t('%title posted: %posted', array('%title' => $rec->title, '%posted' => $posted));
+    break;
+
+  case 'node':
+    $node = node_load(arg(1));
+    $output = str_replace(array("\r\n", "\n", "\r"), "", check_markup($node->body, $node->format, FALSE));
+    break;
+  default:
+    $output = t('Whoops - Configure your microsummaries!');
+  }
+  print variable_get('microsummary_prefix', '') . $output . variable_get('microsummary_suffix', '');
+}
+
+/**
+ * Implementation for hook_block
+ */
+function microsummary_block($op = 'list', $delta = 0) {
+  global $user;
+  if ($op == 'list') {
+    $block[0]['info'] = t('Microsummary block');
+    return $block;
+  }
+  else if ($op == 'view') {
+    switch ($delta) {
+      // Shows microsummary block
+      case 0:
+        $block['content'] = microsummary_get_links();
+        $block['subject'] = '';
+        return $block;
+    }
+  }
+}
+
+/**
+ * function used to insert the microsummary links into the page
+ *
+ * @param return
+ *   HTML formatted content suitable to be inserted in a block or theme
+ */
+function microsummary_get_links() {
+    $output = '';
+    $nids = variable_get('microsummary_nids', FALSE);
+
+    //Only parse this data if we need it.
+    if (variable_get('microsummary_show_defaults', TRUE) || $nids) {
+      $protocol = 'http://';
+
+      // Are we on a secure page?
+      if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']) {
+        $protocol = 'https://';
+      }
+
+      $protocol = 'http://'; //should microsummaries ever be on https?  TODO: enable that.
+      $host = getenv("SERVER_NAME");
+      if (variable_get('clean_url', 0)==0) {
+        $url_prefix = $protocol . $host . base_path() .'?q=';
+      }
+      else {
+        $url_prefix = $protocol . $host . base_path();
+      }
+    }
+
+    // Only show the default microsummaries if they are enabled.
+    if (variable_get('microsummary_show_defaults', TRUE)) {
+      $output .= '<link rel="microsummary" href="'. url($url_prefix .'microsummary_posts') .'" />';
+      $output .= '<link rel="microsummary" href="'. url($url_prefix .'microsummary_users') .'" />';
+      $output .=  '<link rel="microsummary" href="'. url($url_prefix .'microsummary_latest_blog') .'" />';
+    }
+
+    // If there are nodes configured for microsummary, advertise those.
+    if ($nids) {
+      foreach (explode(',', $nids) as $nid) {
+        $output .=  '<link rel="microsummary" href="'. url($url_prefix .'microsummary/'. $nid) .'" />';
+      }
+    }
+    return $output;
+}

@@ -1,0 +1,108 @@
+<?php
+// $Id: comment_notify.install,v 1.11 2009/02/04 23:20:03 greggles Exp $
+/**
+ * @file
+ * comment_notify.install.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function comment_notify_install() {
+  // Create the table.
+  drupal_install_schema('comment_notify');
+
+  // Insert a record for each existing comment.
+  if ( $GLOBALS['db_type']=='pgsql') {
+    db_query("INSERT INTO {comment_notify} (cid, notify, notify_hash) SELECT c.cid, 0, md5(c.mail || coalesce(u.mail, u.init) || c.uid || c.name || c.nid) FROM {comments} c LEFT OUTER JOIN {users} u on c.uid = u.uid");
+  }
+  else {
+    db_query("INSERT INTO {comment_notify} (cid, notify, notify_hash) SELECT c.cid, 0, md5(concat(c.mail, ifnull(u.mail, u.init), c.uid, c.name, c.nid)) FROM {comments} c LEFT OUTER JOIN {users} u on c.uid = u.uid");
+  }
+
+  // Set module weight low so that other modules act on the comment first.
+  db_query("UPDATE {system} SET weight = 10 WHERE name = 'comment_notify'");
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function comment_notify_uninstall() {
+  drupal_uninstall_schema('comment_notify');
+  variable_del('node_notify_default_mailtext');
+  db_query("DELETE FROM {variable} WHERE name LIKE 'comment_notify_%'");
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function comment_notify_schema() {
+  $schema['comment_notify'] = array(
+    'description' => t('Stores information about which commenters on the site have subscriped to followup emails.'),
+    'fields' => array(
+      'cid' => array(
+        'type' => 'serial',
+        'description' => 'The comment id from {comments}.cid',
+        'not null' => TRUE,
+        'disp-width' => '11'),
+      'notify' => array(
+        'type' => 'int',
+        'description' => 'A boolean indicator for whether or not they subscribed: 1 means subscribed, 0 means not subscribed.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'disp-width' => '11'),
+      'notify_hash' => array(
+        'type' => 'varchar',
+        'description' => 'An md5 hash of unique information about the commenter.  Used for unsubscribing users.',
+        'length' => '32',
+        'not null' => TRUE,
+        'default' => ''),
+    ),
+    'primary key' => array('cid'),
+    'indexes' => array(
+      'notify_hash' => array('notify_hash')),
+  );
+  return $schema;
+}
+
+/**
+ * Sync up the two tables after as part of http://drupal.org/node/297791
+ */
+function comment_notify_update_6000() {
+  $return[] = update_sql("DELETE FROM {comment_notify} WHERE cid NOT IN (SELECT cid FROM {comments})");
+  return $return;
+}
+
+/**
+ * Permissions got renamed, update them.
+ */
+function comment_notify_update_6001() {
+  $ret = array();
+  $result = db_query("SELECT pid, perm FROM {permission}");
+  while ($row = db_fetch_object($result)) {
+    $permissions = explode(', ', $row->perm);
+    if (in_array('Subscribe to comments', $permissions) && !in_array('subscribe to comments', $permissions)) {
+      $permissions[] = 'subscribe to comments';
+    }
+    if (in_array('Administer comment notify', $permissions) && !in_array('administer comment notify', $permissions)) {
+      $permissions[] = 'administer comment notify';
+    }
+
+    $permissions = implode(', ', $permissions);
+    db_query("UPDATE {permission} SET perm = '%s' WHERE pid = %d", $permissions, $row->pid);
+  }
+  return $ret;
+}
+
+/**
+ * Drop the notify column from the {comments} table.  This column will only exist
+ * if the 5.x-1.x version of comment_notify was installed at some point.  Since
+ * the 5.x-2.x version of the module {comment_notify}.notify has been used instead.
+ */
+function comment_notify_update_6002() {
+  $ret = array();
+  if (db_column_exists('comments', 'notify')) {
+    db_drop_field($ret, 'comments', 'notify');
+  }
+  return $ret;
+}

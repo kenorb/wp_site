@@ -1,0 +1,55 @@
+<?php
+/**
+ * Install file for G2 Glossary
+ *
+ * @copyright 2007 Ouest Systemes Informatiques
+ * @license CeCILL 2.0
+ * @version $Id: g2.install,v 1.4.2.2 2007/08/25 13:15:47 fgm Exp $
+ * @todo provide an upgrade path for D4.7 users, maybe for D5 users too
+ */
+
+$_g2_install_er = error_reporting(E_ALL | E_STRICT);
+
+/**
+ * Drupal install function for 4.7
+ * http://drupal.org/node/51220
+ * @return void
+ */
+function g2_install()
+  {
+  // Create tables.
+  drupal_install_schema('g2');
+  drupal_set_message(t('Installed G2 schema'), 'status');
+  }
+
+/**
+ * Does nothing, just let us have a current version
+ */
+function g2_update_6000() {
+  return array(
+    'success' => true,
+    'query'   => 'nothing');
+  }
+
+function g2_uninstall()
+  {
+  // Remove tables.
+  drupal_uninstall_schema('g2');
+  drupal_set_message(t('Uninstalled G2 schema'), 'status');
+
+  // Remove variables
+  $variables = array();
+  $sq = 'SELECT v.name '
+      . 'FROM {variable} v '
+      . "WHERE v.name LIKE 'g2_%' OR v.name LIKE 'g2/%' ";
+  $q = db_query($sq);
+  while ($o = db_fetch_object($q))
+    {
+    $variables[] = $o->name;
+    }
+  array_walk($variables, 'variable_del');
+  drupal_set_message(t('Removed G2 Glossary variables'), 'status');
+  }
+
+error_reporting($_g2_install_er);
+unset($_g2_install_er);

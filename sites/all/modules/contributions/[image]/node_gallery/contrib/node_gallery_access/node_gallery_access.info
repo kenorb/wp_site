@@ -1,0 +1,12 @@
+name = Node Gallery Access
+description = "Access module for node gallery module."
+core = 6.x
+dependencies[] = node_gallery
+package = Node Gallery
+version = "6.x-1.0alpha"
+; Information added by drupal.org packaging script on 2008-11-17
+version = "6.x-1.0-alpha3"
+core = "6.x"
+project = "node_gallery"
+datestamp = "1226886916"
+

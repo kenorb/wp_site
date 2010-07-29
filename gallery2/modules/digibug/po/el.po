@@ -1,0 +1,159 @@
+# $Id: el.po 18173 2008-10-17 07:14:30Z andy_st $
+#
+# Gallery - a web based photo album viewer and editor
+# Copyright (C) 2000-2008 Bharat Mediratta
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA  02110-1301, USA.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Gallery: Digibug 1.0.8\n"
+"Report-Msgid-Bugs-To: gallery-translations@lists.sourceforge.net\n"
+"POT-Creation-Date: 2006-09-12 10:46-0700\n"
+"PO-Revision-Date: 2007-03-24 16:29+0200\n"
+"Last-Translator: Anthi Andreou <tp_s@hotmail.com>\n"
+"Language-Team: Greek <gallery-devel@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Greek\n"
+"X-Poedit-Country: GREECE\n"
+
+msgid "Digibug"
+msgstr "Digibug"
+
+msgid "Digibug Photo Printing Module"
+msgstr "Module Εκτύπωσης Φωτογραφιών Digibug"
+
+msgid "Commerce"
+msgstr "Εμπορικό"
+
+msgid "[digibug] Print"
+msgstr "[digibug] Εκτύπωση"
+
+msgid "Print on Digibug.com"
+msgstr "Εκτυπώστε στο Digibug.com"
+
+msgid "Print with Digibug"
+msgstr "Εκτυπώστε με Digibug"
+
+msgid "Digibug Photo Printing Settings"
+msgstr "Ρυθμίσεις Εκτύπωσης Φωτογραφίας Digibug"
+
+msgid "Settings saved successfully"
+msgstr "Οι Ρυθμίσεις αποθηκεύτηκαν με επιτυχία"
+
+msgid ""
+"Digibug offers you two options for turning your photos into a wide variety of prints, gifts "
+"and games. Choose your solution and get started today!"
+msgstr ""
+
+#, fuzzy
+msgid "Digibug Basic"
+msgstr "Digibug"
+
+msgid "Fast Easy Photo Fulfillment"
+msgstr ""
+
+msgid ""
+"Power up your Gallery with professional level fulfillment from Kodak. Just use Digibug Basic "
+"and there's nothing else to do - no registration, no administration, no hassles."
+msgstr ""
+
+msgid "Matte and Glossy prints, from 4x6 to as big as 30x40"
+msgstr ""
+
+msgid ""
+"Great photo gifts like canvases, apparel, bags, puzzles, mugs and sports memorabilia and more"
+msgstr ""
+
+msgid "Outstanding quality and customer service"
+msgstr ""
+
+msgid "CLICK HERE to switch back to Basic mode."
+msgstr ""
+
+msgid "You are currently using Basic mode!"
+msgstr ""
+
+#, fuzzy
+msgid "Digibug ADVANCED"
+msgstr "Digibug"
+
+msgid "The Pro's Solution"
+msgstr ""
+
+msgid ""
+"Digibug ADVANCED allows you to set your own price for photos and gifts. Simply provide us "
+"with your account information and we'll send you a check each month with your profits. It's "
+"the perfect online retail business solution for a photographer - no inventory, no "
+"overhead... just profits!"
+msgstr ""
+
+msgid ""
+"Enjoy the same range of professional level photo prints and gifts, but set your own price "
+"and charge what you believe your photos are worth. We'll take care of the rest."
+msgstr ""
+
+msgid "New to Digibug ADVANCED?"
+msgstr ""
+
+#, c-format
+msgid "%sSign up%s to get started"
+msgstr ""
+
+msgid "Do you have a Digibug Company ID and Event ID?"
+msgstr ""
+
+#, fuzzy
+msgid "Company ID:"
+msgstr "Digibug ID Εταιρείας"
+
+#, fuzzy
+msgid "Event ID:"
+msgstr "ID Εκδήλωσης"
+
+msgid "SAVE"
+msgstr ""
+
+#~ msgid ""
+#~ "Sell your photos as prints or printed gift products!  Visit the %sDigibug configuration "
+#~ "page%s for information on registering for a Digibug Pro Photographer account, and to "
+#~ "learn how to obtain your Digibug Company ID and Event ID.  For general information, "
+#~ "please refer to the %sDigibug.com website.%s"
+#~ msgstr ""
+#~ "Πωλήστε τις φωτογραφίες σας ως εκτυπώσεις ή δώρα με εκτύπωση! Επισκεφθείτε την %sΣελίδα "
+#~ "Ρυθμίσεων Digibug%s για πληροφορίες πως να δημιουργήσετε λογαριασμό στο Digibug Pro "
+#~ "Photographer, και να μάθετε πως μπορείτε να πάρετε το Digibug ID εταιρείας και ID "
+#~ "Εκδήλωσης. Για γενικές πληροφορίες, παρακαλούμε επισκεφθείτε την %sΙστοσελίδα της Digibug."
+#~ "com%s"
+
+#, fuzzy
+#~ msgid "You must enter a valid digibug customer id."
+#~ msgstr "Πρέπει να δώσετε το id πελάτη της digibug"
+
+#~ msgid "Please create an event or use your default event id as your pricelist id."
+#~ msgstr ""
+#~ "Παρακαλούμε δημιουργήστε μια εκδήλωση ή χρησιμοποιήστε το προεπιλεγμένο id εκδήλωσης ως "
+#~ "id του τιμοκαταλόγου σας."
+
+#~ msgid "Save"
+#~ msgstr "Αποθήκευσης"
+
+#~ msgid "Cancel"
+#~ msgstr "Ακύρωση"
+
+#~ msgid "Reset"
+#~ msgstr "Επαναφορά"

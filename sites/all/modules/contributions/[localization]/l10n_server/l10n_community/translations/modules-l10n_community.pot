@@ -1,0 +1,922 @@
+# $Id: modules-l10n_community.pot,v 1.1.2.1 2008/10/14 22:18:08 goba Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  ajax.inc,v 1.1.2.8 2007/12/28 16:40:12 goba
+#  export.inc,v 1.1.2.9 2008/01/17 21:11:06 goba
+#  import.inc,v 1.1.2.5 2007/12/23 22:51:53 goba
+#  pages.inc,v 1.1.2.19 2007/12/28 16:40:12 goba
+#  translate.inc,v 1.1.2.5 2007/12/28 16:40:12 goba
+#  l10n_community.module,v 1.1.2.15 2008/01/02 23:14:12 goba
+#  welcome.inc,v 1.1.2.6 2007/12/28 16:40:12 goba
+#  extractor.inc,v 1.1.2.11 2008/01/17 01:24:37 goba
+#  l10n_community.info,v 1.1.2.4 2007/10/03 19:57:24 goba
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-02-01 20:54+0100\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: ajax.inc:45
+msgid "Used in:"
+msgstr ""
+
+#: ajax.inc:52
+msgid "<strong>Translated by:</strong><br /> %username at %date"
+msgstr ""
+
+#: ajax.inc:62
+msgid "Approve suggestion."
+msgstr ""
+
+#: ajax.inc:64
+msgid "Decline suggestion."
+msgstr ""
+
+#: ajax.inc:66
+msgid "Copy suggestion text to the edit field."
+msgstr ""
+
+#: ajax.inc:75
+msgid "Outstanding suggestions:"
+msgstr ""
+
+#: export.inc:14 import.inc:23 pages.inc:100;196 translate.inc:25
+msgid "Home"
+msgstr ""
+
+#: export.inc:15 pages.inc:101;197 translate.inc:26 l10n_community.module:83;165
+msgid "Translate"
+msgstr ""
+
+#: export.inc:22
+msgid "Export @language translations"
+msgstr ""
+
+#: export.inc:23 pages.inc:102 l10n_community.module:97
+msgid "Explore languages"
+msgstr ""
+
+#: export.inc:27
+msgid "Export @project translation templates"
+msgstr ""
+
+#: export.inc:28 pages.inc:198 l10n_community.module:107
+msgid "Explore projects"
+msgstr ""
+
+#: export.inc:56
+msgid "Source data"
+msgstr ""
+
+#: export.inc:66
+msgid "Choose a project"
+msgstr ""
+
+#: export.inc:90 translate.inc:86;114;130 welcome.inc:107;117
+msgid "All"
+msgstr ""
+
+#: export.inc:95 translate.inc:135
+msgid "Release"
+msgstr ""
+
+#: export.inc:99
+msgid "Exporting with all releases is useful for translators, but is not optimal to use for end users because unused data would clutter up their database, when files get imported. Export for all releases if you would like to provide a complete translation, and you work with a desktop tool."
+msgstr ""
+
+#: export.inc:110
+msgid "Format"
+msgstr ""
+
+#: export.inc:115
+msgid "Type of export"
+msgstr ""
+
+#: export.inc:117 translate.inc:404
+msgid "Translation"
+msgstr ""
+
+#: export.inc:117
+msgid "Translation template"
+msgstr ""
+
+#: export.inc:119
+msgid "Templates only contain the source (English) strings, translations are represented by empty placeholders."
+msgstr ""
+
+#: export.inc:122
+msgid "Format used"
+msgstr ""
+
+#: export.inc:124
+msgid "Drupal 6 package format"
+msgstr ""
+
+#: export.inc:124
+msgid "Drupal 5 package format for autolocale module"
+msgstr ""
+
+#: export.inc:124
+msgid "Flat package for CVS commit"
+msgstr ""
+
+#: export.inc:124
+msgid "All in one file"
+msgstr ""
+
+#: export.inc:126
+msgid "Drupal 5's autolocale module and Drupal 6 use different conventions for directory naming in packages. Temporarily, as long as you need to use CVS to distribute translations the flat package helps you generate a package for committing to Drupal.org. Additionally, for testing, spell checking and smaller modules, you can also export in one file without packaging as well. It is not advised to use big .po files for importing in Drupal though, as it might lead to incomplete imports. Use packages for usage with Drupal importing."
+msgstr ""
+
+#: export.inc:131 l10n_community.module:209
+msgid "Export"
+msgstr ""
+
+#: export.inc:131
+msgid "Choose project"
+msgstr ""
+
+#: export.inc:141
+msgid "You should choose a project, submit the form and choose a release."
+msgstr ""
+
+#: export.inc:144
+msgid "Invalid project chosen."
+msgstr ""
+
+#: export.inc:159
+msgid "You should choose a release."
+msgstr ""
+
+#: export.inc:165
+msgid "Invalid release chosen."
+msgstr ""
+
+#: extractor.inc:42
+msgid "Package to parse (%file) does not exist."
+msgstr ""
+
+#: extractor.inc:45
+msgid "Temporary directory %path already exists."
+msgstr ""
+
+#: extractor.inc:52
+msgid "Error on untaring %filename file."
+msgstr ""
+
+#: extractor.inc:70
+msgid "Contents of %filename have been scanned."
+msgstr ""
+
+#: extractor.inc:96;100 l10n_community.module:0
+msgid "l10n_community"
+msgstr ""
+
+#: import.inc:15
+msgid "Import translations to @language"
+msgstr ""
+
+#: import.inc:18
+msgid "Import suggestions to @language"
+msgstr ""
+
+#: import.inc:24
+msgid "Translate projects"
+msgstr ""
+
+#: import.inc:42
+msgid "Translation file"
+msgstr ""
+
+#: import.inc:44
+msgid "A Gettext Portable Object (.po) file to upload."
+msgstr ""
+
+#: import.inc:47
+msgid "Store as suggestions"
+msgstr ""
+
+#: import.inc:49
+msgid "Check if the translations you import need discussion. If checked, all translations in the imported file will be saved as suggestions."
+msgstr ""
+
+#: import.inc:59 l10n_community.module:200
+msgid "Import"
+msgstr ""
+
+#: import.inc:80
+msgid "The translation was successfully imported."
+msgstr ""
+
+#: import.inc:85
+msgid "File to import not found."
+msgstr ""
+
+#: (duplicate) import.inc:110 
+msgid "The translation import failed, because the file %filename could not be read."
+msgstr ""
+
+#: (duplicate) import.inc:135 
+msgid "The translation file %filename contains an error: \"msgstr\" was expected but not found on line %line."
+msgstr ""
+
+#: (duplicate) import.inc:141 
+msgid "The translation file %filename contains an error: \"msgid_plural\" was expected but not found on line %line."
+msgstr ""
+
+#: (duplicate) import.inc:147 ;165 ;177 ;185 ;199 ;208 
+msgid "The translation file %filename contains a syntax error on line %line."
+msgstr ""
+
+#: (duplicate) import.inc:159 
+msgid "The translation file %filename contains an error: \"msgid\" is unexpected on line %line."
+msgstr ""
+
+#: (duplicate) import.inc:173 
+msgid "The translation file %filename contains an error: \"msgstr[]\" is unexpected on line %line."
+msgstr ""
+
+#: (duplicate) import.inc:193 
+msgid "The translation file %filename contains an error: \"msgstr\" is unexpected on line %line."
+msgstr ""
+
+#: (duplicate) import.inc:221 
+msgid "The translation file %filename contains an error: there is an unexpected string on line %line."
+msgstr ""
+
+#: (duplicate) import.inc:232 
+msgid "The translation file %filename ended unexpectedly at line %line."
+msgstr ""
+
+#: pages.inc:18;209
+msgid "No languages to list."
+msgstr ""
+
+#: pages.inc:22
+msgid "No strings to translate."
+msgstr ""
+
+#: pages.inc:43;235
+msgid "Language"
+msgstr ""
+
+#: pages.inc:58
+msgid "No projects found."
+msgstr ""
+
+#: pages.inc:82 translate.inc:108
+msgid "Project"
+msgstr ""
+
+#: pages.inc:107
+msgid "No language selected."
+msgstr ""
+
+#: pages.inc:112
+msgid "@language overview"
+msgstr ""
+
+#: pages.inc:127
+msgid "There are currently no posts set for display here. Mark posts to display here with the %tagname tag, using the taxonomy module."
+msgstr ""
+
+#: pages.inc:136
+msgid "The <a href=\"@group\">%language group</a> pages might provide you with more information, translation suggestions and guidelines."
+msgstr ""
+
+#: pages.inc:139;244 welcome.inc:67
+msgid "Contribute"
+msgstr ""
+
+#: pages.inc:140
+msgid "Review, translate, import"
+msgstr ""
+
+#: pages.inc:141
+msgid "Different tabs allow you to view existing translations, suggest new ones, import translations completed offline or export translations for import to Drupal or offline work."
+msgstr ""
+
+#: pages.inc:150
+msgid "Progress status"
+msgstr ""
+
+#: pages.inc:151
+msgid "Status overview"
+msgstr ""
+
+#: pages.inc:163
+msgid "Top contributors"
+msgstr ""
+
+#: pages.inc:164
+msgid "People with most approved translations"
+msgstr ""
+
+#: pages.inc:175
+msgid "Nobody contributed to this translation yet."
+msgstr ""
+
+#: pages.inc:203;286
+msgid "No project selected."
+msgstr ""
+
+#: pages.inc:206
+msgid "@project project translations"
+msgstr ""
+
+#: pages.inc:216
+msgid "Translations overview"
+msgstr ""
+
+#: pages.inc:217
+msgid "Overall status of translations"
+msgstr ""
+
+#: pages.inc:245
+msgid "Export, translate, review"
+msgstr ""
+
+#: pages.inc:246
+msgid "Select a language from the overview to review translations and contribute to the translation efforts. The export tab allows exporting of translation templates, but translations can also be exported on the language pages."
+msgstr ""
+
+#: pages.inc:263
+msgid "@project summary"
+msgstr ""
+
+#: pages.inc:264
+msgid "Some details we know about this project"
+msgstr ""
+
+#: pages.inc:266
+msgid "Project home"
+msgstr ""
+
+#: pages.inc:266
+msgid "Not available"
+msgstr ""
+
+#: pages.inc:270
+msgid "No marker error found"
+msgstr ""
+
+#: pages.inc:289
+msgid "@project project errors"
+msgstr ""
+
+#: pages.inc:292
+msgid "No marker errors found in any of the parsed releases of this project."
+msgstr ""
+
+#: pages.inc:301
+msgid "No errors found in this release."
+msgstr ""
+
+#: pages.inc:333
+msgid "n/a"
+msgstr ""
+
+#: pages.inc:334
+msgid "No data available."
+msgstr ""
+
+#: pages.inc:341
+msgid "!percent translated"
+msgstr ""
+
+#: pages.inc:342
+msgid "!percent untranslated"
+msgstr ""
+
+#: pages.inc:371
+msgid "Overall status"
+msgstr ""
+
+#: pages.inc:372
+msgid "Untranslated."
+msgstr ""
+
+#: pages.inc:373
+msgid "Have suggestions."
+msgstr ""
+
+#: pages.inc:153 welcome.inc:47
+msgid "1 contributor"
+msgid_plural "@count contributors"
+msgstr[0] ""
+msgstr[1] ""
+
+#: pages.inc:154 welcome.inc:50
+msgid "1 string to translate"
+msgid_plural "@count strings to translate"
+msgstr[0] ""
+msgstr[1] ""
+
+#: pages.inc:155 welcome.inc:51
+msgid "1 translation recorded"
+msgid_plural "@count translations recorded"
+msgstr[0] ""
+msgstr[1] ""
+
+#: pages.inc:156 welcome.inc:52
+msgid "1 suggestion awaiting approval"
+msgid_plural "@count suggestions awaiting approval"
+msgstr[0] ""
+msgstr[1] ""
+
+#: pages.inc:169
+msgid "!name - 1 translation"
+msgid_plural "!name - @count translations"
+msgstr[0] ""
+msgstr[1] ""
+
+#: pages.inc:267
+msgid "1 release in total"
+msgid_plural "@count releases in total"
+msgstr[0] ""
+msgstr[1] ""
+
+#: pages.inc:268
+msgid "1 release parsed"
+msgid_plural "@count releases parsed"
+msgstr[0] ""
+msgstr[1] ""
+
+#: pages.inc:269
+msgid "1 source string in total"
+msgid_plural "@count source strings in total"
+msgstr[0] ""
+msgstr[1] ""
+
+#: pages.inc:270
+msgid "1 marker error found"
+msgid_plural "@count marker errors found"
+msgstr[0] ""
+msgstr[1] ""
+
+#: translate.inc:61
+msgid "No strings found with this filter. Try adjusting the filter options."
+msgstr ""
+
+#: translate.inc:65
+msgid "@language translations"
+msgstr ""
+
+#: translate.inc:71
+msgid "Translate to @language"
+msgstr ""
+
+#: translate.inc:87
+msgid "Untranslated"
+msgstr ""
+
+#: translate.inc:88
+msgid "Has suggestion"
+msgstr ""
+
+#: translate.inc:89
+msgid "Translated"
+msgstr ""
+
+#: translate.inc:92
+msgid "Show only strings where"
+msgstr ""
+
+#: translate.inc:104
+msgid "Link to this page"
+msgstr ""
+
+#: translate.inc:143
+msgid "Status"
+msgstr ""
+
+#: translate.inc:149
+msgid "Contains"
+msgstr ""
+
+#: translate.inc:155;180
+msgid "Filter"
+msgstr ""
+
+#: translate.inc:160
+msgid "Reset"
+msgstr ""
+
+#: translate.inc:197
+msgid "No project found with name %name. Reverted to filter to all projects."
+msgstr ""
+
+#: translate.inc:310
+msgid "Has suggestions."
+msgstr ""
+
+#: translate.inc:310
+msgid "Has no suggestions."
+msgstr ""
+
+#: translate.inc:372
+msgid "New suggestion for variant #%d"
+msgstr ""
+
+#: translate.inc:372
+msgid "New translation for variant #%d"
+msgstr ""
+
+#: translate.inc:376
+msgid "Suggestion for variant #%d"
+msgstr ""
+
+#: translate.inc:376
+msgid "Translation for variant #%d"
+msgstr ""
+
+#: translate.inc:404
+msgid "New suggestion"
+msgstr ""
+
+#: translate.inc:404
+msgid "New translation"
+msgstr ""
+
+#: translate.inc:404
+msgid "Suggestion"
+msgstr ""
+
+#: translate.inc:420
+msgid "Flag as suggestion for later discussion"
+msgstr ""
+
+#: translate.inc:439
+msgid "Show detailed information."
+msgstr ""
+
+#: translate.inc:440
+msgid "There was an error approving this suggestion. You might not have permission or the suggestion id was invalid."
+msgstr ""
+
+#: translate.inc:441
+msgid "!icon Suggestion approved."
+msgstr ""
+
+#: translate.inc:443
+msgid "There was an error declining this suggestion. You might not have permission or the suggestion id was invalid."
+msgstr ""
+
+#: translate.inc:444
+msgid "Suggestion declined."
+msgstr ""
+
+#: translate.inc:456
+msgid "Save suggestions"
+msgstr ""
+
+#: translate.inc:456
+msgid "Save translations"
+msgstr ""
+
+#: translate.inc:521
+msgid "line break"
+msgstr ""
+
+#: welcome.inc:24
+msgid "About this interface"
+msgstr ""
+
+#: welcome.inc:25
+msgid "Community for Drupal translations"
+msgstr ""
+
+#: welcome.inc:26
+msgid "This interface serves as a community hub for translating Drupal projects, so translators only need to use a browser to contribute. Our system knows about Drupal projects, such as modules, themes and install profiles; with their respective releases. This means that all text added to these packages are translatable. New projects and releases are scanned regularly. Languages are maintained by translation groups. Every group has a community space, where members can share information, discuss specific questions and document best practices. Finally, translations are packaged on drupal.org for each project release."
+msgstr ""
+
+#: welcome.inc:44
+msgid "Quick stats"
+msgstr ""
+
+#: welcome.inc:45
+msgid "Some facts about this community"
+msgstr ""
+
+#: welcome.inc:61
+msgid "You can view the work being done here, but to participate, first you need to <a href=\"@register\">create an account and/or log in</a>"
+msgstr ""
+
+#: welcome.inc:68
+msgid "Suggest, translate, review"
+msgstr ""
+
+#: welcome.inc:74
+msgid "Translator's guide"
+msgstr ""
+
+#: welcome.inc:74
+msgid "Documentation for translators on drupal.org."
+msgstr ""
+
+#: welcome.inc:75
+msgid "Translations group"
+msgstr ""
+
+#: welcome.inc:75
+msgid "Translations group at groups.drupal.org."
+msgstr ""
+
+#: welcome.inc:76
+msgid "Mailing list"
+msgstr ""
+
+#: welcome.inc:76
+msgid "Translators mailing list hosted at drupal.org."
+msgstr ""
+
+#: welcome.inc:84
+msgid "Handy links"
+msgstr ""
+
+#: welcome.inc:85
+msgid "Documentation, discussion spaces"
+msgstr ""
+
+#: welcome.inc:99
+msgid "No languages defined or no projects scanned yet."
+msgstr ""
+
+#: welcome.inc:106
+msgid "Pick a language"
+msgstr ""
+
+#: welcome.inc:108
+msgid "Alternatively you can <a href=\"@explore\">explore languages</a>."
+msgstr ""
+
+#: welcome.inc:111
+msgid "And/or pick a project"
+msgstr ""
+
+#: welcome.inc:112
+msgid "Alternatively you can <a href=\"@explore\">explore projects</a>."
+msgstr ""
+
+#: welcome.inc:135
+msgid "Choose"
+msgstr ""
+
+#: welcome.inc:143
+msgid "Select a language and/or a project."
+msgstr ""
+
+#: welcome.inc:34
+msgid "1 translation group"
+msgid_plural "@count translation groups"
+msgstr[0] ""
+msgstr[1] ""
+
+#: welcome.inc:48
+msgid "1 project managed"
+msgid_plural "@count projects managed"
+msgstr[0] ""
+msgstr[1] ""
+
+#: welcome.inc:49
+msgid "1 file scanned"
+msgid_plural "@count files scanned"
+msgstr[0] ""
+msgstr[1] ""
+
+#: l10n_community.module:63 l10n_community.info:0
+msgid "Localization server"
+msgstr ""
+
+#: l10n_community.module:64
+msgid "Configuration options for the localization server."
+msgstr ""
+
+#: l10n_community.module:71
+msgid "Translation interface"
+msgstr ""
+
+#: l10n_community.module:73
+msgid "Control the display of the translation interface."
+msgstr ""
+
+#: l10n_community.module:90;174;231
+msgid "Overview"
+msgstr ""
+
+#: l10n_community.module:98
+msgid "Overview of languages and their translation status."
+msgstr ""
+
+#: l10n_community.module:108
+msgid "Overview of projects and their translation status."
+msgstr ""
+
+#: l10n_community.module:118
+msgid "Project autocomplete"
+msgstr ""
+
+#: l10n_community.module:130
+msgid "String details"
+msgstr ""
+
+#: l10n_community.module:138
+msgid "Approve suggestion"
+msgstr ""
+
+#: l10n_community.module:146
+msgid "Decline suggestion"
+msgstr ""
+
+#: l10n_community.module:182
+msgid "View"
+msgstr ""
+
+#: l10n_community.module:191
+msgid "Edit"
+msgstr ""
+
+#: l10n_community.module:238
+msgid "Export template"
+msgstr ""
+
+#: l10n_community.module:246
+msgid "Marker errors"
+msgstr ""
+
+#: l10n_community.module:274;303
+msgid "Translation help"
+msgstr ""
+
+#: l10n_community.module:280
+msgid "Bookmarked filters"
+msgstr ""
+
+#: l10n_community.module:309
+msgid "Welcome to the translation server. This block will show you tips and advice throughout the application."
+msgstr ""
+
+#: l10n_community.module:309
+msgid "Once you are familiar with the system, feel free to disable help in <a href=\"@user-page\">your user settings</a>."
+msgstr ""
+
+#: l10n_community.module:314
+msgid "Choose a language to dive in to suggest translations, approve suggestions, import and export."
+msgstr ""
+
+#: l10n_community.module:319
+msgid "Choose a project to explore."
+msgstr ""
+
+#: l10n_community.module:339
+msgid "You can suggest translations or import complete Gettext translation files to suggest multiple translations at once. People with permission to approve suggestions may either accept or decline your suggestions. To work offline, export a translation template, which contains the current state of the translation."
+msgstr ""
+
+#: l10n_community.module:342
+msgid "As a fully empowered user, you can suggest translations as well as approve translations suggested by others. Export/import of Gettext translation files is also possible."
+msgstr ""
+
+#: l10n_community.module:353
+msgid "Because all project translations are shared, an imported file might provide translations for strings used in any project."
+msgstr ""
+
+#: l10n_community.module:356
+msgid "You have two different options to export. You can either export a template package for a project, or a package containing the existing translations for a given project release. Both types will use the GNU Gettext Portable Object (Template) format, which is understood by Drupal and desktop translation editing tools."
+msgstr ""
+
+#: l10n_community.module:362
+msgid "!newline_image represents a line break. Remember to include a line break in the same position in the translation. Beginning and ending line breaks are saved properly, even if you forget to include them."
+msgstr ""
+
+#: l10n_community.module:362
+msgid "Newline marker"
+msgstr ""
+
+#: l10n_community.module:363
+msgid "Variables are designated with !, @ and % (like %example, !example or @example), and should be kept in the translated text as-is."
+msgstr ""
+
+#: l10n_community.module:366
+msgid "The plural formula in use with this language is %formula."
+msgstr ""
+
+#: l10n_community.module:381
+msgid "This page shows a list of all languages and their overall translation status (accumulated for all releases). Exporting translation works for all languages. Importing your translations is only possible to languages where you have sufficient privileges to do so."
+msgstr ""
+
+#: l10n_community.module:400
+msgid "Localization contributions"
+msgstr ""
+
+#: l10n_community.module:423
+msgid "Number of projects to display per page"
+msgstr ""
+
+#: l10n_community.module:424
+msgid "Number of projects displayed per page in overviews. It is not advised to change this setting on live sites, as it changes what is displayed on each page, so links will break to existing project listings."
+msgstr ""
+
+#: l10n_community.module:805
+msgid "edit"
+msgstr ""
+
+#: l10n_community.module:397
+msgid "1 approved translation"
+msgid_plural "@count approved translations"
+msgstr[0] ""
+msgstr[1] ""
+
+#: l10n_community.module:714
+msgid "1 new translation added"
+msgid_plural "@count new translations added"
+msgstr[0] ""
+msgstr[1] ""
+
+#: l10n_community.module:717
+msgid "1 new suggestion added"
+msgid_plural "@count new suggestions added"
+msgstr[0] ""
+msgstr[1] ""
+
+#: l10n_community.module:720
+msgid "1 translation updated"
+msgid_plural "@count translations updated"
+msgstr[0] ""
+msgstr[1] ""
+
+#: l10n_community.module:723
+msgid "1 translation unchanged"
+msgid_plural "@count translations unchanged"
+msgstr[0] ""
+msgstr[1] ""
+
+#: l10n_community.module:263
+msgid "access localization community"
+msgstr ""
+
+#: l10n_community.module:263
+msgid "submit suggestions"
+msgstr ""
+
+#: l10n_community.module:263
+msgid "submit translations and approve suggestions"
+msgstr ""
+
+#: l10n_community.module:263
+msgid "administer localization community"
+msgstr ""
+
+#: l10n_community.info:0
+msgid "Localization community"
+msgstr ""
+
+#: l10n_community.info:0
+msgid "A community interface for string translation"
+msgstr ""
+
+#: (duplicate) import.inc:110 
+msgid "The translation import failed, because the file %filename could not be read."
+msgstr ""
+
+#: (duplicate) import.inc:135 
+msgid "The translation file %filename contains an error: \"msgstr\" was expected but not found on line %line."
+msgstr ""
+
+#: (duplicate) import.inc:141 
+msgid "The translation file %filename contains an error: \"msgid_plural\" was expected but not found on line %line."
+msgstr ""
+
+#: (duplicate) import.inc:147 ;165 ;177 ;185 ;199 ;208 
+msgid "The translation file %filename contains a syntax error on line %line."
+msgstr ""
+
+#: (duplicate) import.inc:159 
+msgid "The translation file %filename contains an error: \"msgid\" is unexpected on line %line."
+msgstr ""
+
+#: (duplicate) import.inc:173 
+msgid "The translation file %filename contains an error: \"msgstr[]\" is unexpected on line %line."
+msgstr ""
+
+#: (duplicate) import.inc:193 
+msgid "The translation file %filename contains an error: \"msgstr\" is unexpected on line %line."
+msgstr ""
+
+#: (duplicate) import.inc:221 
+msgid "The translation file %filename contains an error: there is an unexpected string on line %line."
+msgstr ""
+
+#: (duplicate) import.inc:232 
+msgid "The translation file %filename ended unexpectedly at line %line."
+msgstr ""
+

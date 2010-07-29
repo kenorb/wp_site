@@ -1,0 +1,11 @@
+.status{
+display:none;
+}
+
+.error{
+display:none;
+}
+
+.required{
+display:block;
+}

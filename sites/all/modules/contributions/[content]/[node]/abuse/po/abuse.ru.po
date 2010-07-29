@@ -1,0 +1,432 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Abuse 5.x-1.x-dev\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2007-03-26 06:00+0300\n"
+"Last-Translator: SadhooKlay <klay@sadhoo.org>\n"
+"Language-Team: SadhooKlay <klay@sadhoo.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: Plural-Forms: nplurals=3; plural=((((n%10)==1)&&((n%100)!=11))?(0):(((((n%10)>=2)&&((n%10)<=4))&&(((n%100)<10)||((n%100)>=20)))?(1):2));\\n\n"
+"X-Poedit-Language: Russian\n"
+"X-Poedit-Country: RUSSIAN FEDERATION\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: abuse.install:43
+msgid "abuse module database table {abuse} created successfully."
+msgstr "Таблица базы данных {abuse} модуля abuse создана успешно."
+
+#: abuse.install:45
+msgid "abuse module database table {abuse} creation failure. Please view the abuse module folder and read the README.txt"
+msgstr "Создание таблицы базы данных {abuse} модуля abuse закончилась неуспешно. Пожалуйста, прочтите файл README.txt в каталоге модуля abuse"
+
+#: abuse.install:48
+msgid "abuse module database table {abuse_warnings} created successfully."
+msgstr "Создание таблицы базы данных {abuse_warnings} модуля abuse закончилась неуспешно."
+
+#: abuse.install:50
+msgid "abuse module database table {abuse_warnings} creation failure. Please view the abuse module folder and read the README.txt"
+msgstr "Создание таблицы базы данных {abuse_warnings} модуля abuse закончилась неуспешно. Пожалуйста, прочтите файл README.txt в каталоге модуля abuse"
+
+#: abuse.install:53
+msgid "abuse module database table {abuse_status} created successfully."
+msgstr "Таблица базы данных {abuse_status} модуля abuse создана успешно."
+
+#: abuse.install:55
+msgid "abuse module database table {abuse_status} creation failure. Please view the abuse module folder and read the README.txt"
+msgstr "Создание таблицы базы данных {abuse_status} модуля abuse закончилась неуспешно. Пожалуйста, прочтите файл README.txt в каталоге модуля abuse"
+
+#: abuse.install:75
+msgid "The user wrote very mean things"
+msgstr "Пользователь использовал непристойные выражения"
+
+#: abuse.install:75
+#: ;76;77;78;79
+msgid "Please refrain from writing such mean things"
+msgstr "Пожалуйста, воздержитесь от использования непристойных фраз"
+
+#: abuse.install:76
+msgid "The user's wrote very explicit language"
+msgstr "Пользователь использовал откровенные выражения"
+
+#: abuse.install:77
+msgid "The user wrote very derogatory comments"
+msgstr "Пользователь использовал весьма пренебрежительные замечания"
+
+#: abuse.install:78
+msgid "The user wrote about private information"
+msgstr "Пользователь использовал частную информацию"
+
+#: abuse.install:79
+msgid "The user wrote about other types of mean things"
+msgstr "Пользователь использовал другие виды непристойных выражений"
+
+#: abuse.info:0
+msgid "An abuse system to flag content on the site"
+msgstr "Система, отмечающая злоупотребления содержимым сайта"
+
+#: abuse.info:0
+#: watchlist/watchlist.info:0
+msgid "Administration"
+msgstr "Управление"	
+
+#: abuse.module:32
+msgid "allow users to report abusive content"
+msgstr "Позволить пользователям размешать подозрительное содержимое."
+
+#: abuse.module:44
+msgid "flag"
+msgstr "Оповестить"
+
+#: abuse.module:49
+msgid "warn user"
+msgstr "Предупреждение пользователя"
+
+#: abuse.module:54
+msgid "ban user"
+msgstr "Заблокировать пользователя"
+
+#: abuse.module:59
+msgid "update"
+msgstr "обновить"
+
+#: abuse.module:65
+#: ;0 abuse.info:0
+#: watchlist/watchlist.info:0
+msgid "abuse"
+msgstr "Злоупотребления"
+
+#: abuse.module:71
+msgid "item"
+msgstr "пункт"
+
+#: abuse.module:79
+msgid "Abuse"
+msgstr "Злоупотребления"
+
+#: abuse.module:80
+msgid "Describes what the settings generally do."
+msgstr "Настройка оповещения и обработки злоупотребленя при размещении содержимого."
+
+#: abuse.module:88
+msgid "Abuse reason configuration"
+msgstr "Настройка причин злоупотреблений"
+
+#: abuse.module:89
+msgid "Administer the list of reasons available for users to choose from the site"
+msgstr "Настроить перечень доступных оснований для пользователей сайта"
+
+#: abuse.module:101
+msgid "Pending (!num)"
+msgstr "Ожидает (!num)"
+
+#: abuse.module:107
+msgid "Hidden (!num)"
+msgstr "Скрыто (!num)"
+
+#: abuse.module:113
+msgid "Removed (!num)"
+msgstr "Удалено (!num)"
+
+#: abuse.module:126
+msgid "Reasons"
+msgstr "Причины"
+
+#: abuse.module:127
+msgid "You can configure the list of reasons at !link"
+msgstr "Вы также можете настроить перечень доступных оснований в разделе !link"
+
+#: abuse.module:131
+msgid "Settings for all abuse content"
+msgstr "Настройки для всего злоупотребляемого содержимого"
+
+#: abuse.module:132
+msgid "These settings apply to all content that is allowed to be flagged into the abuse administration system"
+msgstr "Эти настройки будут применены ко всему содержимому разрешаемому для оповещений администратора системы о злоупотреблении размещаемого материала."
+
+#: abuse.module:138
+msgid "Abuse threshold"
+msgstr "Порог злоупотребления"
+
+#: abuse.module:147
+#: ;673;681
+msgid "Warning subject"
+msgstr "Оповещаемый субъект"
+
+#: abuse.module:156
+msgid "Warning body"
+msgstr "Содержимое предупреждения"
+
+#: abuse.module:164
+msgid "Warning BCC"
+msgstr "Посылать скрытую копию"
+
+#: abuse.module:172
+msgid "Abuse form intro text"
+msgstr "Вступительный текст формы злоупотребления"
+
+#: abuse.module:180
+msgid "Enable flagging for these content types"
+msgstr "Разрешить оповещать для следущих типов содержимого"
+
+#: abuse.module:199
+msgid "Add new reason"
+msgstr "Добавить новую причину"
+
+#: abuse.module:206
+msgid "Reason"
+msgstr "Причина"
+
+#: abuse.module:207
+msgid "Provide a short form of what the reason is"
+msgstr "Назвать краткую форму причины как "
+
+#: abuse.module:213
+#: ;251
+msgid "Description"
+msgstr "Описание"
+
+#: abuse.module:214
+msgid "A more details description of what the reason is"
+msgstr "Подробное описание причины заключается в "
+
+#: abuse.module:220
+msgid "Argumentation"
+msgstr "Обоснование"
+
+#: abuse.module:221
+msgid "Text that will automatically be included in the warning email."
+msgstr "Текст, который будет автоматически включаться в оповещения по электронной почте. "
+
+#: abuse.module:227
+#: ;267;281
+msgid "add"
+msgstr "добавить"
+
+#: abuse.module:234
+msgid "Current list of reasons - check items that you wish to remove"
+msgstr "Текущий список причин - отметьте, которые вы хотите удалить"
+
+#: abuse.module:255
+msgid "Email content"
+msgstr "Тип содержимого"
+
+#: abuse.module:260
+#: ;275;285
+msgid "remove"
+msgstr "удалить"
+
+#: abuse.module:269
+msgid "You MUST provide a reason."
+msgstr "Вы должны указать причину."
+
+#: abuse.module:271
+msgid "You MUST provide a description of the reason."
+msgstr "Вы должны указать описание причины."
+
+#: abuse.module:273
+msgid "You MUST provide an email notice that may be sent to the user for this reason."
+msgstr "Вы должны предоставить почтовую заметку, которая может быть отправлена пользователю по этой причине."
+
+#: abuse.module:276
+msgid "An invalid option was chosen."
+msgstr "Выбрана неправильная опция."
+
+#: abuse.module:375
+#: ;384;401;410
+msgid "Flag as offensive"
+msgstr "Отметить как оскорбительное"
+
+#: abuse.module:378
+#: ;387
+msgid "Notify administrators of problematic content"
+msgstr "Оповестить администраторов о злоупотреблении размещения содержимого"
+
+#: abuse.module:404
+#: ;413
+msgid "Notify administrators of problematic comment"
+msgstr "Оповестить администраторов о злоупотреблении размещения содержимого"
+
+#: abuse.module:441
+#: ;565
+msgid "You cannot flag your own content"
+msgstr "Вы не можете оповестить о созданном самим собой содержимом "
+
+#: abuse.module:446
+msgid "Thank you for your report.  The item in question with be looked at by our moderators shortly."
+msgstr "Благодарим Вас за сообщение. Ваше сообщение будет рассмотрено нашими модераторами в кратчайшие сроки."
+
+#: abuse.module:467
+#: ;481;535
+msgid "from"
+msgstr "Отправитель"
+
+#: abuse.module:488
+msgid "email"
+msgstr "email"
+
+#: abuse.module:496
+msgid "about"
+msgstr "Материал"
+
+#: abuse.module:506
+msgid "reason"
+msgstr "Причина"
+
+#: abuse.module:512
+msgid "message"
+msgstr "сообщение"
+
+#: abuse.module:518
+msgid "send"
+msgstr "Отправить"
+
+#: abuse.module:522
+#: ;540;553;694;701
+msgid "cancel"
+msgstr "Отмена"
+
+#: abuse.module:535
+msgid "<em>!field</em> is required"
+msgstr "Поле <em>!field</em> обязательное для заполнения"
+
+#: abuse.module:538
+msgid "a valid email address is required"
+msgstr "Требуется правильный адрес электронной почты"
+
+#: abuse.module:541
+msgid "please give a reason"
+msgstr "Пожалуйста, введите причину"
+
+#: abuse.module:559
+msgid "We have already received your report.  Thank you very much!"
+msgstr "Ваш отчет уже отправлен. Большое спасибо!"
+
+#: abuse.module:579
+msgid "Thank you for your report."
+msgstr "Благодарим Вас за сообщение."
+
+#: abuse.module:599
+#: ;631
+msgid "Allow"
+msgstr "Разрешить"
+
+#: abuse.module:603
+#: ;635
+msgid "Remove"
+msgstr "Удалить"
+
+#: abuse.module:607
+#: ;639;735
+msgid "Warn and Remove"
+msgstr "Предупредить и удалить"
+
+#: abuse.module:611
+#: ;642;733
+msgid "Warn and Allow"
+msgstr "Предупредить и разрешить"
+
+#: abuse.module:615
+#: ;645
+msgid "Ban"
+msgstr "Заблокировать"
+
+#: abuse.module:633
+msgid "Item allowed"
+msgstr "Содержимое разрешено"
+
+#: abuse.module:637
+msgid "Item removed"
+msgstr "Содержимое удалено"
+
+#: abuse.module:650
+msgid "Unknown operation on content"
+msgstr "Неизвестная операция в содержимом"
+
+#: abuse.module:686
+msgid "available fields are !title, !url, and !name"
+msgstr "Доступные поля  !title, !url, и !name"
+
+#: abuse.module:722
+msgid "Drupal"
+msgstr "Drupal"
+
+#: abuse.module:738
+msgid "Your email has been sent."
+msgstr "Ваше сообщение отправлено."
+
+#: abuse.module:756
+msgid "Are you sure you want to ban !name?"
+msgstr "Вы уверены, что хотите заблокировать !name?"
+
+#: abuse.module:760
+#: ;771
+msgid "Yes"
+msgstr "Да"
+
+#: abuse.module:764
+msgid "No"
+msgstr "Нет"
+
+#: abuse.module:791
+msgid "The user !name has been banned."
+msgstr "Пользователь !name заблокирован."
+
+#: abuse.module:812
+msgid "by: !name"
+msgstr "от: !name"
+
+#: abuse.module:813
+msgid "[!offence offences | !warning warnings]"
+msgstr "[!offence нарушений | !warning предупреждений]"
+
+#: abuse.module:1025
+msgid "OK"
+msgstr "Да"
+
+#: abuse.module:1026
+msgid "Pending"
+msgstr "Ожидает проверки"
+
+#: abuse.module:1027
+msgid "Hidden"
+msgstr "Спрятано"
+
+#: abuse.module:1028
+msgid "Removed"
+msgstr "Удалено"
+
+#: watchlist/watchlist.module:9
+msgid "Checks for words as part of a watchlist and adds them to the abuse backend for verification"
+msgstr "Проверяет слова на участие в списке сомнительных слов и добавляет их  к списку проверки через abuse"
+
+#: watchlist/watchlist.module:29
+msgid "Watchlist Settings"
+msgstr "Настройка списка сомнительных слов"
+
+#: watchlist/watchlist.module:30
+msgid "Area to enter a regular expression of all watchlist content"
+msgstr "Поле для ввода регулярных выражений всего содержимого списка сомнительных слов"
+
+#: watchlist/watchlist.module:46
+msgid "Watch list"
+msgstr "Список сомнительных слов"
+
+#: watchlist/watchlist.module:50
+msgid "The watch list, one per line"
+msgstr "Список сомнительных слов, одно слово на строку"
+
+#: watchlist/watchlist.module:17
+msgid "administer watchlist words"
+msgstr "управлять списком сомнительных слов"
+
+#: watchlist/watchlist.module:0
+#: watchlist/watchlist.info:0
+msgid "watchlist"
+msgstr "watchlist"
+
+#: watchlist/watchlist.info:0
+msgid "Allows nodes and comments to be automatically marked into a pending pile and so extension of the abuse module"
+msgstr "Позволяет материалам и комментариям быть автоматически отмеченными для ожидания проверки. Является расширением модуля abuse."
+

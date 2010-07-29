@@ -1,0 +1,83 @@
+<?php 
+// $Id: $
+
+/**
+ * @file
+ * chess.install: Install schema for chess
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+
+function chess_schema() {
+  $schema['chess_info'] = array(
+    'fields' => array(
+      'game_id'             => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'user_white'          => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'user_black'          => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'current_board_state' => array('type' => 'varchar', 'length' => 191, 'not null' => TRUE),
+      'next_move'           => array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0),
+      'check_'              => array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0),
+      'checkmate'           => array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0),
+      'number_of_moves'     => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+    ),
+    'primary key' => array('game_id'),
+  );
+
+  $schema['chess_games'] = array(
+    'fields' => array(
+      'row_id'              => array('type' => 'serial', 'not null' => TRUE),
+      'game_id'             => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'piece'               => array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0),
+      'move_number'         => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'move_from_column'    => array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0),
+      'move_to_column'      => array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0),
+      'move_from_row'       => array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0),
+      'move_to_row'         => array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0),
+      'colour'              => array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0),
+      'captured_piece'      => array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0),
+      'timestamp'           => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+    ),
+    'primary key' => array('row_id'),
+  );
+
+  $schema['chess'] = array(
+    'fields' => array(
+      'nid'                 => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'vid'                 => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'user_white'          => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'user_black'          => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+    ),
+    'primary key' => array('nid', 'vid'),
+    'unique keys' => array('vid' => array('vid')),
+     /* 5.x KEY nid (nid) ? */
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+
+function chess_install() {
+
+  drupal_set_message('Beginning installation of chess module.');
+
+  // Create tables.
+  drupal_install_schema('chess');
+
+}
+
+function chess_uninstall() {
+
+  drupal_uninstall_schema('chess');
+
+  // Delete all variables.
+  db_query("DELETE FROM {variable} WHERE name LIKE 'chess_%%'");
+
+  // Delete content type 'chess'
+  node_type_delete('chess');
+  watchdog('Chess', 'chess module removed', array(), WATCHDOG_INFO);
+}

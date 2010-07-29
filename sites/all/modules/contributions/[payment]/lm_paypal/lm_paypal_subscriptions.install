@@ -1,0 +1,246 @@
+<?php
+
+// $Id: lm_paypal_subscriptions.install,v 1.27.6.4.2.1 2009/01/05 11:53:16 lyricnz Exp $
+
+/**
+ * @file
+ *
+ * Install or update the PayPal Subscriptions interface.
+ */
+
+
+/**
+ * hook_install()
+ */
+function lm_paypal_subscriptions_install() {
+  drupal_install_schema('lm_paypal_subscriptions');
+}
+
+
+/**
+ * hook_uninstall()
+ */
+function lm_paypal_subscriptions_uninstall() {
+  drupal_uninstall_schema('lm_paypal_subscriptions');
+  variable_del('lm_paypal_subscriptions_inprogress');
+  variable_del('lm_paypal_subscriptions_menu_rebuild');
+  variable_del('lm_paypal_subscriptions_menu_label');
+}
+
+/*
+ * Database Schema (subscribers & subcriptions)
+ */
+function lm_paypal_subscriptions_schema() {
+  $schema['lm_paypal_subscribers'] = array(
+    'fields' => array(
+        'usid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'The subscriber unique identifier.'),
+      'kind' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'default' => 0,
+        'not null' => TRUE,
+        'description' => 'Type of subscription.'),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'The corresponding drupal user (role) identifier.'),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The attach node when that applies.'),
+      'subid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Sub-identifier for ?.'),
+      'started' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The Unix date when started.'),
+      'status' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'The current status of this subscriber.'),
+      'subscr_id' => array(
+        'type' => 'varchar',
+        'length' => 20,
+        'description' => 'Paypal subscription identifier.'),
+      'email_sent' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+    ),
+    'indexes' => array(
+      'uid' => array('uid'),
+      'subscr_id' => array('subscr_id')
+    ),
+    'primary key' => array('usid'),
+    'description' => 'The table to record subscribers.'
+  );
+  $schema['lm_paypal_subscriptions'] = array(
+    'fields' => array(
+      'subid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'The unique identifier of this subscription.'),
+      'kind' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The kind of subscription.'),
+      'rid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'description' => "The 'r' identifier."),
+      'item_name' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 127,
+        'default' => '',
+        'description' => 'The name of the item this subscription is for.'),
+      'description' => array(
+        'type' => 'text',
+        'description' => 'Description of the subscription in question.'),
+      'a1' => array(
+        'type' => 'numeric',
+        'precision' => 10,
+        'scale' => 2,
+        'description' => 'The parameter a1 from Paypal.'),
+      'p1' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'description' => 'The parameter p1 from Paypal..'),
+      't1' => array(
+        'type' => 'char',
+        'length' => 1,
+        'description' => 'The parameter t1 from Paypal..'),
+      'a2' => array(
+        'type' => 'numeric',
+        'precision' => 10,
+        'scale' => 2,
+        'description' => 'The parameter a2 from Paypal.'),
+      'p2' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'description' => 'The parameter p2 from Paypal..'),
+      't2' => array(
+        'type' => 'char',
+        'length' => 1,
+        'description' => 'The parameter t2 from Paypal..'),
+      'a3' => array(
+        'type' => 'numeric',
+        'precision' => 10,
+        'scale' => 2,
+        'description' => 'The parameter a3 from Paypal.'),
+      'p3' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'description' => 'The parameter p3 from Paypal..'),
+      't3' => array(
+        'type' => 'char',
+        'length' => 1,
+        'description' => 'The parameter t3 from Paypal..'),
+      'src' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'description' => '?.'),
+      'srt' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'description' => '?.'),
+      'currency_code' => array(
+        'type' => 'varchar',
+        'length' => 3,
+        'description' => 'The code of the currency used for the payment.'),
+      'status' => array(
+        'type' => 'int',
+        'description' => 'The status of this subscription.'),
+      'return_url' => array(
+        'type' => 'varchar',
+        'length' => 200,
+        'default' => '',
+        'description' => 'URL where you want Payal to tretun your customer.'),
+      'uid_admin' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not null' => TRUE,
+        'description' => 'Admin user identifier.'),
+      'send_admin_onsub' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Keep the administrator updated on changes and new subscriptions.'),
+      'send_admin_onend' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Whether to send the admin an email whenever a subscription ends.'),
+      'send_user_onsub' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Whether to email the user whenever a subscription is successfully created.'),
+      'send_user_onsub_subject' => array(
+        'type' => 'varchar',
+        'length' => 80,
+        'default' => '',
+        'description' => 'The email subject to send the user whenever he creates a new subscription.'),
+      'send_user_onsub_body' => array(
+        'type' => 'text',
+        'description' => 'The email content to send the user whenever he creates a new subscription.'),
+      'nearend_days' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The number of days before sending a reminder to the user that his subscription is about to end.'),
+      'send_user_onnearend' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Whether to send an email to the user when his subscription is nearing the end.'),
+      'send_user_onnearend_subject' => array(
+        'type' => 'varchar',
+        'length' => 80,
+        'default' => '',
+        'description' => 'The subject of the email to send your users when their subscription is near the end.'),
+      'send_user_onnearend_body' => array(
+        'type' => 'text',
+        'description' => 'The email message to send the users whose subscription is near the end.'),
+      'send_user_onend' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Whether to send an email when the subscription ended.'),
+      'send_user_onend_subject' => array(
+        'type' => 'varchar',
+        'length' => 80,
+        'default' => '',
+        'description' => 'The subject of the email to send when the subscription ended.'),
+      'send_user_onend_body' => array(
+        'type' => 'text',
+        'description' => 'The email message to send the users whose subscription ended.'),
+      'terms' => array(
+        'type' => 'text',
+        'description' => 'Terms and conditions for this subscription (?).'),
+    ),
+    'primary key' => array('subid'),
+    'description' => 'The table to record subscriptions.'
+  );
+  return $schema;
+}

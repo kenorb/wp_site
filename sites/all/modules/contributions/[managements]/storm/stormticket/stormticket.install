@@ -1,0 +1,60 @@
+<?php
+// $Id: stormticket.install,v 1.2.4.2 2008/12/11 09:33:20 robertogerola Exp $
+
+/**
+ * @file
+ */
+
+function stormticket_install() {
+  drupal_install_schema('stormticket');
+}
+
+function stormticket_uninstall() {
+  drupal_uninstall_schema('stormticket');
+}
+
+function stormticket_schema() {
+  $schema['stormticket'] = array(
+    'fields'        => array(
+      'vid'                 => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'nid'                 => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'organization_nid'    => array('type' => 'int'),
+      'organization_title'  => array('type' => 'varchar', 'length' => 128),
+      'project_nid'         => array('type' => 'int'),
+      'project_title'       => array('type' => 'varchar', 'length' => 128),
+      'task_nid'            => array('type' => 'int'),
+      'task_stepno'         => array('type' => 'varchar', 'length' => 128),
+      'task_title'          => array('type' => 'varchar', 'length' => 128),
+      'ticketcategory'      => array('type' => 'varchar', 'length' => 20),
+      'ticketstatus'        => array('type' => 'varchar', 'length' => 20),
+      'ticketpriority'      => array('type' => 'varchar', 'length' => 20),
+      'pricemode'           => array('type' => 'varchar', 'length' => 20),
+      'price'               => array('type' => 'float'),
+      'currency'            => array('type' => 'varchar', 'length' => 20),
+      'datebegin'           => array('type' => 'int', 'default' => 0),
+      'dateend'             => array('type' => 'int', 'default' => 0),
+      'durationunit'        => array('type' => 'varchar', 'length' => 20),
+      'duration'            => array('type' => 'float', 'default' => 0),
+    ),
+    'primary key' => array('vid', 'nid'),
+  );
+
+  return $schema;
+}
+
+function stormticket_update_1() {
+  $ret = array();
+  db_add_field($ret, 'stormticket', 'datebegin', array('type' => 'int', 'default' => 0));
+  db_add_field($ret, 'stormticket', 'dateend', array('type' => 'int', 'default' => 0));
+  db_add_field($ret, 'stormticket', 'durationunit', array('type' => 'varchar', 'length' => 20));
+  db_add_field($ret, 'stormticket', 'duration', array('type' => 'float', 'default' => 0));
+  return $ret;
+}
+
+function stormticket_update_2() {
+  $ret = array();
+  db_add_field($ret, 'stormticket', 'pricemode', array('type' => 'varchar', 'length' => 20));
+  db_add_field($ret, 'stormticket', 'price', array('type' => 'float'));
+  db_add_field($ret, 'stormticket', 'currency', array('type' => 'varchar', 'length' => 20));
+  return $ret;
+}

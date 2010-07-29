@@ -1,0 +1,334 @@
+<?php
+// $Id: advanced_profile.module,v 1.26.4.13 2009/01/17 04:07:23 michellec Exp $
+
+/**
+ * @file
+ * Provides building blocks for creating enhanced user profile pages.
+ */
+
+// DRUPAL HOOKS **************************************************************/
+
+/**
+ * Implementation of hook_perm().
+ */
+function advanced_profile_perm() {
+  return array('administer advanced profile');
+}
+
+/**
+ * Implementation of hook_init().
+ */
+function advanced_profile_init() {
+  if (arg(0) == 'user' && (arg(1) == '' || (is_numeric(arg(1)) && arg(2) == ''))) {
+    // We only need to add the CSS on the actual user page and not a subtab.
+    advanced_profile_add_css();
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function advanced_profile_menu() {
+  // Add menu entry for settings page
+  $items["admin/settings/advanced-profile"] = array(
+      'title' => 'Advanced Profile',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('advanced_profile_settings_page'),
+      'access arguments' => array('administer advanced profile'),
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function advanced_profile_theme() {
+  $items['advanced_profile_visitors'] = array(
+      'template' => 'theme/advanced_profile_visitors',
+      'arguments' => array('account' => NULL),
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_theme_registry_alter().
+ */
+function advanced_profile_theme_registry_alter(&$theme_registry) {
+  // --- The following section manipulates the theme registry so the .tpl files
+  // --- for the given templates can be found first in the (sub)theme directory
+  // --- then in ancestor themes, then in the advanced profile theme directory.
+
+  // Affected templates
+  $templates = array('author_pane',
+                     'advanced_profile_visitors',
+                );
+
+  // Find all our ancestor themes and put them in an array.
+  global $theme;
+  $themes = list_themes();
+
+  $ancestor_paths = array();
+  $ancestor = $theme;
+  while ($ancestor && isset($themes[$ancestor]->base_theme)) {
+    array_unshift($ancestor_paths, dirname($themes[$themes[$ancestor]->base_theme]->filename));
+    $ancestor = $themes[$ancestor]->base_theme;
+  }
+
+  $template_path = drupal_get_path('module', 'advanced_profile') . '/theme';
+  foreach ($templates as $template) {
+    // Sanity check in case the template is not being used.
+    if (is_array($theme_registry[$template])) {
+      // If there was a path in there, store it.
+      $existing_path = array_shift($theme_registry[$template]['theme paths']);
+
+      // Slide the paths we are adding in before the existing one.
+      array_unshift($theme_registry[$template]['theme paths'], $existing_path, $template_path);
+
+      // If there are any ancestor paths (ie: we are in a subtheme, add those)
+      foreach ($ancestor_paths as $ancestor_path) {
+        $theme_registry[$template]['theme paths'][] = $ancestor_path;
+      }
+
+      // Put the active theme's path last since that takes precidence.
+      $theme_registry[$template]['theme paths'][] = path_to_theme();
+    }
+  }
+}
+
+
+// SETTINGS ****************************************************************/
+
+/**
+ * Creates a form for the settings page to administer the module.
+ */
+function advanced_profile_settings_page() {
+  // Choose image directory.
+  $form['advanced_profile_image_directory'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Image directory'),
+    '#size' => 50,
+    '#description' => t('Path from active theme to image directory. If left blank the images in the module directory will be used.'),
+    '#default_value' => variable_get('advanced_profile_image_directory', ''),
+  );
+
+  // Check if uprofile type exists.
+  $uprofile_exists = db_result(db_query("SELECT count(type) FROM {node_type} WHERE type='%s'", 'uprofile'));
+  $ccopy_installed = module_exists('content_copy');
+
+  // Auto create uprofile type option
+  $form['advanced_profile_node_type_setup'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Create user profile node type'),
+    '#description' => t("If you'd like to auto create the node type for user profiles, check this. The option will be disabled if you have a uprofile node type or do not have content copy (from CCK) enabled."),
+    '#disabled' => $uprofile_exists || !$ccopy_installed,
+  );
+
+  // Use provided panel page for user profile
+  $form['advanced_profile_use_panel_page'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use included panel page'),
+    '#description' => t("Use the provided panel page to override the user page. Uncheck this if you are providing your own page or have panels installed but don't want it to override the user page."),
+    '#default_value' => variable_get('advanced_profile_use_panel_page', TRUE),
+    '#disabled' => !module_exists('panels'),
+  );
+
+  // *** Profile visitors settings ****
+  $form['advanced_profile_visitors'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Profile visitors'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  // Limit.
+  $form['advanced_profile_visitors']['advanced_profile_visitors_limit'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of entries'),
+    '#size' => 5,
+    '#default_value' => variable_get('advanced_profile_visitors_limit', 5),
+    '#description' => t('Number of visitor entries to display.'),
+  );
+
+  // Distinct visitors.
+  $form['advanced_profile_visitors']['advanced_profile_visitors_distinct'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show only the last visit from each user'),
+    '#default_value' => variable_get('advanced_profile_visitors_distinct', FALSE),
+  );
+
+  // Interval granularity.
+  $form['advanced_profile_visitors']['advanced_profile_visitors_interval_granularity'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Granularity of time ago'),
+    '#size' => 5,
+    '#default_value' => variable_get('advanced_profile_visitors_interval_granularity', 2),
+    '#description' => t('1 gives you "1 hour ago". 2 gives you "1 hour 4 minutes ago". 3 gives you "1 hour 4 minutes and 2 seconds ago"'),
+  );
+
+  // Role exclusion.
+  $roles_options = user_roles(TRUE);
+  $form['advanced_profile_visitors']['advanced_profile_visitors_excluded_roles'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Roles to exclude'),
+    '#options' => $roles_options,
+    '#default_value' => variable_get('advanced_profile_visitors_excluded_roles', array()),
+    '#description' => t('Check roles to exclude users in those roles from the listing. Warning: using this on highly populated roles could cause performance issues. It\'s meant for admins.')
+  );
+
+  // Create the uprofile content type if requested by the user checking the box.
+  $node_type_setup = variable_get('advanced_profile_node_type_setup', 0);
+  if ($node_type_setup['Create']) {
+    $cck_definition_file = drupal_get_path('module', 'advanced_profile') . '/includes/uprofile.inc';
+    _create_content_type($cck_definition_file);
+  }
+
+  // Dump the checkbox vars to make sure we don't try to run this more than once.
+  variable_del('advanced_profile_node_type_setup');
+
+  // Send our form to Drupal to make a settings page.
+  return system_settings_form($form);
+}
+
+// MASTER INCLUDES ***********************************************************/
+if (module_exists('panels')) {
+  module_load_include('inc', 'advanced_profile', 'includes/panels/panels');
+}
+
+if (module_exists('views')) {
+  module_load_include('inc', 'advanced_profile', 'includes/views/views');
+}
+
+module_load_include('inc', 'advanced_profile', 'includes/theme');
+
+// THEME UTILTIY FUNCTIONS ***************************************************/
+
+/**
+ * Returns the path to the images used by this module.
+ */
+function advanced_profile_path_to_images() {
+  $image_directory = variable_get('advanced_profile_image_directory', '');
+  if (!empty($image_directory)) {
+    $image_directory = path_to_theme() . '/' . $image_directory;
+  }
+  else {
+    $image_directory = drupal_get_path('module', 'advanced_profile') . '/images';
+  }
+
+  return $image_directory;
+}
+
+/**
+ * Adds the needed CSS.
+ */
+function advanced_profile_add_css() {
+  // Find the CSS file by looking first in the theme and then in the module.
+  $css_file = path_to_theme() . '/advanced_profile.css';
+
+  if (!file_exists($css_file)) {
+    $css_file = drupal_get_path('module', 'advanced_profile') . '/theme/advanced_profile.css';
+  }
+
+  drupal_add_css($css_file);
+}
+
+// GENERAL UTILITY FUNCTIONS *************************************************/
+
+/**
+ * Returns recent visitors to a profile page excluding that user and anonymous.
+ */
+function advanced_profile_visitors($uid) {
+  if (module_exists('statistics')) {
+    if (empty($uid)) {
+      $uid = arg(1);
+    }
+
+    // Retrieve the options from the variables
+    $interval_granularity = variable_get('advanced_profile_visitors_interval_granularity', 2);
+    $distinct = variable_get('advanced_profile_visitors_distinct', FALSE);
+    $limit = variable_get('advanced_profile_visitors_limit', 5);
+    $excluded_roles = variable_get('advanced_profile_visitors_excluded_roles', array());
+
+    // This bit is to take the array from the checkboxes on the settings page
+    // and put it into a comma separate string. There may be an array function
+    // that will do this better.
+    $exclude_array = array();
+    foreach ($excluded_roles as $key => $role_id) {
+      if ($key > 0 && $role_id > 0) {
+        $exclude_array[] = $key;
+      }
+    }
+
+    $excluded_users = array();
+
+    if (!empty($exclude_array)) {
+      $excluded_roles = implode(',', $exclude_array);
+      $placeholders = implode(',', array_fill(0, count($exclude_array), '%d'));
+
+      // Get a list of UIDs in the excluded roles
+      $sql = "SELECT ur.uid
+              FROM {users_roles} ur
+              WHERE ur.rid IN ($placeholders)";
+      $result = db_query($sql, $excluded_roles);
+      while ($account = db_fetch_object($result)) {
+        $excluded_users[] = $account->uid;
+      }
+    }
+
+    // TODO: If a "user invisible" module gets written, retrieve a list of
+    // invisible UIDs here.
+
+    // Get the last 1000 visitors to the profile which should give us plenty
+    // to work with.
+    $sql = "SELECT a.uid, u.name, a.timestamp
+            FROM {accesslog} a
+              INNER JOIN {users} u ON a.uid = u.uid
+            WHERE a.uid <> %d
+              AND a.uid > 0
+              AND a.path LIKE 'user/%d%%'
+            ORDER BY a.timestamp DESC
+            ";
+    $result = db_query_range($sql, $uid, $uid, 0, 1000);
+
+    $items = array();
+    $used_uids = array();
+    $used_items = 0;
+    while (($log = db_fetch_object($result)) && ($used_items < $limit)) {
+      if (!in_array($log->uid, $excluded_users) && (!$distinct || !in_array($log->uid, $used_uids))) {
+        // User isn't an excluded user and we either don't care about distinct
+        // or this user hasn't been added to the list, yet.
+        $used_items++;
+        $used_uids[] = $log->uid;
+        $items[] = theme('username', $log) . " " . format_interval(time() - $log->timestamp, $interval_granularity) . t(" ago.");
+      }
+    }
+  }
+  else {
+    $items[] = t("Warning: Statistics module not enabled.");
+  }
+
+  return $items;
+}
+
+/**
+ * Helper function to import a CCK content type definition from a text file.
+ *
+ * @param $cck_definition_file
+ *   The full path to the file containing the CCK definition.
+ */
+function _create_content_type($cck_definition_file) {
+  include_once('./'. drupal_get_path('module', 'node') .'/content_types.inc');
+  include_once('./'. drupal_get_path('module', 'content') .'/includes/content.admin.inc');
+  $values = array();
+  $values['type_name'] = '<create>';
+  $values['macro'] = file_get_contents($cck_definition_file);
+
+  $form_state = array();
+  $form_state['values'] = $values;
+  drupal_execute("content_copy_import_form", $form_state);
+  content_clear_type_cache();  
+}
+
+
+

@@ -1,0 +1,1229 @@
+<?php
+// $Id: autocomplete_node_finder.module,v 1.1.2.3.2.1.2.16 2008/12/04 23:56:40 danielb Exp $
+
+// Autocomplete Node Finder
+// Creates blocks to provide autocomplete search on a predefined node/cck fields to direct you to the corresponding node.
+// danielb@aspedia.net
+
+/**
+ * Implementation of hook_menu()
+ */
+
+function autocomplete_node_finder_menu() {
+	$items = array();
+
+  $items['admin/settings/autocomplete_node_finder'] = array(
+    'title' => "Autocomplete Node Finder settings",
+    'description' => 'Settings for the Autocomplete Node Finder module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('autocomplete_node_finder_admin_settings'),
+    'access arguments' => array('administer autocomplete node finder'),
+    'type' => MENU_NORMAL_ITEM,
+    );
+
+  $items['autocomplete_node_finder/autocomplete'] = array(
+    'page callback' => 'autocomplete_node_finder_autocomplete',
+    'access arguments' => array('use autocomplete node finder'),
+    'type' => MENU_CALLBACK,
+    );
+
+  $num_blocks = variable_get('autocomplete_node_finder_num_blocks', 1);
+  for ($delta = 0; $delta < $num_blocks; $delta++) {
+    $result_path = variable_get('autocomplete_node_finder_'.$delta.'_path', 'autocomplete-node-finder-' . ($delta+1) . '-results');
+    $results_title = variable_get('autocomplete_node_finder_'.$delta.'_results', t("Autocomplete Node Finder ") . ($delta+1) . t(" results"));
+    $items[$result_path] = array(
+      'title' => $results_title,
+      'description' => 'Results page for the Autocomplete Node Finder module.',
+      'page callback' => 'autocomplete_node_finder_block_form_results',
+      'page arguments' => array('delta_'. $delta),
+      'access arguments' => array('use autocomplete node finder'),
+      'type' => MENU_CALLBACK,
+    );
+  }
+
+	return $items;
+} 
+
+
+/**
+ * Implementation of hook_perm()
+ */
+
+function autocomplete_node_finder_perm() {
+  return array('administer autocomplete node finder', 'use autocomplete node finder');
+}
+
+
+/**
+ * Implementation of hook_theme()
+ */
+
+function autocomplete_node_finder_theme($existing, $type, $theme, $path) {
+  return array(
+    'autocomplete_node_finder_results_page' => array(
+      'arguments' => array('delta' => NULL, 'nids' => NULL, 'form_state' => NULL),
+    ),
+    'autocomplete_node_finder_suggestion' => array(
+      'arguments' => array('match' => NULL, 'delta' => NULL),
+    ),
+  );
+}
+
+
+/**
+ * Form builder function for admin settings form
+ */
+
+function autocomplete_node_finder_admin_settings() {
+
+  $num_blocks = variable_get('autocomplete_node_finder_num_blocks', 1);
+
+	$form = array();
+
+  $form['autocomplete_node_finder_num_blocks'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of blocks to create'),
+    '#default_value' => $num_blocks,
+    '#size' => 2,
+    '#maxlength' => 8,
+    '#required' => TRUE,
+    '#weight' => -1006,
+  );
+
+	return system_settings_form($form);
+
+}
+
+
+/**
+ * Validate function for admin settings form
+ */
+
+function autocomplete_node_finder_admin_settings_validate($form, &$form_state) {
+  if (!is_numeric($form['autocomplete_node_finder_num_blocks']['#value']) || !($form['autocomplete_node_finder_num_blocks']['#value'] > 0)) {
+    form_set_error('autocomplete_node_finder_num_blocks', t('The number of blocks must be a positive integer.'));
+  }
+}
+
+
+/**
+ * Callback for #autocomplete_path on search form
+ */
+
+function autocomplete_node_finder_autocomplete($delta = 0, $keywords = '') {
+
+  $matches = array();
+
+  if ($keywords == NULL) {
+    print drupal_to_js($matches);
+    exit();
+  }
+
+  $delim = variable_get('autocomplete_node_finder_'.$delta.'_delimiter', "");
+  $result = autocomplete_node_finder_get_result($delta, $keywords, 'search');
+
+  while ($match = db_fetch_array($result)) {
+    if (!empty($delim)) {
+      $dsv_matches = explode($delim, $match['field']);
+      foreach ((array)$dsv_matches as $dsv_match) {
+        $dsv_match = trim($dsv_match);
+        if (stristr($dsv_match, $keywords) !== FALSE) {
+          $match['field'] = $dsv_match;
+          break;
+        }
+      }
+    }
+    $matches[$match['field']] = theme('autocomplete_node_finder_suggestion', $match, $delta);
+  }
+
+  print drupal_to_js($matches);
+  exit();
+
+}
+
+
+/**
+ * Gets result resource from database for supplied $keywords using block $delta config settings
+ * $mode = 'search': get value of $field for substring matching rows up to num_options
+ * $mode = 'nodes': will also get nids for exact matching nodes (though it uses substring match if working with delimiter - any ideas?)
+ */
+
+function autocomplete_node_finder_get_result($delta = 0, $keyword = '', $mode = 'search') {
+
+  $field = variable_get('autocomplete_node_finder_'.$delta.'_field', 'autocomplete_node_finder_n.title');
+  $field_parts = explode('.', $field);
+  $field = $field_parts[0].'.'.$field_parts[1];
+
+  $joins = '';
+  $wheres = '';
+  $order = '';
+  $main_where_suffix = ")";
+  $args = array();
+  if (!empty($keyword)) {
+    $args[] = $keyword;
+  }
+
+  if ($field_parts[0] == 'autocomplete_node_finder_v') {
+    $term_array = array();
+    $children = variable_get('autocomplete_node_finder_'.$delta.'_children', 1);
+    if ($mode == 'nodes' && $children) {
+
+      $term_array = autocomplete_node_finder_term_array($delta);
+
+      $exact = variable_get('autocomplete_node_finder_'.$delta.'_exact', 1);
+      if ($exact) {
+        $term_match_where = " AND name = '%s' ";
+        $term_match_arg[] = $keyword;
+      }
+      else {
+        $term_match_where = " AND name LIKE '%%%s%%' ";
+        $term_match_arg[] = $keyword;
+      }
+      $term_match_result = db_query("SELECT tid FROM {term_data} WHERE tid IN (". implode(',', $term_array) .") ". $term_match_where, $term_match_arg);
+      $term_matches = array();
+      while ($row = db_fetch_array($term_match_result)) {
+        $term_matches[] = $row['tid'];
+      }
+      $child_term_array = array();
+      foreach ($term_matches as $term_match) {
+        $child_term_array = $child_term_array + autocomplete_node_finder_term_array_children($term_match);
+      }
+
+      if (!empty($child_term_array)) {
+        $term_array = $term_array + $child_term_array;
+        $child_term_name_result = db_query("SELECT name FROM {term_data} WHERE tid IN (". implode(',', $child_term_array) .")");
+        $term_name_array = array();
+        while ($row = db_fetch_array($child_term_name_result)) {
+          $term_name_array[] = $row['name'];
+        }
+        $main_where_suffix = " OR autocomplete_node_finder_term.name IN ('". implode("','", $term_name_array) ."') )";
+      }
+
+    }
+    else {
+      $term_array = autocomplete_node_finder_term_array($delta);
+    }
+
+    $field = 'autocomplete_node_finder_term.name';
+    $joins .= " LEFT JOIN {term_node} autocomplete_node_finder_tid ON autocomplete_node_finder_n.vid = autocomplete_node_finder_tid.vid ";
+    $joins .= " LEFT JOIN {term_data} autocomplete_node_finder_term ON autocomplete_node_finder_tid.tid = autocomplete_node_finder_term.tid ";
+    if (!empty($term_array)) {
+      $wheres .= " AND autocomplete_node_finder_tid.tid IN (". implode(',', $term_array) .") ";
+    }
+  }
+
+  if ($field_parts[0] == 'autocomplete_node_finder_nr') {
+    $joins .= " LEFT JOIN {node_revisions} autocomplete_node_finder_nr ON autocomplete_node_finder_n.vid = autocomplete_node_finder_nr.vid ";
+  }
+
+  $types = variable_get('autocomplete_node_finder_'.$delta.'_types', array());
+  unset($types['']);
+  $all_types = array();
+  foreach ((array)$types as $type) {
+     if ($field_parts[0] == $type) {
+       $joins .= " LEFT JOIN {content_type_".$type."} ".$type." ON autocomplete_node_finder_n.vid = ".$type.".vid ";
+     }
+     $all_types[] = $type;
+  }
+  if (!empty($all_types)) {
+    $wheres .= " AND autocomplete_node_finder_n.type IN ('". implode("','", $all_types) ."') ";
+  }
+
+  if ($field_parts[2] == '0') {
+    $joins .= " LEFT JOIN {content_".$field_parts[1]."} ".$field_parts[1]." ON autocomplete_node_finder_n.vid = ".$field_parts[1].".vid ";
+    $field = $field_parts[1].'.'.$field_parts[1];
+  }
+
+  if (strpos($field_parts[0], 'autocomplete_node_finder_') !== 0) {
+     $field = $field .'_value';
+  }
+
+  $wheres .= " AND ". $field ." IS NOT NULL ";
+
+  $sort = variable_get('autocomplete_node_finder_'.$delta.'_sort', 0);
+  if ($sort) {
+    $order = " ORDER BY ". $field ." ASC ";
+  }
+
+  if ($mode == 'nodes') {
+    $delim = variable_get('autocomplete_node_finder_'.$delta.'_delimiter', "");
+    $exact = variable_get('autocomplete_node_finder_'.$delta.'_exact', 1);
+    if (empty($delim) && $exact) {
+      $wheres .= !empty($keyword) ? " AND (". $field ." = '%s' ".$main_where_suffix : "";
+      $num_options = PHP_INT_MAX;
+    }
+    else {
+      $wheres .= !empty($keyword) ? " AND (". $field ." LIKE '%%%s%%' ".$main_where_suffix : "";
+      $num_options = PHP_INT_MAX;
+    }
+    //$field .= " AS field, autocomplete_node_finder_n.nid AS nid";
+  }
+  else {
+    $wheres .= !empty($keyword) ? " AND LOWER(". $field .") LIKE LOWER('%%%s%%') " : "";
+    $num_options = variable_get('autocomplete_node_finder_'.$delta.'_num_options', 25);
+    $num_options = $num_options ? $num_options : PHP_INT_MAX;
+    //$field .= " AS field";
+  }
+  $field .= " AS field, autocomplete_node_finder_n.nid AS nid";
+  // select an extra field, 'tid' for taxonomy fields
+  if ($field_parts[0] == 'autocomplete_node_finder_v') {
+    $field = 'autocomplete_node_finder_term.tid AS tid, '. $field;
+  }
+
+  $query = "
+    SELECT ". $field ." 
+    FROM {node} autocomplete_node_finder_n
+    ". $joins ."
+    WHERE autocomplete_node_finder_n.status = 1 
+    ". $wheres ."
+    ". $order ."
+  ";
+
+  return db_query_range($query, $args, 0, $num_options);
+
+}
+
+
+/**
+ * Implementation of hook_block()
+ */
+
+function autocomplete_node_finder_block($op = 'list', $delta = 0, $edit = array()) {
+
+  if ($op == 'list') {
+    $num_blocks = variable_get('autocomplete_node_finder_num_blocks', 1);
+    for ($delta = 0; $delta < $num_blocks; $delta++) {
+      $blocks[$delta]['info'] = variable_get('autocomplete_node_finder_'.$delta.'_title', t("Autocomplete Node Finder ").($delta+1));
+    }
+    return $blocks;
+  }
+  else if ($op == 'view' && user_access('use autocomplete node finder')) {
+    $block['content'] = drupal_get_form('autocomplete_node_finder_block_form', $delta);
+    $block['subject'] = variable_get('autocomplete_node_finder_'.$delta.'_title', t("Autocomplete Node Finder ").($delta+1));
+    return $block;
+  }
+  else if ($op == 'configure' && user_access('administer autocomplete node finder')) {
+    $form = array();
+
+    $types = autocomplete_node_finder_get_types();
+    $fields = autocomplete_node_finder_get_fields();
+    $vocabs = autocomplete_node_finder_get_vocabs();
+    unset($vocabs['']);
+    if (!empty($vocabs)) {
+      $fields = $fields + $vocabs;
+    }
+
+    $form['autocomplete_node_finder_block_number'] = array(
+      '#value' => $delta,
+      '#type' => 'hidden',
+    );
+    $form['autocomplete_node_finder_'.$delta.'_title'] = array(
+      '#title' => t('Block description'),
+      '#type' => 'textfield',
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_title', t("Autocomplete Node Finder ").($delta+1)),
+      '#size' => 60,
+      '#maxlength' => 128,
+      '#required' => TRUE,
+      '#weight' => -16,
+      '#description' => t('A brief description of your block.  Used on the <a href="!url">block overview page</a>', array('!url' => '/admin/build/block')),
+    );
+    $form['form_settings'] = array(
+      '#title' => t('Finder form'),
+      '#weight' => -14,
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+
+    $form['form_settings']['autocomplete_node_finder_'.$delta.'_element'] = array(
+      '#type' => 'radios',
+      '#title' => t('Element to use for finder form'),
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_element', 'autocomplete'),
+      '#options' => array(
+        'autocomplete' => t('Autocomplete text field'),
+        'select' => t('Single select list'),
+        'multiselect' => t('Multiple select list'),
+      ),
+      '#weight' => -12,
+      '#required' => TRUE,
+      '#description' => t('Select lists are useful for choosing from a small number of options (such as taxonomy terms), whereas autocomplete text fields are better for searching through a larger number of options.  If you choose the <em>multiple select list</em> be sure to also set the <em>size of finder form</em> option below. '),
+    );
+
+    $form['form_settings']['autocomplete_node_finder_'.$delta.'_label'] = array(
+      '#title' => t('Label for finder form'),
+      '#type' => 'textfield',
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_label', ""),
+      '#size' => 60,
+      '#weight' => -10,
+    );
+    $form['form_settings']['autocomplete_node_finder_'.$delta.'_desc'] = array(
+      '#title' => t('Description/help for finder form'),
+      '#type' => 'textfield',
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_desc', ""),
+      '#size' => 60,
+      '#weight' => -9,
+      '#maxlength' => 65535,
+    );
+    $form['form_settings']['autocomplete_node_finder_'.$delta.'_prefix'] = array(
+      '#title' => t('Prefix for finder form'),
+      '#type' => 'textfield',
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_prefix', ""),
+      '#size' => 60,
+      '#weight' => -8,
+      '#maxlength' => 65535,
+    );
+    $form['form_settings']['autocomplete_node_finder_'.$delta.'_suffix'] = array(
+      '#title' => t('Suffix for finder form'),
+      '#type' => 'textfield',
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_suffix', ""),
+      '#size' => 60,
+      '#weight' => -7,
+      '#maxlength' => 65535,
+    );
+    $form['form_settings']['autocomplete_node_finder_'.$delta.'_default'] = array(
+      '#title' => t('Default text for finder form'),
+      '#type' => 'textfield',
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_default', ""),
+      '#size' => 60,
+      '#weight' => -6,
+      '#description' => t('Default keywords in autocomplete text field or the "select none" option in select lists.'),
+    );
+    $form['form_settings']['autocomplete_node_finder_'.$delta.'_size'] = array(
+      '#title' => t('Size of finder form'),
+      '#type' => 'textfield',
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_size', 60),
+      '#size' => 60,
+      '#weight' => -5,
+      '#description' => t('Width of the autocomplete text field or height of multiple select list.'),
+    );
+    $form['form_settings']['autocomplete_node_finder_'.$delta.'_max'] = array(
+      '#title' => t('Max length of finder form'),
+      '#type' => 'textfield',
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_max', ""),
+      '#size' => 60,
+      '#weight' => -4,
+      '#description' => t('The maximum number of characters to accept as input.  Using this may truncate longer field values and fail with exact matching.'),
+    );
+
+    $form['form_settings']['autocomplete_node_finder_'.$delta.'_search'] = array(
+      '#title' => t('Label for finder form button'),
+      '#type' => 'textfield',
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_search', "Find"),
+      '#size' => 60,
+      '#weight' => -3,
+    );
+    $form['auto_settings'] = array(
+      '#title' => t('Possible choices'),
+      '#weight' => -10,
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    );
+
+    if ($types) {
+      $form['auto_settings']['autocomplete_node_finder_'.$delta.'_types'] = array(
+        '#type' => 'select',
+        '#title' => t('Restrict nodes that can be found to only these content types'),
+        '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_types', ''),
+        '#options' => $types,
+        '#description' => t('If no content type is selected, nodes of all types will be displayed.'),
+        '#multiple' => TRUE,
+        '#size' => min(6, count($types)+1),
+        '#weight' => -2,
+      );
+    }
+    else {
+      $form['auto_settings']['autocomplete_node_finder_'.$delta.'_notypes'] = array(
+        '#value' => t("<i>There are currently no content types to choose from.</i> &nbsp;"),
+        '#weight' => -2,
+      );
+    }
+
+    if ($fields) {
+      $form['auto_settings']['autocomplete_node_finder_'.$delta.'_field'] = array(
+        '#type' => 'select',
+        '#title' => t('Find nodes by this field'),
+        '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_field', 'autocomplete_node_finder_n.title'),
+        '#options' => $fields,
+        '#description' => t('This is the field that will be searched on.  Only simple text and number fields are listed here, as those are the only ones supported at the moment.  '),
+        '#weight' => -1,
+        '#required' => TRUE,
+        '#element_validate' => array('autocomplete_node_finder_block_validate'),
+      );
+
+      $form['auto_settings']['autocomplete_node_finder_'.$delta.'_num_options'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Maximum number of options'),
+        '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_num_options', 25),
+        '#size' => 2,
+        '#weight' => 1,
+        '#maxlength' => 8,
+        '#required' => FALSE,
+        '#description' => t('Set to blank to show all options.  Showing all options is not recommended with <em>autocomplete text field</em>.'),
+      );
+
+      $form['auto_settings']['autocomplete_node_finder_'.$delta.'_sort'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Sort options'),
+        '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_sort', 0),
+        '#weight' => 2,
+        '#description' => t('Will put list into alphabetic or numeric order for easier scanning.'),
+      );
+
+    }
+    else {
+      $form['auto_settings']['autocomplete_node_finder_'.$delta.'_nofields'] = array(
+        '#value' => t("<i>There are currently no fields to choose from.  The module will not work.</i> &nbsp;"),
+        '#weight' => -1,
+      );
+    }
+
+    $form['auto_settings']['taxonomy'] = array(
+      '#title' => t('Taxonomy options'),
+      '#weight' => 100,
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#description' => t('These settings apply to finding nodes by taxonomy fields.'),
+    );
+    $form['auto_settings']['taxonomy']['autocomplete_node_finder_'.$delta.'_parent'] = array(
+      '#title' => t('Get options from child terms of this term ID'),
+      '#type' => 'textfield',
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_parent', 0),
+      '#size' => 3,
+      '#weight' => 2,
+      '#description' => t('Leave as 0 if you do not know what this is.'),
+    );
+    $form['auto_settings']['taxonomy']['autocomplete_node_finder_'.$delta.'_depth'] = array(
+      '#type' => 'select',
+      '#title' => t('Term depth'),
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_depth', NULL),
+      '#options' => array(
+        NULL => t('All levels in the heirarchy'), 
+        1 => 1,
+        2 => 2,
+        3 => 3,
+        4 => 4,
+        5 => 5,
+        6 => 6,
+        7 => 7,
+        8 => 8,
+        9 => 9,
+        10 => 10,
+      ),
+      '#description' => t('The number of levels of the vocabulary to show as options.'),
+      '#weight' => 3,
+      '#element_validate' => array('autocomplete_node_finder_block_validate'),
+    );
+    
+    $form['auto_settings']['taxonomy']['autocomplete_node_finder_'.$delta.'_children'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Include child terms in finder results.'),
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_children', 1),
+      '#weight' => 4,
+      '#description' => t('If selected, the child terms don\'t need to be selected as keywords to be included in the search.'),
+    );
+    $form['auto_settings']['taxonomy']['autocomplete_node_finder_'.$delta.'_omit'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Omit taxonomy terms that will yield no results.'),
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_omit', 1),
+      '#weight' => 5,
+      '#description' => t('Removes unused terms from options.'),
+    );
+    $form['auto_settings']['taxonomy']['autocomplete_node_finder_'.$delta.'_tree'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Prepend hyphens to child terms to indicate hierarchical structure.'),
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_tree', 1),
+      '#weight' => 6,
+      '#description' => t('Pro tip: ensure <em>sort options</em> is off.'),
+    );
+
+    $form['auto_settings']['delimiter'] = array(
+      '#title' => t('Delimited values'),
+      '#weight' => 200,
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#description' => t('This setting refers to the rare case where a CCK field value is expected to be a delimiter seperated list of values, and each value should be treated seperately.'),
+    );
+
+    $form['auto_settings']['delimiter']['autocomplete_node_finder_'.$delta.'_delimiter'] = array(
+      '#title' => t('Display possible values from text lists seperated by this delimiter'),
+      '#type' => 'textfield',
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_delimiter', ""),
+      '#size' => 3,
+      '#weight' => 0,
+      '#description' => t('Specify a delimiter string to use each delimited value as a seperate option.  Whitespace at both ends of value parts will be trimmed.  Leave blank to use the whole field.'),
+    );
+
+    $form['post_settings'] = array(
+      '#title' => t('Processing and results'),
+      '#weight' => -8,
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+
+    $form['post_settings']['autocomplete_node_finder_'.$delta.'_exact'] = array(
+      '#type' => 'radios',
+      '#title' => t('Matching submitted keywords'),
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_exact', 1),
+      '#options' => array(
+        0 => t('Results need only <em>contain</em> the submitted keywords.'),
+        1 => t('Results must match submitted keywords, <em>exactly</em>.'),
+      ),
+      '#weight' => 0,
+    );
+
+    $form['post_settings']['autocomplete_node_finder_'.$delta.'_validation'] = array(
+      '#type' => 'radios',
+      '#title' => t('Validation'),
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_validation', 'validate'),
+      '#options' => array(
+        'validate' => t('Ensure submitted search term matches at least one node.'), 
+        0 => t('No default validation.'),
+      ),
+      '#weight' => 1,
+      '#description' => t('Advanced: You can prepend custom validation via hook_autocomplete_node_finder($op, $form, &$form_state, &$matched_nids) when $op is "validate".'),
+    );
+
+    $form['post_settings']['autocomplete_node_finder_'.$delta.'_submission'] = array(
+      '#type' => 'radios',
+      '#title' => t('Submit action'),
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_submission', 'best'),
+      '#options' => array(
+        'best' => t('Go to the only matched node, or display results page if there are multiple matches.'), 
+        'node' => t('Always go to the first matched node.'), 
+        'page' => t('Always display results page.'), 
+        0 => t('No default submit action.'),
+      ),
+      '#weight' => 2,
+      '#description' => t('Advanced: You can prepend custom manipulation of results via <em>hook_autocomplete_node_finder($op, $form, &$form_state, &$matched_nids)</em> when $op is "submit".'),
+    );
+    $form['post_settings']['autocomplete_node_finder_'.$delta.'_path'] = array(
+      '#title' => t('Path for results page'),
+      '#type' => 'textfield',
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_path', 'autocomplete-node-finder-' . ($delta+1) . '-results'),
+      '#size' => 60,
+      '#weight' => 3,
+      '#required' => TRUE,
+      '#description' => t('The results page needs to have a path pointing to it.'), 
+    );
+    $form['post_settings']['autocomplete_node_finder_'.$delta.'_results'] = array(
+      '#title' => t('Default title for results page'),
+      '#type' => 'textfield',
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_results', t("Autocomplete Node Finder ") . ($delta+1) . t(" results")),
+      '#size' => 60,
+      '#weight' => 3,
+      '#description' => t('Advanced: You can modify the display of the results page by overriding <em>theme_autocomplete_node_finder_results_page($delta, $nids, $form_state)</em>.'), 
+    );
+    $form['post_settings']['autocomplete_node_finder_'.$delta.'_pager'] = array(
+      '#title' => t('Default number of results per page'),
+      '#type' => 'textfield',
+      '#default_value' => variable_get('autocomplete_node_finder_'.$delta.'_pager', 0),
+      '#size' => 3,
+      '#weight' => 4,
+      '#description' => t('Set as 0 to show all results on one page.'),
+    );
+    return $form;
+
+  }
+
+  else if ($op == 'save' && user_access('administer autocomplete node finder')) {
+    $old_path = variable_get('autocomplete_node_finder_'.$delta.'_path', '');
+    $new_path = $edit['autocomplete_node_finder_'.$delta.'_path'];
+    variable_set('autocomplete_node_finder_'.$delta.'_title', $edit['autocomplete_node_finder_'.$delta.'_title']);
+    variable_set('autocomplete_node_finder_'.$delta.'_element', $edit['autocomplete_node_finder_'.$delta.'_element']);
+    variable_set('autocomplete_node_finder_'.$delta.'_label', $edit['autocomplete_node_finder_'.$delta.'_label']);
+    variable_set('autocomplete_node_finder_'.$delta.'_desc', $edit['autocomplete_node_finder_'.$delta.'_desc']);
+    variable_set('autocomplete_node_finder_'.$delta.'_prefix', $edit['autocomplete_node_finder_'.$delta.'_prefix']);
+    variable_set('autocomplete_node_finder_'.$delta.'_suffix', $edit['autocomplete_node_finder_'.$delta.'_suffix']);
+    variable_set('autocomplete_node_finder_'.$delta.'_default', $edit['autocomplete_node_finder_'.$delta.'_default']);
+    variable_set('autocomplete_node_finder_'.$delta.'_size', $edit['autocomplete_node_finder_'.$delta.'_size']);
+    variable_set('autocomplete_node_finder_'.$delta.'_max', $edit['autocomplete_node_finder_'.$delta.'_max']);
+    variable_set('autocomplete_node_finder_'.$delta.'_search', $edit['autocomplete_node_finder_'.$delta.'_search']);
+    if (isset($edit['autocomplete_node_finder_'.$delta.'_types'])) {
+      variable_set('autocomplete_node_finder_'.$delta.'_types', $edit['autocomplete_node_finder_'.$delta.'_types']);
+    }
+    if (isset($edit['autocomplete_node_finder_'.$delta.'_field'])) {
+      variable_set('autocomplete_node_finder_'.$delta.'_field', $edit['autocomplete_node_finder_'.$delta.'_field']);
+    }
+    variable_set('autocomplete_node_finder_'.$delta.'_num_options', $edit['autocomplete_node_finder_'.$delta.'_num_options']);
+    variable_set('autocomplete_node_finder_'.$delta.'_sort', $edit['autocomplete_node_finder_'.$delta.'_sort']);
+    variable_set('autocomplete_node_finder_'.$delta.'_parent', $edit['autocomplete_node_finder_'.$delta.'_parent']);
+    variable_set('autocomplete_node_finder_'.$delta.'_depth', $edit['autocomplete_node_finder_'.$delta.'_depth']);
+    variable_set('autocomplete_node_finder_'.$delta.'_children', $edit['autocomplete_node_finder_'.$delta.'_children']);
+    variable_set('autocomplete_node_finder_'.$delta.'_tree', $edit['autocomplete_node_finder_'.$delta.'_tree']);
+    variable_set('autocomplete_node_finder_'.$delta.'_omit', $edit['autocomplete_node_finder_'.$delta.'_omit']);
+    variable_set('autocomplete_node_finder_'.$delta.'_delimiter', $edit['autocomplete_node_finder_'.$delta.'_delimiter']);
+    variable_set('autocomplete_node_finder_'.$delta.'_exact', $edit['autocomplete_node_finder_'.$delta.'_exact']);
+    variable_set('autocomplete_node_finder_'.$delta.'_validation', $edit['autocomplete_node_finder_'.$delta.'_validation']);
+    variable_set('autocomplete_node_finder_'.$delta.'_submission', $edit['autocomplete_node_finder_'.$delta.'_submission']);
+    variable_set('autocomplete_node_finder_'.$delta.'_path', $edit['autocomplete_node_finder_'.$delta.'_path']);
+    variable_set('autocomplete_node_finder_'.$delta.'_results', $edit['autocomplete_node_finder_'.$delta.'_results']);
+    variable_set('autocomplete_node_finder_'.$delta.'_pager', $edit['autocomplete_node_finder_'.$delta.'_pager']);
+    menu_rebuild();
+  }
+}
+
+
+/**
+ * Validate function for block form
+ */
+
+function autocomplete_node_finder_block_validate($form, &$form_state) {
+  $delta = &$form_state['values']['autocomplete_node_finder_block_number'];
+  $field = &$form_state['values']['autocomplete_node_finder_'.$delta.'_field'];
+  $types = &$form_state['values']['autocomplete_node_finder_'.$delta.'_types'];
+  $field_parts = explode('.', $field);
+
+  // check num options is numeric
+  if (!empty($form_state['values']['autocomplete_node_finder_'.$delta.'_num_options']) && !is_numeric($form_state['values']['autocomplete_node_finder_'.$delta.'_num_options'])) {
+    form_set_error('autocomplete_node_finder_'.$delta.'_num_options', t('The maximum number of autocomplete suggestions must be a positive integer.'));
+  }
+  // check size is numeric
+  if (!empty($form_state['values']['autocomplete_node_finder_'.$delta.'_size']) && !is_numeric($form_state['values']['autocomplete_node_finder_'.$delta.'_size'])) {
+    form_set_error('autocomplete_node_finder_'.$delta.'_size', t('Search form size must be an integer.'));
+  }
+  // check max is numeric
+  if (!empty($form_state['values']['autocomplete_node_finder_'.$delta.'_max']) && !is_numeric($form_state['values']['autocomplete_node_finder_'.$delta.'_max'])) {
+    form_set_error('autocomplete_node_finder_'.$delta.'_max', t('Maximum length must be an integer.'));
+  }
+  // check taxonomy vocabulary chosen matches content type and parent tid
+  if ($field_parts[0] == 'autocomplete_node_finder_v') {
+    $type_vocabs = array();
+    foreach ($types as $type) {
+      $type_vocabs = $type_vocabs + taxonomy_get_vocabularies($type);
+    }
+    // check chosen vocab is associated with the node type
+    if (!isset($type_vocabs[$field_parts[1]])) {
+      form_set_error('autocomplete_node_finder_'.$delta.'_types', t('The vocabulary you have picked does not exist in the content types you have chosen.'));
+    }
+    // check parent tid is numeric
+    if (!is_numeric($form_state['values']['autocomplete_node_finder_'.$delta.'_parent'])) {
+      form_set_error('autocomplete_node_finder_'.$delta.'_parent', t('Parent must be an integer.'));
+    }
+    // check parent tid exists in chosen vocab
+    $vocabulary_tree = taxonomy_get_tree($field_parts[1]);
+    $terms = array();
+    foreach ($vocabulary_tree as $term) {
+      $terms[$term->tid] = $term->tid;
+    }
+    $parent = &$form_state['values']['autocomplete_node_finder_'.$delta.'_parent'];
+    if (!isset($terms[$parent]) && $parent != '0') {
+      form_set_error('autocomplete_node_finder_'.$delta.'_parent', t('The parent term ID you have picked does not exist in the vocabulary you have chosen.'));
+    }
+  }
+  // check to make sure cck fields corresponds to the node type
+  /*
+  Removing this because there are cases when this will work.  Need a better way to validate.
+  else if (isset($types) && $field_parts[0] != 'autocomplete_node_finder_n' && $field_parts[0] != 'autocomplete_node_finder_nr') {
+    if (!isset($types[$field_parts[0]]) && count($types) == 1 && !isset($types[''])) {
+      form_set_error('autocomplete_node_finder_'.$delta.'_types', t('The field you have picked does not exist in the content types you have chosen.'));
+    }
+    else if (count($types) > 1) {
+      foreach ($types as $type) {
+
+      }      
+    }
+    else if (!isset($types[$field_parts[0]])) {
+      form_set_error('autocomplete_node_finder_'.$delta.'_types', t('The field you have picked only exists in one content type.'));
+    }
+  }*/
+
+}
+
+
+/**
+ * Form function for block form
+ */
+
+function autocomplete_node_finder_block_form(&$form_state, $delta) {
+
+  // Add autocomplete JS from core Drupal
+  drupal_add_js('misc/autocomplete.js', 'core');
+
+  $form = array();
+
+  $all_deltas = autocomplete_node_finder_all_deltas($delta);
+  $deltas_string = implode(',',$all_deltas);
+
+  $form['autocomplete_node_finder_delta'] = array(
+    '#type' => 'hidden',
+    '#value' => /*!empty($deltas_string) ? $deltas_string :*/ $delta,
+  );
+
+  foreach ((array)$all_deltas as $d) {
+
+    $form['autocomplete_node_finder_keywords_'.$d] = array(
+      '#title' => variable_get('autocomplete_node_finder_'.$d.'_label', ''),
+      '#prefix' => variable_get('autocomplete_node_finder_'.$d.'_prefix', ''),
+      '#description' => variable_get('autocomplete_node_finder_'.$d.'_desc', ''),
+      '#default_value' => variable_get('autocomplete_node_finder_'.$d.'_default', ''),
+      '#maxlength' => is_numeric(variable_get('autocomplete_node_finder_'.$d.'_max', NULL)) ? variable_get('autocomplete_node_finder_'.$d.'_max', NULL) : NULL,
+    );
+    $size = is_numeric(variable_get('autocomplete_node_finder_'.$d.'_size', 60)) ? variable_get('autocomplete_node_finder_'.$d.'_size', 60) : 60;
+
+    $element = variable_get('autocomplete_node_finder_'.$d.'_element', 'autocomplete');
+    $default_option = variable_get('autocomplete_node_finder_'.$d.'_default', '');
+
+    if ($element == 'autocomplete') {
+      $form['autocomplete_node_finder_keywords_'.$d]['#type'] = 'textfield';
+      $form['autocomplete_node_finder_keywords_'.$d]['#size'] = $size;
+      $form['autocomplete_node_finder_keywords_'.$d]['#autocomplete_path'] = 'autocomplete_node_finder/autocomplete/'.$d;
+      $form['autocomplete_node_finder_keywords_'.$d]['#default_value'] = $default_option;
+    }
+    else if ($element == 'select') {
+      $options = array(NULL => $default_option) + autocomplete_node_finder_get_select_options($d);
+      $form['autocomplete_node_finder_keywords_'.$d]['#type'] = 'select';
+      $form['autocomplete_node_finder_keywords_'.$d]['#multiple'] = FALSE;
+      $form['autocomplete_node_finder_keywords_'.$d]['#options'] = $options;
+    }
+    else if ($element == 'multiselect') {
+      $options = array(NULL => $default_option) + autocomplete_node_finder_get_select_options($d);
+      $form['autocomplete_node_finder_keywords_'.$d]['#type'] = 'select';
+      $form['autocomplete_node_finder_keywords_'.$d]['#size'] = $size;
+      $form['autocomplete_node_finder_keywords_'.$d]['#multiple'] = TRUE;
+      $form['autocomplete_node_finder_keywords_'.$d]['#options'] = $options;
+    }
+
+  }
+
+  $form['autocomplete_node_finder_submit'] = array(
+    '#type' => 'submit',
+    '#value' => variable_get('autocomplete_node_finder_'.$delta.'_search', "Search"),
+    '#suffix' => variable_get('autocomplete_node_finder_'.$delta.'_suffix', ''),
+  );
+
+  return $form;
+}
+
+
+/**
+ * Validate function for block form
+ */
+
+function autocomplete_node_finder_block_form_validate($form, &$form_state) {
+  $delta = &$form_state['values']['autocomplete_node_finder_delta'];
+  $nids = autocomplete_node_finder_process_form_values($form_state);
+  module_invoke_all('autocomplete_node_finder', 'validate', $form, $form_state, $nids);
+  $action = variable_get('autocomplete_node_finder_'.$delta.'_validation', 'validate');
+  if ($action == 'validate' && (!$nids || empty($nids))) {
+    form_set_error('autocomplete_node_finder_keywords_'.$delta, t('Your keyword yields no results.'));
+  }
+}
+
+
+/**
+ * Submit function for block form
+ */
+
+function autocomplete_node_finder_block_form_submit($form, &$form_state) {
+  $delta = &$form_state['clicked_button']['#post']['autocomplete_node_finder_delta'];
+  $form_state['storage'] = $form_state['values'];
+  $nids = autocomplete_node_finder_process_form_values($form_state);
+  module_invoke_all('autocomplete_node_finder', 'submit', $form, $form_state, $nids);
+  $action = variable_get('autocomplete_node_finder_'.$delta.'_submission', 'best');
+  if ($action == 'node' || ($action == 'best' && count($nids) == 1)) {
+    drupal_goto('node/'.current($nids));
+  }
+  else if ($action == 'best' || $action == 'page') {
+    $_SESSION['autocomplete_node_finder'][$delta]['nids'] = $nids;
+    $_SESSION['autocomplete_node_finder'][$delta]['form_state'] = $form_state;
+    $results_path = variable_get('autocomplete_node_finder_'.$delta.'_path', 'autocomplete-node-finder-' . ($delta+1) . '-results');
+    drupal_goto($results_path);
+  }
+}
+
+
+/**
+ * Results page for block form
+ */
+
+function autocomplete_node_finder_block_form_results($delta) {
+  $delta = (int) str_replace('delta_', '', $delta);
+  $nids = array();
+  $form_state = array();
+
+  if (isset($_SESSION['autocomplete_node_finder'][$delta])) {
+    $nids = $_SESSION['autocomplete_node_finder'][$delta]['nids'];
+    $form_state = $_SESSION['autocomplete_node_finder'][$delta]['form_state'];
+  }
+
+  return theme('autocomplete_node_finder_results_page', $delta, $nids, $form_state);
+}
+
+
+/**
+ * Helper function for block form validate and submit
+ */
+
+function autocomplete_node_finder_process_form_values($form_state) {
+  $delta = &$form_state['clicked_button']['#post']['autocomplete_node_finder_delta'];
+  $all_deltas = autocomplete_node_finder_all_deltas($delta);
+  $result_nids = array();
+
+  foreach ($all_deltas as $d) {
+    $nids = array();
+    $keywords = (array)$form_state['values']['autocomplete_node_finder_keywords_'.$d];
+    $delim = variable_get('autocomplete_node_finder_'.$d.'_delimiter', "");
+    $exact = variable_get('autocomplete_node_finder_'.$d.'_exact', 1);
+    $sort = variable_get('autocomplete_node_finder_'.$d.'_sort', 0);
+    // special handling of delimited values comes in first
+    if (!empty($delim) && $exact) {
+      $nodes = autocomplete_node_finder_get_nodes_from_form_values($d, $form_state['values'], 'assoc');
+      foreach ($nodes as $nid => $field_value) {
+        $dsv_parts = explode(',', $field_value);
+        foreach ($dsv_parts as $k => $v) {
+          $dsv_parts[$k] = strtolower(trim($v));
+        }
+        foreach ($keywords as $keyword) {
+          if ($keyword && in_array(strtolower(trim($keyword)), $dsv_parts)) {
+            $nids[] = $nid;
+          }
+        }
+      }
+      if ($sort) { //extra sort for delim options
+        asort($nids);
+      }
+    }
+    else {
+      $nids = autocomplete_node_finder_get_nodes_from_form_values($d, $form_state['values'], 'nids');
+    }
+
+    if (!empty($result_nids) && !empty($nids)) {
+      $result_nids = array_intersect($result_nids, (array)$nids);
+    }
+    else if (!empty($nids)) {
+      $result_nids = $nids;
+    }
+
+  }
+
+  return $result_nids;
+}
+
+
+/**
+ * Get the nids corresponding to submitted $form_values, or false if no result
+ * $mode = 'nids' : get a numeric array of nid values
+ * $mode = 'assoc' : get an associative array where the key is the $nid and the value is the value of $field
+ */
+
+function autocomplete_node_finder_get_nodes_from_form_values($delta, $form_values, $mode = 'nids') {
+  
+  $keywords = (array)$form_values['autocomplete_node_finder_keywords_'.$delta];
+  $nids = array();
+
+  foreach ($keywords as $keyword) {
+    if ($keyword) {
+      $result = autocomplete_node_finder_get_result($delta, $keyword, 'nodes');
+      while ($node = db_fetch_array($result)) {
+        if ($mode == 'nids') {
+          $nids[] = $node['nid'];
+        }
+        else if ($mode == 'assoc') {
+          $nids[$node['nid']] = $node['field'];
+        }
+      }
+    }
+  }
+
+  if (!empty($nids)) {
+    return $nids;
+  }
+
+  return FALSE;
+
+}
+
+
+function autocomplete_node_finder_all_deltas($delta) {
+
+
+  $appendages = variable_get('autocomplete_node_finder_'.$delta.'_append', array(''));
+  unset($appendages['']);
+  $appended_deltas = array();
+  foreach($appendages as $k => $v) {
+    $appended_deltas[str_replace('delta_', '', $k)] = str_replace('delta_', '', $v);
+  }
+  $all_deltas = array($delta => $delta) + $appended_deltas;
+
+  return $all_deltas;
+}
+
+
+function autocomplete_node_finder_term_array($delta) {
+
+    $parent = variable_get('autocomplete_node_finder_'.$delta.'_parent', 0);
+    $field = variable_get('autocomplete_node_finder_'.$delta.'_field', 'autocomplete_node_finder_n.title');
+    $field_parts = explode('.', $field);
+    $vid = $field_parts[1];
+    $depth = variable_get('autocomplete_node_finder_'.$delta.'_depth', NULL);
+    $taxonomy_tree = taxonomy_get_tree($vid, $parent, -1, $depth ? $depth : NULL);
+    $term_array = array();
+    foreach ($taxonomy_tree as $term) {
+      $term_array[] = $term->tid;
+    }
+    return $term_array;
+}
+
+
+function autocomplete_node_finder_term_array_children($tid) {
+  $children = taxonomy_get_children($tid);
+  $term_array = array();
+  foreach ($children as $child) {
+    $term_array[] = $child->tid;
+    $term_array = $term_array + autocomplete_node_finder_term_array_children($child->tid);
+  }
+  return array_unique($term_array);
+}
+
+
+function autocomplete_node_finder_get_select_options($delta) {
+
+    $field = variable_get('autocomplete_node_finder_'.$delta.'_field', 'autocomplete_node_finder_n.title');
+    $field_parts = explode('.', $field);
+    $omit = variable_get('autocomplete_node_finder_'.$delta.'_omit', 1);
+    $delim = variable_get('autocomplete_node_finder_'.$delta.'_delimiter', "");
+    $sort = variable_get('autocomplete_node_finder_'.$delta.'_sort', 0);
+
+    $options = array();
+
+    $tree = variable_get('autocomplete_node_finder_'.$delta.'_tree', 1);
+
+    if ($field_parts[0] == "autocomplete_node_finder_v" && $omit == 0) {
+
+      $vid = $field_parts[1];
+      $parent = variable_get('autocomplete_node_finder_'.$delta.'_parent', 0);
+      $depth = variable_get('autocomplete_node_finder_'.$delta.'_depth', NULL);
+      $taxonomy_tree = taxonomy_get_tree($vid, $parent, -1, $depth ? $depth : NULL);
+      foreach ($taxonomy_tree as $term) {
+        $hyphens = '';
+        if ($tree) {
+          for ($h = 0; $h < $term->depth; $h++) {
+            $hyphens .= '-';
+          }
+        }
+        $options[$term->name] = ($hyphens ? $hyphens .' ' : '') .$term->name;
+      }
+
+    }
+    else {
+      $results = autocomplete_node_finder_get_result($delta, '', 'search');
+      if ($field_parts[0] == "autocomplete_node_finder_v" && $tree) {
+        $vid = $field_parts[1];
+        $parent = variable_get('autocomplete_node_finder_'.$delta.'_parent', 0);
+        $depth = variable_get('autocomplete_node_finder_'.$delta.'_depth', NULL);
+        $depth_array = array();
+        $taxonomy_tree = taxonomy_get_tree($vid, $parent, -1, $depth ? $depth : NULL);
+        foreach ($taxonomy_tree as $taxonomy_term) {
+          $depth_array[$taxonomy_term->tid] = $taxonomy_term->depth;
+        }
+      }
+      while ($row = db_fetch_array($results)) {
+        $row['hyphens'] = '';
+        if ($field_parts[0] == "autocomplete_node_finder_v" && $tree) {
+          $tid = $row['tid'];
+          for ($h = 0; $h < $depth_array[$tid]; $h++) {
+            $row['hyphens'] .= '-';
+          }
+        }
+        if (!empty($delim)) {
+          $dsv_parts = explode(',', $row['field']);
+          foreach ($dsv_parts as $dsv_part) {
+            $row['field'] = trim($dsv_part);
+            $row['form'] = 'select';
+            $output = theme('autocomplete_node_finder_suggestion', $row, $delta);
+            if ($output) {
+              $options[$row['field']] = $output;
+            }
+          }
+        }
+        else {
+          $output = theme('autocomplete_node_finder_suggestion', $row, $delta);
+          if ($output) {
+            $options[$row['field']] = $output;
+          }
+        }
+      }
+    }
+
+    if (!empty($delim) && $sort) { //extra sort for delim options
+      asort($options);
+    }
+
+    return $options;
+}
+
+
+/**
+ * Get an array of field types for use in select forms
+ */
+
+function autocomplete_node_finder_get_fields() {
+
+  $fields = content_fields();
+  $field_array = array();
+  $field_array['autocomplete_node_finder_nr.title'] = t('Node: Title');
+  $field_array['autocomplete_node_finder_nr.body'] = t('Node: Body');
+  $field_array['autocomplete_node_finder_nr.teaser'] = t('Node: Teaser');
+
+  foreach ((array)$fields as $field) {
+    if ($field['type'] == 'text' || $field['type'] == 'number_integer' || $field['type'] == 'number_decimal') {
+      $field_display_name = !empty($field['widget']['label']) ? $field['widget']['label'] : $field['field_name'];
+      $node_type_name = node_get_types('name', $field['type_name']);
+      $type_display_name = $node_type_name ? $node_type_name : $field['type_name'];
+      $field_array[$field['type_name'].'.'.$field['field_name'].'.'.$field['db_storage']] = $type_display_name.': '.$field_display_name.' ('.$field['type'].')';
+    }
+  }
+  return $field_array;
+}
+
+
+/**
+ * Get an array of content types for use in select forms
+ */
+
+function autocomplete_node_finder_get_types() {
+  $types = node_get_types($op = 'types', $node = NULL, $reset = FALSE);
+  $type_array = array();
+  $type_array[''] = t('<none>');  // this is the 'select none' option in the form
+  foreach ((array)$types as $type) {
+    $type_array[$type->type] = $type->name;
+  }
+  if (count($type_array) == 1) {
+    return false;
+  }
+  return $type_array;
+}
+
+
+/**
+ * Get an array of vocabularies for use in select forms
+ * parameters - $vocab_list: array of vocabularies to reject from the list
+ */
+
+function autocomplete_node_finder_get_vocabs($vocab_list = array()) { 
+  $vocabs = taxonomy_get_vocabularies();
+  if (array_filter($vocabs) == null) {
+    // no vocabs;
+    return array();
+  }
+  $vocab_array = array();
+  foreach ((array)$vocabs as $vocab) {
+    $show_vocab = false;
+    if (!empty($vocab_list)) {
+      $show_vocab = in_array($vocab->vid , $vocab_list);
+    } 
+    else {
+      $show_vocab = true;
+    }
+    $vocab_array[''] = t('<none>');  // this is the 'select none' option in the form
+    if ($show_vocab) {
+      $vocab_array['autocomplete_node_finder_v.'.$vocab->vid] = t('Taxonomy: ').$vocab->name.t(' (vocabulary)');
+    }
+  }
+  return $vocab_array;
+}
+
+
+/**
+ * Get an array of terms for use in select forms
+ * parameters - $vocab_array: array of vocabularies to select from instead of selecting from all of them.
+ */
+
+function autocomplete_node_finder_get_terms($vocab_array = array()) {
+  $term_array = array();
+  $term_array[''] = t('<none>');  // this is the 'select none' option in the form
+  if (array_filter($vocab_array) == null) {
+    // no vocab restriction, get all vocabs.
+    $vocab_array = autocomplete_node_finder_get_vocabs();
+    if ($vocab_array == false) {
+      // still no vocabs
+      return array();
+    }
+  }
+  foreach ($vocab_array as $vocab_id => $vocab_name) {
+    $tree = taxonomy_get_tree($vocab_id);
+    foreach ((array)$tree as $term) {
+      $hyphens = "";
+      for ($i=0;$i<$term->depth;$i++) {
+        $hyphens .= "-";
+      }
+      $term_array[$term->tid] = $hyphens . $term->name;
+    }
+  }
+  if (count($term_array) == 1) {
+    return array();
+  }
+  return $term_array;
+}
+
+
+/**
+ * Build a basic results page.
+ */
+
+function theme_autocomplete_node_finder_results_page($delta, $nids, $form_state) {
+  global $pager_page_array, $pager_total, $pager_total_items;
+  $limit = variable_get('autocomplete_node_finder_'.$delta.'_pager', 0);
+
+  if (!empty($nids) && is_numeric($limit) && $limit > 0) {
+    $total = count($nids);
+    $nids = array_chunk($nids, $limit, TRUE);
+    $page = isset($_GET['page']) ? $_GET['page'] : 0;
+    $nids = $nids[$page];
+    $quantity = ceil($total/$limit);
+
+    // set globals for theme_pager
+    $pager_total_items[$delta] = $total;
+    $pager_total[$delta] = $quantity;
+    $pager_page_array[$delta] = $page;
+  }
+
+  $output = '';
+
+  if (empty($nids)) {
+    $output .= t('There are no results to display.');
+  }
+  else {
+    foreach ($nids as $nid) {
+      $result = node_load($nid);
+      $output .= node_view($result, TRUE);
+    }
+  }
+
+  if (is_numeric($limit) && $limit > 0) {
+    $output .= theme('pager', null, $limit, $delta, array(), $quantity);
+  }
+
+  return $output;
+
+}
+
+/**
+ * Theme a suggestion.  Return null/false to exclude suggestion.
+ */
+
+function theme_autocomplete_node_finder_suggestion($match, $delta) {
+  $output = ($match['hyphens'] ? $match['$hyphens'] .' ' : '') . $match['field'];
+  /*
+  Example of how to display complicated autocomplete options
+  if ($match['form'] == 'autocomplete') {
+    $suggestion = node_load($match['nid']);
+    $output = node_view($suggestion, TRUE);
+  }
+  */
+  return $output;
+}
+
+/*
+TO DO
+
+more efficient database queries regarding order by, table order, multiple keywords, substring_index delims
+default validation message should become a textfield in the settings page
+menu item as field.  use substr in mysql to match link_path from menu_links and get link_title
+seperate out hyphen finding into own function from select options function, like get_hyphens($delta, $tid);
+one day seperate out the functions relating to different modules into different include files
+*/

@@ -1,0 +1,46 @@
+<?php
+// $Id: feedapi_comments.install,v 1.1 2008/09/29 19:06:19 aronnovak Exp $
+
+/**
+ * Implementation of hook_schema().
+ */
+function feedapi_comments_schema() {
+  $schema = array();
+  $schema['feedapi_comments'] = array(
+    'description' => t('Stores additional information about feed item nodes.'),
+    'fields' => array(
+      'cid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => t("Primary Key: The feed item node's nid."),
+      ),
+      'guid' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => t('Unique identifier for the feed item.'),
+      ),
+    ),
+    'primary key' => array('cid'),
+    'indexes' => array(
+      'guid' => array(array('guid', 255)),
+    ),
+  );
+  
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function feedapi_comments_install() {
+  drupal_install_schema('feedapi_comments');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function feedapi_comments_uninstall() {
+  drupal_uninstall_schema('feedapi_comments');
+}

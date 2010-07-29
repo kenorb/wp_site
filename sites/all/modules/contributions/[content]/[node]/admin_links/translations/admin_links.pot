@@ -1,0 +1,66 @@
+# $Id$
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  admin_links.admin.inc,v 1.1.2.5 2008/11/28 23:00:38 davereid
+#  admin_links.module: n/a
+#  admin_links.info: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-11-28 17:07-0600\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: admin_links.admin.inc:17
+msgid "Add edit link to node lists."
+msgstr ""
+
+#: admin_links.admin.inc:22
+msgid "Add delete link to node lists."
+msgstr ""
+
+#: admin_links.admin.inc:27
+msgid "Add support for the <a href=\"@ueb\">Universal Edit Button</a> on editable content."
+msgstr ""
+
+#: admin_links.module:48
+msgid "Edit"
+msgstr ""
+
+#: admin_links.module:55
+msgid "Delete"
+msgstr ""
+
+#: admin_links.module:64
+msgid "Edit this page"
+msgstr ""
+
+#: admin_links.module:93;0
+msgid "admin_links"
+msgstr ""
+
+#: admin_links.module:93
+msgid "Default variable for %variable not found."
+msgstr ""
+
+#: admin_links.module:15 admin_links.info:0
+msgid "Admin links"
+msgstr ""
+
+#: admin_links.module:16
+msgid "Settings for administration links in node lists."
+msgstr ""
+
+#: admin_links.info:0
+msgid "Adds edit and delete links to node lists, and adds support for the Universal Edit Button."
+msgstr ""
+

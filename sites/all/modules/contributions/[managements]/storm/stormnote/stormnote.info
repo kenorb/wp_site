@@ -1,0 +1,16 @@
+; $Id: stormnote.info,v 1.3 2008/06/23 16:46:35 robertogerola Exp $
+name = Storm Note
+description = "SpeedTech Organizer and Resource Manager - Note"
+dependencies[] = storm
+dependencies[] = stormorganization
+dependencies[] = stormproject
+dependencies[] = stormtask
+package = Storm
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-01-07
+version = "6.x-1.20"
+core = "6.x"
+project = "storm"
+datestamp = "1231318237"
+

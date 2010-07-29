@@ -1,0 +1,27 @@
+<?php
+
+/**
+ * @file
+ * @brief User Badges Product install file
+ * 
+ * This file contains all the installation functions of the schema, tables and variables 
+ * used by the module.
+ *
+ * @author Jeff Robbins (jjeff), http://drupal.org/user/17190
+ * @author Chad Phillips (hunmonk), http://drupal.org/user/22079
+ * @author Heine Deelstra (Heine), http://drupal.org/user/17943
+ * @author Nuno Veloso (nunoveloso18), http://drupal.org/user/80656
+ *
+ * @warning For more information on licensing, read the LICENCE.txt file.
+ *
+ */
+
+
+function user_badges_products_install() {
+  
+}
+
+function user_badges_products_uninstall() {
+  
+}
+

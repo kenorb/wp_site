@@ -1,0 +1,1082 @@
+<?php 
+// $Id: $
+/**
+ * @file
+ * Lets users play chess with each other
+ *
+ * It will display a board, and allow authenticated users to move pieces
+ */
+
+/**
+ * IMPORTANT NOTE:
+ * The board state is measured from the top left of the board, moving across each row in turn.
+ * The top left of the board is position a8, the next position is then b8 etc... to h8, and then a8, etc...
+ *
+ * The following values are allowed: rd, rl, nd, nl, bd, bl, qd, ql, kd, kl, pd, pl, zz
+ * Key: r - rook, n - knight, b - bishop, q - queen, k - king, p - pawn
+ * d - dark, l - light
+ * zz - empty space
+ *
+ * Using this, the intial board state for every game will always be the same, and it is defined in the constant INITIAL_BOARD_STATE
+ * define("INITIAL_BOARD_STATE", "rd nd bd qd kd bd nd rd pd pd pd pd pd pd pd pd zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz pl pl pl pl pl pl pl pl rl nl bl ql kl bl nl rl");
+ */
+
+/* defines for values to store in the databases - abstracts database from the game */
+define('CHESS_LIGHT', 0);   // colour light
+define('CHESS_DARK', 1);   // colour dark
+define('CHESS_ROOK', 0);   // pieces: rook
+define('CHESS_KNIGHT', 1);   // pieces: knight
+define('CHESS_BISHOP', 2);   // pieces: bishop
+define('CHESS_QUEEN', 3);   // pieces: queen
+define('CHESS_KING', 4);   // pieces: king
+define('CHESS_PAWN', 5);   // pieces: pawn
+
+/**
+ * Given a character representing a chess piece, return a numerical value to be stored in the database,
+ * and vice versa...
+ */
+
+function chess_piece_index($code) {
+  static $chess_lookup = array();  // return numeric index given piece (string)
+  static $flipped = array();       // return piece (string) given index
+
+  if (empty($chess_lookup)) {
+    $chess_lookup = array(
+      'r' => CHESS_ROOK,
+      'n' => CHESS_KNIGHT,
+      'b' => CHESS_BISHOP,
+      'q' => CHESS_QUEEN,
+      'k' => CHESS_KING,
+      'p' => CHESS_PAWN,
+    );
+    $flipped = array_flip($chess_lookup);
+  }
+
+  if (is_numeric($code)) {
+    return (array_key_exists($code, $flipped) ? $flipped[$code] : '');
+  }
+
+  return (array_key_exists($code, $chess_lookup) ? $chess_lookup[$code] : 0);
+}
+
+/**
+ * node hooks...
+ * ---------------------------------------
+ */
+
+/**
+ * Implementation of hook_node_info().
+ */
+function chess_node_info() {
+  // We return an array since a module can define multiple node types.
+  // We're only defining one node type, type 'chess'.
+  return array(
+    'chess' => array(
+      'name' => t('Chess'), // Required.
+      'module' => 'chess',  // Required.
+      'description' => t('Allows two users to play chess against each other'), // Required.
+      'has_title' => TRUE,
+      'title_label' => t('Match Title'),
+      'has_body' => TRUE,
+      'body_label' => t('Game Information'),
+      'min_word_count' => 2,
+      'locked' => TRUE,
+    )
+  );
+}
+
+
+/**
+ * Implementation of hook_perm().
+ */
+function chess_perm() {
+  return array('create chess', 'edit own chess', 'delete own chess');
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function chess_access($op, $node, $account) {
+
+  if ($op == 'create') {
+    return user_access('create chess', $account);
+  }
+  if ($op == 'update') {
+    if (user_access('edit own chess', $account) && ($account->uid == $node->uid)) {
+      return TRUE;
+    }
+  }
+  if ($op == 'delete') {
+    if (user_access('delete own chess', $account) && ($account->uid == $node->uid)) {
+      return TRUE;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function chess_form(&$node, $form_state) {
+  // Get metadata for this node type
+  // (we use it for labeling title and body fields).
+  // We defined this in chess_node_info().
+  $type = node_get_types('type', $node);
+
+  // Need a list of all users, to allow the players to be chosen
+  $result = db_query("SELECT uid, name FROM {users} WHERE uid > 0 AND status = 1");
+
+  $users = array();
+  while ($user = db_fetch_array($result)) {
+    $users[$user['uid']] = $user['name'];
+  }
+
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => check_plain($type->title_label),
+    '#required' => TRUE,
+    '#default_value' => $node->title,
+    '#weight' => -5,
+  );
+  $form['white'] = array(
+    '#type' => 'select',
+    '#title' => t('White Player'),
+    '#required' => TRUE,
+    '#options' => $users,
+    '#default_value' => $node->user_white,
+    '#weight' => -4,
+  );
+  $form['black'] = array(
+    '#type' => 'select',
+    '#title' => t('Black Player'),
+    '#required' => TRUE,
+    '#options' => $users,
+    '#default_value' => $node->user_black,
+    '#weight' => -3,
+  );
+  $form['body_filter']['body'] = array(
+    '#type' => 'textarea',
+    '#title' => check_plain($type->body_label),
+    '#default_value' => $node->body,
+    '#rows' => 7,
+    '#required' => TRUE,
+  );
+  $form['PGN_import'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('PGN Import Field'),
+    '#weight' => -2,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['PGN_import']['PGN_code'] = array(
+    '#type' => 'textarea',
+    '#rows' => 7,
+    '#required' => FALSE,
+    '#description' => t('Using the PGN format, the starting setup of the chess game can be entered here.'),
+  );
+  $form['body_filter']['filter'] = filter_form($node->format);
+  return $form;
+}
+
+
+/**
+ * Implementation of hook_insert().
+ *
+ * TODO: HAVE TO ADD IN THE ABILITY TO DECODE THE PGN CHESS FORMAT, AND SET THE GAME TO START FROM THAT POINT
+ * TODO: Only allow undo moves if the move_number is > 0?
+ * TODO: EDIT HOOK UPDATE TO TAKE ACCOUNT OF PGN INPUT?
+ */
+function chess_insert($node) {
+  db_query("INSERT INTO {chess} (nid, vid, user_white, user_black) VALUES (%d, %d, %d, %d)", $node->nid, $node->vid, $node->white, $node->black);
+
+  $starting_chess_state = 'rd nd bd qd kd bd nd rd pd pd pd pd pd pd pd pd zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz zz pl pl pl pl pl pl pl pl rl nl bl ql kl bl nl rl';
+  $starting_player = CHESS_LIGHT;
+  $check = 0;
+  $checkmate = 0;
+
+  if ($node->PGN_code) {
+    // decode the PGN, and change the values for $starting_chess_state, $starting_plater,
+    // and $check (should never start a game in mate, but if it's in the standard, want to check for it.
+    drupal_set_message($node->PGN_code);
+    /*	$result = PGN_decode($node->PGN_code);
+ 	$starting_chess_state = $result[0];
+ 	$starting_player = $result[1];
+ 	$check = $result[2];
+ 	$checkmate = $result[3];*/
+  }
+
+  db_query("INSERT INTO {chess_info} (game_id, user_white, user_black, current_board_state, next_move, check_, checkmate) VALUES (%d, %d, %d, '%s', '%s', %d, %d)", $node->nid, $node->white, $node->black, $starting_chess_state, $starting_player, $check, $checkmate);
+
+}
+
+/**
+ * Takes a string input, that string is an chess game, encoded in the PGN format.
+ * Returns a keyed array that contains the starting chess board state, the starting plater, whether that player is in check
+ */
+function PGN_decode($pgn_code) {
+
+  // DECODE!
+
+  return $pgn_decode;
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function chess_update($node) {
+  if ($node->revision) {
+    chess_insert($node);
+  }
+  else {
+    db_query("UPDATE {chess} SET user_white = %d, user_black = %d  WHERE vid = %d", $node->white, $node->black, $node->vid);
+    db_query("UPDATE {chess_info} SET user_white = %d, user_black = %d", $node->white, $node->black);
+  }
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function chess_delete(&$node) {
+  // Delete the related information we were saving for this node.
+  db_query('DELETE FROM {chess} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {chess_games} WHERE game_id = %d', $node->nid);
+  db_query('DELETE FROM {chess_info} WHERE game_id = %d', $node->nid);
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function chess_load($node) {
+  return db_fetch_object(db_query('SELECT user_white, user_black FROM {chess} WHERE vid = %d', $node->vid));
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function chess_view($node, $teaser = FALSE, $page = FALSE) {
+  global $user;
+  if (!$teaser) {
+    // Use Drupal's default node view.
+    $node = node_prepare($node, $teaser);
+
+    // Add The two players to the node view
+    $node->content['players'] = array(
+      '#value' => theme('chess_players', $node),
+      '#weight' => -4,
+    );
+
+    if ($game_info = db_fetch_array(db_query("SELECT * FROM {chess_info} where game_id = %d", $node->nid))) {
+      // convert the result set into an array
+
+      $next_move = $game_info['next_move'];
+      // check if the current user is in the array of player ids for this game
+      if ($user->uid == $game_info['user_white'])  {
+
+        if ($next_move == CHESS_LIGHT) {
+          $node->content['move_form'] = array('#value' => drupal_get_form('move_entry_form', $node, $game_info), '#weight' => 5, );
+        }
+      }
+      if ($user->uid == $game_info['user_black']) {
+        if ($next_move == CHESS_DARK) {
+          $node->content['move_form'] = array('#value' => drupal_get_form('move_entry_form', $node, $game_info), '#weight' => 5, );
+        }
+      }
+    }
+  }
+  elseif ($teaser) {
+    // Use Drupal's default node view.
+    $node = node_prepare($node, $teaser);
+  }
+  return $node;
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function chess_theme() {
+  return array(
+    'chess_players'  => array('arguments' => array('node')),
+  );
+}
+
+
+function theme_chess_players($node) {
+  // discover player's names....
+  $names = players_names($node);
+
+  // whose move is next?
+  $next_to_move = db_result(db_query("SELECT next_move FROM {chess_info} WHERE game_id = %d", $node->nid));
+
+  // output split in case I want to add anything after players names with regard to whose move it is... could also add
+  // a div around the next to move player for theming purposes...
+  $output = '<div class="chess-players"><strong>White:</strong> '. check_plain($names['0']);
+  $output .= '<br />'.'<strong>Black:</strong> '. check_plain($names['1']);
+  $output .= '</div>	';
+
+  if ($next_to_move == CHESS_LIGHT) {
+    $output .= "<h2>White to move</h2>";
+  }
+  else {
+    $output .= "<h2>Black to move</h2>";
+  }
+  $output .= "<br />";
+  return $output;
+}
+
+function players_names($node) {
+  $names['0'] = db_result(db_query("SELECT name FROM {users} WHERE uid = %d", $node->user_white));
+  $names['1'] = db_result(db_query("SELECT name FROM {users} WHERE uid = %d", $node->user_black));
+  return $names;
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function chess_menu() {
+  $items = array();
+
+  $items['admin/settings/chess'] = array(
+    'title' => 'Chess settings',
+    'description' => 'Change how the chess board behaves.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('chess_admin_settings'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer site configuration'),
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_menu_alter().
+ * Set the access permissions for chess content type
+ *  @param $callbacks
+ *    Associative array of menu router definitions.
+ */
+function chess_menu_alter(&$callbacks) {
+  if (isset($callbacks['node/add/chess'])) {
+    $callbacks['node/add/chess']['access callback'] = 'user_access';
+    $callbacks['node/add/chess']['access arguments'] = array('create chess');
+  }
+}
+
+/**
+ * Define the settings form.
+ */
+function chess_admin_settings() {
+  global $base_path;
+  global $base_root;
+  $chess_pieces_default_directory = drupal_get_path('module', 'chess') ."/pieces";
+
+  $form['chess_pieces_directory'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Chose the directory where chess pieces are located.'),
+    '#default_value' => variable_get('chess_pieces_directory', $chess_pieces_default_directory),
+    '#description' => t('Starts at this root: ') . $base_root . $base_path,
+    '#required' => TRUE,
+  );
+  $form['chess_width'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Set the width of the chess pieces in pixels.'),
+    '#default_value' => variable_get('chess_width', '20'),
+    '#description' => t('The default value is 20 pixels, but you may need to change it for different themes'),
+    '#required' => TRUE,
+  );
+  $form['chess_height'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Set the height of the chess pieces in pixels.'),
+    '#default_value' => variable_get('chess_height', '20'),
+    '#description' => t('The default value is 20 pixels, but you may need to change it for different themes'),
+    '#required' => TRUE,
+  );
+  $form['number_previous_moves'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Choose the number of previous moves to display in the secondary chess block'),
+    '#default_value' => variable_get('number_previous_moves', '5'),
+    '#description' => t('The default value is 5, but it\'s up to you'),
+    '#required' => TRUE,
+  );
+  $form['allow_move_editing'] = array(
+    '#type' => 'select',
+    '#title' => t('Allow a user to edit the last move they entered'),
+    '#options' => array('TRUE' => t('True'), 'FALSE' => t('False')),
+    '#default_value' => variable_get('allow_move_editing', 'TRUE'),
+    '#description' => t('Allow a player to edit his last move (provided the other player has not made a move)'),
+    '#required' => TRUE,
+  );
+
+  $form['array_filter'] = array('#type' => 'hidden');
+
+  return system_settings_form($form);
+}
+
+/**
+ * Define the form for entering a move.
+ */
+function move_entry_form($form_state, $node, $game_info) {
+
+  $form['move'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Move'),
+  );
+  $form['move']['nid'] = array(
+    '#type' => 'value',
+    '#value' => $node->nid,
+  );
+  $form['move']['div_inline'] = array('#type' => 'markup', '#value' => '<div class="container-inline">');
+
+  $column_options = array(
+    'a' => t('a'),
+    'b' => t('b'),
+    'c' => t('c'),
+    'd' => t('d'),
+    'e' => t('e'),
+    'f' => t('f'),
+    'g' => t('g'),
+    'h' => t('h'),
+  );
+  $row_options = array(  // Does it makes sense to translate these???
+    '1' => t('1'),
+    '2' => t('2'),
+    '3' => t('3'),
+    '4' => t('4'),
+    '5' => t('5'),
+    '6' => t('6'),
+    '7' => t('7'),
+    '8' => t('8'),
+  );
+
+  $form['move']['piece_column_from'] = array(
+    '#type' => 'select',
+    '#title' => t('From Column'),
+    '#options' => $column_options,
+  );
+  $form['move']['piece_row_from'] = array(
+    '#type' => 'select',
+    '#title' => t('From Row'),
+    '#options' => $row_options,
+  );
+  $form['move']['div_inline_end'] = array('#type' => 'markup', '#value' => '</div>');
+  $form['move']['br'] = array('#type' => 'markup', '#value' => '<br />');
+  $form['move']['div_inline_1'] = array('#type' => 'markup', '#value' => '<div class="container-inline">');
+  $form['move']['piece_column_to'] = array(
+    '#type' => 'select',
+    '#title' => t('To Column'),
+    '#options' => $column_options,
+  );
+  $form['move']['piece_row_to'] = array(
+    '#type' => 'select',
+    '#title' => t('To Row'),
+    '#options' => $row_options,
+  );
+  $form['move']['div_inline_1_end'] = array('#type' => 'markup', '#value' => '</div>');
+
+  $default_extra = array();
+
+  if ($game_info['check_'] == 1) {
+    $default_extra[] = 'check';
+  }
+
+  if ($game_info['checkmate'] == 1) {
+    $default_extra[] = 'checkmate';
+  }
+
+  $form['move']['extra'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Other Information'),
+    '#options' => array('check' => t('Check'), 'checkmate' => t('Checkmate'), ),
+    '#default_value' => $default_extra,
+  );
+
+  $form['move']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Move Piece')
+  );
+  return $form;
+}
+
+/**
+ * Save the move to the database, and make all the required changes
+ * change who's next move
+ * save ne board state
+ * etc...
+ */
+function move_entry_form_submit($form, &$form_state) {
+
+  $nid = $form_state['values']['nid'];  // node id - this references all chess game info
+  $result = db_query("SELECT * FROM {chess_info} WHERE game_id = %d", $nid);
+  $game = db_fetch_array($result);
+
+  global $user;
+  $viewer = $user->uid;
+
+  if (!empty($game)) {
+    $next_mover = ($game['next_move'] == CHESS_LIGHT) ? $game['user_white'] : $game['user_black'];
+  }
+  else {
+    $next_mover = -1; // impossible to match uid
+  }
+
+  if ($next_mover == $viewer) {  // MGN: This check doesn't appear to be necessary, though I am not sure why...
+
+  // entry is allowed
+
+    $move_number = $game['number_of_moves'];
+    $move_number++;
+
+    if ($game['next_move'] == CHESS_LIGHT) {
+      $next_move = 'd';
+      $db_next_move = CHESS_DARK;
+    }
+    else {
+      $next_move = 'l';
+      $db_next_move = CHESS_LIGHT;
+    }
+
+    $current_board_state = $game['current_board_state'];
+    // update board state
+
+    $column_from = (int)convert_co_ordinate($form_state['values']['piece_column_from']);
+    $column_to = (int)convert_co_ordinate($form_state['values']['piece_column_to']);
+
+    $row_from_co_ord = 8 - (int)$form_state['values']['piece_row_from'];
+    $row_to_co_ord = 8 - (int)$form_state['values']['piece_row_to'];
+
+    // 3 chars per square =>
+    // equation below will give the start reference for the character being moved
+    $blank_board_from_square = ( ($row_from_co_ord * 8) + $column_from - 1) * 3;
+
+    $piece_code = drupal_substr($current_board_state, $blank_board_from_square, 2);
+    $piece = drupal_substr($piece_code, 0, 1);
+    $colour = drupal_substr($piece_code, 1);
+
+    if ($colour != (($game['next_move'] == CHESS_LIGHT) ? 'l' : 'd')) {
+      //Chose the wrong colour piece, or no piece
+      drupal_set_message(t('You have chosen the wrong colour piece, move not saved'));
+      return;
+    }
+
+    // don't need to know if the position was light or dark, that is dealt with in the decode
+    $current_board_state_1 = substr_replace($current_board_state, 'zz', $blank_board_from_square, 2);
+
+    $new_piece_position = ( ($row_to_co_ord * 8) + $column_to - 1) * 3;
+    $whats_in_the_location_being_moved_to = drupal_substr($current_board_state_1, $new_piece_position, 2);
+
+    if (legal_move($piece, $colour, $current_board_state_1, $column_from, $row_from_co_ord, $column_to, $row_to_co_ord)==1) {
+      switch ($whats_in_the_location_being_moved_to) {
+        case 'zz':
+          $captured_piece = 0;
+          break;
+        default:
+          $captured_piece = chess_piece_index(drupal_substr($whats_in_the_location_being_moved_to, 0, 1));
+          break;
+      }
+
+      $new_board_state = substr_replace($current_board_state_1, $piece_code, $new_piece_position, 2);
+    } 
+    else {
+      drupal_set_message(t('That is not a legal move.'));
+      return;
+    }
+    // check if a 'check' was selected, or a 'checkmate'
+    // currently not working... not sure why
+    $check = empty($form_state['values']['extra']['check']) ? 0 : 1;
+    $checkmate = empty($form_state['values']['extra']['checkmate']) ? 0 : 1;
+
+    // UPDATE THE {chess_info} DB
+    db_query("UPDATE {chess_info} SET current_board_state='%s', next_move=%d, number_of_moves=%d, check_=%d, checkmate=%d WHERE game_id=%d", $new_board_state, $db_next_move, $move_number, $check, $checkmate, $nid);
+
+    // ADD MOVE TO {chess_games} DB
+    db_query("INSERT INTO {chess_games} (game_id, piece, move_number, move_from_column, move_to_column, move_from_row, move_to_row, colour, captured_piece) VALUES (%d, %d, %d, %d, %d, %d, %d, %d, %d)", $nid, chess_piece_index($piece), $move_number, $column_from, $column_to, (int)$form_state['values']['piece_row_from'], (int)$form_state['values']['piece_row_to'], $game['next_move'], $captured_piece);
+
+    drupal_set_message(t('Your move was saved.'));
+  }
+  else {
+    // the other player has already moved - don't allow the edit!
+    $last_colour = ($next_mover == $game['user_white']) ? 'White' : 'Black';
+    drupal_set_message(t('Sorry, %colour is editing the previous move.', array('%colour' => $last_colour)));
+  }
+}
+
+/**
+ * Implementation of hook_block().
+ */
+function chess_block($op = 'list', $delta = 0) {
+  switch ($op) {
+    case 'list':
+      return _chess_block_list();
+    case 'view':
+      return _chess_block_view($delta);
+  }
+}
+
+/**
+ * Get the list of the blocks.
+ *
+ * @param
+ *   none.
+ *
+ * @return
+ *   array containing the title ("info") of the block.
+ */
+function _chess_block_list() {
+  $block = array();
+  $block[0]['info'] = t('Chess');
+  $block[1]['info'] = t('Previous Moves');
+  $block[2]['info'] = t('Edit Last Move');
+  return $block;
+}
+
+/**
+ * Get the output to be displayed by the block.
+ *
+ * @param
+ *   $delta - integer for the block number.
+ *
+ * @return
+ *   array containing the title ("subject") and content of the block.
+ */
+function _chess_block_view($delta) {
+  $block = array();
+
+  switch ($delta) {
+    case 0:
+      $block['subject'] = t('Chess Board');
+
+      if (arg(0) == 'node' && is_numeric(arg(1))) {
+        $nid = arg(1); // current node id (nid)
+        $board_layout = db_fetch_array(db_query("SELECT current_board_state FROM {chess_info} WHERE game_id = %d", $nid));
+        if (!empty($board_layout)) {  // print board surround
+          $block['content'] .= top_surround();
+
+          $board_layout = $board_layout['current_board_state'];
+
+          // decode the board state and print based on that.
+          $block['content'] .= decode_board_layout($board_layout);
+        }
+        else {
+          //$block['content'] = "No Game was found";
+          //drupal_set_message(t('An Error has occured, the board could not be found.'));
+        }
+      }
+      break;
+    case 1:
+      $block['subject'] = t('Previous Moves');
+
+      if (arg(0) == 'node' && is_numeric(arg(1))) {
+        $nid = arg(1); // current node id (nid)
+        $number_previous_moves = variable_get('number_previous_moves', '5');
+
+        $previous_moves = db_query_range("SELECT * FROM {chess_games} WHERE game_id = %d ORDER BY move_number DESC", $nid, 0, $number_previous_moves);
+
+        while ($move_row = db_fetch_array($previous_moves)) {
+          $block['content'] .= ($move_row['colour'] == CHESS_LIGHT) ? "White: " : "Black: ";
+          $block['content'] .= chess_piece_index($move_row['piece']);
+          $block['content'] .= chr(96 + $move_row['move_from_column']);  // an ascii character
+          $block['content'] .= $move_row['move_from_row'];
+          $block['content'] .= chr(96 +$move_row['move_to_column']);
+          $block['content'] .= $move_row['move_to_row'];
+          $block['content'] .= "<br />";
+        }
+      }
+      break;
+    case 2:
+      $move_editing = variable_get('allow_move_editing', 'TRUE');
+      if ($move_editing) {
+        // block to display an edit for the previous move
+        if (arg(0) == 'node' && is_numeric(arg(1))) {
+          $nid = arg(1); // current node id (nid)
+
+          // determine if the user viewing this page is the person who made the last move...
+          global $user;
+          $viewer = $user->uid;
+          $result = db_query("SELECT * FROM {chess_info} WHERE game_id = %d", $nid);
+          $game = db_fetch_array($result);
+          if ($game['number_of_moves'] == 0) {
+            // do not display 'undo move' block, no moves have been made yet.
+          }
+          else {
+            $last_mover = ($game['next_move'] == CHESS_LIGHT) ? $game['user_black'] : $game['user_white'];
+            if ($last_mover == $viewer) {
+              // allow the user to edit there last move...
+              $block['subject'] = t('Undo Your Previous Move');
+              $block['content'] .= drupal_get_form('move_edit_form', $nid);
+            }
+          }
+        }
+      }
+      break;
+    }
+
+  return $block;
+}
+
+
+/**
+ * Define the form for entering a move.
+ */
+function move_edit_form(&$form_state, $nid) {
+  $form['nodeid'] = array( '#type' => 'hidden', '#value' => $nid);
+
+  $form['move_edit']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Undo Move'),
+  );
+  return $form;
+}
+
+/**
+ * Save the move to the database, and make all the required changes
+ * change who's next move
+ * save new board state
+ */
+function move_edit_form_submit($form, &$form_state) {
+
+  $nid = $form_state['values']['nodeid'];  // node id - this references all chess game info
+
+  // Update {chess_info} table....
+  $result = db_query("SELECT * FROM {chess_info} WHERE game_id = %d", $nid);
+  $game = db_fetch_array($result);
+
+  global $user;
+  $viewer = $user->uid;
+
+  $last_mover = ($game['next_move'] == CHESS_LIGHT) ? $game['user_black'] : $game['user_white'];
+  if ($last_mover == $viewer) { // MGN: this check doesn't appear to be necessary, though I am not sure why
+    // edit move is permitted...submit form
+
+    $move_number = $game['number_of_moves'];
+    $move_number--; // updated...
+
+    if ($game['next_move'] == CHESS_LIGHT) {
+      $next_move = 'd';
+      $db_next_move = CHESS_DARK;
+    }
+    else {
+      $next_move = 'l';
+      $db_next_move = CHESS_LIGHT;
+    }
+
+    // update the board state
+    $result = db_query_range("SELECT * FROM {chess_games} WHERE game_id = %d ORDER BY move_number DESC", $nid, 0, 1);
+    $previous_move = db_fetch_array($result);
+
+    $current_board_state = $game['current_board_state'];
+
+    $column_from = $previous_move['move_from_column'];
+    $column_to = $previous_move['move_to_column'];
+    $row_from = 8 - $previous_move['move_from_row'];
+    $row_to = 8 - $previous_move['move_to_row'];
+
+    $moved_to = ( ($row_to * 8) + $column_to - 1) * 3;
+    /* *****************************************************************
+     * $moved_to now contains the position in the board that (the start of it)
+     * that needs to be changed back. It is the position that the last move
+     * moved to.
+     * **************************************************************** */
+    // if square was blank originally $position_piece = 'zz', otherwise...it contains the code for the piece that was there
+    $position_piece = ($previous_move['captured_piece'] == 0 ) ? 'zz' :
+      chess_piece_index($previous_move['captured_piece']) . (($game['next_move'] == CHESS_LIGHT) ? 'l' : 'd');
+
+    $intermediate_board_state = substr_replace($current_board_state, $position_piece, $moved_to, 2);
+    /* *****************************************************************
+     * At this point the board has been changed, so that the square that was moved to has been returned to the
+     * state it was in before the move, i.e. it is blank, or it has the piece that was captured replaced.
+     * **************************************************************** */
+
+    $moved_from = ( ($row_from * 8) + $column_from - 1) * 3; // formula is the same as the move-entry submit form
+    /* *****************************************************************
+     * $moved_from contains the position where the piece was moved from.
+     * **************************************************************** */
+    $undo_move = chess_piece_index($previous_move['piece']) . $next_move;
+    /* *****************************************************************
+     * $undo_move contains the piece code and the colour of that piece
+     * *****************************************************************/
+    $old_board_state = substr_replace($intermediate_board_state, $undo_move, $moved_from, 2);
+    /* *****************************************************************
+     * The board state should now be back the way it was completely before the move.
+     * **************************************************************** */
+    $check = 0;
+    $checkmate = 0;
+
+    // DELETE THE LINE FROM THE {chess_games} table
+    db_query("DELETE FROM {chess_games} WHERE game_id = %d AND move_number = %d", $nid, ($move_number+1));
+
+    db_query("UPDATE {chess_info} SET current_board_state='%s', next_move=%d, number_of_moves=%d, check_=%d, checkmate=%d WHERE game_id=%d", $old_board_state, $db_next_move, $move_number, $check, $checkmate, $nid);
+
+    drupal_set_message(t('Your move was undone.'));
+  }
+  else {
+    // the other player has already moved - don't allow the edit!
+
+    $last_colour = ($last_mover == $game['user_white']) ? 'White' : 'Black';
+    drupal_set_message(t('Sorry, move cannot be edited since %colour has already moved.', array('%colour' => $last_colour)));
+  }
+}
+
+/**
+ * Converts columns letter to an equivalent numeric value
+ * expecting $value from 'a' to 'h', anything else returns 0...
+ */
+function convert_co_ordinate($value) {
+  $co_ordinate = ord($value) - ord('a') + 1;
+  $co_ordinate = ($co_ordinate > 8 || $co_ordinate < 1) ? 0 : $co_ordinate;
+  return $co_ordinate;
+}
+
+/**
+ * Prints out the column letters on the top of the board... called before anything else.
+ *
+ */
+function top_surround() {
+  $block_content = '';
+
+  global $base_path;
+  global $base_root;
+
+  $chess_pieces_default_directory = drupal_get_path('module', 'chess') ."/pieces";
+  $chess_directory = $base_root . $base_path . variable_get('chess_pieces_directory', $chess_pieces_default_directory);
+
+  $width = variable_get('chess_width', '20');
+  $height = variable_get('chess_height', '20');
+
+  $htmlbegin = "<img src=\"". $chess_directory ."/surround/";
+  $htmlmid = ".png\" alt=\"";
+  $htmlend = " height=\"". $height ." width=\"". $width ."\"/>";
+
+  $block_content .= $htmlbegin .'blank'. $htmlmid .'chess board'. $htmlend;
+
+  foreach ( $cols = range ('a', 'h') as $col) {
+    $block_content .= $htmlbegin . $col . $htmlmid .'chess board column '. $col . $htmlend;
+  }
+  return $block_content;
+}
+
+/**
+ * Call this if a bottom surround is required... last call for block['content']
+ */
+function bottom_surround() {
+  // nothing at the moment
+  $block_content = '';
+  return $block_content;
+}
+
+/**
+ * Decodes the board layout code and returns the correct layout, ready to be added to the block content (i.e. html for image tiles)
+ *
+ * $board_code is the encoded layout for the board
+ * The following values are allowed: rd, rl, nd, nl, bd, bl, qd, ql, kd, kl, pd, pl, zz
+ * Key: r - rook, n - knight, b - bishop, q - queen, k - king, p - pawn
+ * d - dark, l - light
+ * zz - empty space
+ */
+function decode_board_layout($board_code) {
+  $block_content = '';
+
+  global $base_path;
+  global $base_root;
+  $chess_pieces_default_directory = drupal_get_path('module', 'chess') ."/pieces";
+
+  $chess_directory = $base_root . $base_path . variable_get('chess_pieces_directory', $chess_pieces_default_directory);
+  $width = variable_get('chess_width', '20');
+  $height = variable_get('chess_height', '20');
+
+  $row = 1;
+  for ($i=0;$i < 64;$i++) {
+    if ($i % 8 == 0) {
+      // print a row number
+      $block_content .= "<br />"; // new line
+      $block_content .= row_numbers($row);
+      $row++;
+    }
+    // extract the code for the current board location
+    $piece_code = drupal_substr($board_code, 0, 2);
+    // remove the code just extracted from the string
+    $board_code = drupal_substr($board_code, 3);
+
+    // standard information for each board location/piece
+    $block_content .= "<img src=\"". $chess_directory ."/pieces/Chess_";
+    $block_content .= $piece_code;
+    $block_content .= square_colour($i);
+    $block_content .= "44.png\" alt=";
+    $block_content .= "\"chess\""; // decode chess piece and put a specific text here?
+    $block_content .= "height=\"". $height ."\" width=\"". $width ."\"/>";
+  }
+  return $block_content;
+}
+
+/**
+ * Prints out the row numbers
+ * $row_number = the row number (quelle surprise!)
+ * row numbers count down from 8 to 1
+ */
+function row_numbers($row_number) {
+  global $base_path;
+  global $base_root;
+  $chess_pieces_default_directory = drupal_get_path('module', 'chess') ."/pieces";
+
+  $chess_directory = $base_root . $base_path . variable_get('chess_pieces_directory', $chess_pieces_default_directory);
+  $width = variable_get('chess_width', '20');
+  $height = variable_get('chess_height', '20');
+
+  $row_number_converted = 9 - $row_number;
+
+  $block_content = "<img src=\"". $chess_directory ."/surround/". $row_number_converted .".png\" alt=\"Row number ". $row_number_converted ."\" height=\"". $height ."\" width=\"". $width ."\"/> ";
+  return $block_content;
+}
+
+/**
+ * Returns whether the square currently being printed is dark or light in colour
+ * $square_number - the number of the square, the top left starts at 0... i.e.:
+ * 0 1 2 3 4 5 6 7
+ * 8 9 10 11 12
+ * Fix this code... it could be much cleaner
+ * Notice that even numbers in even rows are dark, even numbers in odd rows are light
+ *             odd numbers in even rows are light, odd number in odd rows are dark
+ * How about this ...
+ */
+
+function square_colour($square_number) {
+
+  $row_number = floor($square_number/8) + 1;
+  $colour = (($square_number & 1) === ($row_number & 1)) ? 'd' : 'l';
+
+  return $colour;
+}
+
+/**
+ *  Determine if a move is allowed or not
+ *
+ *  returns TRUE if the move is legal, FALSE otherwise
+ */
+
+function legal_move($piece, $colour, $board, $cf, $rf, $ct, $rt) {
+
+  $rf = 8 - $rf;  //convert back to game coordinates so its easier to think about it - revert later.
+  $rt = 8 - $rt;
+  $deltar= $rt - $rf;
+  $deltac= $ct - $cf;
+
+  $fp = (((8-$rt) * 8) + $ct - 1) * 3;
+  $fp_piece_code = drupal_substr($board, $fp, 2);
+  $fp_piece = drupal_substr($fp_piece_code, 0, 1);
+  $fp_colour = drupal_substr($fp_piece_code, 1);
+  $sign = (($colour == 'l') ? 1 : -1);  // the direction of allowed movement
+
+  if ($fp_colour != $colour) { // never a legal to move to land on your own colour!
+    switch ($piece) {
+      case 'p':
+        if ($deltac == 0) {
+          if ($deltar == $sign) {
+            if (clear_path($cf, $rf, 0, $deltar, 1, $board)) {//  one square advance with no pieces in the way
+              return TRUE;
+            }
+          }
+          elseif (($deltar == (2 * $sign)) && $rf == (($sign == 1) ? 2 : 7)) {
+            // two square advance from starting position, check intermediate position
+            if (clear_path($cf, $rf, 0, $sign, 2, $board)) {
+              return TRUE;
+            }
+          }
+        }
+        elseif (($deltac == 1 || $deltac == -1) && ($deltar == $sign)  && ($fp_piece_code != 'zz')) {
+          return TRUE;
+        }
+        break;
+      case 'r':
+        if (($deltac == 0) && ($deltar != 0)) {
+          $direction = ($deltar > 0) ? 1 : -1;
+          if (clear_path($cf, $rf, 0, $direction, abs($deltar) - 1, $board)) {
+            return TRUE;
+          }
+        }
+        elseif (($deltac != 0) && ($deltar == 0)) {
+          $direction = ($deltac > 0) ? 1 : -1;
+          if (clear_path($cf, $rf, $direction, 0, abs($deltac) - 1, $board)) {
+            return TRUE;
+          }
+        }
+        break;
+      case 'n':
+        $adeltar = abs($deltar);
+        $adeltac = abs($deltac);
+        if (($adeltar == 2 && $adeltac == 1) || ($adeltac == 2 && $adeltar == 1)){
+          return TRUE;
+        }
+        break;
+      case 'b':
+        $adeltar = abs($deltar);
+        $adeltac = abs($deltac);
+        if (($deltac != 0) && ($adeltac == $adeltar)) { // along a diagonal	
+          $dirr = ($deltar > 0) ? 1 : -1;
+          $dirc = ($deltac > 0) ? 1 : -1;
+          if (clear_path($cf, $rf, $dirc, $dirr, $adeltac - 1, $board)) {
+            return TRUE;
+          }
+        }
+        break;
+      case 'k':
+        // TODO: a king cannot move into check .. we will check for this in the main routine, not here.
+
+        // TODO: a king that hasn't moved can castle provided...
+        // The king has not been moved earlier in the game.
+        // The rook that castles has not been moved earlier in the game.
+        // there are no pieces standing between king and rook.
+        // the king is not in check.
+        // The king doesn't move through a square that is attacked by a piece of the opponent.
+        // The king would be in check after castling.
+        // recognize a castle whenever deltac = +/- 2
+
+        $adeltar = abs($deltar);
+        $adeltac = abs($deltac);
+        if ((($adeltar == 1) && ($adeltac == 0)) || (($adeltar == 0) && ($adeltac == 1)) || (($adeltar == 1) && ($adeltac == 1))) {
+          return TRUE;
+        }
+        break;
+      case 'q':
+        $adeltar = abs($deltar);
+        $adeltac = abs($deltac);    
+        if ( (($adeltac == 0) && ($adeltar !=0)) || 
+             (($adeltar == 0) && ($adeltac !=0)) || 
+             (($adeltar != 0) && ($adeltar == $adeltac ))) {
+          // just check to make sure that the space is open or occupied by the opponent
+          $dirr = ($adeltar == 0) ? 0 : (($deltar > 0) ? 1 : -1);
+          $dirc = ($adeltac == 0) ? 0 : (($deltac > 0) ? 1 : -1);
+          $nstep = ($adeltac == 0) ? $adeltar : $adeltac;
+          if (clear_path($cf, $rf, $dirc, $dirr, $nstep-1, $board)) {
+            return TRUE;
+          }
+        }
+       break;
+    };
+  }
+  return FALSE;
+}
+
+/**
+ * Determine if there is a path clear of pieces
+ * 
+ * @param $startc is the starting column
+ * @param $startr is the starting row
+ * @param $stepc is the change in the column number per step
+ * @param $stepr is the change in the row number per step
+ * @param $nstep is the number of steps to try
+ * @param $board is the board layout
+ *
+ * 
+ * @return TRUE if the path is clear
+ *
+ * Note: Coordinates are game coordinates not display coordinates
+ */
+function clear_path($startc, $startr, $stepc, $stepr, $nstep, $board) {
+  $c = $startc;
+  $r = $startr;
+  for ($i = 0; $i < $nstep; ++$i) {
+    $c += $stepc;
+    $r += $stepr;
+    $ip = (((8-$r) * 8) + $c - 1) * 3;
+    if (drupal_substr($board, $ip, 2) != 'zz') {
+      return FALSE;
+    }
+  }
+  return TRUE;
+}

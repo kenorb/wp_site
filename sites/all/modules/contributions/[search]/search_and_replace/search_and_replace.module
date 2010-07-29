@@ -1,0 +1,246 @@
+<?php 
+// $Id: search_and_replace.module,v 1.3.4.1 2008/10/07 15:58:26 btopro Exp $
+//ELMS: Search and Replace - Search and Replace Drupal content
+//Copyright (C) 2008  The Pennsylvania State University
+//
+//Bryan Ollendyke
+//bto108@psu.edu
+//
+//Keith D. Bailey
+//kdb163@psu.edu
+//
+//12 Borland
+//University Park, PA 16802
+//
+//This program is free software; you can redistribute it and/or modify
+//it under the terms of the GNU General Public License as published by
+//the Free Software Foundation; either version 2 of the License, or
+//(at your option) any later version.
+//
+//This program is distributed in the hope that it will be useful, 
+//but WITHOUT ANY WARRANTY; without even the implied warranty of
+//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//GNU General Public License for more details.
+//
+//You should have received a copy of the GNU General Public License along
+//with this program; if not, write to the Free Software Foundation, Inc., 
+//51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+/**
+* Implementation of hook_perm
+*/
+function search_and_replace_perm() {
+  return array('access search and replace');
+}
+
+/**
+* Implementation of hook_help
+*/
+function search_and_replace_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#search_and_replace':
+      return t("Search and replace lets you perform the operation on your site's content.");
+  }
+}
+
+/**
+* Implementation of hook_menu
+*/
+function search_and_replace_menu() {
+  $items = array();
+  $items['search_and_replace'] = array(
+    'title' => 'Search and Replace',
+    'type' => MENU_NORMAL_ITEM,
+    'description' => 'Search and Replace',
+    'page callback' => '_search_and_replace_page',
+    'access arguments' => array('access search and replace'),
+  );
+  return $items;
+}
+
+function _search_and_replace_page() {
+  return drupal_get_form('_search_and_replace_form');
+}
+
+
+/**
+* Implementation of hook_settings
+*/
+function _search_and_replace_form($form_state) {
+  $data = '$(document).ready(function() {
+    $("#edit-select-all-content-types").css("display", "").after("Select All Types");
+  });
+  
+  function on_off_all(obj) {
+    $(":checkbox").attr("checked", obj.checked);
+  }';
+  drupal_add_js($data, 'inline');
+  $result = db_query("SELECT name, type FROM {node_type}");
+  while ($val = db_fetch_array($result)) {
+    $options[$val['type']] = $val['name'];
+  }
+  $form["case_sensitive"] = array(
+    '#type' => 'radios', 
+    '#title' => t("Case Sensitive replace"), 
+    '#required' => FALSE, 
+  '#options' => array(
+    1 => "Yes", 
+    2 => "No", 
+    ), 
+  '#default_value' => 1, 
+  );
+  $form["search_term"] = array(
+    '#type' => 'textfield', 
+  '#description' => 'Must be at least 3 characters long', 
+    '#title' => t("Search for"), 
+    '#default_value' => '', 
+    '#required' => TRUE, 
+  );
+   $form["replace_term"] = array(
+    '#type' => 'textfield', 
+  '#description' => 'To replace a string with nothing type %NULL%', 
+    '#title' => t("Replace with"), 
+    '#default_value' => '', 
+    '#required' => FALSE, 
+  );
+  $form["search_and_replace"] = array(
+    '#type' => 'radios', 
+    '#title' => t("Search and Replace function"), 
+    '#options' => array(
+    0 => "Search Body and Title Text", 
+    1 => "Search Body Text", 
+    2 => "Search Title Text", 
+    3 => "Search and Replace Body and Title Text", 
+    4 => "Search and Replace Body Text", 
+    5 => "Search and Replace Title Text", 
+    ), 
+    '#required' => TRUE, 
+  );
+  $form["content_types"] = array(
+    '#type' => 'checkboxes', 
+    '#options' => $options, 
+  '#title' => t("Search in these content types"), 
+    '#required' => TRUE, 
+  );
+  $form["select_all_content_types"] = array(
+    '#type' => 'checkbox', 
+    '#required' => FALSE, 
+  '#attributes' => array('onclick' => 'on_off_all(this);', 'style' => 'display:none;'), 
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+  return $form;
+}
+
+/**
+* Implementation of hook_settings_submit
+*/
+function _search_and_replace_form_submit($form, &$form_state) {
+  if (strlen($form_state['values']["search_term"]) < 3) {
+    form_set_error("search_term", "You can't do a replace of a string less then 3 in length.");
+    return FALSE;
+    }
+  $count = 0;
+  $all_replacements = 0;
+  $replacement_nodes = '';
+  $perform_replacement = TRUE;
+  $selections = ' WHERE ';
+  $case_sensitive = $form_state['values']["case_sensitive"];
+  foreach ($form_state['values']["content_types"] as $content_type) {
+    if ($content_type != '0') {
+      if ($count == 0) {
+        $selections.= "type='$content_type'";
+      }
+    else {
+        $selections.= " OR type='$content_type'";
+      }
+      $count++;
+    }
+  }
+  $result = db_query("SELECT nid FROM {node}$selections");
+  
+  //if this is a replace function then make sure the user REALLY wants to replace the string with nothing
+  //if nothing was typed then block the submission
+  //if %NULL% was typed then set replace_term to '' so that it will commit the something to nothing command
+  if ($form_state['values']["search_and_replace"] == 3 || $form_state['values']["search_and_replace"] == 4 || $form_state['values']["search_and_replace"] ==  5) {
+    if ($form_state['values']["replace_term"] == '') {
+      $perform_replacement = FALSE;
+    }
+  else if ($form_state['values']["replace_term"] == '%NULL%') {
+      $form_state['values']["replace_term"] = '';
+    }
+  }
+  if ($perform_replacement) {
+    while ($val = db_fetch_array($result)) {
+      $replacements = 0;
+      $node = node_load($val['nid']);
+      //ONLY search (no replace) body and title text
+      if ($form_state['values']["search_and_replace"] == 0) {
+        _search_and_replace_helper($form_state['values']["search_term"], $form_state['values']["search_term"], $node->body, $replacements, $case_sensitive);
+        $all_replacements+= $replacements;
+        _search_and_replace_helper($form_state['values']["search_term"], $form_state['values']["search_term"], $node->title, $replacements, $case_sensitive);
+        $all_replacements+= $replacements;
+        $replace_text = 'occurrences found in the following node bodies and titles';
+      }
+      //ONLY search (no replace) body text
+      if ($form_state['values']["search_and_replace"] == 1) {
+        _search_and_replace_helper($form_state['values']["search_term"], $form_state['values']["search_term"], $node->body, $replacements, $case_sensitive);
+        $all_replacements+= $replacements;
+        $replace_text = 'occurrences found in the following node bodies';
+      }
+      //ONLY search (no replace) title text
+      if ($form_state['values']["search_and_replace"] == 2) {
+        _search_and_replace_helper($form_state['values']["search_term"], $form_state['values']["search_term"], $node->title, $replacements, $case_sensitive);
+        $all_replacements+= $replacements;
+        $replace_text = 'occurrences found in the following node titles';
+      }
+      
+      //search and replace body text and title text
+      if ($form_state['values']["search_and_replace"] == 3) {
+        $node->body = _search_and_replace_helper($form_state['values']["search_term"], $form_state['values']["replace_term"], $node->body, $replacements, $case_sensitive);
+        $all_replacements+= $replacements;
+        $node->title = _search_and_replace_helper($form_state['values']["search_term"], $form_state['values']["replace_term"], $node->title, $replacements, $case_sensitive);
+        $all_replacements+= $replacements;
+        $replace_text = 'replacements made in the following node bodies and titles';
+        $node->revision = TRUE;
+        $node->log = 'Search and Replace: Replaced the title/body text "'. $form_state['values']["search_term"] .'" with "'. $form_state['values']["replace_term"] .'"';
+      }
+      //search and replace the body text
+      if ($form_state['values']["search_and_replace"] == 4) {
+        $node->body = _search_and_replace_helper($form_state['values']["search_term"], $form_state['values']["replace_term"], $node->body, $replacements, $case_sensitive);
+        $all_replacements+= $replacements;
+        $replace_text = 'replacements made in the following node bodies';
+        $node->revision = TRUE;
+        $node->log = 'Search and Replace: Replaced the body text "'. $form_state['values']["search_term"] .'" with "'. $form_state['values']["replace_term"] .'"';
+      }
+      //search and replace the title text
+      if ($form_state['values']["search_and_replace"] == 5) {
+        $node->title = _search_and_replace_helper($form_state['values']["search_term"], $form_state['values']["replace_term"], $node->title, $replacements, $case_sensitive);
+        $all_replacements+= $replacements;
+        $replace_text = 'replacements made in the following node titles';
+        $node->revision = TRUE;
+        $node->log = 'Search and Replace: Replaced the title text "'. $form_state['values']["search_term"] .'" with "'. $form_state['values']["replace_term"] .'"';
+      }
+      node_save($node);
+      if ($replacements != 0) {
+        $replacement_nodes.= l(t($node->title), 'node/'. $node->nid) .' {'. $node->nid .'}<br />';
+      }
+    }
+    drupal_set_message($all_replacements .' '. $replace_text .':<br />'. $replacement_nodes);
+  }
+  else {
+    form_set_error("replace_term", "If you want to replace a string with nothing please type %NULL%.  This message is to prevent accidental replacement of a search term with nothing.");
+    return FALSE;
+  }
+}
+
+function _search_and_replace_helper($search, $replace, $haystack, &$replacements, $case_sensitive) {
+  if ($case_sensitive == 2) {
+    return str_ireplace($search, $replace, $haystack, $replacements);
+  }
+  else {
+    return str_replace($search, $replace, $haystack, $replacements);
+  }
+}

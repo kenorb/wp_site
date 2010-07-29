@@ -1,0 +1,47 @@
+<?php
+// $Id: checkall.module,v 1.2.2.5 2008/11/19 14:16:38 markuspetrux Exp $
+
+/**
+ * @file
+ * Extends FormAPI checkboxes with the 'checkall' behavior.
+ */
+
+/**
+ * Implementation of FAPI hook_elements().
+ *
+ * Extend the definition of the checkboxes element, which is already
+ * defined by system.module.
+ *
+ * @see system_elements()
+ */
+function checkall_elements() {
+  return array(
+    'checkboxes' => array(
+      '#checkall' => FALSE,
+      '#process' => array('checkall_element_process'),
+    ),
+  );
+}
+
+/**
+ * Process the checkall extension for the checkboxes element.
+ */
+function checkall_element_process($element) {
+  // See if the #checkall flag is set and TRUE.
+  if (isset($element['#checkall']) && $element['#checkall']) {
+    // Append the 'form-checkall' class to the checkboxes element.
+    if (!isset($element['#attributes'])) {
+      $element['#attributes'] = array('class' => 'form-checkall');
+    }
+    else if (!isset($element['#attributes']['class'])) {
+      $element['#attributes']['class'] = 'form-checkall';
+    }
+    else {
+      $element['#attributes']['class'] .= ' form-checkall';
+    }
+    // Add our stylesheet and javascript files to the page.
+    drupal_add_css(drupal_get_path('module', 'checkall') .'/checkall.css');
+    drupal_add_js(drupal_get_path('module', 'checkall') .'/checkall.js');
+  }
+  return $element;
+}

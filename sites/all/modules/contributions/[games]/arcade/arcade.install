@@ -1,0 +1,87 @@
+<?php
+// $Id: arcade.install,v 1.1 2008/08/21 17:36:35 matt2000 Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function arcade_install() {
+  drupal_install_schema('arcade');
+}
+
+
+/**
+ * Implementation of hook_uninstall
+ */
+function arcade_uninstall() {
+  drupal_uninstall_schema('arcade');
+}
+
+
+/**
+ * Schema definition for Flashgames
+ */
+function arcade_schema() {
+  $schema['arcade_data'] = array(
+    'description' => t('Stores user highscores for flash games.'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('{node}.nid for the game node.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => t('UID of player achieving this score.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'score' => array(
+        'description' => t('Player\'s score for this game.'),
+        'type' => 'varchar',
+        'length' => 31,
+        'not null' => FALSE,
+      ),
+      'gamedata' => array(
+        'description' => t('Saved Game Data.'),
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'date' => array(
+        'description' => t('Time score achieved'),
+        'type' => 'datetime',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('nid', 'uid'),
+  );
+
+  $schema['arcade_games'] = array(
+    'description' => t('Store settings for game nodes.'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('{node}.nid for the game node.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'game_type' => array(
+        'description' => t('1: high score wins, 2: low score wins, 3: high time wins, 4: low time wins'),
+        'type' => 'int',
+        'length' => 1,
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'game_path' => array(
+        'description' => t('Path to game files.'),
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('nid'),
+  );
+  return $schema;
+}
+

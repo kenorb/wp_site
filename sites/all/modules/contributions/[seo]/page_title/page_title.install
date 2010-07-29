@@ -1,0 +1,40 @@
+<?php
+// $Id: page_title.install,v 1.10.4.1 2008/09/25 15:48:03 njt1982 Exp $
+
+/**
+ * @file
+ * The install file for Page Title allows the module to install (and uninstall) itself. This is required as this module uses its own table.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function page_title_install() {
+  drupal_install_schema('page_title');
+}
+
+
+function page_title_schema() {
+  $schema['page_title'] = array(
+    'fields' => array(
+      'nid'        => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'page_title' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => '')
+    ),
+    'primary key' => array('nid'),
+  );
+
+  return $schema;
+}
+
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function page_title_uninstall() {
+  drupal_uninstall_schema('page_title');
+  variable_del('page_title_individual');
+  variable_del('page_title_front');
+  foreach (node_get_types('names') AS $type => $name) {
+    variable_del("page_title_display_$type");
+  }
+}

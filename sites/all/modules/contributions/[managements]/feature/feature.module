@@ -1,0 +1,285 @@
+<?php
+// $Id: feature.module,v 1.29 2008/01/04 02:31:38 kbahey Exp $
+
+define('FEATURE_CATEGORY_LIST', 'feature_category_list');
+
+function _feature_default_categories() {
+  return <<<EOF
+General features
+Templating
+User management
+Content management
+Blogging
+Security
+Platform
+Administration and analysis
+Compatibility
+Community features
+Performance and scalability
+EOF;
+}
+
+function _feature_get_categories() {
+  return explode("\n", variable_get(FEATURE_CATEGORY_LIST, _feature_default_categories()));
+}
+
+function feature_perm() {
+  return array("maintain feature list");
+}
+
+function feature_menu() {
+  $items = array();
+
+  $items['admin/feature'] = array(
+    'title'            => 'Features',
+    'page callback'    => 'feature_admin_list', 
+    'access arguments' => array('maintain feature list'),
+  );
+  $items['admin/feature/list'] = array(
+    'title'         => 'List',
+    'page callback' => 'feature_admin_list', 
+    'access arguments' => array('maintain feature list'),
+    'type'          => MENU_DEFAULT_LOCAL_TASK, 
+    'weight'        => -10,
+  );
+  $items['admin/feature/add'] = array(
+    'title'          => 'Add feature',
+    'page callback'  => 'drupal_get_form',
+    'access arguments' => array('maintain feature list'),
+    'page arguments' => array('feature_admin'), 
+    'type'           => MENU_LOCAL_TASK,
+  );
+  $items['admin/feature/edit'] = array(
+    'title'          => 'Edit feature',
+    'page callback'  => 'drupal_get_form',
+    'access arguments' => array('maintain feature list'),
+    'page arguments' => array('feature_admin'), 
+    'type'           => MENU_CALLBACK,
+  );
+  $items['admin/feature/delete'] = array(
+    'title'          => 'Delete feature',
+    'page callback'  => 'feature_admin_delete',
+    'access arguments' => array('maintain feature list'),
+    'type'           => MENU_CALLBACK,
+  );
+  $items['admin/feature/settings'] = array(
+    'title'          => 'Settings',
+    'page callback'  => 'drupal_get_form',
+    'page arguments' => array('feature_settings'), 
+    'access arguments' => array('maintain feature list'),
+    'type'           => MENU_LOCAL_TASK,
+  );
+  $items['features'] = array(
+    'title'           => 'Features',
+    'page callback'   => 'feature_listing', 
+    'access arguments' => array('access content'),
+    'type'            => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function feature_get($fid) {
+  if ($fid) {
+    $feature = db_fetch_object(db_query("SELECT * FROM {feature} WHERE fid = %d", $fid));
+  }
+  else {
+    $feature->name = ''; 
+    $feature->category = ''; 
+    $feature->description = ''; 
+    $feature->details = ''; 
+    $feature->image = ''; 
+    $feature->fid = 0;
+  }
+
+  return $feature;
+}
+
+function feature_settings() {
+  $value = variable_get(FEATURE_CATEGORY_LIST, '');
+  
+  $form[FEATURE_CATEGORY_LIST] = array(
+    '#type' => 'textarea',
+    '#title' => t('Categories'),
+    '#rows' => 10,
+    '#cols' => 20,
+    '#description' => t('List of categories, one per line.'),
+    '#default_value' => $value,
+  );
+
+  return system_settings_form($form);
+}
+
+function feature_admin() {
+  $categories = _feature_get_categories();
+  
+  $op = arg(2);
+  $fid = (int)arg(3);
+
+  $feature = feature_get($fid);
+
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Name"), 
+    '#default_value' => $feature->name, 
+    '#size' => 50, 
+    '#maxlength' => 128, 
+    '#description' => t("The name or short description of the feature."), 
+    '#required' => TRUE,
+  );
+  $form['category'] = array(
+    '#type' => 'select', 
+    '#title' => t("Category"), 
+    '#default_value' => $feature->category, 
+    '#options' => $categories, 
+    '#description' => t("The category this feature belongs to."), 
+    '#required' => TRUE,
+  );
+  $form['description'] = array(
+    '#type' => 'textarea', 
+    '#title' => t("Description"), 
+    '#default_value' => $feature->description, 
+    '#width' => 55, 
+    '#height' => 5, 
+    '#description' => t("A description of the feature."), 
+    '#required' => TRUE,
+  );
+  $form['details'] = array(
+    '#type' => 'textfield', 
+    '#title' => t("Details-link"), 
+    '#default_value' => $feature->details, 
+    '#size' => 50, 
+    '#maxlength' => 255, 
+    '#description' => t("The URL of a page or website with detailed information about the feature."),
+  );
+  $form['image'] = array(
+    '#type' => 'textfield', 
+    '#title' => t("Image-link"), 
+    '#size' => 50, 
+    '#maxlength' => 255, 
+    '#default_value' => $feature->image, 
+    '#description' => t("The URL of a page or website with a screenshot or image of the feature."),
+  );
+
+  if ($fid) {
+    $form['fid'] = array(
+      '#type' => 'hidden', 
+      '#value' => $feature->fid,
+      );
+  }
+  
+  $form['submit'] = array(
+    '#type' => 'submit', 
+    '#value' => t('Save'),
+    );
+
+  return $form;
+}
+
+function feature_admin_validate($form_id, $form_values) {
+  if (empty($form_values['values']['name'])) {
+    form_set_error('name', t('You have to specify a valid name.')); 
+  }
+
+  if (empty($form_values['values']['description'])) {
+    form_set_error('description', t('You have to specify a valid description.')); 
+  }
+}
+
+function feature_admin_submit($form_id, $form_values = NULL) {
+  $values = $form_values['values'];
+  if (isset($values['fid']) && isset($values['name'])) {
+    db_query("UPDATE {feature} SET name = '%s', category = '%d', description = '%s', details = '%s', image = '%s' WHERE fid = %d", $values['name'], $values['category'], $values['description'], $values['details'], $values['image'], $values['fid']);
+  }
+  else {
+    db_query("INSERT INTO {feature} (name, category, description, details, image) VALUES  ('%s', '%s', '%s', '%s', '%s')", $values["name"], $values["category"], $values["description"], $values["details"], $values["image"]);
+  }
+
+  drupal_set_message(t('The feature has been saved.'));
+  drupal_goto('admin/feature');
+}
+
+function feature_admin_delete() {
+  $fid = (int)arg(3);
+  if (feature_get($fid)) {
+    return drupal_get_form('feature_admin_delete_confirm');
+  }
+  else {
+    drupal_set_message(t('You requested to delete an invalid feature.'));
+    drupal_goto('admin/feature');
+  }
+} 
+
+function feature_admin_delete_confirm() {
+  $fid = (int)arg(3);
+  $feature = feature_get($fid);
+  $form['fid'] = array(
+    '#type' => 'value',
+    '#value' => $fid,
+  );
+  return confirm_form(
+    $form,
+    t('Are you sure you want to delete feature @name?', array('@name' => $feature->name)),
+    'admin/feature',
+    t('This action cannot be undone.'),
+    t('Delete'),
+    t('Cancel'));
+}
+
+function feature_admin_delete_confirm_submit($form_id, $form_values) {
+  db_query("DELETE FROM {feature} WHERE fid = %d", $form_values['values']['fid']);
+  drupal_set_message(t('The feature has been deleted.'));
+  return 'admin/feature'; 
+} 
+
+function feature_admin_list() {
+  $categories = _feature_get_categories();
+  
+  $result = db_query("SELECT * FROM {feature} ORDER BY name");
+
+  $header = array(t('Name'), t('Description'), t('Category'), t('Details'), t('Image'), array('data' => t('Operations'), 'colspan' => 2));
+  $rows = array();
+
+  while ($feature = db_fetch_object($result)) {
+    $rows[] = array(check_plain($feature->name), 
+                    check_plain($feature->description), 
+                    check_plain($categories[$feature->category]), 
+                    l($feature->details, $feature->details), 
+                    check_plain($feature->image), 
+                    l(t('edit'), "admin/feature/edit/$feature->fid"), 
+                    l(t('delete'), "admin/feature/delete/$feature->fid"));
+  }
+
+  return theme('table', $header, $rows);
+}
+
+function feature_listing() {
+  $categories = _feature_get_categories();
+
+  $result = db_query("SELECT * FROM {feature} ORDER BY category, name");
+
+  $output = '';
+  $category = NULL;
+  while ($feature = db_fetch_object($result)) {
+
+    if ($feature->category != $category) {
+      $output .= "<div style=\"font-size: 120%; font-weight: bold; margin-bottom: 15px;\">". check_markup($categories[$feature->category]) ."</div>";
+      $category = $feature->category;
+    }
+
+    $links = array();
+
+    if ($feature->image) {
+      $links[] = "<a href=\"$feature->image\">screenshot</a>";
+    }
+
+    if ($feature->details) {
+      $links[] = "<a href=\"$feature->details\">detailed information</a>";
+    }
+
+    $link_output = implode(' . ', $links);
+
+    $output .= "<div style=\"margin-left: 15px; margin-top: 5px; margin-bottom: 10px;\"><i>$feature->name</i> - $feature->description<div align=\"right\">". $link_output ."&nbsp;</div></div>";
+  }
+
+  return $output;
+}

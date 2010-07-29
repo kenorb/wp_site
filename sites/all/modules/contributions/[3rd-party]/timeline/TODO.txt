@@ -1,0 +1,24 @@
+// $Id: TODO.txt,v 1.4 2008/07/06 01:29:46 jmiccolis Exp $
+
+This is a listing of known bugs, features that mostly work but are still
+somewhat in progress, features that are being considered or planned for
+implementation, and just miscellaneous far-out ideas that could, in
+principle, be implemented if one had the time and inclination to do so.
+
+(NOTE: there is no guarantee any of these items will, in fact, be
+implemented, nor should any possible scheduling indications be construed as
+promises under any circumstances. TANSTAAFL. If you absolutely need
+something implemented right now, please contact the developers to see if
+they're available for contract work, or if perhaps a modest donation could
+speed things along.)
+
+KNOWN BUGS
+----------
+
+
+FEATURE REQUESTS
+----------------
+* Support for an arbitrary initial focus (#121377)
+* Add configurable icons for timeline events (#104890)
+* Color coding based on taxonomy or content type (#121298)
+* Setting to remove the lower band? (#134426)

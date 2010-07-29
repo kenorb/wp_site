@@ -1,0 +1,11 @@
+; $Id: beautify.info,v 1.3.2.1 2009/01/06 17:58:17 psynaptic Exp $
+name = Beautify
+description = Processes HTML output to clean, tidy and beautify.
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-02-02
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "beautify"
+datestamp = "1233532974"
+

@@ -1,0 +1,260 @@
+table.formgroup {
+width: auto;
+margin: 0;
+clear: both;
+}
+
+table.formgroup tr td {
+padding-left: 0px;
+padding-right: 5px;
+}
+
+table.formgroup tr td div.form-item{
+margin-top: 0px;
+margin-bottom: 5px;
+}
+
+table.stormtimetracking_block tr td {
+width: auto;
+}
+
+tbody {
+border:none !important;
+}
+
+th.storm_list_operations {
+text-align: right;
+white-space: nowrap;
+padding: 0.3em 0.5em;
+}
+
+td.storm_list_operations {
+text-align: right;
+white-space: nowrap;
+}
+
+div.storm_popup {
+display:none;
+z-index: 100;
+border: 1px solid black;
+background-color: #fff;
+}
+
+div.storm_popup_inner {
+text-align: center;
+}
+
+div.storm_popup_inner form div div.form-item {
+margin: 0;
+}
+
+div.storm_popup_inner form div input.form-submit {
+margin: 5px 0 0 0;
+}
+
+div.storm_popup_title {
+float: left;
+text-align: center;
+color: #fff;
+width: 100%;
+background-color: #5294C1;
+}
+
+div.storm_popup_inner {
+clear: both;
+}
+
+div.storm_list_form_report {
+display:none;
+width: 0px;
+height: 0px;
+}
+
+div.storm_quick_shortcuts {
+clear: both;
+}
+
+ul.storm_quick_shortcuts {
+list-style-type: none;
+margin: 0;
+}
+
+ul.storm_quick_shortcuts li {
+background: transparent;
+background-color: #5294C1;
+display: inline;
+float: left;
+padding: 0;
+margin: 0 1pt 1pt 0;
+}
+
+ul.storm_quick_shortcuts li a {
+display: block;
+width: 20px;
+height: 20px;
+text-align: center;
+font-weight: bold;
+color: #ffffff;
+}
+
+tr.formgroup {
+  background-color: #ffffff !important;
+  border: none !important;
+}
+
+form.stormcomponent_node_form fieldset.menu-item-form,
+form.stormcomponent_node_form fieldset.book-outline-form,
+form.stormcomponent_node_form fieldset.path,
+form.stormcomponent_node_form fieldset.revision_information,
+form.stormcomponent_node_form fieldset.comment_settings,
+form.stormcomponent_node_form fieldset.author,
+form.stormcomponent_node_form fieldset.options,
+form.stormcomponent_node_form #edit-preview {
+display: none;
+}
+
+form.storminvoiceitem_node_form div.attachments,
+form.stormtimetracking_node_form div.attachments {
+display: none;
+}
+
+#stormdashboard {
+width: 100%
+}
+
+div.stormdashboard {
+float: left;
+width: 50%;
+}
+
+dt.stormcomponent {
+padding-left: 40px;
+padding-top: 10px;
+height: 40px;
+}
+
+dt.stormcomponent a {
+font-weight: bold;
+margin-right: 5px;
+}
+
+dt#stormorganizations {
+background: transparent url(images/organizations.png) no-repeat top left;
+}
+
+dt#stormprojects {
+background: transparent url(images/projects.png) no-repeat top left;
+}
+
+dt#stormtasks {
+background: transparent url(images/tasks.png) no-repeat top left;
+}
+
+dt#stormtickets {
+background: transparent url(images/tickets.png) no-repeat top left;
+}
+
+dt#stormpeople {
+background: transparent url(images/people.png) no-repeat top left;
+}
+
+dt#stormteammembers {
+background: transparent url(images/teammembers.png) no-repeat top left;
+}
+
+dt#stormknowledgebase {
+background: transparent url(images/knowledgebase.png) no-repeat top left;
+}
+
+dt#stormtimetrackings {
+background: transparent url(images/timetrackings.png) no-repeat top left;
+}
+
+dt#stormnotes {
+background: transparent url(images/notes.png) no-repeat top left;
+}
+
+dt#storminvoices {
+background: transparent url(images/invoices.png) no-repeat top left;
+}
+
+dt#stormexpenses {
+background: transparent url(images/expenses.png) no-repeat top left;
+}
+
+dt#stormattributes {
+background: transparent url(images/attributes.png) no-repeat top left;
+}
+
+dt#stormconfiguration {
+background: transparent url(images/configuration.png) no-repeat top left;
+}
+
+div.stormcomponent {
+clear: both;
+}
+
+div.stormcomponent #fields {
+float: left;
+width: 70%;
+}
+
+div.stormcomponent #fields div.label{
+float: left;
+width: 150px;
+text-align: right;
+clear: left;
+}
+
+div.stormcomponent #fields div.value {
+float: left;
+margin-left: 4px;
+}
+
+div.stormcomponent #fields div.value p {
+margin: 0;
+}
+
+div.stormcomponent #links {
+float: left;
+width: 30%;
+}
+
+div.stormcomponent #links div {
+padding-left: 34px;
+height: 34px;
+padding-top: 6px;
+}
+
+div.stormcomponent div.projects {
+background: transparent url(images/projects.png) no-repeat top left;
+}
+
+div.stormcomponent div.people {
+background: transparent url(images/people.png) no-repeat top left;
+}
+
+div.stormcomponent div.tickets {
+background: transparent url(images/tickets.png) no-repeat top left;
+}
+
+div.stormcomponent div.invoices {
+background: transparent url(images/invoices.png) no-repeat top left;
+}
+
+div.stormcomponent div.notes {
+background: transparent url(images/notes.png) no-repeat top left;
+}
+
+div.stormcomponent div.timetrackings {
+background: transparent url(images/timetrackings.png) no-repeat top left;
+}
+
+div.stormcomponent div.print_html {
+background: transparent url(images/html.png) no-repeat top left;
+}
+
+div.stormcomponent div.print_pdf {
+background: transparent url(images/pdf.png) no-repeat top left;
+}
+

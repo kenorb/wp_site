@@ -1,0 +1,989 @@
+<?php
+
+// $Id: composite.module,v 1.1.2.6 2009/01/15 02:41:13 bengtan Exp $
+// Modeline for drupal
+// vim: set expandtab tabstop=2 shiftwidth=2 autoindent smartindent filetype=php:
+
+/*
+ * Copyright 2008 ThinkLeft (thinkleft.com.au)
+ * Copyright 2008 ProsePoint (www.prosepoint.org)
+ */
+
+/**
+ * Denotes that a reference is not enabled in any zone and should not
+ * be shown.
+ */
+define('COMPOSITE_ZONE_NONE', -1);
+
+function _composite_compare($a = 'reset-zones', $b) {
+  static $zones;
+
+  if (is_string($a)) {
+    // $a is a command
+    if ($a == 'reset-zones') {
+      // Store zones information from $b
+      $zones = array_flip(array_keys($b));
+    }
+    // If $a is a string, return regardless. 
+    return; 
+  }
+
+  // Sort by zone (in the order defined by the layout).
+  if ((!empty($a['zone']) && !empty($b['zone'])) && ($place = ($zones[$a['zone']] - $zones[$b['zone']]))) {
+    return $place;
+  }
+  // Sort by weight.
+  $weight = $a['weight'] - $b['weight'];
+  if ($weight) {
+    return $weight;
+  }
+  // Sort by title.
+  return strcmp($a['info'], $b['info']);
+}
+
+// Helper function: Filter out properties, fill in 'info' field
+function _composite_references_preprocess($original, $zones, $node) {
+  // Build a list of references, also generating labels in the process
+  $references = array();
+  foreach (element_children($original) as $id) {
+    $reference = $original[$id];
+    composite_invoke_referenceapi($reference, 'info', $node);
+    $references[$id] = $reference;
+  }
+
+  return $references; 
+}
+
+/***********************************************************
+*                   CONFIGURATION FUNCTIONS                *
+************************************************************/
+
+/**
+ * Helper function to see if a node is a composite node
+ */
+function composite_enabled($node) {
+  return variable_get('composite_enabled_' . $node->type, FALSE);
+}
+
+function composite_get_types($type = '') {
+  static $types = null;
+
+  if (empty($types)) {
+    $types = array();
+    foreach (module_implements('composite_types') as $module) {
+      $data = module_invoke($module, 'composite_types');
+      
+      foreach ($data as $k => $unused) {
+        // Fill in 'module' if not specified
+        if (!$data[$k]['module']) {
+          $data[$k]['module'] = $module;
+        }
+        
+        // Prefix 'file' with module dir
+        if ($data[$k]['file']) {
+          $data[$k]['file'] = drupal_get_path('module', $module) .'/'. $data[$k]['file'];
+        }
+      }
+      $types = array_merge_recursive($types, $data);
+    }
+
+    foreach (module_implements('composite_types_alter') as $module) {
+      $function = $module . '_composite_types_alter';
+      $function($types);
+    }
+  }
+  
+  if ($type == '')
+    return $types;
+  else if (array_key_exists($type, $types))
+    return $types[$type];
+}
+
+// Includes the 'file' parameter of a reference type, if defined. 
+function composite_include_file($type) {
+  if ($type['file'] && is_file($type['file'])) {
+    include_once $type['file'];
+  }
+}
+
+function composite_invoke_referenceapi(&$reference, $op, $a3 = NULL, $a4 = NULL) {  
+  $type_def = composite_get_types($reference['type']);
+  if ($type_def) {
+    composite_include_file($type_def);
+    $function = $type_def['module'] .'_composite_'. $type_def['type'] .'_api';
+    if (function_exists($function)) {
+      return $function($reference, $op, $a3, $a4);
+    }
+  }
+}
+
+function composite_get_layouts($type = '') {
+  static $layouts = array();
+  static $layouts_select = array();
+
+  if (!$layouts) {
+    // Would like to make layouts pluggable, but doesn't quite work
+    //   because of inability to specify template files from other modules. 
+    $layouts = module_invoke_all('composite_layouts');
+
+    // Do some defaults and path processing
+    // Construct a select list for convenience
+    foreach ($layouts as $key => $v) {
+      $key_dashed = strtr($key, '_', '-');
+      if (!$layouts[$key]['template']) {
+         $layouts[$key]['template'] = 'composite-layout-' . $key_dashed;
+      }
+      if (!$layouts[$key]['path']) {
+         $layouts[$key]['path'] = drupal_get_path('module', 'composite') . '/theme';
+      }
+      
+      $css = $layouts[$key]['css'] ? $layouts[$key]['css'] : 'composite-layout-' . $key_dashed . '.css';
+      $css = $layouts[$key]['path'] . '/' . $css;
+      if (is_file($css)) {
+        $layouts[$key]['css'] = $css;
+      }
+
+      $icon = $layouts[$key]['icon'] ? $layouts[$key]['icon'] : 'composite-layout-' . $key_dashed . '.icon.png';
+      $icon = $layouts[$key]['path'] . '/' . $icon;
+      if (is_file($icon)) {
+        $layouts[$key]['icon'] = $icon;
+      }
+      
+      $layouts_select[$key] = $v['name'];
+    }
+  }
+  
+  if ($type == 'select') {
+    return $layouts_select;
+  }
+  else {
+    return $layouts;
+  }  
+}
+
+function composite_get_layout($layout = '') {
+  $layouts = composite_get_layouts();
+  return $layouts[$layout];
+}
+
+/***********************************************************
+*                          MENU                            *
+************************************************************/
+
+function composite_perm() {
+  return array('edit composite layouts');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function composite_menu() {
+  $items = array();
+
+  // Generate local task for each reference type that requests it
+  $types = composite_get_types();
+  foreach ($types as $type) {    
+    if ($type['local task']) {
+      $items['node/%node/composite_' . $type['type']] = array(
+        'title' => $type['label']['plural'],
+        'page callback' => 'composite_general_select_page',
+        'page arguments' => array($type['type'], 1),
+        'access callback' => 'composite_access',
+        'access arguments' => array($type['type'], 'update', 1),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 3,
+        'file' => 'composite.pages.inc',
+      );
+    }
+  }
+  $items['node/%node/composite_zones'] = array(
+    'title' => t('Zones'),
+    'page callback' => 'composite_zones_page',
+    'page arguments' => array(1),
+    'access callback' => 'composite_access',
+    'access arguments' => array('zones', 'update', 1),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 3,
+    'file' => 'composite.pages.inc',
+  );
+  
+  return $items;
+}
+
+/**
+ * Access function used to turn tabs off, or defer to node_access
+ */
+function composite_access($tab, $op, $node) {
+  $access = FALSE;
+  
+  if ((user_access('edit composite layouts') || user_access('administer nodes')) && composite_enabled($node) && $node->composite_layout) {
+    $access_function = 'node_access';
+    // Change access function if this tab was generated for a reference type
+    //   and the optional task access function is defined
+    $type = composite_get_types($tab);
+    if ($type && $type['task access']) {
+      composite_include_file($type);
+      $function = $type['task access'];
+      if (function_exists($function)) {
+        $access_function = $function;
+      }
+    }    
+    $access = $access_function($op, $node); 
+  }
+  return $access;
+}
+
+/***********************************************************
+*         NODE MANIPULATIONS .ie load/save/view etc.       *
+************************************************************/
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function composite_form_alter(&$form, $form_state, $form_id) {
+  if ($form['#id'] == 'node-form' && composite_enabled($form['#node'])) {
+    // .../node/xx/edit or .../node/add/xx page    
+    $node = $form['#node'];
+    $default_set = variable_get('composite_default_set_' . $node->type, '--');
+
+    if ((user_access('edit composite layouts') || user_access('administer nodes'))) {
+      $form['composite_settings'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Composite layout'),
+        '#description' => t('Select the desired composite layout of this node.'),
+        '#collapsible' => TRUE,
+        '#collapsed' => !$node->composite_layout && $default_set == '--',
+        '#weight' => 10,
+      );
+
+      $form['composite_settings']['composite_references'] = array(
+        '#type' => 'value',
+        '#value' => $node->composite_references,
+      );
+      $form['composite_settings']['composite_layout_data'] = array(
+        '#type' => 'value',
+        '#value' => $node->composite_layout_data,
+      );
+      $form['composite_settings']['composite_layout'] = array(
+        '#title' => t('Layout'),
+        '#type' => 'composite_layout_radios',
+        '#options' => array('--' => t('No composite layout')) + composite_get_layouts('select'),
+        '#default_value' => $node->composite_layout ? $node->composite_layout : '--',
+      );
+      $form['composite_settings']['composite_content_reference'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Node content should be included as an item available for composite layout.'),
+        '#description' => t('This has no effect if no composite layout is selected, or if a layout set is selected.'),
+        '#default_value' => isset($node->composite_references['content']['type']) && ($node->composite_references['content']['type'] == 'content'),
+      );
+
+      // Append layout sets options
+      $layout_sets = composite_sets_select();
+      if ($layout_sets) {
+        $form['composite_settings']['composite_layout']['#options'] += $layout_sets;
+        // Assign a default set only if this is a new node
+        if ($default_set != '--' && !isset($node->nid)) {
+          $form['composite_settings']['composite_layout']['#default_value'] = $default_set;
+        }
+      }
+    }
+    else {
+      // Non privileged user, retain all composite layout related settings
+      $form['composite_settings']['composite_layout'] = array(
+        '#type' => 'value',
+        '#value' => $node->composite_layout ? $node->composite_layout : '--',
+      );
+      $form['composite_settings']['composite_references'] = array(
+        '#type' => 'value',
+        '#value' => $node->composite_references,
+      );
+      $form['composite_settings']['composite_layout_data'] = array(
+        '#type' => 'value',
+        '#value' => $node->composite_layout_data,
+      );
+      $form['composite_settings']['composite_content_reference'] = array(
+        '#type' => 'value',
+        '#value' => isset($node->composite_references['content']['type']) && ($node->composite_references['content']['type'] == 'content'),
+      );
+      // Force a default set if this is a new node
+      if ($default_set != '--' && !isset($node->nid)) {
+        $form['composite_settings']['composite_layout']['#value'] = $default_set;
+      }
+    }
+  }
+  else if ($form_id == 'node_type_form' && isset($form['#node_type'])) {
+    // .../admin/content/node-type/xx page
+    $node_type = $form['#node_type']->type;
+    $composite_enabled = variable_get('composite_enabled_' . $node_type, FALSE);
+
+    // The code below borrows heavily from nodereference_field_settings()
+    $form['composite_extra_config'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Composite layout'),
+      '#collapsible' => TRUE,
+      '#collapsed' => !$composite_enabled,
+    );
+    $form['composite_extra_config']['composite_enabled'] = array(
+      '#title' => t('Enable composite layout for this content type.'),
+      '#type' => 'checkbox',
+      '#default_value' => $composite_enabled,
+    );
+    
+    $form['composite_extra_config']['composite_nodes'] = array(
+      '#title' => t('Nodes'),
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#description' => t('If you wish to display other nodes in your composite layouts, please select the content types to be made available.'),      
+    );
+    
+    $form['composite_extra_config']['composite_nodes']['composite_referenceable_types'] = array(
+      '#title' => t('Content types that can be referenced'),
+      '#type' => 'checkboxes',
+      '#multiple' => TRUE,
+      '#options' => node_get_types('names'),
+      '#default_value' => variable_get('composite_referenceable_types_' . $node_type, array()),
+    );
+    
+    if (module_exists('views')) {
+      $views = array('--' => '--');
+      $all_views = views_get_all_views();
+      foreach ($all_views as $view) {
+        // Only 'node' views that have fields will work for our purpose.
+        if ($view->base_table == 'node' && !empty($view->display['default']->display_options['fields'])) {
+          if ($view->type == 'Default') {
+            $views[t('Default Views')][$view->name] = $view->name;
+          }
+          else {
+            $views[t('Existing Views')][$view->name] = $view->name;
+          }
+        }
+      }
+
+      if (count($views) > 1) {
+        $form['composite_extra_config']['composite_nodes']['advanced'] = array(
+           '#type' => 'fieldset',
+           '#title' => t('Advanced - Nodes that can be referenced (View)'),
+           '#collapsible' => TRUE,
+           '#collapsed' => variable_get('composite_advanced_view_' . $node_type, '--') == '--',
+         );
+        $form['composite_extra_config']['composite_nodes']['advanced']['composite_advanced_view'] = array(
+          '#type' => 'select',
+          '#title' => t('View used to select the nodes'),
+          '#options' => $views,
+          '#default_value' => variable_get('composite_advanced_view_' . $node_type, '--'),
+          '#description' => t('Choose the "Views module" view that selects the nodes that can be referenced.<br />Note:<ul><li>Only views that have fields will work for this purpose.</li><li>This will discard the "Content types" settings above. Use the view\'s "filters" section instead.</li><li>Use the view\'s "fields" section to display additional informations about candidate nodes on node creation/edition form.</li><li>Use the view\'s "sort criteria" section to determine the order in which candidate nodes will be displayed.</li></ul>'),
+        );
+        $form['composite_extra_config']['composite_nodes']['advanced']['composite_advanced_view_args'] = array(
+          '#type' => 'textfield',
+          '#title' => t('View arguments'),
+          '#default_value' => variable_get('composite_advanced_view_args_' . $node_type, ''),
+          '#required' => FALSE,
+          '#description' => t('Provide a comma separated list of arguments to pass to the view.'),
+        );
+      }
+    }
+    $layout_sets = composite_sets_select();
+    if ($layout_sets) {
+      $form['composite_extra_config']['composite_default_set'] = array(
+        '#type' => 'select',
+        '#title' => t('Default layout set'),
+        '#options' => array('--' => t('<none>')) + $layout_sets,
+        '#default_value' => variable_get('composite_default_set_' . $node_type, '--'),
+        '#description' => t('Select a default layout set for this content type. If selected, all new nodes will be automatically populated by this set.'),
+      );
+    }
+  }
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function composite_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  if (!composite_enabled($node))
+    return;
+
+  switch ($op) {
+    case 'delete':
+      // Notice that we're matching all revisions, by using the node's nid.
+      db_query("DELETE FROM {node_composite} WHERE nid = %d", $node->nid);
+      db_query("DELETE FROM {node_composite_references} WHERE nid = %d", $node->nid);
+      break;
+
+    case 'delete revision':
+      composite_delete_revision($node);
+      break;
+
+    case 'insert':
+    case 'update':
+      if (isset($node->composite_layout) && is_numeric($node->composite_layout)) {
+        // A numeric composite_layout is actually a layout set
+        // But we zero out composite_layout just in case the set isn't found.
+        $sid = $node->composite_layout;
+        $node->composite_layout = '';
+        composite_sets_populate_node($node, $sid);
+      }
+      composite_update($node);
+      break;
+      
+    case 'load':
+      return composite_load($node);
+      break;
+
+    case 'view':
+      // Only do something in full view, and if there is a layout defined. 
+      if (!$a3 /* !$teaser */ && $node->composite_layout && $node->composite_layout != '--') {
+        $node->composite_content = TRUE;
+      }
+      break;
+
+    case 'alter':
+      if (isset($node->composite_content)) {
+        // Have to do our 'view' stuff in the alter hook because we have to wait
+        //   for other modules to do their processing first.
+        $layout = composite_get_layout($node->composite_layout);
+        if ($layout) {
+          $layout['data'] = $node->composite_layout_data;
+          $node->composite_content = composite_view($node, $layout, $node->composite_references);
+          foreach ($node->composite_content as $zone => $zone_item) {
+            $node->composite_content[$zone] = drupal_render($zone_item);
+          }
+          $node->body = theme('composite_content', $layout, $node->composite_content);
+        }
+      }
+      break;
+  }
+}
+
+function composite_delete_revision($node) {
+  db_query("DELETE FROM {node_composite} WHERE nid = %d AND vid = %d", $node->nid, $node->vid);
+  db_query("DELETE FROM {node_composite_references} WHERE nid = %d AND vid = %d", $node->nid, $node->vid);
+}
+
+/**
+ * Implementation of hook_update().
+ *
+ * Not really. It just happens to have a compatible function signature with hook_update
+ *
+ */
+function composite_update($node) {
+  // Just delete everything, and then add back in later
+  composite_delete_revision($node);
+
+  if ($node->composite_layout && $node->composite_layout != '--') {
+    // Treat the content_reference specially if we came in from an edit form. 
+    if (isset($node->composite_content_reference)) {
+      if ($node->composite_content_reference) {
+        // Add content_reference, but only if it doesn't already exist
+        if (!$node->composite_references['content']) {
+          $node->composite_references['content'] = array(
+            'type' => 'content',
+            'weight' => 0,
+            'id' => 'content',
+            'data' => '',
+            'zone' => COMPOSITE_ZONE_NONE,
+          );
+        }
+      }
+      else {
+        // Unset content_reference
+        unset($node->composite_references['content']);
+      }
+    }
+
+    // Update node_composite
+    db_query("INSERT INTO {node_composite} (nid, vid, layout, data) VALUES (%d, %d, '%s', '%s') ", $node->nid, $node->vid, $node->composite_layout, $node->composite_layout_data ? serialize($node->composite_layout_data) : '');
+
+    // Update node_composite_references
+    $args = array();
+    $query_parts = array();
+    foreach (element_children($node->composite_references) as $id) {
+      $reference = $node->composite_references[$id];
+      if (is_array($reference) && $reference['id']) {
+        $query_parts[] = " (%d, %d, '%s', %d, '%s', '%s', '%s')";
+        $args[] = $node->nid;
+        $args[] = $node->vid;
+        $args[] = $reference['type'];
+        $args[] = $reference['weight'];
+        $args[] = $id;
+        $args[] = $reference['data'] ? serialize($reference['data']) : '';
+        $args[] = $reference['zone'];
+      }
+    }
+
+    if (count($query_parts)) {
+      $query = "INSERT INTO {node_composite_references} (nid, vid, type, weight, id, data, zone) VALUES" . implode(', ', $query_parts);
+      db_query($query, $args);
+    }
+  }
+}
+
+/**
+ * Implementation of hook_load().
+ *
+ * Not really. It just happens to have a compatible function signature with hook_load
+ */
+function composite_load($node) {
+  $types = composite_get_types();
+  $additions = array();
+
+  $result = db_fetch_object(db_query('SELECT layout, data FROM {node_composite} WHERE vid = %d', $node->vid));
+  $additions['composite_layout'] = $result->layout;
+  $additions['composite_layout_data'] = unserialize($result->data);
+
+  // Seed reference sublists - they must be arrays or empty arrays
+  $sublists = array();
+  foreach ($types as $type) {
+    $sublists[$type['type']] = array();
+  }
+  
+  $result = db_query("SELECT type, weight, id, data, zone FROM {node_composite_references} WHERE vid = %d", $node->vid);
+  while ($object = db_fetch_object($result)) {
+    // Some common manipulations
+    $object = (array) $object;
+    $object['data'] = unserialize($object['data']);
+
+    // Some type specific manipulations
+    composite_invoke_referenceapi($object, 'load');
+
+    $additions['composite_references'][$object['id']] = $object;
+    $sublists[$object['type']][$object['id']] = $object;
+  }
+
+  // Add reference sublists to the load
+  foreach ($types as $type) {    
+    $additions['composite_references']['#'. $type['type'] .'_references'] = $sublists[$type['type']];
+  }
+  
+  return $additions;
+}
+
+/**
+ * Nodeapi view helper
+ * Assemble the composite content into an array in a similar fashion to $node->content
+ *
+ * - $content: Original node content
+ * - $layout: Layout definition
+ * - $references: List of items for composite content
+ */
+function composite_view($node, $layout = array(), $references = array()) {
+  $composite_content = array();
+  $references = _composite_references_preprocess($references, $layout['zones'], FALSE);
+
+  foreach (element_children($references) as $id) {
+    $reference = $references[$id];
+    // Filter out items not in a displayable zone
+    if (array_key_exists($reference['zone'], $layout['zones'])) {
+      $output = composite_invoke_referenceapi($reference, 'view', $node);
+      if ($output) {
+        $composite_content[$reference['zone']][$reference['id']] = array(
+          '#value' => $output,
+          '#weight' => $reference['weight'],
+        );
+      }
+    }
+  }
+  return $composite_content;
+}
+
+/***********************************************************
+*               COMPOSITE LAYOUT SETS                      *
+************************************************************/
+
+// Helper function to retrieve a list of existing sets
+function composite_sets_select() {
+  return composite_get_sets('select');
+}
+
+function composite_get_sets($type = 'sets') {
+  static $options = null;
+  static $layout_sets = null;
+  
+  if (!isset($options)) {
+    $options = array();
+    $layout_sets = array();
+    $result = db_query("SELECT sid, name, data FROM {node_composite_sets}");
+    while ($object = db_fetch_object($result)) {
+      $options[$object->sid] = $object->name;
+      // Don't unserialize data unnecessarily
+      $layout_sets[$object->sid] = $object;
+    }
+  }
+  return $type == 'select' ? $options : $layout_sets;
+}
+
+function composite_sets_load($sid) {
+  $layout_sets = composite_get_sets();
+  if (isset($layout_sets[$sid])) {
+    $layout_set = $layout_sets[$sid];
+    $layout_set->data = unserialize($layout_set->data);
+    return $layout_set;
+  }
+  else {
+    return array();
+  }
+}
+
+// Returns true if populated, false otherwise
+function composite_sets_populate_node(&$node, $sid) {
+  // Fetch the layout set
+  $layout_set = composite_sets_load($sid);
+
+  // Update the node
+  if ($layout_set) {
+    $node->composite_layout = $layout_set->data['composite_layout'];
+    $node->composite_layout_data = $layout_set->data['composite_layout_data'];
+    $node->composite_references = array();
+
+    foreach ($layout_set->data['composite_references'] as $reference) {
+      if (is_array($reference) && isset($reference['id'])) {
+        composite_invoke_referenceapi($reference, 'load');      
+        $node->composite_references[$reference['id']] = $reference;
+      }
+    }
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/***********************************************************
+*               CUSTOM LAYOUT SELECT ELEMENT               *
+************************************************************/
+
+function composite_elements() {
+  $type['composite_layout_radios'] = array('#input' => TRUE, '#process' => array('composite_layout_radios_process'));
+  return $type;
+}
+
+function composite_layout_radios_process($element) {
+  if (count($element['#options']) > 0) {
+    // Do the normal radios thing
+    $element = expand_radios($element);
+
+    // And then add in our icons
+    $layouts = composite_get_layouts();
+    drupal_add_css(drupal_get_path('module', 'composite') . '/composite.css', 'module', 'all', FALSE);
+
+    // Track the first option which is a layout set
+    $first_set = FALSE;
+
+    
+    foreach (element_children($element) as $key) {
+      if (array_key_exists($key, $layouts)) {
+        $element[$key]['#prefix'] = '<div class="composite-layout-option">';
+        $element[$key]['#suffix'] = '</div>';
+
+        if ($layouts[$key]['icon']) {
+          $element[$key]['#prefix'] .= theme('composite_layout_icon', $layouts[$key]['icon']);
+        }
+      }
+      else if (is_numeric($key)) {
+        // A numeric key means a layout set
+        if ($first_set == FALSE) {
+          $first_set = $key;
+          $element[$key]['#prefix'] = '<div class="composite-layout-set-options"><label>' . t('Layout sets:') . '</label>';
+        }
+      }
+    }
+
+    // Close off the sets div if there is one
+    if ($first_set) {            
+      $element[$key]['#suffix'] = '</div>';
+    }
+
+    $element['#prefix'] = '<div class="clear-block">';
+    $element['#suffix'] = '</div>';
+    return $element;
+  }
+}
+
+/***********************************************************
+*                       THEME-ING                          *
+************************************************************/
+
+/**
+ * Implementation of hook_theme()
+ */
+function composite_theme() {
+  return array(
+    'composite_layout_radios' => array(
+      'arguments' => array('element' => NULL),
+    ),
+    'composite_layout_icon' => array(
+      'arguments' => array('file' => NULL),
+    ),
+    'composite_zones_form' => array(
+      'template' => 'composite-zones-form',
+      'file' => 'composite.pages.inc',
+      'arguments' => array('form' => NULL),
+    ),
+    'composite_zones_preview' => array(
+      'arguments' => array('node' => NULL),
+    ),
+    'composite_content' => array(
+      'template' => 'composite-content',
+      'path' => drupal_get_path('module', 'composite') . '/theme',
+      'arguments' => array('layout' => array(), 'composite_content' => array()),
+    ),
+    'composite_node_title' => array(
+      'arguments' => array('title' => ''),
+    ),
+  );
+}
+
+function theme_composite_layout_radios($element) {
+  return theme('radios', $element);
+}
+
+function theme_composite_layout_icon($file) {
+  return '<img src="' . base_path() . $file .'" class="composite-layout-icon" />';
+}
+
+function theme_composite_zones_preview($node) {
+  if (isset($node->nid)) {
+    $output = '<div class="preview">' . node_view($node, FALSE, FALSE) .'</div>';
+    return $output;
+  }
+}
+
+function template_preprocess_composite_content(&$variables) {
+  $layout = $variables['layout'];
+  $composite_content = $variables['composite_content'];
+  $key = strtr($layout['key'], '_', '-');
+
+  // Always include the default template
+  $variables['template_files'][] = 'composite-content';
+  $variables['template_files'][] = $layout['template'];
+
+  if ($layout['css']) {
+    drupal_add_css($layout['css']);
+  }
+
+  // Extract out composite_content into separate variables
+  $variables['content'] = $composite_content['content'];
+  foreach ($layout['zones'] as $zone => $unused) {
+    $variables[$zone] = $composite_content[$zone];
+  }
+
+  // Call a preprocess callback if defined
+  if (isset($layout['preprocess callback'])) {    
+    $function = $layout['preprocess callback'];
+    if (function_exists($function)) {
+      $function($variables);
+    }
+  }
+}
+
+function theme_composite_node_title($title) {
+  return '<div>' . $title . '</div>';
+}
+
+/***********************************************************
+*                 REFERENCE TYPE DEFINITIONS               *
+************************************************************/
+
+function composite_composite_types() {
+  $types = array(
+    // 'content' is treated specially in some places. 
+    'content' => array(
+      'type' => 'content',
+    ),
+    'block' => array(
+      'type' => 'block',
+      // 'module' => 'composite', // optional value
+      'file' => 'composite.block.inc',    // optional, path relative from directory of 'module'
+      'label' => array('singular' => t('Block'), 'plural' => t('Blocks')),
+
+      // 'local task' - whether composite.module should generate a local task tab for this type
+      'local task' => TRUE,
+      // 'task access' - optional menu access function for the local task tab    
+      'task access' => '',
+      // 'potentials callback' - callback to retrieve list of potential composite references
+      'potentials callback' => 'composite_composite_block_potentials', 
+    ),
+    'node' => array(
+      'type' => 'node',
+      'file' => 'composite.node.inc',
+      'label' => array('singular' => t('Node'), 'plural' => t('Nodes')),
+      'local task' => TRUE,
+      'task access' => 'composite_composite_node_access',
+      'potentials callback' => 'composite_composite_node_potentials', 
+    ),
+  );
+  return $types;
+}
+
+function composite_composite_content_api(&$reference, $op, $node = NULL, $a4 = NULL) {
+  switch ($op) {
+    case 'info':
+      $reference['info'] = t('Node: Original content');
+      break;
+
+    // Return a rendering of the reference item
+    case 'view':
+      // Be careful of security here. The correct field (and whether to escape
+      //   malicious text) depends on who calls composite_view() which calls this,
+      return $node->body;
+      break;
+  }
+}
+
+/***********************************************************
+*                     LAYOUT DEFINITIONS                   *
+************************************************************/
+
+function composite_composite_layouts() {
+  // Try to keep zone names common across layouts (but obviously within
+  //   sensible limits), so there is minimal disruption if the layout changes. 
+  $layouts['onecol'] = array(
+    'key' => 'onecol',
+    'name' => t('Single column'),
+    'zones' => array(
+      'left' => t('Left column'),
+    ),
+    // The following three vars are optional. If not specified, they
+    // will be derived from key, in an equivalent manner to what you see below. 
+    'path' => drupal_get_path('module', 'composite') . '/theme',
+    'css' => 'composite-layout-onecol.css',
+    'template' => 'composite-layout-onecol',
+    'icon' => 'composite-layout-onecol.icon.png'
+  );
+  $layouts['twocol'] = array(
+    'key' => 'twocol',
+    'name' => t('Two columns'),
+    'zones' => array(
+      'top' => t('Top'),
+      'left' => t('Left column'),
+      'right' => t('Right column'),
+      'bottom' => t('Bottom'),
+    ),
+  );
+  $layouts['twocol_bricks'] = array(
+    'key' => 'twocol_bricks',
+    'name' => t('Two columns bricks'),
+    'zones' => array(
+      'top' => t('Top'),
+      'left' => t('Left column (upper)'),
+      'right' => t('Right column (upper)'),
+      'middle_row' => t('Middle row'),
+      'left2' => t('Left column (lower)'),
+      'right2' => t('Right column (lower)'),
+      'bottom' => t('Bottom'),
+    ),
+  );
+  $layouts['threecol_33_33_33'] = array(
+    'key' => 'threecol_33_33_33',
+    'name' => t('Three columns 33/33/33'),
+    'zones' => array(
+      'top' => t('Top'),
+      'left' => t('Left column'),
+      'middle' => t('Middle column'),
+      'right' => t('Right column'),
+      'bottom' => t('Bottom'),
+    ),
+  );
+  $layouts['threecol_25_50_25'] = array(
+    'key' => 'threecol_25_50_25',
+    'name' => t('Three columns 25/50/25'),
+    'zones' => array(
+      'top' => t('Top'),
+      'left' => t('Left column'),
+      'middle' => t('Middle column'),
+      'right' => t('Right column'),
+      'bottom' => t('Bottom'),
+    ),
+  );
+  $layouts['threecol_flexigrid'] = array(
+    'key' => 'threecol_flexigrid',
+    'name' => t('Three columns flexible grid'),
+    'zones' => array(
+      'left' => t('Row 1 left'),
+      'middle' => t('Row 1 middle'),
+      'right' => t('Row 1 right'),
+      'left2' => t('Row 2 left'),
+      'middle2' => t('Row 2 middle'),
+      'right2' => t('Row 2 right'),
+      'left3' => t('Row 3 left'),
+      'middle3' => t('Row 3 middle'),
+      'right3' => t('Row 3 right'),
+      'left4' => t('Row 4 left'),
+      'middle4' => t('Row 4 middle'),
+      'right4' => t('Row 4 right'),
+    ),
+    'preprocess callback' => 'composite_preprocess_threecol_flexigrid',
+    'settings callback' => 'composite_settings_threecol_flexigrid',
+  );
+  return $layouts;
+}
+
+function composite_preprocess_threecol_flexigrid(&$variables) {
+  $columncount_labels = array(0 => 'no-columns', 1 => 'one-column', 2 => 'two-columns', 3 => 'three-columns');
+
+  $layout = $variables['layout'];
+  $variables['composite_classes'] = implode('-', array('composite', strtr($layout['key'], '_', '-'), $layout['data']['column_proportions']));
+  foreach (array('', '2', '3', '4') as $row) {
+    // Pointers
+    $left = 'left' . $row;
+    $middle = 'middle' . $row;
+    $right = 'right' . $row;
+
+    $columns = 0;
+    $has_content = FALSE;
+    $rowclasses = array();
+
+    if ($variables[$left]) {
+      $rowclasses[] = 'with-left-column';
+      $columns++;
+      $has_content = TRUE;
+    }
+    if ($variables[$middle]) {
+      $rowclasses[] = 'with-middle-column';
+      $has_content = TRUE;
+      $columns++;
+    }
+    else {
+      $rowclasses[] = 'without-middle-column';
+    }
+    if ($variables[$right]) {
+      $rowclasses[] = 'with-right-column';
+      $columns++;
+      $has_content = TRUE;
+    }
+
+    if ($variables[$middle] && $columns == 2) {
+      if ($variables[$left]) {
+        $rowclasses[] = 'with-left-middle-columns';
+      }
+      if ($variables[$right]) {
+        $rowclasses[] = 'with-middle-right-columns';
+      }
+    }
+    
+    $rowclasses[] = $columncount_labels[$columns];
+    $variables['row' . $row . '_classes'] = implode(' ', $rowclasses);
+    $variables['row' . $row . '_has_content'] = $has_content;
+  }
+  // Make numbering consistent
+  $variables['row1_classes'] = $variables['row_classes'];
+  $variables['row1_has_content'] = $variables['row_has_content'];
+}
+
+function composite_settings_threecol_flexigrid($op, $edit = null) {
+  switch ($op) {
+    case 'form':
+      $options = array(
+        '33-33-33' => t('Three columns 33/33/33'),
+        '25-50-25' => t('Three columns 25/50/25')
+      );
+      $default_value = isset($options[$edit['data']['column_proportions']]) ? $edit['data']['column_proportions'] : '33-33-33';
+      $form['column_proportions'] = array(
+        '#type' => 'select',
+        '#title' => t('Column proportions'),
+        '#description' => t('Select the width proportions of the columns. This affects every row.'),
+        '#options' => $options,
+        '#default_value' => $default_value,
+      );
+      return $form;
+      break;
+  }
+}
+

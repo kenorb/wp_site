@@ -1,0 +1,70 @@
+<?php
+// $Id: taxonomy_forceall.module,v 1.1.2.1 2007/04/13 13:05:34 aymerick Exp $
+
+/**
+ * Implementation of hook_menu().
+ */
+function taxonomy_forceall_menu() {
+  $items = array();
+
+    $items['admin/settings/taxonomy_forceall'] = array(
+      'title' => t('Taxonomy ForceAll settings'),
+      'description' => t('Taxonomy ForceAll settings.'),
+	  'page callback'  => 'drupal_get_form',
+      'page arguments' => array('taxonomy_forceall_settings'),
+		'access callback'    => 'user_access',
+		'access arguments'   => array('administer site configuration'),
+		'type'               => MENU_NORMAL_ITEM,
+    );
+  
+  return $items;
+}
+
+/**
+ * Implementation of hook_init().
+ */
+function taxonomy_forceall_init() {
+  if (variable_get('taxonomy_forceall_links_only', FALSE))
+    return;
+  
+  $arguments = explode('/', $_GET['q']);
+  if ((count($arguments) > 2) &&
+      ($arguments[0] == 'taxonomy') &&
+      ($arguments[1] == 'term') &&
+      ($arguments[count($arguments) - 1] != 'all'))
+  {
+    $_GET['q'] = $_GET['q'] . '/all';
+  }
+}
+
+
+
+/**
+ * Implementation of hook_link_alter().
+ */
+function taxonomy_forceall_link_alter(&$links, $node) {
+  if (!variable_get('taxonomy_forceall_links_only', FALSE))
+    return;
+
+  foreach ($links as $module => $link) {
+    if (strstr($module, 'taxonomy_term') && preg_match('/^taxonomy\/term\/\d*$/', $link['href'])) {
+      $links[$module]['href'] = $link['href'] .'/all';
+    }
+  }
+}
+
+/**
+ * Admin settings form
+ */
+function taxonomy_forceall_settings() {
+  /* Number of nodes per page */
+  $form['taxonomy_forceall_links_only'] = array(
+    '#type' => 'checkbox', 
+    '#title' => t('Alter links only.'), 
+    '#default_value' => variable_get('taxonomy_forceall_links_only', FALSE),
+    '#description' => t('Alter displayed taxonomy links (using hook_link_alter) instead of altering internal path at every request (using hook_init). See <a href="http://drupal.org/node/129703" title="Corresponding issue on drupal.org" target="_blank">this page</a> for details.')
+  );
+
+  return system_settings_form($form);
+}
+?>

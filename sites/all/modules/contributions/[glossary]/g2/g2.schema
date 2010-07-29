@@ -1,0 +1,64 @@
+<?php
+/**
+ * This is the schema definition for the G2 glossary module
+ *
+ * @copyright (C) 2005-2007 Frederic G. MARAND
+ * @license Licensed under the CeCILL, version 2
+ * @version $Id: g2.schema,v 1.1.2.1 2007/08/25 13:14:26 fgm Exp $
+ * @todo check against non-MySQL databases
+ */
+
+
+/**
+ * Define the structure of the non-core tables used by G2.
+ *
+ * Schema API does not define it, but thes tables should have UTF-8
+ * as their default charset
+ *
+ * @return array
+ */
+function g2_schema()
+  {
+  /**
+   * Additional fields in G2 entries
+   */
+  $schema['g2_node'] = array
+    (
+    'fields' => array
+      (
+      /**
+       * G2 does not currently revision the additional information it stores
+       * about its entries, so it does not need to keep the vid
+       */
+      'nid'         => array('type' => 'int', 'unsigned' => true,  'not null' => true,  'default' => 0),
+      'period'      => array('type' => 'varchar', 'length' => 50,  'not null' => false),
+      'complement'  => array('type' => 'text', 'size' => 'medium', 'not null' => false),
+      'origin'      => array('type' => 'text', 'size' => 'medium', 'not null' => false),
+      ),
+    'primary key' => array('nid'),
+    'unique keys' => array(),
+    'indexes' => array(),
+    );
+
+  /**
+   * G2 per-node referer stats for (future) link exchange
+   */
+  $schema['g2_referer'] = array
+    (
+    'fields' => array
+      (
+      'nid'         => array('type' => 'int', 'unsigned' => true,  'not null' => true, 'default' => 0),
+      'referer'     => array('type' => 'varchar', 'length' => 128, 'not null' => true, 'default' => ''),
+      'incoming'    => array('type' => 'int', 'unsigned' => true,  'not null' => true, 'default' => 0),
+      ),
+    'indexes'     => array(),
+    'primary key' => array('nid', 'referer'),
+    'unique keys' => array(),
+    'indexes'     => array
+      (
+      'referer'     => array('referer'),
+      ),
+    );
+
+  return $schema;
+  }

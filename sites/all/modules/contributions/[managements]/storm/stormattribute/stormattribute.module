@@ -1,0 +1,130 @@
+<?php
+// $Id: stormattribute.module,v 1.4.4.5 2008/09/01 08:50:20 robertogerola Exp $
+
+/**
+ * @file
+ */
+
+function stormattribute_help($path, $arg) {
+  $output = '';
+
+  switch ($path) {
+    case "admin/help#stormattribute":
+      $output = '<p>'.  storm_t("Provides attributes support for Storm") .'</p>';
+      break;
+  }
+
+  return $output;
+}
+
+function stormattribute_perm() {
+  return array(
+                'Storm attribute: access',
+                'Storm attribute: add',
+                'Storm attribute: edit',
+                'Storm attribute: delete',
+              );
+}
+
+function stormattribute_menu() {
+  $items['storm/attributes'] = array(
+            'title' => storm_t('Attributes'),
+            'description' => storm_t('Storm Attributes'),
+            'page callback' => 'stormattribute_list',
+            'access arguments' => array('Storm attribute: access'),
+            'file' => 'stormattribute.admin.inc',
+            'type' => MENU_NORMAL_ITEM);
+  $items['storm/attributes/add'] = array(
+            'title' => storm_t('Add a new attribute'),
+            'description' => storm_t('Storm Attributes'),
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('stormattribute_add'),
+            'access arguments' => array('Storm attribute: add'),
+            'file' => 'stormattribute.admin.inc',
+            'type' => MENU_CALLBACK);
+  $items['storm/attributes/edit/%'] = array(
+            'title' => storm_t('Edit an attribute'),
+            'description' => storm_t('Storm Attributes'),
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('stormattribute_edit', 3),
+            'access arguments' => array('Storm attribute: edit'),
+            'file' => 'stormattribute.admin.inc',
+            'type' => MENU_CALLBACK);
+  $items['storm/attributes/delete/%'] = array(
+            'title' => storm_t('Delete an attribute'),
+            'description' => storm_t('Storm Attributes'),
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('stormattribute_delete', 3),
+            'access arguments' => array('Storm attribute: delete'),
+            'file' => 'stormattribute.admin.inc',
+            'type' => MENU_CALLBACK);
+  $items['storm/attributes/domain/autocomplete'] = array(
+            'title' => storm_t('List of attributes'),
+            'description' => storm_t('Storm Attributes'),
+            'page callback' => '_stormattribute_domain_autocomplete',
+            'page arguments' => array(4),
+            'access arguments' => array('Storm attribute: access'),
+            'file' => 'stormattribute.admin.inc',
+            'type' => MENU_CALLBACK);
+  return $items;
+}
+
+function stormattribute_theme() {
+  return array(
+    'stormattribute_list' => array(
+      'file'      => 'stormattribute.theme.inc',
+      'arguments' => array('header', 'attributes'),
+    ),
+  );
+}
+
+
+function stormattribute_access($op, $item=NULL, $account=NULL) {
+  if (empty($account)) {
+    global $user;
+    $account = $user;
+  }
+
+  if ($op == 'create') {
+    return user_access('Storm attribute: add');
+  }
+
+  if ($op == 'delete') {
+    if (user_access('Storm attribute: delete')) {
+      return TRUE;
+    }
+  }
+
+  if ($op == 'update') {
+    if (user_access('Storm attribute: edit')) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+function stormattribute_attributes_bydomain($domain) {
+  static $attributes_cache = array();
+  $attributes = array();
+
+  if (array_key_exists($domain, $attributes_cache)) return $attributes_cache[$domain];
+
+  $s = "SELECT * FROM {stormattribute} WHERE LOWER(domain) LIKE LOWER('%s') ORDER BY weight, avalue";
+  $r = db_query($s, $domain);
+  while ($attribute = db_fetch_array($r)) {
+    $akey = $attribute['akey'];
+    $avalue = $attribute['avalue'];
+    $attributes[$akey] = $avalue;
+  }
+
+  $attributes_cache[$domain] = $attributes;
+  return $attributes;
+}
+
+function stormattribute_value($domain, $key) {
+  $attributes = stormattribute_attributes_bydomain($domain);
+  if (array_key_exists($key, $attributes)) {
+    return $attributes[$key];
+  }
+  return $key;
+}

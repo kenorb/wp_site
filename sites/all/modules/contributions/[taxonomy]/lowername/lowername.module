@@ -1,0 +1,23 @@
+<?php
+/**
+ * hook_taxonomy
+ */
+function lowername_taxonomy($op, $type, $array = NULL){
+  if($type == 'term'){
+    switch($op){
+      case 'insert':
+        db_query("INSERT INTO {term_lowername} (tid, lowername) VALUES (%d, LOWER('%s'))", $array['tid'], $array['name']);
+        break;
+      case 'update':
+        db_query("UPDATE {term_lowername} SET lowername = LOWER('%s') WHERE tid = %d", $array['name'], $array['tid']);
+        if(!db_affected_rows()){ 
+          // Just in case there wasn't already an entry in the database
+          db_query("INSERT INTO {term_lowername} (tid, lowername) VALUES (%d, LOWER('%s'))", $array['tid'], $array['name']);        
+        }
+        break;
+      case 'delete':
+        db_query("DELETE FROM {term_lowername} WHERE tid = %d", $array['tid']);
+        break;
+    }
+  }
+}

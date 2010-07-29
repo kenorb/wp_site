@@ -1,0 +1,52 @@
+<?php
+// $Id: lm_paypal.theme,v 1.1.2.2 2009/01/19 22:12:03 pounard Exp $
+
+/**
+ * Theme the payment form. This is given 'as is' for themers which would want
+ * to theme this default form.
+ * 
+ * @param array $form
+ *   Drupal form
+ * @return string
+ *   (x)html output
+ */
+function theme_lm_paypal_payment_form($form) {
+  return drupal_render($form);
+}
+
+/**
+ * Generates a human readable string from a number and a 3 letter currency code.
+ *
+ * If we can find a currency symbol (eg: '$') for the given currency code, use
+ * that and return a string like "$5.00".  Otherwise, use the currency code to
+ * look up a currency name, and return a string like "5.00 U.S. Dollar".
+ *
+ * Note that in case of unknown currency code, the module will output the string
+ * without modification.
+ *
+ * @param float $n
+ *   A numeric amount
+ * @param string $ccc
+ *   A PayPal three letter currency code (eg: USD)
+ * @param boolean $syms = TRUE
+ *   Display either "$5" or "5 US Dollar". With TRUE display it with symbol.
+ * @return
+ *   (x)html output
+ */
+function theme_lm_paypal_amount($n, $ccc, $syms = TRUE) {
+  // Get textual representation
+  $textual = lm_paypal_api_get_currency($ccc, $syms);
+
+  // Do not display a NULL currency
+  if (! $textual) {
+    $textual = $ccc;
+    $syms = TRUE;
+  }
+
+  if ($syms) {
+    return t('!symbol !amount', array('!amount' => $n, '!symbol' => $textual));
+  }
+  else {
+    return t('!amount !currency', array('!amount' => $n, '!currency' => $textual));
+  }
+}

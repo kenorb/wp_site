@@ -1,0 +1,44 @@
+<?php
+// $Id: comment_subject.module,v 1.7.2.1 2008/11/06 08:53:10 ahoeben Exp $
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function comment_subject_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'comment_form' && $form['subject']['#default_value']=='') {
+    switch (arg(0)) {
+      case 'node':
+        $node = node_load(array('nid' => arg(1)));
+        $subject = $node->title;
+        break;
+      case 'comment':
+        if (arg(1)=='reply') {
+          if (is_numeric(arg(3))) {
+            $comment = _comment_load(arg(3));
+            $subject = $comment->subject;
+          } else {
+            $node = node_load(arg(2));
+            $subject = $node->title;
+          }
+        } else if (arg(1)=='edit' && is_numeric(arg(2))) {
+          $comment = _comment_load(arg(2));
+          $subject = $comment->subject;
+        }
+        break;
+    }
+    if (!preg_match('/^' . preg_quote(t('Re:')) . '/i', $subject)) {
+      $subject = t('Re:') . ' ' . $subject;
+    }
+    // comment subjects can not be longer than 64 characters
+    $subject = truncate_utf8($subject, 64, TRUE, TRUE);
+
+    if (variable_get('comment_subject_field', 1) == 1) {
+      $form['subject']['#default_value'] = $subject;
+    } else {
+      // comment subject disabled in comment settings
+      $form['subject'] = array('#type' => 'hidden', '#default_value' => $subject);
+    }
+  }
+}
+
+?>

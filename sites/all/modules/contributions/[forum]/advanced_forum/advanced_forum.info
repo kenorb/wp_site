@@ -1,0 +1,13 @@
+; $Id: advanced_forum.info,v 1.4.2.6 2008/12/21 22:41:41 michellec Exp $
+name = Advanced Forum
+description = Enables the look and feel of other popular forum software.
+dependencies[] = forum
+dependencies[] = author_pane
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-02-11
+version = "6.x-1.0-rc1"
+core = "6.x"
+project = "advanced_forum"
+datestamp = "1234376407"
+

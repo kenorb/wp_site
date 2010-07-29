@@ -1,0 +1,12 @@
+; $Id: signature_forum.info,v 1.1.6.3 2008/11/18 02:32:02 liammcdermott Exp $
+
+name = Signatures for Forums
+description = Tweaks signatures in ways inspired by other traditional forum software.
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-11-18
+version = "6.x-1.0"
+core = "6.x"
+project = "signature_forum"
+datestamp = "1227044439"
+

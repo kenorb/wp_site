@@ -1,0 +1,114 @@
+<?php
+// $Id: comment_subscribe.install,v 1.2.2.1 2008/12/22 09:40:51 zyxware Exp $
+ 
+
+/**
+ * Implementation of hook_install().
+ */
+function comment_subscribe_install() {
+  // Create tables.
+  drupal_install_schema('comment_subscribe');
+}
+/**
+ * Implementation of hook_uninstall().
+ */
+function comment_subscribe_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('comment_subscribe');
+	variable_del('comment_subscribe_default_mailtext');
+	variable_del('comment_subscribe_default_anon_mailalert');
+	variable_del('comment_subscribe_regged_checkbox');
+	variable_del('comment_subscribe_node_alert');
+}
+/**
+ * Implementation of hook_schema().
+ */
+function comment_subscribe_schema() {
+  $schema['z_commentsubscribe'] = array(
+    'description' => t('Comment subscribe id.'),
+    'fields' => array(
+      'sid' => array(
+       'type' => 'serial',
+       'unsigned' => TRUE,
+       'not null' => TRUE,
+       'description' => t('Primary Key: Unique Comment Subscribe ID.'),
+      ),
+      'cid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => t('The {comment}.cid commentid.'),
+      ),
+      'parents' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'description' => t('Comma-separated list of recipient e-mail addresses.'),
+      ),
+      'subscribe' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+				'size' => 'tiny',
+        'description' => t('Subscribe status value if comment replies is selected.'),
+      ),
+      'subscribenode' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => t("Susbcribe node status if node replies is selected."),
+      ),
+    ),
+    'primary key' => array('sid'),
+  );
+  $schema['z_nodesubscribe'] = array(
+    'description' => t('Node comments subscribe id.'),
+    'fields' => array(
+      'nid' => array(
+       'type' => 'int',
+       'description' => t('The {node}.nid nodeid.'),
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => t('The {users}.uid uid.'),
+      ),
+       'nodesubscribe' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+		'size' => 'tiny',
+        'description' => t('Subscribe status value if comment replies is selected in node.'),
+      )
+    )
+  );
+  
+  return $schema;
+}
+
+function comment_subscribe_update_6100() {
+  $schema['z_nodesubscribe'] = array(
+    'description' => t('Node comments subscribe id.'),
+    'fields' => array(
+      'nid' => array(
+       'type' => 'int',
+       'description' => t('The {node}.nid nodeid.'),
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => t('The {users}.uid uid.'),
+      ),
+       'nodesubscribe' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+		'size' => 'tiny',
+        'description' => t('Subscribe status value if comment replies is selected in node.'),
+      )
+    )
+  );
+  $ret = array();
+  db_create_table($ret, 'z_nodesubscribe', $schema['z_nodesubscribe']);
+  db_query("INSERT INTO z_nodesubscribe (nid, uid) select nid,uid from node");
+  return $ret;
+}

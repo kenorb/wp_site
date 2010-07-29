@@ -1,0 +1,25 @@
+; $Id: magicsquares.info,v 1.4 2008/06/30 08:34:35 skinhat Exp $
+
+name = "Magic Squares"
+description = "Magic Squares game for drupal"
+version = "$Name: DRUPAL-6--1-9 $"
+core = 6.x
+
+; Information added by drupal.org packaging script on 2007-03-04
+version = "6.x-1.10"
+core = "6.x"
+project = "magicsquares"
+; Information added by drupal.org packaging script on 2008-06-21
+version = "6.x-1.2"
+core = "6.x"
+project = "magicsquares"
+datestamp = "1214054717"
+
+
+; Information added by drupal.org packaging script on 2008-07-09
+version = "6.x-1.9"
+core = "6.x"
+project = "magicsquares"
+datestamp = "1215599422"
+package = "Games"
+

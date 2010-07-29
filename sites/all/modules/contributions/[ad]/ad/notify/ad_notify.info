@@ -1,0 +1,14 @@
+; $Id: ad_notify.info,v 1.1.2.1.2.3.2.1 2009/03/05 22:29:00 jeremy Exp $
+name = Notify
+package = Ad
+dependencies[] = ad_owners
+dependencies[] = token
+description = Receive email notifications regarding ads.
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-04-17
+version = "6.x-2.0-rc1"
+core = "6.x"
+project = "ad"
+datestamp = "1239975926"
+

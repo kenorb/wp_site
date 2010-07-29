@@ -1,0 +1,193 @@
+# $Id: referral-module.pot,v 1.1 2007/04/11 14:42:16 kbahey Exp $
+#
+# LANGUAGE translation of Drupal (referral.module)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  referral.module,v 1.8 2007/02/11 05:18:27 kbahey
+#  referral.info,v 1.1 2007/02/11 05:18:27 kbahey
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2007-04-11 10:41-0400\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: referral.module:25
+msgid "Track users referring others to your site"
+msgstr ""
+
+#: referral.module:41 referral.info:0
+msgid "User Referral"
+msgstr ""
+
+#: referral.module:42
+msgid "Settings for the User Referral module."
+msgstr ""
+
+#: referral.module:59
+msgid "Your Referrals"
+msgstr ""
+
+#: referral.module:66;212;0
+msgid "referral"
+msgstr ""
+
+#: referral.module:74
+msgid "summary"
+msgstr ""
+
+#: referral.module:91
+msgid "unflagged"
+msgstr ""
+
+#: referral.module:100
+msgid "roles"
+msgstr ""
+
+#: referral.module:118
+msgid "User page"
+msgstr ""
+
+#: referral.module:119
+msgid "Referrals page"
+msgstr ""
+
+#: referral.module:124
+msgid "Referral link type"
+msgstr ""
+
+#: referral.module:127
+msgid "Select the way you want the referral link to be shown."
+msgstr ""
+
+#: referral.module:172
+msgid "%Points for referral"
+msgstr ""
+
+#: referral.module:177
+msgid "%Points for referring a user"
+msgstr ""
+
+#: referral.module:212
+msgid "INSERT of referral data failed."
+msgstr ""
+
+#: referral.module:242
+msgid "Your referral link"
+msgstr ""
+
+#: referral.module:245
+msgid "Referrals"
+msgstr ""
+
+#: referral.module:246
+msgid "View users you have referred"
+msgstr ""
+
+#: referral.module:253
+msgid "Referral link"
+msgstr ""
+
+#: referral.module:254
+msgid "Register to this site using my referral link"
+msgstr ""
+
+#: referral.module:265
+msgid "Top referring users"
+msgstr ""
+
+#: referral.module:298;347;390;425;463;498
+msgid "No data."
+msgstr ""
+
+#: referral.module:309
+msgid "Flagged %num user(s)."
+msgstr ""
+
+#: referral.module:319
+msgid "Your referral link: "
+msgstr ""
+
+#: referral.module:325;365;438
+msgid "User"
+msgstr ""
+
+#: referral.module:326;367;439
+msgid "Roles"
+msgstr ""
+
+#: referral.module:327;366
+msgid "Flag"
+msgstr ""
+
+#: referral.module:328;368;440
+msgid "Time"
+msgstr ""
+
+#: referral.module:353;396;431;504
+msgid "Referrals Report"
+msgstr ""
+
+#: referral.module:369;441
+msgid "IP Address"
+msgstr ""
+
+#: referral.module:370;442
+msgid "Referrer"
+msgstr ""
+
+#: referral.module:402;477
+msgid "Referring User"
+msgstr ""
+
+#: referral.module:403
+msgid "# Unflagged"
+msgstr ""
+
+#: referral.module:404
+msgid "Last"
+msgstr ""
+
+#: referral.module:405
+msgid "Operations"
+msgstr ""
+
+#: referral.module:420;494
+msgid "details"
+msgstr ""
+
+#: referral.module:421
+msgid "flag"
+msgstr ""
+
+#: referral.module:470
+msgid "Unflagged referral users with roles for: @user"
+msgstr ""
+
+#: referral.module:472
+msgid "Roles Report"
+msgstr ""
+
+#: referral.module:478
+msgid "# Referred"
+msgstr ""
+
+#: referral.module:479
+msgid "Last Referral"
+msgstr ""
+
+#: referral.module:480
+msgid "Details"
+msgstr ""
+
+#: referral.info:0
+msgid "Give users a way to refer others to your site, optionally earn points for referrals, and revenue sharing via adsense."
+msgstr ""
+

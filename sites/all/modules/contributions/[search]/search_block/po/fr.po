@@ -1,0 +1,83 @@
+# $Id: fr.po,v 1.1.4.2 2008/11/26 22:45:07 deviantintegral Exp $
+#
+# French translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  search_block.module,v 1.1.4.4 2007/12/11 01:17:04 deviantintegral
+#  search_block.info: n/a
+#  search_block.install,v 1.1.4.1 2007/10/16 18:27:30 deviantintegral
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: French translation for drupal search_block module\n"
+"POT-Creation-Date: 2008-11-12 12:58+0100\n"
+"PO-Revision-Date: 2008-11-12 13:10+0100\n"
+"Last-Translator: Sylvain Moreau <sylvain.moreau@ows.fr>\n"
+"Language-Team: Sylvain Moreau, OWS <sylvain.moreau@ows.fr>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+"X-Poedit-Language: French\n"
+
+#: search_block.module:35
+msgid "Restrict Searches of this Content Type"
+msgstr "Recherches Restreintes pour ce Type deContenu"
+
+#: search_block.module:38
+msgid "Allow Searches"
+msgstr "Autoriser les Recherches"
+
+#: search_block.module:39
+msgid "Restrict Searches"
+msgstr "Restreindre les Recherches"
+
+#: search_block.module:41
+msgid ""
+"Use the above options to hide this content type\n"
+"          from the search index. Changing this overwrites all previous node settings."
+msgstr ""
+"Utiliser les options ci-dessus pour cacher ce type de contenu\n"
+" de l'index de recherche. La modification de cette option outrepassera tous les précédents paramètres de noeuds."
+
+#: search_block.module:53
+#: search_block.info:0
+msgid "Restricted Search"
+msgstr "Recherche Restreinte"
+
+#: search_block.module:60
+msgid "Restrict this node from the search index"
+msgstr "Restreindre ce noeud de l'index de recherche"
+
+#: search_block.module:62
+msgid "Enable this option to hide this node from the search index."
+msgstr "Activez cette option afin de cacher ce noeud de l'index de recherche."
+
+#: search_block.module:70
+msgid "This content type is globally restricted from searches."
+msgstr "Ce type de contenu est restreint des recherches de manière globale."
+
+#: search_block.module:147;171;183;0
+msgid "search_block"
+msgstr ""
+
+#: search_block.module:14
+msgid "restrict searches"
+msgstr "restreindre les recherches"
+
+#: search_block.install:30
+msgid "Search Block module installed successfully."
+msgstr "Le module Search Block a été installé avec succès."
+
+#: search_block.install:33
+msgid "Table installation for the Search Block module was unsuccessful. The tables may need to be installed by hand. See the search_block.install file for a list of the installation queries."
+msgstr "L'installation des tables du module Search Block n'a pas été réalisée correctement. Les tables doivent peut-être être installées manuellement. Référez-vous au fichier search_block.install pour une liste des requêtes d'installation."
+
+#: search_block.info:0
+msgid "Enables restricting entire content types or nodes from the search engine"
+msgstr "Permet de restreindre des types de contenus entiers ou des noeuds du moteur de recherche"
+
+#: search_block.info:0
+msgid "Search"
+msgstr "Recherche"
+

@@ -1,0 +1,209 @@
+<?php
+// $Id: lm_paypal.test,v 1.1.2.8 2009/01/19 22:12:03 pounard Exp $
+
+require_once(drupal_get_path('module', 'lm_paypal').'/tests/lm_paypal.base.test');
+
+/*
+[13-Jan-2009 08:36:31] SUBSCRIPTION IPN = Array
+(
+    [test_ipn] => 1
+    [payment_type] => instant
+    [payment_date] => 17:38:22 Jan. 03, 2009 PST
+    [payment_status] => Completed
+    [address_status] => confirmed
+    [payer_status] => verified
+    [first_name] => John
+    [last_name] => Smith
+    [payer_email] => simpletest_CW2G@example.com
+    [payer_id] => TESTBUYERID01
+    [address_name] => John Smith
+    [address_country] => United States
+    [address_country_code] => US
+    [address_zip] => 95131
+    [address_state] => CA
+    [address_city] => San Jose
+    [address_street] => 123, any street
+    [business] => seller@paypalsandbox.com
+    [receiver_email] => dummy@dummy.com
+    [receiver_id] => TESTSELLERID1
+    [residence_country] => US
+    [item_name] => ITEM_nYJFox
+    [item_number] => 0
+    [quantity] => 1
+    [shipping] => 3.04
+    [tax] => 2.02
+    [mc_currency] => USD
+    [mc_fee] => 0.44
+    [mc_gross] => 52.34
+    [mc_gross1] => 49.34
+    [txn_type] => web_accept
+    [txn_id] => 548954
+    [notify_version] => 2.1
+    [custom] => xyz123
+    [charset] => windows-1252
+    [verify_sign] => AFcWxV21C7fd0v3bYYYRCpSSRl31ADDFTKL8KpbikfcHwwH3QPTDWbuS
+)
+*/
+
+class LmPaypalTestCase extends AbstractLmPaypalTestCase {
+
+  function getInfo() {
+    return array(
+      'name' => t('Basic module functionality'),
+      'description' => t('Verify the UI and IPN-processing function of LM Paypal.'),
+      'group' => t('LM Paypal'),
+    );
+  }
+
+  /**
+   * SimpleTest core method: code run before each and every test method.
+   */
+  function setUp() {
+    // Always call the setUp() function from the parent class.
+    parent::setUp('lm_paypal', 'dblog');
+
+    // Create users.
+    $this->admin_user = $this->drupalCreateUser(array('administer lm_paypal'));
+    $this->web_user = $this->drupalCreateUser();
+  }
+
+  /**
+   * SimpleTest core method: code run after each and every test method.
+   */
+  function tearDown() {
+
+    // Always call the tearDown() function from the parent class.
+    parent::tearDown();
+  }
+
+
+  /**
+   * Test basic stuff: processing a (fake) IPN, viewing saved IPNs. This does
+   * NOT require connectivity to paypal.com.
+   */
+  function testLmPaypal() {
+    // Check Settings page.
+    $this->drupalLogin($this->admin_user);
+    $edit = array(
+      'lm_paypal_business' => $this->randomName() . '@example.com',
+    );
+    $this->drupalPost('admin/settings/lm_paypal', $edit, 'Save configuration');
+
+    $this->assertRaw('value="' . variable_get('lm_paypal_business', $edit['lm_paypal_business']) . '"');
+    $this->assertRaw('value="' . variable_get('lm_paypal_host', LM_PAYPAL_HOST_DEFAULT) . '"');
+    $this->assertRaw('value="' . variable_get('lm_paypal_ipns_max_age', LM_PAYPAL_IPNS_MAX_AGE_DEFAULT) . '"');
+    // TODO: check lm_paypal_obey_test_ipns
+    // TODO: check lm_paypal_skip_validation
+    // TODO: check lm_paypal_debug
+
+    // Check variables
+    $check_variables = array('lm_paypal_business', 'lm_paypal_host', 'lm_paypal_ipns_max_age');
+    foreach ($check_variables as $v) {
+      $this->assertField($v);
+      $this->assertRaw(variable_get($v, 'XXX'));
+    }
+
+    // Check (empty) Saved IPNs page.
+    db_query('DELETE FROM {lm_paypal_ipns}');
+    $this->drupalGet('admin/settings/lm_paypal/base/ipns');
+    $this->assertText(t('No ipns found.'), t('Empty IPNs list message found'));
+    $this->assertField('filter', t('Basic filter field found on IPNs list'));
+    $this->drupalLogout();
+    $this->assertNoWatchdogErrors(WATCHDOG_WARNING);
+
+    // Attempt to post a test IPN while lm_paypal_obey_test_ipns = FALSE.
+    variable_set('lm_paypal_obey_test_ipns', FALSE);
+    $ipn_post = $this->postPreparedIpn('ipn-web_accept-inprogress.txt');
+    $this->assertWatchdogError('test_ipn received - ignoring');
+    $this->assertNoWatchdogErrors(WATCHDOG_WARNING);
+
+    // Post a test IPN and check it is (mostly) processed.
+    // Validation is skipped
+    variable_set('lm_paypal_obey_test_ipns', TRUE);
+    $ipn_post = $this->postPreparedIpn(
+      'ipn-web_accept-inprogress.txt',
+      array(
+        'item_number' => 1234,
+        'receiver_email' => variable_get('lm_paypal_business', NULL),
+        'payer_email' => $this->web_user->mail,
+      )
+    );
+    $this->assertWatchdogError('IPN web_accept no uid, found payer_email%%');
+    $this->assertWatchdogError('No web_accept processor registered for this item_number:%%');
+    $this->assertNoWatchdogErrors(WATCHDOG_WARNING);
+
+    // Check (non-empty) Saved IPNs page.
+    $this->drupalLogin($this->admin_user);
+    $this->drupalGet('admin/settings/lm_paypal/base/ipns');
+    $this->assertNoText(t('No ipns found.'), t('Empty IPNs list message found'));
+    $this->assertField('filter', t('Basic filter field found on IPNs list'));
+    $this->assertLink('1'); // the test IPN is still kept, even if it is not processed
+    $this->assertLink('2'); // the second IPN should be processed
+    $this->assertNoLink('3'); // there should only be two IPNs
+    $this->assertRaw('admin/settings/lm_paypal/id/1'); // the first IPN is numbered 1
+
+    // Check the IPN details page
+    $this->clickLink('2');
+    $check_fields = array(
+      'txn_id', 'payer_email', 'first_name', 'last_name',
+      'payer_id', 'payer_status', 'business',
+      'item_name', 'item_number',
+      'receiver_email', 'receiver_id');
+    foreach ($check_fields as $field_name) {
+      $this->assertRaw("<td>$field_name</td><td>$ipn_post[$field_name]</td>", "Found IPN field $field_name = $ipn_post[$field_name]");
+    }
+  }
+
+  /*
+   * Hu.. don't known how to test theme functions, how bad is this?..
+  function testLmPaypalTheme() {
+    $test_cases = array(
+      // Unknown syms asked
+      array(array(10, 'XXX'), 'XXX 10'),
+      array(array(5, 'YYY', FALSE), 'YYY 5'),
+      // Uknown text asked
+      array(array(50, 'ZZZ', TRUE), 'ZZZ 50'),
+      // Known syms asked
+      array(array(3, 'CZK'), 'Kc 3'),
+      array(array(12.67, 'NOK', FALSE), 'kr 12.67'),
+      // Unknown text asked
+      array(array(1534.98, 'AUD', TRUE), '1534.98 Australian Dollar'),
+    );
+    foreach ($test_cases as $case) {
+      $return = @call_user_func_array('theme', array('lm_paypal_amount') + $case[0]);
+      $this->assertEqual($return, $case[1], t('Theme function lm_paypal_amount test for @case', array('@case' => $case[0][0].', '.$case[0][1])));
+    }
+  }
+  */
+
+  function testLmPaypalAPI() {
+    // Test simple getters
+    $business = 'my_business';
+    $host = 'www.my_paypal_host.com';
+    variable_set('lm_paypal_business', $business);
+    variable_set('lm_paypal_host', $host);
+    $this->assertEqual(variable_get('lm_paypal_business', ''), lm_paypal_api_get_business(), t('Strings are equals'));
+    $this->assertEqual(variable_get('lm_paypal_host', ''), lm_paypal_api_get_host(FALSE), t('Strings are equals'));
+    $this->assertEqual(variable_get('lm_paypal_host', ''), lm_paypal_api_get_host(), t('Strings are equals'));
+    $full_host = 'https://'.$host.'/cgi-bin/webscr';
+    $this->assertEqual($full_host, lm_paypal_api_get_host(TRUE), t('Strings are equals'));
+
+    // Test currencies API methods
+    $test_cases = array(
+      // Unknown text asked
+      array(array('XXX'), NULL),
+      array(array('YYY', FALSE), NULL),
+      // Uknown syms asked
+      array(array('ZZZ', TRUE), NULL),
+      // Known text asked
+      array(array('CZK'), t('Czech Koruna')),
+      array(array('NOK', FALSE), t('Norwegian Krone')),
+      // Unknown syms asked
+      array(array('AUD', TRUE), 'A$'),
+    );
+    foreach ($test_cases as $case) {
+      $return = @call_user_func_array('lm_paypal_api_get_currency', $case[0]);
+      $this->assertEqual($return, $case[1], t('Currency test for @cur', array('@cur' => $case[0][0])));
+    }
+  }
+}

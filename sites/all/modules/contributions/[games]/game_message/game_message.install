@@ -1,0 +1,103 @@
+<?php
+// $Id: game_message.install,v 1.1 2009/01/15 03:47:18 aaron Exp $
+
+/**
+ * @file
+ * Installation routines for Game Utility Message.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function game_message_schema() {
+  $schema['game_messages'] = array(
+    'description' => t('Store displayable snippets about the games being played.'),
+    'fields' => array(
+      'lid' => array(
+        'description' => t('The unique ID that represents this game message.'),
+        'not null'    => TRUE,
+        'type'        => 'serial',
+      ),
+      'type' => array(
+        'default'     => '',
+        'description' => t('Type of game message, for example "game combat" or "game dice".'),
+        'length'      => 16,
+        'not null'    => TRUE,
+        'type'        => 'varchar',
+      ),
+      'message' => array(
+        'description' => t('Text of game message to be passed into the t() function.'),
+        'not null'    => TRUE,
+        'size'        => 'big',
+        'type'        => 'text',
+      ),
+      'variables' => array(
+        'description' => t('Serialized array of variables that match the message string and that is passed into the t() function.'),
+        'not null'    => TRUE,
+        'size'        => 'big',
+        'type'        => 'text',
+      ),
+      'timestamp' => array(
+        'default'     => 0,
+        'description' => t('The Unix timestamp when this game message occurred.'),
+        'not null'    => TRUE,
+        'type'        => 'int',
+      ),
+    ),
+    'indexes'         => array(
+      'type'  => array('type'),
+    ),
+    'primary key'     => array('lid'),
+  );
+  $schema['game_message_object'] = array(
+    'description' => t('Associate user or node IDs with a specific game message entry (for shared messages, etc.).'),
+    'fields' => array(
+      'mid' => array(
+        'description' => t('The unique ID that represents this message.'),
+        'not null'    => TRUE,
+        'type'        => 'int',
+      ),
+      'oid' => array(
+        'default'     => 0,
+        'description' => t('The {node}.nid or {users}.uid of the game character this message is in relation to.'),
+        'not null'    => TRUE,
+        'type'        => 'int',
+      ),
+    ),
+    'indexes'         => array(
+      'lid'     => array('lid'),
+      'oid'     => array('oid'),
+      'oid_lid' => array('oid', 'lid'),
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function game_message_install() {
+  $success = drupal_install_schema('game_messages');
+  $success &= drupal_install_schema('game_message_object');
+  if ($success) {
+    drupal_set_message(st('The Game Utilities: Message module installed tables successfully.'));
+  }
+  else {
+    drupal_set_message(st('The installation of the Game Utilities: Message module failed.'), 'error');
+  }
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function game_message_uninstall() {
+  drupal_uninstall_schema('game_messages');
+  drupal_uninstall_schema('game_message_object');
+  $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'game_message_%'");
+  while ($row = db_fetch_object($result)) {
+    variable_del($row->name);
+  }
+
+  drupal_set_message(t('The Game Utilities: Message module has been uninstalled.'));
+}

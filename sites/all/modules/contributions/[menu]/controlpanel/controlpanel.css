@@ -1,0 +1,55 @@
+.control-panel {
+  overflow: auto;
+  clear: both;
+}
+div.control-panel-item {
+	float: left;
+	margin: .8em;
+	text-align: center;
+	padding: .1em;
+	line-height: .85em;
+	border: 1px #fff solid;
+}
+div.control-panel-item:hover {
+	border: 1px #CCC solid;
+	background-color: #fbfbfb;
+}
+.control-panel-fieldset {
+  /*clear: left;*/
+}
+.control-panel-item a {
+	font-size: .9em;
+}
+.control-panel-icon-size-48x48 {
+  width: 65pt;
+  height: 65pt;
+}
+.control-panel-icon-size-48x48 div img {
+  width: 48px;
+  height: 48px;
+}
+.control-panel-icon-size-36x36 {
+  width: 40pt;
+  height: 40pt;
+}
+.control-panel-icon-size-36x36 div img {
+  width: 36px;
+  height: 36px;
+
+}.control-panel-icon-size-24x24 {
+  width: 30pt;
+  height: 30pt;
+}
+.control-panel-icon-size-24x24 div img {
+  width: 24px;
+  height: 24px;
+}
+
+}.control-panel-icon-size-16x16 {
+  width: 20pt;
+  height: 20pt;
+}
+.control-panel-icon-size-16x16 div img {
+  width: 16px;
+  height: 16px;
+}

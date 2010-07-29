@@ -1,0 +1,220 @@
+<?php
+// $Id: author_pane.module,v 1.1.2.8 2009/01/18 05:17:03 michellec Exp $
+
+/**
+ * @file
+ * Gathers information from user related contrib modules into one template.
+ */
+
+// DRUPAL HOOKS **************************************************************/
+
+/**
+ * Implementation of hook_theme().
+ */
+function author_pane_theme() {
+  author_pane_include('author-pane.inc');
+  $items['author_pane'] = array(
+      'template' => 'author-pane',
+      'arguments' => array('account' => NULL,
+        'image_path' => NULL,
+        'template_file' => NULL),
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_block().
+ */
+function author_pane_block($op = 'list', $delta = 0, $edit = array()) {
+  switch ($op) {
+    case 'list':
+     $blocks[0]['info'] = t('Author Pane');
+ 
+     return $blocks;
+
+    case 'configure':
+      $form['author_pane_block_template'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Template file'),
+        '#description' => t('Template file to use. Do not include .tpl.php. Leave blank to use default.'),
+        '#default_value' => variable_get('author_pane_block_template', ''),
+       );
+       
+      $form['author_pane_block_image_path'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Image path'),
+        '#description' => t('Path to author pane images.  Leave blank to use default.'),
+        '#default_value' => variable_get('author_pane_block_image_path', ''),
+       );
+       
+      $types = node_get_types();
+      $options = array();
+      foreach ($types as $type) {
+        $options[$type->type] = $type->name;
+      }
+
+      $form['author_pane_block_display_types'] = array(
+        '#type' => 'checkboxes',
+        '#title' => t('Node types to display on'),
+        '#options' => $options,
+        '#default_value' => variable_get('author_pane_block_display_types', array()),
+       );
+
+      return $form;
+
+    case 'save':
+      variable_set('author_pane_block_image_path', $edit['author_pane_block_image_path']);
+      variable_set('author_pane_block_template', $edit['author_pane_block_template']);
+      variable_set('author_pane_block_display_types', $edit['author_pane_block_display_types']);
+
+      return;
+      
+    case 'view':
+      $block = array();
+      $block['subject'] = t('Author Information');
+      $block['content'] = author_pane_get_block();
+      
+      return $block;
+  }
+}
+
+// TEMPLATE PREPROCESS *******************************************************/
+
+/**
+ * Load advanced forum files on behalf of modules.
+ *
+ * This function, taken from the views include system, allows us to include
+ * an appropriately named include file bundled with any enabled module.
+ * It is currently used only to load the MODULE.author-pane.inc files which
+ * allow other modules to add to the author pane.
+ */
+function author_pane_include($file) {
+  $includes = array();
+  $author_pane_path = drupal_get_path('module', 'author_pane') . '/modules';
+
+  foreach (module_list() as $module) {
+    $module_path = drupal_get_path('module', $module);
+    if (file_exists("$module_path/$module.$file")) {
+      $includes[] = "./$module_path/$module.$file";
+    }
+    else if (file_exists("$module_path/includes/$module.$file")) {
+      $includes[] = "./$module_path/includes/$module.$file";
+    }
+    else if (file_exists("$author_pane_path/$module.$file")) {
+      $includes[] = "./$author_pane_path/$module.$file";
+    }
+  }
+ 
+  if (!empty($includes)) {
+    foreach ($includes as $include) {
+       require_once $include;
+    }
+  }
+}
+
+/**
+ * Preprocesses template variables for the author info template.
+ */
+function template_preprocess_author_pane(&$variables) {
+  if (!empty($variables['template_file'])) {
+    // Allow the calling function to suggest a template file.
+    // This allows AF to set a seperate template from APK.
+    $variables['template_files'][] = $variables['template_file'];
+  }
+
+  // Set the image path
+  if (empty($variables['image_path'])) {
+    // Default images
+    $variables['image_path'] = drupal_get_path('module', 'author_pane') . '/images';
+  }
+  $image_path = $variables['image_path'];
+
+  // Give it some basic formatting.
+  drupal_add_css(drupal_get_path('module', 'author_pane') . '/author_pane.css');
+
+  // Load up all the integration files from other modules.
+  author_pane_include('author-pane.inc');
+
+  // --- Set some basic variables not related to any module. ---
+
+  // This $account refers to the user who's info is in the pane.
+  $account = $variables['account'];
+  $account_id = $account->uid;
+
+  // Username
+  $variables['account_name'] =  theme('username', $account);
+  $variables['account_id'] = $account_id;
+
+  // Avatar
+  $variables['picture'] = theme('user_picture', $account);
+
+  if ($account_id != 0) {
+    // Join date / since
+    $just_date = str_replace(array('H:i', 'g:ia', ' - '), '', variable_get('date_format_short', 'm/d/Y - H:i'));
+    $variables['joined'] = format_date($account->created, 'custom', $just_date);
+    $variables['joined_ago'] = format_interval(time() - $account->created);
+
+    // Online status
+    $variables['last_active'] = format_interval(time() - $account->access);
+    if (round((time()-$account->access)/60) < 15) {
+      $variables['online_icon'] = theme('image', "$image_path/user-online.png", t('User is online'), t('User is online'));
+      $variables['online_status'] = t('Online');
+    }
+    else {
+      $variables['online_icon'] = theme('image', "$image_path/user-offline.png", t('User offline. Last seen @time ago.', array('@time' => $variables['last_active'])), t('User offline. Last seen @time ago.', array('@time' => $variables['last_active'])));
+      $variables['online_status'] = t('Offline');
+    }
+  }
+}
+
+// PANELS ********************************************************************/
+
+/**
+ * Implementation of hook_panels_include_directory().
+ */
+function author_pane_panels_include_directory($plugintype) {
+  if ($plugintype == 'content_types') {
+    return 'panels_content_types';
+  }
+}
+
+// GENERAL FUNCTIONS *********************************************************/
+
+function author_pane_get_block() {
+  $image_path = variable_get('author_pane_block_image_path', NULL);
+  $template = variable_get('author_pane_block_template', NULL);
+  $area = arg(0);
+  
+  // Check that we're in the right area.
+  if (!($area == 'user' || $area == 'node' || $area == 'blog') || arg(2) != '') {
+    return;
+  }
+
+  if ($area == 'user' || $area == 'blog') {
+    // On the user page or the user's blog listing. Get the UID from the URL.
+    $uid = arg(1);
+  }
+  else {
+    // We're on a node page so load the node.
+    $node = $node = menu_get_object();
+
+    $allowed_types = variable_get('author_pane_block_display_types', array());
+    if (empty($allowed_types[$node->type])) {
+      // Not a type we want to show on.
+      return;
+    }
+
+    $uid = $node->uid;
+
+  }
+  
+  // Load up the user object
+  $account = user_load($uid);
+  
+  $author_pane = theme('author_pane', $account, $image_path, $template);
+  
+  return $author_pane;
+
+}
+    

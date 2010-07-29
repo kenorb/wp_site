@@ -1,0 +1,74 @@
+$Id: INSTALL.txt,v 1.3.2.4.2.1 2008/11/05 00:07:11 psynaptic Exp $
+
+INSTALLATION
+------------
+
+1. Follow the usual module installation procedure [2].
+2. Download the Shadowbox 2.0 Full distribution [3].
+3. Extract the download, rename the shadowbox-2.0 directory to just 'shadowbox'
+   and place it inside the shadowbox module directory.
+4. Visit the status page [4] to check Shadowbox is installed correctly.
+5. Visit the settings page [5] to review the global settings.
+
+[2] http://drupal.org/getting-started/5/install-contrib/
+[3] http://mjijackson.com/shadowbox/doc/download.html
+[4] admin/logs/status
+[5] admin/settings/shadowbox
+
+USAGE
+-----
+
+This module integrates with imagefield, imagecache and views to provide the
+same field formatter options as those available in the excellent lightbox2
+module [6].
+
+To manually activate Shadowbox for a link, you must inject the required rel
+attribute. To open any link in Shadowbox just add a rel attribute with a
+value of shadowbox (for compatibility with lightbox2 you can also use a value
+of lightbox). Depending on your specific needs you may need to inject the
+required attribute at the theme layer.
+
+[6] http://drupal.org/project/lightbox2
+
+Single Media Item
+
+The important thing to note here is the rel attribute. This tells Shadowbox you
+wish to activate it for this link. The title attribute is optional and can be
+used to give a caption to the item.
+
+  Exmaple:
+
+  <a href="image.jpg" title="Caption" rel="shadowbox">Image</a>
+
+Gallery
+
+Media of mixed type can be grouped into a gallery using shadowbox[name] where
+'name' is any value you wish to use for the current grouping of media. The
+value of 'name' is only used internally by Shadowbox and won't be shown to the
+user.
+
+  Example:
+
+  <a href="image1.jpg" title="Caption 1" rel="shadowbox[gallery]">Image 1</a>
+  <a href="image2.jpg" title="Caption 2" rel="shadowbox[gallery]">Image 2</a>
+  <a href="image3.jpg" title="Caption 3" rel="shadowbox[gallery]">Image 3</a>
+
+iFrame
+
+A useful feature of Shadowbox is the ability to open another website directly
+on top of the current page.
+
+  Example:
+
+  <a href="http://google.com" title="Google" rel="shadowbox">Google</a>
+
+Advanced Usage
+
+Shadowbox allows you to specify options on a per-instance basis by using a
+JSON-formatted parameter. More information on this feature can be found on the
+Shadowbox usage page: http://mjijackson.com/shadowbox/doc/usage.html#markup
+
+  Example:
+
+  <a href="http://google.com" rel="shadowbox;width=740;height=380;
+    options={overlayOpacity:1,resizeDuration:0.2};">Google</a>

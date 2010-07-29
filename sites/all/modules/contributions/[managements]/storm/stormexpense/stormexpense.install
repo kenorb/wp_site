@@ -1,0 +1,48 @@
+<?php
+// $Id: stormexpense.install,v 1.1.4.1 2008/09/01 08:50:21 robertogerola Exp $
+
+/**
+ * @file
+ */
+
+function stormexpense_install() {
+  drupal_install_schema('stormexpense');
+}
+
+function stormexpense_uninstall() {
+  drupal_uninstall_schema('stormexpense');
+}
+
+function stormexpense_schema() {
+  $schema['stormexpense'] = array(
+    'fields'                => array(
+      'vid'                 => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'nid'                 => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'organization_nid'    => array('type' => 'int'),
+      'organization_title'  => array('type' => 'varchar', 'length' => 128),
+      'project_nid'         => array('type' => 'int'),
+      'project_title'       => array('type' => 'varchar', 'length' => 128),
+      'task_nid'            => array('type' => 'int'),
+      'task_stepno'         => array('type' => 'varchar', 'length' => 128),
+      'task_title'          => array('type' => 'varchar', 'length' => 128),
+      'ticket_nid'          => array('type' => 'int'),
+      'ticket_title'        => array('type' => 'varchar', 'length' => 128),
+      'provider_nid'        => array('type' => 'int'),
+      'provider_title'      => array('type' => 'varchar', 'length' => 128),
+      'expensedate'         => array('type' => 'int'),
+      'amount'              => array('type' => 'float'),
+      'tax'                 => array('type' => 'float'),
+      'total'               => array('type' => 'float'),
+    ),
+    'primary key' => array('vid', 'nid'),
+  );
+
+  return $schema;
+}
+
+function stormexpense_update_1() {
+  $ret = array();
+  db_change_field($ret, 'stormexpense', 'vat', 'tax', array('type' => 'float'));
+  return $ret;
+}
+

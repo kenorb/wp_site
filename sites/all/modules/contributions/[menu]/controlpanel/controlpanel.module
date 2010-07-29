@@ -1,0 +1,299 @@
+<?php
+// $Id: controlpanel.module,v 1.22 2006/02/28 15:49:18 der Exp $
+
+/**
+ * @file
+ * Enables the use of graphical Control Panels that can be used for site navigation.
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function controlpanel_help($path, $arg) {
+  switch ($path) {
+    case 'admin/build/modules#description':
+      return t('Enables the use of a graphical Control Panel.');
+  }
+}
+/**
+ * Implementation of hook_menu().
+ */
+function controlpanel_menu() {
+  global $user;
+  $items = array();
+
+  $items['control_panel'] = array(
+    'title' => t('Control Panel'),
+    'page callback' => 'controlpanel_build_controlpanel',
+    'access arguments' => array('access control panel')
+  );
+  $items['admin/control_panel'] = array(
+    'page callback' => 'controlpanel_build_controlpanel',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_CALLBACK
+  );
+  $items['admin/controlpanel'] = array(
+    'page callback' => 'controlpanel_build_controlpanel',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_CALLBACK
+  );
+  $items['admin/control_panel_blank'] = array(
+    'page callback' => 'controlpanel_build_blank_page',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_CALLBACK
+  );
+  $items['admin/settings/controlpanel'] = array(
+    'title' => t('Control Panel'),
+    'description' => t('Configure Control Panel behavior.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('controlpanel_settings'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM
+  );
+
+  return $items;
+}
+
+function controlpanel_perm() {
+  return array('access control panel');
+}
+
+function controlpanel_build_blank_page() {
+  return ' ';
+}
+
+/**
+ * Menu callback: control panel.
+ */
+function controlpanel_build_controlpanel($menu_key = NULL, $theme_page = TRUE, $block = NULL) {
+  static $sent = array(); 
+  if (file_exists('misc/collapse.js') && variable_get('controlpanel_child_collapsable' . $block, 1)) {
+    if (!isset($sent['misc/collapse.js'])) {
+      drupal_add_js('misc/collapse.js','core');
+      $sent['misc/collapse.js'] = TRUE;
+    }
+  }
+
+  drupal_add_css(drupal_get_path('module', 'controlpanel') .'/controlpanel.css');
+  
+  $content = '';
+
+  if ($menu_key == NULL) {
+    $menu_key = variable_get('controlpanel_menu_source' . $block, 1);
+  }
+
+  list($menu_name, $mlid) = explode(':', $menu_key);
+  $menu = menu_tree_all_data($menu_name);
+  $panel_menu = _controlpanel_get_menu($menu, $mlid);
+
+  if (variable_get('controlpanel_build_children' . $block, 0) != 0) {
+    $content .= '<fieldset class="control-panel-fieldset collapsible">';
+    $content .= '<legend>' .  $panel_menu['link']['title'] . '</legend>';
+  }
+  $content .= theme('controlpanel_panel_view', $panel_menu, $block);
+  
+  if (variable_get('controlpanel_build_children' . $block, 0) && (variable_get('controlpanel_child_levels' . $block, 2) > 1) && (is_array($panel_menu['below']))) {
+    $content = theme('controlpanel_child_panel_view', $panel_menu['below'], 0, $content, $block);
+  }
+  if (variable_get('controlpanel_build_children' . $block, 0) != 0) {
+    $content .= '</fieldset>';
+  } 
+
+  if ($theme_page == TRUE) {
+    print theme('page', $content);
+  } else {
+    return $content;
+  }
+}
+
+function _controlpanel_get_menu($parent_menu, $mlid) {
+  foreach ($parent_menu as $key => $value) {
+    if ($value['link']['mlid'] == $mlid) return $value;
+    if (is_array($value['below'])) {
+      $below = _controlpanel_get_menu($value['below'], $mlid);
+      if (is_array($below)) return $below;
+    }
+  } 
+  return null;
+}
+
+function controlpanel_theme() {
+  return array(
+    'controlpanel_panel_view' => array(
+      'arguments' => array('menu' => NULL, 'block' => NULL),
+    ),
+    'controlpanel_child_panel_view' => array(
+      'arguments' => array('menu' => NULL, 'depth' => NULL, 'content' => NULL, 'block' => NULL),
+    ),
+  );
+}
+
+/**
+ * Build a control panel 
+ */
+function theme_controlpanel_panel_view($menu, $block = NULL) {
+
+  $content = '';
+  $theme_path = path_to_theme() . '/controlpanel/' . variable_get('controlpanel_icon_size' . $block, '48x48');
+
+  if (file_exists($theme_path . '/control_panel_default.png')) {
+    $image_directory = $theme_path;
+  } else {
+    $image_directory = drupal_get_path('module', 'controlpanel') . '/images/' . variable_get('controlpanel_icon_size' . $block, '48x48');
+  }
+  
+  $content .= '<div id="control-panel-' . $menu['link']['mlid'] . '" class="control-panel">';
+  if (is_array($menu['below'])) {
+    foreach ($menu['below'] as $menu_item) {
+      if ($menu_item['link']['hidden'] == 0) {
+        $content .= '<div class="control-panel-item control-panel-icon-size-' . variable_get('controlpanel_icon_size' . $block, '48x48') . '">';
+        $content .= '<a href="' . url($menu_item['link']['link_path']) . '">';
+        $working_path = drupal_get_path_alias($menu_item['link']['link_path']);
+        if (is_numeric(substr($working_path, strrpos($working_path, "/") + 1))) {
+          $working_path = substr($working_path, 0, strrpos($working_path, "/"));
+        }  
+        $file_name = $image_directory . '/' . str_replace('/', '_', $working_path) . '.png'; 
+        if (file_exists($file_name)) {
+          $src = $file_name;
+        } else {
+          $src = $image_directory . '/control_panel_default.png';
+        }
+        $content .= '<span style="display:block;">';
+        $content .= '<img src="' . base_path() . $src . '" alt="'. $menu_item['link']['title'] .'" title="'. $menu_item['link']['description'] .'" />';
+        $content .= '<br />' . $menu_item['link']['title'];
+        $content .= '</span>';
+        $content .= '</a>';
+        $content .= '</div>';      }
+    }
+  }
+  $content .= '</div>';
+  return $content;
+}
+
+/**
+ * Build child panel(s) 
+ */
+function theme_controlpanel_child_panel_view($menu, $depth, $content, $block = NULL){
+  if ($depth < variable_get('controlpanel_child_levels' . $block, 2)-1) {
+    foreach ($menu as $menu_item) {
+      if (is_array($menu_item['below'])) {
+        $content .= '<fieldset class="control-panel-fieldset collapsible collapsed">';
+        $content .= '<legend>' . $menu_item['link']['title'] . '</legend>';
+        $content .= theme('controlpanel_panel_view', $menu_item, $block);
+        $content .= '</fieldset>';
+        $content = theme('controlpanel_child_panel_view', $menu_item, $depth + 1, $content, $block);
+      }  
+    }
+  }
+  return $content;
+}
+/**
+ * Implementation of hook_settings().
+ */
+function controlpanel_settings() {
+  $number_of_blocks = drupal_map_assoc(array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15));
+  $form = _controlpanel_settings_form();  
+
+  $form['block'] = array(
+    '#type' => 'fieldset', '#title' => t('Block settings'),
+    '#collapsible' => TRUE, '#collapsed' => TRUE
+  );
+  $form['block']['controlpanel_number_of_blocks'] = array(
+    '#type' => 'select', '#title' => t('Number of blocks'), '#default_value' => variable_get('controlpanel_number_of_blocks', 0), '#options' => $number_of_blocks,
+    '#description' => t('Select the number of Control Panel blocks you wish to generate.  Control Panel blocks are configured individually in the block configuration pages.')
+  );
+
+  return system_settings_form($form);  
+}
+
+function _controlpanel_settings_form($block = NULL){
+  // Clear the page cache, so that changed menus are reflected
+  cache_clear_all();
+  // Also clear the menu cache.
+  cache_clear_all(NULL, 'cache_menu'); 
+  
+  $child_levels = drupal_map_assoc(array(2, 3, 4));
+  $icon_sizes = drupal_map_assoc(array('16x16', '24x24', '36x36', '48x48'));
+  
+  $form['general'] = array(
+    '#type' => 'fieldset', '#title' => t('General settings'),
+    '#collapsible' => TRUE, '#collapsed' => FALSE
+  );
+  $form['general']['controlpanel_name' . $block] = array(
+    '#type' => 'textfield', 
+    '#title' => t('Control Panel name'), 
+    '#default_value' => variable_get('controlpanel_name' . $block, 'control panel ' . $block),
+    '#description' => t('Enter the name of this Control Panel.')
+  );
+
+  // Generate a list of possible parents (not including this item or descendants).
+  $options = menu_parent_options(menu_get_menus(), 0);
+  $form['general']['controlpanel_menu_source' . $block] = array(
+    '#type' => 'select', 
+    '#title' => t('Source menu item'), 
+    '#default_value' =>  variable_get('controlpanel_menu_source' . $block, 1), 
+    '#options' => $options);
+
+  $form['general']['controlpanel_icon_size' . $block] = array(
+    '#type' => 'select', 
+    '#title' => t('Icon size'), 
+    '#default_value' => variable_get('controlpanel_icon_size' . $block, '48x48'), '#options' => $icon_sizes,
+    '#description' => t('Select the size of the control panel icons.')
+  );
+  $form['child_panels'] = array(
+    '#type' => 'fieldset', 
+    '#title' => t('Child Panels'),
+    '#collapsible' => TRUE, 
+    '#collapsed' => TRUE
+  );
+  $form['child_panels']['controlpanel_build_children' . $block] = array(
+    '#type' => 'checkbox', 
+    '#title' => t('Build Child Menu Panels'), 
+    '#default_value' => variable_get('controlpanel_build_children' . $block, 0), 
+    '#tree' => FALSE,
+    '#description' => t('Check this box to recursively build child panels.')
+  );
+  $form['child_panels']['controlpanel_child_levels' . $block] = array(
+    '#type' => 'select', 
+    '#title' => t('Number of levels'), 
+    '#default_value' => variable_get('controlpanel_child_levels' . $block, 2), '#options' => $child_levels,
+    '#description' => t('Select how many control panel levels to build.')
+  );
+  $form['child_panels']['controlpanel_child_collapsable' . $block] = array(
+    '#type' => 'checkbox', 
+    '#title' => t('Make child panels collapsable'), 
+    '#default_value' => variable_get('controlpanel_child_collapsable' . $block, 1), 
+    '#tree' => FALSE,
+    '#description' => t('Check this box to allow child panels to be collapsed.')
+    );
+  return $form;
+}
+
+/**
+ * Implementation of hook_block().
+ */
+function controlpanel_block($op = 'list', $delta = 0, $edit = array()) {
+  switch ($op) {
+    case 'list':
+      $num_of_blocks = variable_get('controlpanel_number_of_blocks', 0);
+      for ($i = 1; $i <= $num_of_blocks; $i++){
+        $blocks[$i]['info'] = variable_get('controlpanel_name_block' . $i, t('Control panel ' . $i)) . ' (Control Panel)';
+      }
+      return $blocks;
+    case 'configure':
+      return _controlpanel_settings_form('_block' . $delta);  
+    case 'save':
+      variable_set('controlpanel_name_block' . $delta, $edit['controlpanel_name_block' . $delta]);
+      variable_set('controlpanel_menu_source_block' . $delta, $edit['controlpanel_menu_source_block' . $delta]);
+      variable_set('controlpanel_icon_size_block' . $delta, $edit['controlpanel_icon_size_block' . $delta]);
+      variable_set('controlpanel_build_children_block' . $delta, $edit['controlpanel_build_children_block' . $delta]);
+      variable_set('controlpanel_child_levels_block' . $delta, $edit['controlpanel_child_levels_block' . $delta]);
+      variable_set('controlpanel_child_collapsable_block' . $delta, $edit['controlpanel_child_collapsable_block' . $delta]);
+    case 'view':
+      $block['subject'] = variable_get('controlpanel_name_block' . $delta, t('Control panel ' . $delta));
+      $block['content'] = controlpanel_build_controlpanel(NULL, FALSE, '_block' . $delta); 
+      return $block; 
+  }
+}
+
+?>

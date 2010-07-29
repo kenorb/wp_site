@@ -1,0 +1,13 @@
+<?php
+// $Id: taxonomy_forceall.install,v 1.1.2.1 2007/04/13 13:05:34 aymerick Exp $
+
+/**
+ * Implementation of hook_uninstall()
+ */
+function taxonomy_forceall_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('taxonomy_forceall');
+
+  variable_del('taxonomy_forceall_links_only');
+}
+?>

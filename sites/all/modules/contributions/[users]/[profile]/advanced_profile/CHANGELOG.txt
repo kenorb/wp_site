@@ -1,0 +1,195 @@
+$Id: CHANGELOG.txt,v 1.22.4.12 2009/01/17 04:07:22 michellec Exp $
+
+------------------------------ D6 BRANCH ------------------------------------------------
+
+January 16, 2009
+----------------
+#359502 by Michelle: Added check to be sure template is in use before adding the module path to it.
+#358012 by dekita, Michelle: Updated content copy import code to D6.
+
+January 12, 2009
+----------------
+NOISSUE by Michelle: Fixed bad copy on settings page.
+
+January 7, 2009
+----------------
+NOISSUE by Michelle: Added css to just plain /user page.
+NOISSUE by Michelle: Added option to not use included panel page to override the user page.
+
+January 5, 2009
+----------------
+NOISSUE by Michelle: Check for UR module before loading UR view as views will attempt to load it and complain about broken table.
+
+January 4, 2009
+----------------
+NOISSUE by Michelle: Added OG groups to the author pane template.
+
+January 3, 2009
+-----------------
+NOISSUE by Michelle: Moved author pane content type into author pane module.
+NOISSUE by Michelle: Made seperate file for profile visits content type.
+NOISSUE by Michelle: Added user tracker view with pane and added it to panels page.
+NOISSUE by Michelle: Added image path / template file options to author pane in panels page.
+NOISSUE by Michelle: Added user relationships view with pane.
+NOISSUE by Michelle: Removed images directory since all the images were for the author pane.
+
+January 1, 2009
+-----------------
+NOISSUE by Michelle: Cleaned up theme files.
+NOISSUE by Michelle: Put views and panels includes into subdirectories to take advantage of auto loading.
+NOISSUE by Michelle: Reworked profile visitors code as it was buggy.
+NOISSUE by Michelle: Updated panels page.
+
+December 30, 2008
+-----------------
+#348549 by Michelle: Improved profile visitors pane.
+NOISSUE by Michelle: Added panels page.
+
+December 27, 2008
+-----------------
+Committed files to new D6 branch.
+NOISSUE by Michelle: Updated author pane template
+
+December 20, 2008
+-----------------
+Initial conversion.
+
+-----------------------------------------------------------------------------------------
+D6 BRANCH
+-----------------------------------------------------------------------------------------
+
+December 15, 2008 -- BETA 1
+-----------------
+NOISSUE by Michelle: Fixed missing order on profile visits that was causing it to show the oldest visits.
+NOISSUE by Michelle: Code clean up and comments.
+NOISSUE by Michelle: Added options for image directory and interval granularity.
+
+December 13, 2008
+-----------------
+#343848 by Michelle: Added fasttoggle variable to author pane.
+#341619 by Michelle: Added education to the filters of the user list view.
+
+December 13, 2008 -- ALPHA 7
+-----------------
+#341619 by Michelle: Themed user list view.
+NOISSUE by Michelle: Split .module up into more .inc files to enable conditionally loading depending on what other modules are enabled.
+NOISSUE by Michelle: Moved theme related files (css, templates) into theme directory.
+NOISSUE by Michelle: Updated readme to match latest changes.
+
+December 2, 2008
+-----------------
+#341619 by Michelle: Added missing user list view as reported by sebastiang.
+
+December 1, 2008 -- ALPHA 6
+-----------------
+NOISSUE by Michelle: Filtered profile visits to not show anon visitors or people viewing their own profile.
+NOISSUE by Michelle: Broke up panels include files.
+#334645 by Michelle: Rewrote readme.txt and handbook pages to match new version.
+
+November 24, 2008
+-----------------
+NOISSUE by Michelle: Missed returning $vars from dummy addvars function which wiped out a good chunk of the page. 
+
+November 19, 2008 -- UNSTABLE 1
+-----------------
+NOISSUE by Michelle: Added content type to show recent profile visitors.
+#334645 by Michelle: Wrote a very rough readme with install instructions.
+
+November 18, 2008
+-----------------
+#334645 by Michelle: Brought over code from old version to create the uprofile node type and fixed it up a bit so it disabled instead of hides when the type exists.
+
+November 16, 2008
+-----------------
+#334645 by Michelle: Wrapped profile / contact integration in a check to avoid conflict with Advanced Forum.
+#334645 by Michelle: Added dummy function advanced_profile_addvars() to avoid errors if people upgrade and forget to remove that call.
+#334645 by Michelle: Renamed author-pane.tpl.php to advanced_profile_author-pane.tpl.php for clarity.
+#334645 by Michelle: Cleaned up default CSS.
+
+November 14, 2008
+-----------------
+#334645 by Michelle: Began complete rewrite from scratch. Changelog before this point is mostly irrelevent but kept for historical purposes.
+#334645 by Michelle: Fixed contrib integration for author pane. Added images from Advanced Forum.
+#334645 by Michelle: Added more CSS from Advanced Forum.
+
+------------------------ BEFORE REWRITE -------------------------------------------------
+ 
+Jun 30, 2008
+------------
+#NONE by Michelle: Switched to named months in CHANGELOG.txt to avoid confusion.
+#NONE by Michelle: General code clean up
+#NONE by Michelle: Moved CSS adding function into the menu hook instead of having a function call.
+#276559, 254577 by Michelle: Added check around CSS adding to only do it on the user page. Untested fix.
+#257737 by stephthegeek: CSS clean up and neutralizing.
+#259059 by rpmute: Added redirect from usernode to profile page.
+#274959 by Michelle but thanks to sdboyer. Fixed bug with user info pane title.
+
+Apr 28, 2008
+------------
+Switched fieldgroups over to work with latest CCK. See #97375
+Added custom content type to hold note for guestbook. 
+Changed name of module in .info, removed package, and moved nodeprofile_helper to the nodeprofile package.
+
+Apr 13, 2008
+------------
+Removed redundant file panels-content_userinfo.inc as it was moved into the .module file some time ago.
+Removed unneeded template_preprocess_node().
+Added saftey check to theme_advprofile_userinfo() to be sure we have the user object and not just the UID.
+Removed references to profile theme subdirectory as this unnecessarily complicates installation.
+Renamed advp-profile-userinfo.tpl.php to advanced_profile_userinfo.tpl.php for clarity.
+Minor code clean up such as adding underscores to squished together variable names and fixing spacing.
+Removed code about anonymous users that was from advforum and would never apply to profiles.
+Removed unfinished and outdated activity integration.
+Removed extra ampersands that caused #246191
+Changed view loading to new method suggested by chx.
+Renamed views-list-buddylist_of_uid to advanced_profile_view_buddylist_of_uid.tpl for clarity.
+The nodeprofile from user panels relationship is now in the dev version of nodeprofile so added a check for that file around the code to define the relationship.
+In settings, changed it to check for nodeprofile_helper and not just nodeprofile before offering the option of what tabs to show as it is nodeprofile_helper that handles this.
+#217869 Corrected access check for edit tabs in nodeprofile_helper. Thanks meeotch.
+
+Mar 07, 2008
+------------
+Code clean up. Fixed #219682 in the process.
+
+Feb 06, 2008 - ALPHA 3
+------------
+#215882 Replaced $vars['directory'] with path_to_theme() because the former is unreliable.
+#217234 Fixed buddylist link. Thanks txcrew.
+#218370 Fixed contact link. Thanks tehquickness.
+Added some more comments in the code.
+Refactored advanced_profile_addvars() so it's clearer.
+
+Jan 27, 2008 - ALPHA 2
+------------
+Removed blog pane from main panel page because it's broken.
+Refactored user info pane, which fixes #215074 and #215224
+Cleaned up CSS
+
+Jan 27, 2008
+------------
+Changed main panel page: split up 'all about user' mini panel, removed buddylist panes, added blog pane
+Added view for my blog
+Switched to using views panes: My posts, My buddies, My blog
+CSS fixes: #214304 and others
+
+Jan 26, 2008 - ALPHA 1
+------------
+Removed dependency on CCK
+Removed nodeprofile_panels.inc and moved it into nodeprofile_helper
+Removed config option to select profile data holder as it wasn't used for anything
+Changed config option for profile types to only show up with nodeprofile as that's the only place it's used
+Changed nodeprofile helper code to make one edit tab per type selected on settings page
+Changed the readme to just link to the docs
+
+Jan 17, 2008
+------------
+Added support for activity module
+
+Jan 08, 2008
+------------
+Updated docs
+Fixed settings page
+
+Dec 23, 2007
+------------
+Initial dev release.

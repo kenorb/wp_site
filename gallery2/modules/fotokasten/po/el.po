@@ -1,0 +1,109 @@
+# $Id: el.po 18173 2008-10-17 07:14:30Z andy_st $
+#
+# Gallery - a web based photo album viewer and editor
+# Copyright (C) 2000-2008 Bharat Mediratta
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA  02110-1301, USA.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Gallery: Fotokasten 1.0.11\n"
+"Report-Msgid-Bugs-To: gallery-translations@lists.sourceforge.net\n"
+"POT-Creation-Date: 2006-09-12 10:52-0700\n"
+"PO-Revision-Date: 2007-03-24 18:09+0200\n"
+"Last-Translator: Anthi Andreou <tp_s@hotmail.com>\n"
+"Language-Team: Greek <gallery-devel@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Greek\n"
+"X-Poedit-Country: GREECE\n"
+
+msgid "Fotokasten"
+msgstr "Fotokasten"
+
+msgid "Fotokasten Photo Printing Module"
+msgstr "Module Εκτύπωσης Φωτογραφιών στο Fotokasten"
+
+msgid "Commerce"
+msgstr "Εμπόριο"
+
+msgid "[fotokasten] Print"
+msgstr "[fotokasten] Εκτύπωση"
+
+msgid "Print on Fotokasten.de"
+msgstr "Εκτύπωση στο Fotokasten.de"
+
+msgid "Print with Fotokasten"
+msgstr "Εκτυπώστε με Fotokasten"
+
+msgid "Fotokasten Settings"
+msgstr "Ρυθμίσεις Fotokasten"
+
+msgid "Settings saved successfully"
+msgstr "Οι Ρυθμίσεις αποθηκεύτηκαν με επιτυχία"
+
+msgid "Using Gallery Affiliate Id"
+msgstr "Χρησιμοποιήτε  το ID Συνεργατών της Gallery"
+
+msgid "Enter affiliate settings."
+msgstr "Δώστε τις Ρυθμίσεις Συνεργασιας."
+
+msgid "Affiliate Id:"
+msgstr "Id Συνεργάτη:"
+
+#, fuzzy
+msgid "Enter a valid affiliate id"
+msgstr "Δώστε τις Ρυθμίσεις Συνεργασιας."
+
+msgid "Affiliate Password:"
+msgstr "Κωδικός Πρόσβασης Συνεργάτη:"
+
+#, fuzzy
+msgid "Enter a valid affiliate password"
+msgstr "Δώστε τις Ρυθμίσεις Συνεργασιας."
+
+msgid ""
+"You're currently using the default Gallery affiliate id.  This means that the Gallery "
+"project will receive a small commission for each print made from your website."
+msgstr ""
+"Χρησιμοποιήτε το προεπιλεγμένο id συνεργασίας της Gallery. Αυτό σημαίνει ότι πρόγραμμα "
+"Gallery θα λάβει μια μικρή προμήθεια για κάθε εκτύπωση που γινεται από την ιστοσελίδα σας."
+
+msgid "You have specified your own affiliate id."
+msgstr "Έχετε δηλώσει το δικό σας id συνεργάτη."
+
+#, c-format
+msgid ""
+"For more information on Fotokasten affiliates, please contact Fotokasten directly via their "
+"website at %s."
+msgstr ""
+"Για περισσότερες πληροφορίες για το πρόγραμμα συνεργασίας του Fotokasten, επικοινωνήστε με "
+"το Fotokasten μέσω της ιστοσελίδας στην διεύθυνση %s."
+
+msgid "Save"
+msgstr "Αποθήκευση"
+
+msgid "Reset"
+msgstr "Επαναφορά"
+
+msgid "Use Gallery Affiliate Id"
+msgstr "Χρησιμοποιήστε το id Συνεργάτη της Gallery"
+
+#~ msgid "Enter a numeric id"
+#~ msgstr "Δώστε ένα αριθμητικό id"
+
+#~ msgid "Missing value"
+#~ msgstr "Λείπει τιμή"

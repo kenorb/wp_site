@@ -1,0 +1,550 @@
+<?php
+// $Id: ulink.module,v 1.2 2008/03/08 10:26:36 garthee Exp $
+
+/**
+ * @file
+ * The skelton module providing filtering of [l-macro|href|text|attribute] to appropriate
+ * rendering. Modules implementing hooks can extend the rendering features by adding new
+ * implementations.
+ */
+
+/**
+ * Default hook implementations provided in separate ulink_default.inc file
+ */
+require_once (drupal_get_path('module', 'ulink').'/ulink_default.inc');
+
+/**
+ * Implementation of hook_menu().
+ */
+function ulink_menu() {
+  $items = array();  
+  $items['admin/settings/ulink'] = array(
+    'title' => t('uLink'),
+    'description' => t('Rendering modules provided settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_ulink_settings','general'),
+    'access arguments' => array('administer ulink settings'),
+  );
+  //default tab - general settings
+  $items['admin/settings/ulink/general'] = array(
+    'title' => t('General Settings'),
+    'description' => t('General settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_ulink_settings','general'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  // tabs - mode specific settings
+	$ls = array ('node','user','intern','extern');
+	for ($i = 0; $i <= count($ls); $i++) {
+	  $items['admin/settings/ulink/'.$ls[$i]] = array(
+      'title' => t($ls[$i]),
+      'description' => t('Settings related to the rendering of mode: '.$ls[$i]),
+      'page callback'=> 'drupal_get_form',
+      'page arguments' => array('_ulink_settings', $ls[$i]),
+      'type' => MENU_LOCAL_TASK,	  
+      'weight' => $i+1,
+	  );
+	}
+	//registering menus required by the default implementation
+  $items['admin/settings/ulink/default/%/%'] = array(
+    'title' => t('Default implementation'),
+    'page callback'=> 'drupal_get_form',
+    'page arguments' => array('_ulink_default_settings',4,5),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+/**
+ * Implementation of hook_perm().
+ */
+function ulink_perm() {
+  return array('administer ulink settings');
+}
+/**
+ * Implementation of hook_help().
+ */
+function ulink_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#ulink':
+      return t('<p>uLink serves as a universal link filter.</p>
+                <p>[l-macro|href|text|attribute] will be replaced by relevant HTML tags determined 
+                dynamically depending on the targets type, by the chosen implementing module (otherwise default).
+                It depends on the type of the target and the implementation selected in the 
+                <a href="!settings">settings page</a>. For instance, the html output may be
+                different for image targets and file targets. Also for the same target, many
+                implementatinos can be grouped by cascading or optionally adding (ie output
+                this only when others return a null string). Implementation by ulink module(default)
+                allows the admins to modify the rendering on the fly through PHPcode or Tokens.
+                Check the <a href="!filters">filter tips </a> and <a href="!settings">settings page</a>
+                for specific information provided by the implementing modules.</p>', 
+              array( '!settings' => url('admin/settings/ulink'), '!filters' => url('filter/tips'))
+            );
+    case 'filter#short-tip':   
+		case 'filter#long-tip':
+      return t('The tag  [l-macro|href|text|attribute]  will be replaced with dynamically determined
+                implementation. Refer to the <a href="!ulink_help">filter tips </a> for detailed information.',
+                array("!ulink_help" => url("filter/tips/$format", array('fragment' => 'filter-ulink'))));
+    default:
+      return '';
+  }
+}
+/**
+ * Implementation of hook_filter()
+ */
+function ulink_filter($op, $delta = 0, $format = -1, $text = '') {
+
+  if ($op == 'list') {
+    return array( 0 => t("ulink filter"));
+  }
+  
+  switch ($op) {
+    // This description is shown in the administrative interface
+    case 'description':
+      return t('Substitutes HTML tags for [l-macro|href|text|attribute].');
+    // We don't need the "prepare" operation for this filter.
+    case 'prepare':
+      return $text;
+    // The actual filtering is performed here. 
+  	case 'process':
+  	  return _ulink_substitute_tags($text);
+    case 'no cache':
+      return true;
+  	case 'settings':
+  	  $form['settings'] = array(
+  			'#type' => 'fieldset',
+  			'#title' => t('ulink filter settings'),
+  			'#collapsible' => false, 
+  			'#collapsed' => false, 
+      );
+  	  $form['settings']['div-tag'] = array(
+        '#type' => 'markup',
+  	    '#value' => 'goto: '.l('uLink filter settings','admin/settings/ulink'),
+  	  );
+      return $form;
+    default:
+      return;
+  }
+}
+/**
+ * Implementation of hook_filter_tips()
+ */
+function ulink_filter_tips($delta, $format, $long = false) {
+  if ($long) {
+    $output = t('
+<a id="filter-ulink" name="filter-ulink"></a>
+<p><strong>The tag [l-macro|href|text|attribute] will be replaced with relevant implementation.</strong>
+Rendering can be modified by choosing different <a href="!settings">modes of implementation</a>.
+Examples of rendering under current settings are displayed below : <br/>
+<em>Please be aware this is created dynamically so you can check with the mode, compare and configure properly.</em></p>	
+	
+<table class="description"> <thead><tr><th>Tag</th><th>Rendered to</th></tr></thead>
+<tbody>
+ <tr class="even"><td class="region" colspan="2"><a href="!node">Node</a></td></tr>
+  <tr class="odd"><td>[l|node/1]</td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|node/1]')).'</code></td></tr>
+  <tr class="odd"><td>[l|node/1|text]</td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|node/1|text]')).'</code></td></tr>
+  <tr class="odd"><td>[l|story/node|pathalias]</td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|story/node|pathalias]')).'</code></td></tr>
+  <tr class="even"><td>[l|node/6|text&title|title=title]</td><td><code>'.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|node/6|text&title|title=title]')).'</code></td></tr>
+  <tr class="odd"><td>[l|node/-60|broken]</td><td><code>'.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|node/-60|broken]')).'</code></td></tr>
+ 
+<tr class="even"><td class="region" colspan="2"><a href="!user">User</a></td></tr>
+  <tr class="even"><td>[l|user/1]</td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|user/1]')).'</code></td></tr>
+  <tr class="even"><td>[l|user/1|root]</td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|user/1|root]')).'</code></td></tr>
+  <tr class="even"><td>[l|user/1|text|title=title]</td><td><code>'.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|user/1|text|title=title]')).'</code></td></tr>
+  <tr class="odd"><td>[l|user/-60|broken]</td><td><code>'.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|user/-60|broken]')).'</code></td></tr>
+
+<tr class="even"><td class="region" colspan="2"><a href="!intern">Intern (Images)</a></td></tr>
+  <tr class="odd"><td>[l|files/drupal.png]</td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|files/drupal.png]')).'</code></td></tr>
+  <tr class="odd"><td>[l|files/drupal.png|text]</td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|files/drupal.png|text]')).'</code></td></tr>
+  <tr class="even"><td>[l|files/drupal.png|text|no_imagecache=true]</td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|files/drupal.png|text|no_imagecache=true]')).'</code></td></tr>
+  <tr class="odd"><td>[l|files/drupal.png|text|title=hello,hi,width=400]</td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|files/drupal.png|text|title=hello,hi,width=400]')).'</code></td></tr>
+  <tr class="even"><td>[l|files/drupal.png|text|force_link=true]</td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|files/drupal.png|text|force_link=true]')).'</code></td> </tr>
+
+<tr class="even"><td class="region" colspan="2"><a href="!intern">Intern</a></td></tr>
+ <tr class="even"><td>[l|files/CCNA1.rtf]</td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags(' [l|files/CCNA1.rtf]')).'</code></td></tr>
+ <tr class="even"><td>[l|files/CCNA1.rtf|broken]</td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags(' [l|files/CCNA1.rtf|broken]')).'</code></td></tr>
+ <tr class="even"><td>[l|files/CCNA1.rtf|broken|title=title]</td><td><code>'
+ .str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags(' [l|files/CCNA1.rtf|broken|title=title]')).'</code></td></tr>
+
+<tr class="even"><td class="region" colspan="2"><a href="!extern">Extern</a></td></tr>
+  <tr class="odd"><td>[l|http://www.drupal.org] </td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|http://www.drupal.org]')).'</code></td></tr>
+  <tr class="odd"><td>[l|http://mydomain.com/TheRule.pdf] </td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|http://mydomain.com/TheRule.pdf]')).'</code></td></tr>
+  <tr class="odd"><td>[l|http://mydomain.com/TheRule.pdf|sample external file] </td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|http://mydomain.com/TheRule.pdf|sample external file]')).'</code></td></tr>
+  <tr class="odd"><td>[l|http://mydomain.com/TheRule.pdf|sample external file|title=hello] </td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|http://mydomain.com/TheRule.pdf|sample external file|title=hello]')).'</code></td></tr>
+ <tr class="even"><td>[l|misc/jquery.js|internal|title=title]</td><td><code>'
+.str_replace(array('<','>'),array('&lt;','&gt;'),_ulink_substitute_tags('[l|misc/jquery.js|internal|title=title]')).'</code></td></tr>
+</tbody></table>',
+    array (
+      '!settings' => url('admin/settings/ulink'), 
+      '!node' => url('admin/settings/ulink/node'),
+      '!user' => url('admin/settings/ulink/user'), 
+      '!intern' => url('admin/settings/ulink/intern'), 
+      '!extern' => url('admin/settings/ulink/extern'), 
+    ));
+  	return $output;	
+  }
+  else {
+    return t('The tag  [l-macro|text|href|attribute] will be replaced with relevant implementation.
+              Refer to the <a href="!ulink_help">filter tips </a> for detailed information.', 
+            array("!ulink_help" => url("filter/tips/$format", array('fragment' => 'filter-ulink'))));
+  }     
+} 
+/**
+ * Implementation of hook_token_list()
+ */
+function ulink_token_list($type = 'all') {
+  if ($type == 'ulink') {
+    $tokens['ulink']['ulink-text']              = t("Text token");
+    $tokens['ulink']['ulink-spath']             = t("URL token (url as specified by the user)");
+    $tokens['ulink']['ulink-path']              = t("URL (full url)");
+    $tokens['ulink']['ulink-mime']              = t("MIME (null if  not available)");
+    $tokens['ulink']['ulink-type']              = t("Type of the target if it is internal (eg: node), otherwise the protocol suite (eg: http:)"); 
+    $tokens['ulink']['ulink-attributes-string'] = t("Attributes token (String as guven by the user)");
+    $tokens['ulink']['ulink-attributes-array']  = t("Attributes toekn in array list");
+  }
+  if ($type == 'intern') {
+    $tokens['files']['files-fid']               = t("File ID");
+    $tokens['files']['files-nid']               = t("Node ID");
+    $tokens['files']['files-filename']          = t("File name eg:image1.jpg");
+    $tokens['files']['files-filepath']          = t("File path eg:files/image1.jpg"); 
+    $tokens['files']['files-mime']              = t("File mime eg:jpg"); 
+    $tokens['files']['files-size']              = t("File size eg:7500"); 
+  }
+  return $tokens;
+}
+/**
+ * Implementation of hook_token_values()
+ */
+function ulink_token_values($type, $object = NULL) {
+  switch ($type) {
+    case 'ulink':
+      if (isset($object)) {
+        $link = $object;
+      } 
+      $values['ulink-spath']             = $link['path'];
+      $values['ulink-path']              = $link['path'] ? url($link['path']) : '';
+      $values['ulink-text']              = $link['path'] ? $link['text'] : '';
+      $values['ulink-mime']              = $link['path'] ? $link['mime'] : '';
+      $values['ulink-type']              = $link['path'] ? $link['type'] : '';
+      $values['ulink-attributes-string'] = $link['path'] ? $link['attr'] : '';
+      $values['ulink-attributes-array']  = $link['path'] ? $link['attributes'] : '';
+      break;
+  	case 'intern':
+  	  if (isset($object)) {
+          $f = $object;
+      }
+      $values['files-fid']      = $f->fid;
+      $values['files-nid']      = $f->fid ? $f->nid : '';
+      $values['files-filename'] = $f->fid ? $f->filename : '';
+      $values['files-filepath'] = $f->fid ? $f->filepath : '';
+      $values['files-mime']     = $f->fid ? $f->filemime : '';
+      $values['files-size']     = $f->fid ? $f->filesize : '';
+      break;
+    default:
+      break;
+  }
+  return $values;
+}
+/**
+ * Implementation of hook_ulink_general_settings()
+ */
+function ulink_ulink_general_settings() {
+  $form['general']= array(
+    '#type' => 'fieldset',
+    '#title' => t('General settings'),
+    '#collapsible' => FALSE,
+    '#weight' => -2,
+  );    
+  $form['general']['ulink_i_macro']= array(
+    '#type' => 'textarea',
+    '#title' => t('Macros'),
+    '#default_value' => variable_get('ulink_i_macro', ""),
+    '#description' => t('Enter the macros for the attributes as comma seperated key=>value pairs.<br />
+    eg: "imagelist"=>"class=imagelist", "photos"=>"width=200,height=100"
+    <br />They can be called by [l-imagelist|... and [l-photos|.. respectively'),
+  );   
+	return $form;
+}
+/*
+ * helper function to parse the attributes into an array, parsing is performed based on comma separaction and value is extracted using the equal sign
+ *
+ * @param $attr
+ *   String to be parsed, assuming it is  given as comma separated key=value pairs ( key=value,key=value,...) 
+ * @return
+ *   Array with parsed key value pairs in the format {key=>value, key=>value, ..}
+ */
+ function ulink_create_attribute_array($attr) {
+  
+  if (!strstr($attr, '='))
+    return array();
+    
+  $attributes = explode(',', $attr);
+  $attributes_array = array();
+  foreach ($attributes as $at) {
+  	if (strstr($at, '=')) {	  
+      $at1 = explode('=', $at);	  
+      $attributes_array = array_merge($attributes_array, array($at1[0] => $at1[1]));
+  	}
+  	else {
+  	  $key = key($attributes_array);
+  	  $attributes_array[$key] = $attributes_array[$key].','.$at;	  
+  	}
+  } 
+  return $attributes_array;
+}
+/**
+ * Provides the general settings form
+ *
+ * This functions oupputs the settings form, for general settings and calls ulink_general_settings to populated the settings pages with 
+ * implementing  modules settings
+ */ 
+function _ulink_settings(&$form_state, $type = NULL) {
+  
+  $form = array();    
+
+  // Check if uLink filter is enabled
+  $ulink_activated = false;
+  foreach (filter_formats() as $format) {
+    foreach (filter_list_format($format->format) as $filter) {
+      if ($filter->module == 'ulink') {
+        $ulink_activated = true;
+        break;
+      }
+    }
+  }
+  if ($ulink_activated == false) {
+    drupal_set_message(t('uLink filter is not yet enabled for at least one <a href="!formats">input format</a>.', 
+                         array('!formats' => url('admin/settings/filters'))),
+                      'error');
+  }  
+  switch ($type) {
+    case 'general':
+      foreach (module_implements('ulink_general_settings') as $module) {   
+        $form[$module]= array(
+          '#type' => 'fieldset',
+          '#title' => t($module.' - settings'),
+          '#collapsible' => false,
+          '#description' => t('Settings generated by '.$module),
+        );
+      	$form[$module]['#weight'] = ($module == 'ulink') ? -1 : 0;    
+        $form[$module]['settings']  =  module_invoke($module, 'ulink_general_settings');
+      }
+      break;
+    default:
+      $form['modules'] = _ulink_settings_helper($type);
+  }
+  return system_settings_form($form);
+}
+/* Helper function populates the settings page by calling the settings hook (eg ulink_node_settings)
+ *
+ * @param $type
+ *   Type of the implementation - ulink_node or ulink_intern or ulink_user or ulink_extern
+ */
+function _ulink_settings_helper($type) {
+  
+  $modules = array();
+  foreach (module_implements('ulink_'.$type) as $module) {  
+    $default = ($module == 'ulink') ? 1 : 0;  
+    if (variable_get('ulink_'.$type.'_enable_'.$module, $default)) {
+      $modules[$module] = variable_get('ulink_'.$type.'_weight_'.$module, -10);
+    }
+  }
+  asort ($modules);reset ($modules);
+  $module_list = '';
+  while (list ($key, $val) = each ($modules)) {
+    $default = ($key == 'ulink') ? 1 : 0;  
+    if (variable_get('ulink_'.$type.'_enable_'.$key, $default) == 1) {
+      $module_list = $module_list ? $module_list.' . '.$key : $key; 
+    }
+    else if (variable_get('ulink_'.$type.'_enable_'.$key, $default) == 2) {
+      $module_list = $module_list ? $module_list.' ? '.$key : $key; 
+    }
+  }
+  
+  foreach (module_implements('ulink_'.$type) as $module) {   
+    $default = ($module == 'ulink') ? 1 : 0;    
+    $form[$module]= array(
+      '#type' => 'fieldset',
+      '#title' => t($module.' - module imeplementation.'),
+      '#collapsible' => true,
+      '#collapsed' => !variable_get('ulink_'.$type.'_enable_'.$module, $default),
+      '#description' => t('Settings generated by '.$module.' module.'.module_invoke($module, 'ulink_'.$type.'_info')),
+    );
+   	$form[$module]['#weight'] = (variable_get('ulink_'.$type.'_enable_'.$module, $default) == 0) ? 10 : variable_get('ulink_'.$type.'_weight_'.$module, -10);
+  	$form[$module]['multi'] = array('#type' => 'fieldset');
+  	$form[$module]['multi'] ['ulink_'.$type.'_enable_'.$module]  =  array(
+  	  '#type' => 'radios',
+  	  '#title' => t($module." - module's implementation"),
+  	  '#description' => t('Mulitple selections results in a cascaded output depends on the choice.'),
+      '#default_value' => variable_get('ulink_'.$type.'_enable_'.$module, $default),
+      '#options' => array( 0 => t('Disabled'), 1 => t("Cascade the module's rendering to the output"), 2 => t("Cascade only if the previous output is empty")),
+    );
+    $form[$module]['multi']['ulink_'.$type.'_weight_'.$module] = array(
+      '#type' => 'weight',
+      '#title' => t('Weight'),
+      '#default_value' => variable_get('ulink_'.$type.'_weight_'.$module, $default),
+      '#delta' => 10,
+      '#description' => t('Multiple renderings are cascaded in the order of their weights.'),
+    );
+    $form[$module]['settings']  =  module_invoke($module, 'ulink_'.$type.'_settings');	
+  }
+  if ($module_list) {
+    drupal_set_message("Following modules' implementations are selected for $type type : $module_list");
+  }
+  else {
+    drupal_set_message("No module's implementation is selected for $type type", 'error');  
+  }	
+  return $form;
+}
+/**
+ * Searches for the ulink tag, retrieves the  target type, gets the implementation for the type, casecades the outputs and substitutes it in the string
+ *
+ * @param $text
+ *   String to be searched for tags.
+ * @return
+ *   String where [l-macro|href|text|attributes] is substituted with relevant html code
+ */
+function _ulink_substitute_tags($text){
+  
+	// get configured macros
+	$macroarray = array();
+	if ($macro) {
+		eval('$macroarray = array('.variable_get('ulink_i_macro', "").");");
+  }
+  
+  if (preg_match_all("/\[l-?([^|\[\]]*)\|([^|\]\[]+)\|?([^|\]\[]*)\|?([^|\]\[]*)\]/i",$text,$match)){
+    foreach($match[2] as $key=>$val){
+    
+      //$match[0] = user typed tag,  $match[1] = macro , $match[2] = href , $match[3]= text , $match[4]= attributes          
+			$keyword[] = $match[0][$key];	 
+      $match[1][$key] = check_plain($match[1][$key]);       
+      $path = check_url(drupal_get_normal_path($match[2][$key]));
+      $match[3][$key] = check_plain($match[3][$key]);
+      $match[4][$key] = check_plain($match[4][$key]);      
+			if($match[1][$key]) {
+        $match[4][$key]  = $match[4][$key]?
+                           $macroarray[$match[1][$key]].",".$match[4][$key] :
+                           $macroarray[$match[1][$key]];
+			}      
+      $type = array_shift(explode('/', $path));	  
+	    $path_parts = pathinfo($path); 
+	    $base = $path_parts["basename"];            
+
+		  $result = '';
+		  $link = array(
+		    'path'       => $path,                                     //complete path passed by the user
+				'text'       => $match[3][$key],		
+				'type'       => $type,                                     // http: - external, node/user/files - internal
+				'mime'       => strtolower($path_parts["extension"]),      // null if no extension 
+				'attributes' => ulink_create_attribute_array($match[4][$key]),
+				'attr'       => $match[4][$key],
+		  );
+		  $title = $link['text'] ? $link['text'] : $link['path'] ;
+		  $link['attributes']['title'] = $link['attributes']['title'] ? $link['attributes']['title'] : $title;
+		  $link['attributes']['alt'] = $link['attributes']['alt'] ? $link['attributes']['alt'] : $title;
+     			
+			// to handle internal non-drupal internal links, ie if links starts with '/' 
+			if ($link['path'][0] == "/") {
+				global $base_url;
+				$link['path'] = $base_url.$link['path'];
+			}			
+			// intern
+		  if (file_exists($link['path'])) {
+        $file = db_fetch_object(db_query("SELECT * FROM {files} WHERE filepath LIKE '%s'", $link['path']));
+        if ($file == NULL) {
+          $file = new StdClass();
+          $file->fid = -1;
+          $file->nid = 0;
+          $file->filename = $base;
+          $file->filepath = $link['path'];
+          $file->filesize = filesize($link['path']);
+          $file->filemime = $link['mime'];
+        }
+        $link = array_merge($link, array('files' => $file));      
+        $result = _ulink_substitute_tags_helper('intern', $link, $file);
+	    }			
+			//nodes
+		  else if (!strcasecmp($type, "node")){
+        $node = $base ? node_load($base) : NULL;		  
+        $link = array_merge($link, array('nid' => $base, 'node' => $node));
+        $result =  _ulink_substitute_tags_helper('node', $link, $node);	
+		  }			
+			// users
+		  else if (!strcasecmp($type, "user")) {
+		    $user = $base ? user_load(array('uid' => (int)$base)) : NULL;
+				$link = array_merge($link, array('uid' => $uid, 'user' => $user));
+				$result = _ulink_substitute_tags_helper('user', $link, $user);
+		  }			
+	    // extern  
+	    else {		
+        $result = _ulink_substitute_tags_helper('extern', $link, NULL); 
+			}
+	    $rep[] = $result;   
+	  }
+		return str_replace($keyword, $rep, $text);
+	}	
+	else {
+	  return $text;
+	}
+}
+/**
+ * Calls the modules giving implementations for ulink_xxx based on their availability and cascades the output dependending  on the weight given by the user
+ *
+ * calls the modules implementing ulink_?? (eg ulink_node). 
+ * If multiple implementations  are selected they will be cascaded or optionally added (if the output of all previous modules is null) put).
+ *
+ * @param $type
+ *   Type of the implementation - ulink_node or ulink_intern or ulink_user or ulink_extern
+  * @param $link array
+ *   Contains the information about the target
+* @param $object 
+ *   Contains the object if the target is internal and available(eg node)
+ * @return
+ *   outputs by implementing modules in html code cascaded together.
+ */
+function _ulink_substitute_tags_helper($type, $link, $object = NULL) {
+  
+  $modules = array();  
+  foreach (module_implements('ulink_'.$type) as $module) {
+    $default = ($module == 'ulink') ? 1 : 0;
+    if (variable_get('ulink_'.$type.'_enable_'.$module, $default)) {
+      $modules[$module] = variable_get('ulink_'.$type.'_weight_'.$module, -10);
+    }
+  }  
+  asort ($modules);  reset ($modules);
+  
+  $result = '';
+  while (list ($key, $val) = each ($modules)) {
+    $default = ($key == 'ulink') ? 1 : 0;
+    if (variable_get('ulink_'.$type.'_enable_'.$key, $default) == 2) {
+  	  if (!$result && ($temp = module_invoke($key, 'ulink_'.$type, $link, $object))) {
+  		  return $temp;
+  	  }
+  	  else {
+  		  continue;
+  	  }
+    }
+    $result .= module_invoke($key, 'ulink_'.$type, $link, $object);
+  }
+  return $result;
+}
+
+/**
+ * Default hook implementations provided in separate ulink_??.inc files
+ */
+ 

@@ -1,0 +1,14 @@
+; $Id: autotag.info,v 1.9 2009/02/09 16:05:43 sdrycroft Exp $
+name = "Taxonomy Autotagger (autotag)"
+description = "Automatically tags nodes with terms from a specified taxonomy if the term name is present with the text of the node"
+package = "EDIT"
+dependencies[] = taxonomy
+dependencies[] = jquery_ui
+dependencies[] = lowername
+core = 6.x
+; Information added by drupal.org packaging script on 2009-02-10
+version = "6.x-1.22"
+core = "6.x"
+project = "autotag"
+datestamp = "1234258503"
+

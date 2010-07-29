@@ -1,0 +1,11 @@
+; $Id: comment_mover.info,v 1.1.2.2.2.1 2008/12/25 20:41:26 heine Exp $
+name = "Comment mover"
+description = "Move comments to other threads or convert them to nodes."
+dependencies[] = comment
+core = 6.x
+; Information added by drupal.org packaging script on 2008-12-26
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "comment_mover"
+datestamp = "1230249800"
+

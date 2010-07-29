@@ -1,0 +1,106 @@
+<?php
+// $Id: parser_csv.module,v 1.2 2008/12/01 23:44:50 alexb Exp $
+
+/**
+ * @file
+ * Parse the incoming URL with SimpleXML into a FeedAPI compatible data structure.
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function parser_csv_help($path, $arg) {
+  switch ($path) {
+    case 'admin/modules#description':
+      return t('CSV Parser is a FeedAPI-compatible parser for CSV files. Requires PHP5. This parser expects commas , as a delimiter, no quotes around strings and a header in the first line of the CSV file.');
+    case 'feedapi/full_name':
+      return t('CSV Parser');
+  }
+}
+
+/**
+ * Implementation of hook_feedapi_feed().
+ */
+function parser_csv_feedapi_feed($op) {
+  $args = func_get_args();
+  switch ($op) {
+    case 'type':
+      // @todo: fix this
+      return array("XML feed");
+    case 'compatible':
+      // @todo: determine compatibility.
+      return TRUE;
+    case 'parse':
+      if (is_object($args[1])) {
+        $feed = parser_csv_parse($args[1]);
+        return $feed;
+      }
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_feedapi_settings_form().
+ */
+function parser_csv_feedapi_settings_form($type) {
+  $form = array();
+  switch ($type) {
+    case 'parsers':
+      // @todo:
+      // This is essentially mapping what we're doing here, let's use feedapi_mapper for this.
+      // * Remove this
+      // * Use first column or similar as default title,
+      // * Add title and body as mapping targets to feedapi_mapper
+      // * Use feedapi_mapper for mapping.
+      // Disadvantage of this approach: feedapi_mapper only works with nodes as feed items.
+      $form['timestamp_rule'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Field that contains created date'),
+        '#default_value' => '',
+        '#description' => t('Enter a string in the format FIELDNAME,TIMEZONE. The time zone string has to be one of the time zone strings supported by PHP http://us2.php.net/manual/en/timezones.php'),
+      );
+      $form['title_rule'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Rule for building the title field'),
+        '#default_value' => '',
+        '#description' => t('Enter a string in the format FIELDNAME1,FIELDNAME2,FIELDNAME3'),
+      );
+      $form['description_rule'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Rule for building the description field'),
+        '#default_value' => '',
+        '#description' => t('Enter a string in the format FIELDNAME1,FIELDNAME2,FIELDNAME3'),
+      );
+      break;
+  }
+  return $form;
+}
+
+/**
+ * Parse document given at URL.
+ *
+ * @param $feed
+ *   FeedAPI object.
+ * @return parsed data as FeedAPI feed array
+ */
+function parser_csv_parse($feed) {
+  static $loaded = FALSE;
+  if (!$loaded) {
+    require(drupal_get_path('module', 'parser_csv') .'/parser_csv.inc');
+    $loaded = TRUE;
+  }
+  return _parser_csv_parse($feed);
+}
+
+/**
+ * Test function.
+ * @todo: Make this a simple test.
+ */
+function parser_csv_test() {
+  $feed = new stdClass();
+  // test01.csv.ziptest is a zip file.
+  $file = 'test01.csv.ziptest';
+  $feed->url = url(drupal_get_path('module', 'parser_csv') .'/tests/feeds/'. $file, array('absolute' => TRUE));
+  $feed = parser_csv_parse($feed);
+  drupal_set_message('<pre>'. print_r($feed, true) .'</pre>');
+}

@@ -1,0 +1,11 @@
+; $Id: finder_wizard.info,v 1.2.2.3 2008/11/08 05:37:05 danielb Exp $
+name = Finder Wizard
+description = "Provides wizard to find nodes."
+core = 6.x
+package = "Search"
+; Information added by drupal.org packaging script on 2009-01-08
+version = "6.x-2.2"
+core = "6.x"
+project = "finder_wizard"
+datestamp = "1231393216"
+

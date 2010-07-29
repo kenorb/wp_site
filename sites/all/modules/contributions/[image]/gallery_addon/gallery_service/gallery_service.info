@@ -1,0 +1,17 @@
+; $Id: gallery_service.info,v 1.1 2008/03/15 18:41:54 profix898 Exp $
+
+name = "Gallery Service"
+description = "Provides services for embedded Gallery2 functionality."
+package = "Gallery2"
+dependencies[] = gallery
+dependencies[] = services
+core = 6.x
+
+version = "6.x-1.x (unstable)"
+
+; Information added by drupal.org packaging script on 2008-06-10
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "gallery_addon"
+datestamp = "1213056232"
+

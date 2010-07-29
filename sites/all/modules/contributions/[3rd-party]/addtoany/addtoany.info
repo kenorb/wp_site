@@ -1,0 +1,11 @@
+; $ID$
+name = AddToAny
+description = "Give your nodes the addToAny.com share button to let user share your content."
+
+
+; Information added by drupal.org packaging script on 2008-04-21
+version = "6.x-1.36"
+core = "6.x"
+project = "addtoany"
+datestamp = "1208782203"
+

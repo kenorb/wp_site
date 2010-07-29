@@ -1,0 +1,1044 @@
+<?php
+// $Id: job_posting.module,v 1.1.2.12 2008/10/15 18:30:48 gmarus Exp $
+
+/**
+ * @defgroup job_posting
+ * 
+ * Defines a new node type called 'job posting' and provides a custom
+ * block display as well as page/teaser views and a node listings page.
+ * Also provides basic job application facilities via email processing
+ */
+    
+/**
+ * @file job_posting.module
+ * Main module file
+ */
+   
+/**
+ * Implementation of hook_node_info()
+ */
+function job_posting_node_info() {
+  // declare our node types
+  return array(
+    'job_posting' => array(
+      'name' => t('Job Posting'),
+      'module' => 'job_posting',
+      'description' => t('Create a job posting announcement.'),
+      'has_title' => TRUE,
+      'title_label' => t('Title'),
+      'has_body' => TRUE,
+      'body_label' => t('Description'),
+      'locked' => TRUE,
+    ),
+  );    
+}
+    
+/**
+ * Implementation of hook_perm()
+ */
+function job_posting_perm() {
+  return array(
+    'create job posting',
+    'edit job posting',
+    'edit own job posting',
+  );    
+}
+    
+/**
+ * Implementation of hook_access()
+ */
+function job_posting_access($op, $node, $account) {
+  switch ($op) {
+    case 'create':
+      return user_access('create job posting', $account);
+    case 'update': // same as delete
+    case 'delete':
+      if ((user_access('edit job posting', $account)) ||
+        (user_access('edit own job posting', $account) &&
+        ($account->uid == $node->uid))) {
+          return TRUE;
+      }
+      break;
+  }
+}
+    
+/**
+ * Implementation of hook_menu()
+ */
+function job_posting_menu() {
+  $items = array();
+  $items['jobs'] = array(
+    'title' => t('Current jobs'),
+    'page callback' => 'job_posting_list_nodes',
+    'access arguments' => array('access content'),
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $items['job/application/node/%'] = array(
+    'title' => t('Submit an application'),
+    'page callback' => 'job_posting_application_form_page',
+    'page arguments' => array(3),
+    'access callback' => 'user_is_logged_in',
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/settings/job-posting'] = array(
+    'title' => t('Job posting settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('job_posting_admin_settings_form'),
+    'access arguments' => array('administer site configuration'),
+    'description' => 'Change administrative settings for job postings.',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+/**
+ * FAPI definition for the admin settings form
+ *
+ * @ingroup forms
+ * @see job_posting_admin_settings_form_validate()
+ * @see job_posting_admin_settings_form_submit()
+ * 
+ * @return $form
+ */
+function job_posting_admin_settings_form() {
+  $form['job_posting_reference_prefix'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Job reference number prefix'),
+    '#description' => t('Enter a text string to be used as a prefix for identifying
+      each job posting. The full reference id is a combination of this prefix and
+      the job posting node id number (e.g. JOB33).'),
+    '#default_value' => variable_get('job_posting_reference_prefix', 'JOB'),
+    '#required' => TRUE,
+    '#weight' => -10
+  );
+  $form['job_posting_sort_order'] = array(
+    '#type' => 'radios',
+    '#title' => t('Job posting sort order'),
+    '#description' => t('Choose whether you want job posting lists sorted by
+      the newest first or oldest first.'),
+    '#options' => array('DESC' => t('Newest first'), 'ASC' => t('Oldest first')),
+    '#default_value' => variable_get('job_posting_sort_order', 'DESC'),
+    '#required' => TRUE,
+    '#weight' => -9,
+  );
+  $form['job_posting_limit_per_page'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Job posting summaries per page'),
+    '#description' => t('Enter the number of job posting summaries to show on the
+      job listing pages.'),
+    '#default_value' => variable_get('job_posting_limit_per_page', 10),
+    '#size' => 2,
+    '#required' => TRUE,
+    '#weight' => -8,
+  );
+  $form['job_posting_submit'] = array('#type' => 'submit', '#value' => t('Save'));
+  return $form;  
+}
+
+/**
+ * provide input validation for admin settings form
+ *
+ */
+function job_posting_admin_settings_form_validate($form, &$form_state) {
+  // posting limit per page must be numeric
+  if (!is_numeric($form_state['values']['job_posting_limit_per_page'])
+    || $form_state['values']['job_posting_limit_per_page'] <= 0) {
+    form_set_error('job_posting_limit_per_page', 
+      t('Per page limit must be a number greater than zero.'));  
+  }
+  // job posting reference prefix must be a string
+  if (!ctype_alpha($form_state['values']['job_posting_reference_prefix'])) {
+    form_set_error('job_posting_reference_prefix',
+      t('Reference prefix must be an alphabetic string.'));
+  }
+}
+
+/**
+ * provide form submission and alteration of job posting
+ * administrative settings
+ *
+ * @param array $form
+ * @param array $form_state
+ */
+function job_posting_admin_settings_form_submit($form, &$form_state) {
+  variable_set('job_posting_reference_prefix', 
+    check_plain($form_state['values']['job_posting_reference_prefix']));
+  variable_set('job_posting_sort_order',
+    check_plain($form_state['values']['job_posting_sort_order']));
+  variable_set('job_posting_limit_per_page', 
+    check_plain($form_state['values']['job_posting_limit_per_page']));
+  drupal_set_message(t('Settings have been saved.'));
+}
+    
+/**
+ * Implementation of hook_form()
+ */
+function job_posting_form(&$node, &$param) {
+  $type = node_get_types('type', $node);
+        
+  // build select options list for countries
+  $countries = array(0 => t('--'));
+  $result = db_query("SELECT cid, name FROM {job_posting_country}");
+  while ($data = db_fetch_object($result)) {
+    $countries[$data->cid] = $data->name;
+  }
+  
+  // build select options list for time of day
+  $tod = array();
+  $h = 0;
+  while ($h < 24) {
+    if ($h < 12) {
+      if ($h == 0) $tod[$h] = $h .':00 (12:00 AM)';
+      else $tod[$h] = $h .':00 ('. $h .':00 AM)';
+    }
+    else {
+      if ($h == 12) $tod[$h] = $h .':00 (12:00 PM)';
+      else $tod[$h] = $h .':00 ('. ($h - 12) .':00 PM)';
+    }
+    $h++;
+  }
+   
+  // required fieldset        
+  $form['required'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Required'),
+    '#description' => t('These fields are required and comprise the minimum
+      information needed to handle job posting display and processing.'),
+    '#weight' => -10,
+  );
+  if ($type->has_title) {
+    $form['required']['title'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->title_label),
+      '#description' => t('Provide the job title or position'),
+      '#required' => TRUE,
+      '#default_value' => $node->title,
+      '#weight' => -10,
+    );
+  }
+  if ($type->has_body) {
+    $form['required']['body_filter']['body'] = array(
+      '#type' => 'textarea',
+      '#title' => check_plain($type->body_label),
+      '#description' => t('Provide detailed description for this job posting'),
+      '#required' => TRUE,
+      '#default_value' => $node->body,
+      '#weight' => -2,
+    );
+    $form['required']['body_filter']['format'] = filter_form($node->format);
+  }
+  $form['required']['job_posting_email'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Email address'),
+    '#description' => t('Provide a valid employer email address. This address 
+      is not displayed in postings but is used as the destination address for
+      job application processing so it must be valid.'),
+    '#required' => $node->job_posting_applink ? TRUE : FALSE,
+    '#default_value' => $node->job_posting_email,
+    '#weight' => -8,
+    '#maxlength' => 64,
+  );
+  $form['required']['job_posting_applink'] = array(
+    '#type' => 'radios',
+    '#title' => t('Application processing'),
+    '#description' => t("Choose whether you want job application processing
+      to be enabled for this job posting. Enabled nodes provide applicants
+      with a link for applying to a particular job by email. Pick disabled if
+      you'd prefer to provide the posting as 'information only'."),
+    '#options' => array(1 => t('Enabled'), 0 => t('Disabled')),
+    '#required' => TRUE,
+    '#default_value' => isset($node->job_posting_applink) ? $node->job_posting_applink : 1,
+    '#weight' => -7,
+  );
+  $form['required']['job_posting_expires'] = array(
+    '#type' => 'radios',
+    '#title' => t('Expires'),
+    '#description' => t('Choose whether you want this job posting to have an
+      application deadline associated with it. Expiring nodes are automatically 
+      de-activated and purged from display views once the specified deadline 
+      passes. Pick false if you want this posting to remain active until manually 
+      removed.'),
+    '#options' => array(1 => t('True'), 0 => t('False')),
+    '#required' => TRUE,
+    '#default_value' => isset($node->job_posting_expires) ? $node->job_posting_expires : 1,
+    '#weight' => -6,
+  );
+  $form['required']['deadline'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Application deadline'),
+    '#description' => t('Set an application deadline for this posting, unless
+      you chose \'false\' for the \'expires\' field listed above (in which case
+      these fields are ignored). This value is used to determine the amount 
+      of time remaining before the posting will be removed from list/block views 
+      and hence, no longer eligible for job application processing.'),
+    '#weight' => -5,
+  );
+  $form['required']['deadline']['job_posting_deadline_date'] = array(
+    '#type' => 'date',
+    '#title' => t('Deadline date'),
+    '#description' => t('Set the deadline date.'),
+    '#default_value' => 
+      $node->job_posting_deadline
+      // convert to localtime for display
+      ? array(
+        'month' => format_date(
+          _job_posting_deadline_local($node->job_posting_deadline), 'custom', 'n'),
+        'day' => format_date(
+          _job_posting_deadline_local($node->job_posting_deadline), 'custom', 'j'),
+        'year' => format_date(
+          _job_posting_deadline_local($node->job_posting_deadline), 'custom', 'Y'),
+      )
+      : array(
+        'month' => format_date(_job_posting_localtime(), 'custom', 'n'),
+        'day' => format_date(_job_posting_localtime(), 'custom', 'j'),
+        'year' => format_date(_job_posting_localtime(), 'custom', 'Y'),
+      ),
+    '#required' => TRUE,
+    '#weight' => -10,
+  );
+  $form['required']['deadline']['job_posting_deadline_hour'] = array(
+    '#type' => 'select',
+    '#title' => t('Deadline hour'),
+    '#description' => t('Set the deadline hour of day.'),
+    '#options' => $tod,
+    '#default_value' => $node->job_posting_deadline 
+      ? (int) format_date(_job_posting_deadline_local($node->job_posting_deadline), 'custom', 'G')
+      : (int) format_date(_job_posting_localtime(), 'custom', 'G') + 1,
+    '#required' => TRUE,
+    '#weight' => -9, 
+  );
+    
+  // optional fieldset              
+  $form['optional'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Optional'),
+    '#description' => t('These fields are optional and not needed for application
+      processing. Any empty fields will be omitted from display.'),
+    '#weight' => -9,
+  );
+  $form['optional']['location'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Location'),
+    '#description' => t('The geographical location associated with this job posting.'),
+    '#weight' => -10,
+  );
+  $form['optional']['location']['job_posting_city'] = array(
+    '#type' => 'textfield',
+    '#title' => t('City'),
+    '#description' => t('Provide the city location for this job posting'),
+    '#required' => FALSE,
+    '#default_value' => $node->job_posting_city,
+    '#weight' => -6,
+  );
+  $form['optional']['location']['job_posting_state'] = array(
+    '#type' => 'textfield',
+    '#title' => t('State/Province'),
+    '#description' => t('Provide the state or province location for this job posting'),
+    '#required' => FALSE,
+    '#default_value' => $node->job_posting_state,
+    '#weight' => -5
+  );
+  $form['optional']['location']['job_posting_cid'] = array(
+    '#type' => 'select',
+    '#title' => t('Country'),
+    '#description' => t('Select the country location for this job posting'),
+    '#required' => FALSE,
+    '#options' => $countries,
+    '#default_value' => $node->job_posting_cid ? $node->job_posting_cid : 0,
+    '#weight' => -4,
+  );
+  $form['optional']['employer'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Employer'),
+    '#description' => t('The person or organization sponsoring this job posting.'),
+    '#weight' => -9,
+  );
+  $form['optional']['employer']['job_posting_employer'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Name'),
+    '#description' => t("Enter the employer or organization name or leave blank
+      if the site only supports its own job listings"),
+    '#required' => FALSE,
+    '#default_value' => $node->job_posting_employer,
+    '#weight' => -3,
+  );
+  $form['optional']['employer']['job_posting_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Website url'),
+    '#description' => t('Supply a valid website url for the employer'),
+    '#required' => FALSE,
+    '#default_value' => $node->job_posting_url,
+    '#weight' => -2,
+  );
+  $form['optional']['employer']['job_posting_contact'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Contact person'),
+    '#description' => t('Supply the name of the employer contact person 
+      related to the job posting'),
+    '#required' => FALSE,
+    '#default_value' => $node->job_posting_contact,
+    '#weight' => -1,
+  );
+  return $form;
+}
+
+/**
+ * Implementation of hook_validate()
+ */
+function job_posting_validate($node, &$form) {
+  if ($node->job_posting_expires) {
+    // check separately for both valid dates and times
+    $local_ts = mktime(
+      23, 59, 59, 
+      $node->job_posting_deadline_date['month'], 
+      $node->job_posting_deadline_date['day'],
+      $node->job_posting_deadline_date['year']
+    );
+    if (_job_posting_deadline_gmt($local_ts) < _job_posting_gmt()) {
+      form_set_error('job_posting_deadline_date', t('Deadline date must be set 
+        for some time in the future.'));
+    }
+    $local_ts = mktime(
+      $node->job_posting_deadline_hour, 0, 0, 
+      $node->job_posting_deadline_date['month'], 
+      $node->job_posting_deadline_date['day'],
+      $node->job_posting_deadline_date['year']
+    );
+    if (_job_posting_deadline_gmt($local_ts) < _job_posting_gmt()) {
+      form_set_error('job_posting_deadline_hour', t('Deadline hour must be set 
+        for some time in the future.'));
+    }
+  } 
+  // check for valid email format
+  if (!empty($node->job_posting_email)) {
+    if (!valid_email_address($node->job_posting_email)) {
+      form_set_error('job_posting_email', t('That email address does not 
+        appear to be valid.'));    
+    }
+  }
+  // check for valid url format
+  if (!empty($node->job_posting_url)) {
+    if (!valid_url($node->job_posting_url, TRUE)) {
+      form_set_error('job_posting_url', t('The website address you provided must be in
+        proper url format (e.g. http://www.example.com)'));
+    }
+  }
+}
+
+/**
+ * Implementation of hook_load()
+ */
+function job_posting_load($node) {
+  return db_fetch_object(db_query(
+    'SELECT nid, vid, city AS job_posting_city, state AS job_posting_state,
+    cid AS job_posting_cid, employer AS job_posting_employer, 
+    contact AS job_posting_contact, email AS job_posting_email,
+    website AS job_posting_url, deadline AS job_posting_deadline,
+    expires AS job_posting_expires, applink AS job_posting_applink
+    FROM {job_posting}
+    WHERE nid = %d', $node->nid)
+  );
+}
+    
+/**
+ * Implementation of hook_view()
+ */
+function job_posting_view($node, $teaser = FALSE, $page = FALSE) {
+  // do country name lookup, if required
+  if ($node->job_posting_cid != 0) {
+    $node->job_posting_country = db_result(db_query('SELECT name FROM {job_posting_country}
+      WHERE cid = %d', $node->job_posting_cid));
+  }
+  $node = node_prepare($node, $teaser);
+  $node->content = array(
+    '#value' => theme('job_posting_node_display', $node, $page, $teaser),
+  );
+  if ($node->job_posting_expires) {
+    // check if deadline has passed and inform user on node pages
+    // in case they had previously bookmarked it or are accessing it
+    // otherwise via direct url
+    if ($page && $node->job_posting_deadline < _job_posting_gmt()) {
+      drupal_set_message(t('The application deadline for this job posting has passed. 
+        Although you can still view the information no new applications for
+        this job are currently being accepted.'));  
+    }
+  }
+  return $node;
+}
+    
+/**
+ * FAPI definition for the job application submission form
+ *
+ * @ingroup forms
+ * @see job_posting_application_form_validate()
+ * @see job_posting_application_form_submit()
+ * 
+ * @param array $form_state
+ * @param array $optargs
+ * @return $form
+ */
+function job_posting_application_form($form_state, $optargs) {
+  global $user;
+  $reference = variable_get('job_posting_reference_prefix', 'JOB') . $optargs[0];
+  $title = $optargs[1];
+  $email = $optargs[2];
+		
+  // internal fields
+  $form['job_posting_reference'] = array(
+    '#type' => 'value',
+    '#value' => $reference,
+  );
+  $form['job_posting_title'] = array(
+    '#type' => 'value',
+    '#value' => $title,
+  );
+  $form['job_posting_email'] = array(
+    '#type' => 'value',
+    '#value' => $email,
+  );
+        
+  // displayed fields
+  $form['job_posting_title_ref'] = array(
+    '#type' => 'item',
+    '#title' => t('Title'),
+    '#value' => t('@title (@reference)', array('@title' => $title,
+      '@reference' => $reference)),
+  );
+  $form['job_posting_applicant'] = array(
+    '#type' => 'item',
+    '#title' => t('Applicant'),
+    '#value' => $user->name .' &lt;'. $user->mail .'&gt;',
+    '#maxlength' => 64,
+  );
+  $form['job_posting_coverletter'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Cover letter'),
+    '#default_value' => t('@coverletter', array(
+      '@coverletter' => $form_state['values']['job_posting_coverletter'])),
+    '#required' => TRUE,
+    '#description' => t('Enter your introductory covering letter.'),
+  );
+        
+  $form['#attributes'] = array('enctype' => "multipart/form-data");
+  $form['job_posting_resume'] = array(
+    '#type' => 'file',
+    '#title' => t('Attach resume'),
+    '#description' => t('Choose a resume file to upload along with your 
+      covering letter. Files must not exceed 1M in size and can use only 
+      the following extensions: txt doc pdf.'),
+  );
+                
+  $form['job_posting_submit'] = array('#type' => 'submit', '#value' => t('Send'));
+        
+  return $form;   
+}
+
+/**
+ * Provide page display for job application form
+ *
+ * @param int $node_id
+ * @return $form
+ */
+function job_posting_application_form_page($node_id) {
+  // forward to job listing page an application form is requested
+  // for a nid that is unpublished, information-only or otherwise
+  // expired or invalid
+  $query = 'SELECT COUNT(*) FROM {node} n INNER JOIN {job_posting} p
+    ON n.nid = p.nid 
+    WHERE p.nid = %d 
+    AND n.status = 1
+    AND p.applink = 1 
+    AND (p.deadline > %d OR p.expires = 0)';
+  if (db_result(db_query($query, $node_id, _job_posting_gmt()))) {
+    //retrieve node info for job_posting being applied to
+    $node = db_fetch_object(db_query(
+      'SELECT n.nid, n.title, p.email AS job_posting_email 
+      FROM {node} n INNER JOIN {job_posting} p
+      ON n.nid = p.nid
+      WHERE n.nid = %d', $node_id)
+    );
+    return drupal_get_form('job_posting_application_form', 
+      array($node->nid, $node->title, $node->job_posting_email));    
+  }
+  drupal_goto('jobs');
+}
+     
+/**
+ * Provide input validation for job application submission form
+ *
+ * @param unknown_type $form
+ * @param unknown_type $form_state
+ */
+function job_posting_application_form_validate($form, &$form_state) {
+  $file = file_save_upload('job_posting_resume');
+  if ($file) {
+    // check for allowed extensions
+    $extensions = 'txt doc pdf';
+    if ($errors = file_validate_extensions($file, $extensions)) {
+      foreach ($errors as $error) {
+        form_set_error('job_posting_resume', t('!error', array('!error' => $error)));
+      }    
+    }
+    // ensure attachment doesn't exceed 1M
+    if ($errors = file_validate_size($file, '1000000')) {
+      foreach ($errors as $error) {
+        form_set_error('job_posting_resume', t('!error', array('!error' => $error)));
+      }    
+    }
+  }
+}
+    
+/**
+ * Assemble pieces for job application mailing and provide form submission
+ * 
+ * @param array $form
+ * @param array $form_state
+ */
+function job_posting_application_form_submit($form, &$form_state) {
+  global $user;
+  $separator = md5(uniqid(time()));
+  $module = 'job_posting';
+  $apply_from = $user->mail;
+  $apply_to = $form_state['values']['job_posting_email'];
+  $confirm_from = $form_state['values']['job_posting_email'];
+  $confirm_to = $user->mail;
+  $body = $form_state['values']['job_posting_coverletter'];
+  // use applicant's language preference
+  $language = user_preferred_language($user);
+  $params = array();
+  $params['subject'] = $form_state['values']['job_posting_title']
+    .' ('. $form_state['values']['job_posting_reference'] .')';
+
+  // is there an attachment?
+  if ($attachment = file_save_upload('job_posting_resume')) {
+    // slurp contents into string for injection into mail body below
+    $data = chunk_split(base64_encode(fread(fopen($attachment->filepath, "rb"), $attachment->filesize)));  
+    $params['content-type'] = 'multipart/mixed; boundary='. $separator;
+    $params['content'] = "\n".'--'. $separator ."\n";
+    $params['content'] .= 'Content-Type: text/plain; charset=UTF-8; format=flowed;'."\n\n";
+    $params['content'] .= $body ."\n";
+    $params['content'] .= "\n\n";
+    $params['content'] .= '--'. $separator ."\n";
+    $params['content'] .= 'Content-Type: '. $attachment->filemime .';'."\n\t".'name="'. $attachment->filename .'"'."\n";
+    $params['content'] .= 'Content-Transfer-Encoding: base64'."\n";
+    $params['content'] .= 'Content-Disposition: attachment;'."\n\t".'filename="'. $attachment->filename .'"'."\n\n";
+    $params['content'] .= $data;
+    $params['content'] .= "\n\n";
+    $params['content'] .= '--'. $separator .'--';
+  } 
+  else {
+    $params['content-type'] = 'text/plain; charset=UTF-8; format=flowed;';
+    $params['content'] = $body;
+  }
+                
+  // send application to employer
+  if (drupal_mail($module, 'application', $apply_to, $language, $params, $apply_from)) {
+    drupal_set_message(t('Your application has been submitted. Thank you.'));
+    // send confirmation to applicant's profile address provided they're registered
+    if ($user->uid != 0) {
+      if (drupal_mail($module, 'confirmation', $confirm_to, $language, $params, $confirm_from)) {
+        drupal_set_message(t('A confirmation message has been sent to ') . $user->mail);
+        // on success, send user back to job listings page
+        $form_state['redirect'] = 'jobs';
+      }
+    }
+  }
+  
+}
+    
+/**
+ * Implementation of hook_mail()
+ */
+function job_posting_mail($key, &$message, $params) {
+  $language = $message['language'];
+  switch ($key) {
+    case 'application':
+      $message['headers']['Content-Type'] = $params['content-type'];
+      $message['subject'] = t('!subject', array('!subject' => $params['subject']),
+        $language->language);
+      $message['body'] = t('!content', array('!content' => $params['content']),
+        $language->language);
+      break;
+    case 'confirmation':
+      $confirmation = 'Thank you for your interest in the job posting titled "' 
+        . $params['subject'] .'" listed at http://'. $_SERVER['SERVER_NAME'] 
+        .' ('. $_SERVER['SERVER_ADDR'] .').'."\n\n".'You don\'t need to do anything'
+        .' further with this message (except maybe save it for your records).';
+      $message['headers']['Content-Type'] = 'text/plain; charset=UTF-8; format=flowed;';
+      $message['subject'] = t('!subject', array('!subject' => $params['subject']),
+        $language->language);
+      $message['body'] = t('!message', array('!message' => $confirmation),
+        $language->language);
+      break;    
+  }
+}
+    
+/**
+ * Implementation of hook_insert()
+ */
+function job_posting_insert($node) {
+  db_query("INSERT INTO {job_posting} 
+    (nid, vid, city, state, cid, contact, email, employer, website, deadline, expires, applink) 
+    VALUES (%d, %d, '%s', '%s', %d, '%s', '%s', '%s', '%s', %d, %d, %d)",
+    $node->nid, $node->vid, $node->job_posting_city, $node->job_posting_state, 
+    $node->job_posting_cid, $node->job_posting_contact, $node->job_posting_email,
+    $node->job_posting_employer, $node->job_posting_url, 
+    _job_posting_deadline_gmt(
+      strtotime($node->job_posting_deadline_date['year']
+        .'-'. $node->job_posting_deadline_date['month'] 
+        .'-'. $node->job_posting_deadline_date['day']
+        .' '. $node->job_posting_deadline_hour .':00:00'
+      )
+    ),
+    $node->job_posting_expires, $node->job_posting_applink
+  );
+}
+    
+/**
+ * Implementation of hook_update()
+ */
+function job_posting_update($node) {
+  if ($node->revision) {
+    job_posting_insert($node);
+  } 
+  else {
+    db_query("UPDATE {job_posting} 
+      SET city = '%s', state = '%s', cid = %d, contact = '%s', email = '%s', 
+      employer = '%s', website = '%s', deadline = %d, expires = %d, applink = %d
+      WHERE nid = %d", 
+      $node->job_posting_city, $node->job_posting_state, $node->job_posting_cid,
+      $node->job_posting_contact, $node->job_posting_email, $node->job_posting_employer, 
+      $node->job_posting_url, 
+      _job_posting_deadline_gmt(
+        strtotime($node->job_posting_deadline_date['year']
+          .'-'. $node->job_posting_deadline_date['month'] 
+          .'-'. $node->job_posting_deadline_date['day']
+          .' '. $node->job_posting_deadline_hour .':00:00'
+        )
+      ),
+      $node->job_posting_expires, $node->job_posting_applink,
+      $node->nid
+    );
+  }
+}
+    
+/**
+ * Implementation of hook_delete()
+ */
+function job_posting_delete($node) {
+  db_query('DELETE FROM {job_posting} WHERE nid = %d', $node->nid);
+}
+    
+/**
+ * Implementation of hook_nodeapi()
+ */
+function job_posting_nodeapi(&$node, $op, $teaser, $page) {
+  switch ($op) {
+    // remove row if its corresponding node gets deleted
+    case 'delete':
+      db_query('DELETE FROM {job_posting} WHERE nid = %d', $node->nid);
+      break;
+    // remove row if its corresponding revision gets deleted
+    case 'delete revision':
+      db_query('DELETE FROM {job_posting} WHERE vid = %d', $node->vid);
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_block()
+ */
+function job_posting_block($op = 'list', $delta = 0, $edit = array()) {
+  $order = variable_get('job_posting_sort_order', 'DESC');
+  switch ($op) {
+    // block listing at admin/block
+    case 'list':
+      $blocks[0] =  array(
+        'info' => t('Current jobs'),
+      );
+      break;
+    case 'configure':
+      $form['job_posting_block_num_posts'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Number of job postings to display'),
+        '#default_value' => variable_get('job_posting_block_num_posts', 6),
+        '#size' => 3,
+      );
+      return $form;
+    case 'save':
+      variable_set('job_posting_block_num_posts', (int) $edit['job_posting_block_num_posts']);
+      break;
+    // block display of published job postings
+    case 'view':
+      $job_posting_titles = array();
+      $num_posts = variable_get('job_posting_block_num_posts', 6);
+      $sql = "SELECT n.nid, n.title 
+        FROM {node} n INNER JOIN {job_posting} p
+        ON n.nid = p.nid
+        WHERE n.status = 1
+        AND (p.deadline > %d OR p.expires = 0)
+        ORDER BY n.created %s";
+      $result = db_query_range(db_rewrite_sql($sql), _job_posting_gmt(), $order, 0, $num_posts);
+      while ($data = db_fetch_object($result)) {
+        $job_posting_titles[$data->nid] = $data->title;
+      }
+      $block['subject'] = t('Current jobs');
+      if ($job_posting_titles) {
+        $block['content'] = theme('job_posting_block_display', $job_posting_titles);
+      } 
+      else {
+        $block['content'] = t('No job postings to display');
+      }
+      return $block;
+  }
+  return $blocks;
+}
+
+/**
+ * Builds paginated listing pages for all published, non-expired and non-expiring
+ * job posting nodes
+ *
+ * @return string $page_content themed html content
+ */
+function job_posting_list_nodes() {
+  $listings = '';
+  // count (and retrieve) published, non-expired and non-expiring postings
+  db_query("SET OPTION SQL_BIG_SELECTS=1");
+  $count_query = "SELECT COUNT(*) FROM {node} n INNER JOIN {job_posting} p
+    ON n.nid = p.nid 
+    WHERE (n.type = 'job_posting' AND n.status = 1) 
+    AND (p.deadline > %d OR p.expires = 0)";
+  $limit = variable_get('job_posting_limit_per_page', 10);
+  $order = variable_get('job_posting_sort_order', 'DESC');
+  if (!db_result(db_query($count_query, _job_posting_gmt()))) {
+    $listings .= '<p>'. t('No job postings to display') .'</p>';  
+  }
+  else {
+    $query = "SELECT n.nid FROM {node} n INNER JOIN {job_posting} p
+      ON n.nid = p.nid 
+      WHERE (n.type = 'job_posting' AND n.status = 1)
+      AND (p.deadline > %d OR p.expires = 0)
+      ORDER BY n.created %s";
+    $result = pager_query(db_rewrite_sql($query), $limit, 0, $count_query, _job_posting_gmt(), $order);
+    while ($item = db_fetch_object($result)) {
+      $listings .= node_view(node_load($item->nid), TRUE);
+    }
+    $listings .= theme('pager', NULL, $limit);
+  }
+  return theme('job_posting_list_display', $listings);       
+}
+
+/**
+ * Implementation of hook_theme()
+ */
+function job_posting_theme() {
+  return array(
+    'job_posting_node_display' => array(
+      'arguments' => array('node' => NULL, 'page' => NULL, 'teaser' => NULL),
+      'template' => 'job-posting-node',
+    ),
+    'job_posting_block_display' => array(
+      'arguments' => array('job_posting_titles' => NULL),
+      'template' => 'job-posting-block',
+    ),
+    'job_posting_list_display' => array(
+      'arguments' => array('listings' => NULL),
+      'template' => 'job-posting-list',
+    ),
+  );
+}
+
+/**
+ * Preprocess function for job posting nodes; prepares variables before
+ * passing them to the template
+ *
+ * @param arrayref $variables
+ */
+function template_preprocess_job_posting_node_display(&$variables) {
+  global $user;
+  // load module-specific stylesheet
+  drupal_add_css(drupal_get_path('module', 'job_posting') .'/job-posting.css');
+  $variables['title'] = check_plain($variables['node']->title);
+  // description filtering is set by admin
+  $variables['description'] = $variables['node']->body;
+  $variables['reference'] = 
+    check_plain(variable_get('job_posting_reference_prefix', 'JOB') . $variables['node']->nid);
+  $variables['employer'] = check_plain($variables['node']->job_posting_employer);
+  $variables['location'] = check_plain(_job_posting_location(
+    $variables['node']->job_posting_city,
+    $variables['node']->job_posting_state,
+    $variables['node']->job_posting_country
+  ));
+  
+  // does this posting expire?
+  if ($variables['node']->job_posting_expires) {
+    // is there still time left?
+    if ($variables['node']->job_posting_deadline > _job_posting_gmt()) {
+      $variables['deadline'] = 
+        _job_posting_deadline_countdown($variables['node']->job_posting_deadline); 
+    }
+    // job posting has expired
+    else {
+      $variables['deadline'] = t('CLOSED');
+    }
+  }
+  else {
+    $variables['deadline'] = NULL;
+  }
+  
+  // is the node for information-only or should it supply 'submit application' link?
+  if ($variables['node']->job_posting_applink) {
+    // check if the posting is still alive or whether a deadline is even being used
+    if (is_null($variables['deadline']) || ($variables['node']->job_posting_deadline > _job_posting_gmt())) {
+      // already authenticated user
+      if ($user->uid != 0) {
+        $variables['joblink'] = l(t('Submit an application'), 'job/application/node/' 
+          . $variables['node']->nid); 
+      }
+      // anonymous user
+      else {
+        // can users register themselves?
+        if (variable_get('user_register', 1)) {
+          $variables['joblink'] = 
+            t('<a href="@login">Login</a> or <a href="@register">register</a> to submit an application', 
+            array('@login' => url('user/login', array('query' => 'destination=job/application/node/'. $variables['node']->nid)), 
+            '@register' => url('user/register', array('query' => 'destination=node/'. $variables['node']->nid)))
+          );
+        }
+        else {
+          $variables['joblink'] = t('<a href="@login">Login</a> to submit an application', 
+            array('@login' => url('user/login', array('query' => 'destination=job/application/node/'. $variables['node']->nid))));
+        }
+      }  
+    }
+  }    
+  $variables['contact'] = check_plain($variables['node']->job_posting_contact);
+  $variables['url'] = check_url($variables['node']->job_posting_url);
+}
+
+/**
+ * Preprocess function for job posting blocks; prepares variables before
+ * passing them to the template
+ *
+ * @param arrayref $variables
+ */
+function template_preprocess_job_posting_block_display(&$variables) {
+  $variables['titles'] = $variables['job_posting_titles'];
+  $variables['morelink'] = l(t('More jobs'), 'jobs', 
+    array('attributes' => array('title' => t('View more job postings'))));
+}
+
+/**
+ * Private utility function for generating a formatted string representing
+ * job location. Each item is optional so we need to check for its existence
+ * in order to know when to add the comma separators
+ *
+ * @param string $city
+ * @param string $state
+ * @param string $country
+ * @return string
+ */
+function _job_posting_location($city, $state, $country) {
+  $args = func_get_args();
+  $location = array();
+  foreach ($args as $arg) {
+    // remove the duds
+    if (!is_null($arg) && $arg != '') {
+      $location[] = $arg;
+    }
+  }
+  return implode(', ', $location);  
+}
+
+/**
+ * Private utility function for converting job_posting_deadline to GMT
+ *
+ * @param int $localtime unix timestamp
+ * @return int $gmt unix timestamp
+ */
+function _job_posting_deadline_gmt($local) {
+  global $user;
+  if (variable_get('configurable_timezones', 0) && $user->uid != 0) {
+    $gmt = $local - $user->timezone;
+  }
+  else {
+    $gmt = $local - (int) variable_get('date_default_timezone', 0);
+  }
+  return $gmt; 
+}
+
+/**
+ * Private utility function for converting job_posting_deadline to localtime
+ *
+ * @param int $gmt unix timestamp
+ * @return int $local unix timestamp
+ */
+function _job_posting_deadline_local($gmt) {
+  global $user;
+  if (variable_get('configurable_timezones', 0) && $user->uid != 0) {
+    $local = $gmt + $user->timezone;
+  }
+  else {
+    $local = $gmt + variable_get('date_default_timezone', 0);
+  }
+  return $local;   
+}
+
+/**
+ * Private utility function for determining local time
+ *
+ * @return unknown
+ */
+function _job_posting_localtime() {
+  global $user;
+  if (variable_get('configurable_timezones', 0) && $user->uid != 0) {
+    $localtime = (time() - variable_get('date_default_timezone', 0)) + $user->timezone;
+  }
+  else {
+    $localtime = time();
+  }
+  return $localtime;
+}
+
+/**
+ * Private utility function that determines the system's current time
+ * in GMT
+ *
+ * @return int unix timestamp in GMT
+ */
+function _job_posting_gmt() {
+  return time() - (int) variable_get('date_default_timezone', 0);
+}
+
+/**
+ * Private utility function that takes the GMT unix timestamp stored
+ * in job_posting_deadline, determines how many seconds are remaining
+ * before this event occurs and returns a formatted countdown string
+ * (i.e. n weeks n days n hours n minutes) for display
+ *
+ * @param int $deadline unix timestamp in GMT
+ * @return string
+ */
+function _job_posting_deadline_countdown($deadline) {
+  // determine GMT right now using the system timezone offset
+  $now = _job_posting_gmt();
+  $countdown = '';
+  $seconds = $deadline - $now;
+  if ($weeks = floor($seconds / 604800)) {
+    $countdown .= format_plural($weeks, '1 week ', '@count weeks ');
+  }
+  $seconds -= $weeks * 604800;
+  if ($days = floor($seconds / 86400)) {
+    $countdown .= format_plural($days, ' 1 day ', ' @count days ');
+  }
+  $seconds -= $days * 86400;
+  if ($hours = floor($seconds / 3600)) {
+    $countdown .= format_plural($hours, ' 1 hour ', ' @count hours ');
+  }
+  $seconds -= $hours * 3600;
+  if ($minutes = floor($seconds / 60)) {
+    $countdown .= format_plural($minutes, ' 1 minute', ' @count minutes');
+  }
+  $seconds -= $minutes * 60;
+  return $countdown;
+}

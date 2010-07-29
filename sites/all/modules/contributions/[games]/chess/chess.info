@@ -1,0 +1,8 @@
+; $Id: $ 
+name = Chess
+description = "Allows users to play asynchronous chess."
+core = 6.x
+
+version = "6.x-1.x-dev"
+package = "Games"
+

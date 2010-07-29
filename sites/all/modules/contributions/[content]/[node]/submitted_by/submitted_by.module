@@ -1,0 +1,153 @@
+<?php
+// $Id: submitted_by.module,v 1.4 2008/10/21 14:49:42 nancyw Exp $
+
+/**
+ * @file
+ * Take over the "Submitted by" theme function to allow different
+ * content types to have different strings.
+ */
+ 
+/**
+ * An implementation of hook_theme_registry_alter()
+ *
+ * Swap in our own replacement for theme_node_submitted(), allowing the
+ * site admin to configure the string on a per-nodetype basis.
+ **/
+function submitted_by_theme_registry_alter(&$theme_registry) {
+  if (!empty($theme_registry['form_element'])) {
+    $theme_registry['node_submitted']['function'] = 'submitted_by_node_submitted';
+    $theme_registry['comment_submitted']['function'] = 'submitted_by_comment_submitted';
+  }
+}
+
+
+/**
+ * Implementation of hook_form_alter().
+ *
+ * Add the pattern field to the node edit form for comments.
+ */
+function submitted_by_form_alter(&$form, $form_state, $form_id) {
+  if ($form_id == 'node_type_form' && isset($form['comment'])) {
+    $form['comment']['comment']['#weight'] = -5;
+    $type = isset($form['identity']['type']) ? $form['identity']['type']['#value'] : '';
+    $default = variable_get('submitted_by_comment_'. $type, NULL);
+    $form['comment']['appearance'] = array(
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => $default ? FALSE : TRUE,
+      '#title' => t('"Submitted by" Appearance'),
+      );
+    $form['comment']['appearance']['#weight'] = -1;
+    $form['comment']['appearance']['submitted_by']['submitted_by_comment'] = array(
+      '#type' => 'textfield',
+      '#title' => t("'Submitted by...' text"),
+      '#default_value' => $default,
+      '#description' => t("When a comment is displayed, text in this box will be used to override the normal attribution and date-posted text."),
+      );
+    $form['comment']['appearance']['submitted_by']['help'] = array(
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#title' => t('Replacement tokens'),
+      '#description' => t("The following tokens can be used in the Submitted By... text. They will be replaced with the appropriate values."),
+      );
+
+    $form['comment']['appearance']['submitted_by']['help']['tokens'] = array(
+      '#value' => theme('token_help', 'comment'),
+      );
+
+  }
+}
+
+/**
+ * Implementation of hook_form_alter().
+ *
+ * Add the pattern field to the node edit form.
+ */
+function submitted_by_form_node_type_form_alter(&$form, &$form_state) {
+  $type = isset($form['identity']['type']) ? $form['identity']['type']['#value'] : '';
+  $form['appearance'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Appearance'),
+  );
+  $form['appearance']['submitted_by']['#weight'] = -1;
+  $form['appearance']['submitted_by']['submitted_by'] = array(
+    '#type' => 'textfield',
+    '#title' => t("'Submitted by...' text"),
+    '#default_value' => variable_get('submitted_by_'. $type, NULL),
+    '#description' => t("When a node is displayed, text in this box will be used to override the normal attribution and date-posted text."),
+  );
+  $form['appearance']['submitted_by']['help'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Replacement tokens'),
+    '#description' => t("The following tokens can be used in the Submitted By... text. They will be replaced with the appropriate values."),
+  );
+
+  $form['appearance']['submitted_by']['help']['tokens'] = array(
+    '#value' => theme('token_help', 'node'),
+  );
+}
+
+/**
+ * Format the "Submitted by username on date/time" for each comment.
+ * varying the results by node type.
+ */
+function submitted_by_comment_submitted($comment) {
+  $type = db_result(db_query(db_rewrite_sql("SELECT n.type FROM {node} n WHERE n.nid=%d"), $comment->nid));
+  if ($submitted = variable_get('submitted_by_comment_' . $type, NULL)) {
+    return token_replace($submitted, 'comment', $comment);
+  }
+  else {
+    return t('Submitted by !username on @datetime',
+      array(
+        '!username' => theme('username', $comment),
+        '@datetime' => format_date($comment->created),
+      )
+    );
+  }
+}
+
+/**
+ * Format the "Submitted by username on date/time" for each node,
+ * varying the results by node type.
+ */
+function submitted_by_node_submitted($node) {
+  if ($submitted = variable_get('submitted_by_' . $node->type, NULL)) {
+    return token_replace($submitted, 'node', $node);
+  }
+  else {
+    return t('Submitted by !username on @datetime',
+      array(
+        '!username' => theme('username', $node),
+        '@datetime' => format_date($node->created),
+      )
+    );
+  }
+}
+
+/**
+ * Because the normal submission line offers a quick and easy link to the
+ * user's account page, we'll provide a token for that. Token should
+ * probably have this built in.
+ */
+function submitted_by_token_values($type, $object = NULL, $options = array()) {
+  $values = array();
+  switch ($type) {
+    case 'node':
+      $node = $object;
+      $values['author-link'] = theme('username', $node);
+  }
+  return $values;
+}
+
+function submitted_by_token_list($type = 'all') {
+  $tokens = array();
+  if ($type == 'node' || $type == 'all') {
+    $tokens['node']['author-link'] = t('Link to author');
+  }
+  return $tokens;
+}

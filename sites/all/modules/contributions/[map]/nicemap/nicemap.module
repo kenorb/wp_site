@@ -1,0 +1,142 @@
+<?php
+// $Id: nicemap.module,v 1.3.2.7 2009/01/12 03:27:23 tmcw Exp $
+
+module_load_include('inc', 'nicemap', 'wms_client');
+
+/**
+ * @file
+ * Nicemap - A WMS client and map generator for Drupal
+ *
+ * This module stores a few variables
+ *
+ * nicemap_map_url     The base URL, with no querystring
+ * nicemap_c           A serialized array of pertinent information gleaned
+ *                      from ?request=GetCapabilities
+ *
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function nicemap_menu() {
+  $items = array();
+  $items['admin/settings/nicemap'] = array(
+    'title' => 'Nice map',
+    'description' => 'Test WMS servers with the Nice map module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nicemap_settings'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'nicemap_admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/settings/nicemap/settings'] = array(
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'title' => 'Settings',
+    'weight' => -1,
+  );
+  $items['admin/settings/nicemap/cache'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Clear cache',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nicemap_cache_clear'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'nicemap_admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_theme
+ */
+function nicemap_theme($existing, $type, $theme, $path) {
+  return array(
+    'nicemap_map' => array(
+      'file' => 'nicemap.theme.inc',
+      'arguments' => array('points' => array(), 
+        'map' => array(), 'width' => 200, 'height' => 200),
+    ),
+    'nicemap_point' => array(
+      'file' => 'nicemap.theme.inc',
+      'arguments' => array('point' => array()),
+    ),
+    'nicemap_content' => array(
+      'file' => 'nicemap.theme.inc',
+      'arguments' => array('point' => array()),
+    ),
+    'nicemap_settings_layers' => array(
+      'file' => 'nicemap_admin.inc',
+      'arguments' => array('form' => array()),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_views_api
+ */
+function nicemap_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'nicemap') .'/views',
+  );
+}
+
+/**
+ * A proxy to the nicemap compatibilities cache
+ * @param $base_url the base URL of the WMS server
+ * @return array on success, false on error
+ */
+function nicemap_cache($base_url = NULL, $reset = FALSE) {
+  $base_url = $base_url ? $base_url : variable_get('nicemap_wms_url', '');
+  $cache = variable_get('nicemap_cache', array());
+  if (!isset($cache[$base_url]) || $reset) {
+    try {
+      $map = new nicemap_map($base_url);
+      $cache[$base_url] = $map->dump();
+      variable_set('nicemap_cache', $cache);
+    } catch(Exception $e) {
+      drupal_set_message($e->getMessage());
+    }
+  }
+  else {
+    // Create a new map object without re-querying the WMS server
+    $map = new nicemap_map($base_url, $cache[$base_url]);
+  }
+  return $map;
+}
+
+/**
+ * Helper function to retrieve layers & style information and order by custom weight.
+ * @param $spec a nicemap_map object with layers
+ * @return $layers array formatted so that Drupal can use it
+ */
+function _nicemap_get_layers($spec = NULL) {
+  $layers = array();
+  if ($spec) {
+    if (count($spec->layers)) {
+      $layers = $spec->layers;
+      $weights = variable_get('nicemap_wms_weights', array());
+      foreach ($weights as $layer => $weight) {
+        if (isset($layers[$layer])) {
+          $layers[$layer]['#weight'] = $weight;
+        }
+      }
+    }
+  }
+  else {
+    $styles = variable_get('nicemap_wms_styles', array());
+    $weights = variable_get('nicemap_wms_weights', array());
+    foreach (variable_get('nicemap_wms_layers', array()) as $layer => $enabled) {
+      if ($enabled) {
+        $layers[$layer] = array(
+          'style' => $styles[$layer],
+          '#weight' => isset($weights[$layer]) ? $weights[$layer] : 0,
+        );
+      }
+    }
+  }
+  uasort($layers, 'element_sort');
+  return $layers;
+}
+
+
+

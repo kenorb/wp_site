@@ -1,0 +1,71 @@
+<?php
+// $Id: taxonomy_dhtml.install,v 1.2 2008/12/12 21:54:10 darthclue Exp $
+
+/**
+ * @file
+ * Installation routines for taxonomy dhtml module.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function taxonomy_dhtml_install() {
+  // Create tables.
+  drupal_install_schema('taxonomy_dhtml');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function taxonomy_dhtml_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('taxonomy_dhtml');
+}
+
+function taxonomy_dhtml_update_6100() {
+  $ret = array();
+  db_add_field($ret, 'taxonomy_dhtml', 'depth', array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'description' => t('The depth to use for hiearchical vocabularies'), 'default' => 0));
+  return $ret;
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function taxonomy_dhtml_schema() {
+  $schema['taxonomy_dhtml'] = array(
+    'description' => t('Stores taxonomy dhtml settings.'),
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => t('The {vocabulary}.vid of the vocabulary to which the term is assigned.'),
+        'default' => 0,
+      ),
+      'noi' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => t('The number of items to show with the dhtml output.'),
+        'default' => 0,
+      ),
+      'depth' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => t('The depth to use for hiearchical vocabularies'),
+        'default' => 0,
+      ),
+      'expblock' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => t('Boolean to indicate if we are making this available on the block page.'),
+        'default' => 0,
+      ),
+    ),
+  );
+
+  return $schema;
+}
+

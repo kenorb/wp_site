@@ -1,0 +1,63 @@
+body {
+font-size: 8pt;
+}
+
+table.storm_report_header {
+width: 100%;
+}
+
+td.storm_report_myorganization {
+width: 50%;
+vertical-align: top;
+}
+
+td.storm_report_header {
+width: 50%;
+text-align: right;
+}
+
+div.storm_list_report_title {
+text-align: center;
+margin-top: 20pt;
+margin-bottom: 20pt;
+font-weight: bold;
+}
+
+div.storm_list_report_footer {
+text-align: center;
+margin-top: 20pt;
+margin-bottom: 20pt;
+font-weight: bold;
+}
+
+div.storm_list_report_data table {
+width: 100%;
+border-collapse: collapse;
+border: 1px solid #cccccc;
+}
+
+div.storm_list_report_data table th {
+background-color: #cccccc;
+border: 1px solid #000000;
+}
+
+div.storm_list_report_data table tr.odd {
+}
+
+div.storm_list_report_data table tr.even {
+background-color: #f6f6f6;
+}
+
+div.storm_list_report_data table tr td {
+border: 1px solid #cccccc;
+}
+
+div.site_name {
+font-size: 18pt;
+font-weight: bold;
+}
+
+div.site_slogan {
+font-size: 12pt;
+font-weight: bold;
+}

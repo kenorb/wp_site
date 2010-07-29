@@ -1,0 +1,236 @@
+<?php
+// $Id: autoassignrole.module,v 1.9.2.1 2008/09/03 23:12:30 cyberswat Exp $
+
+/**
+ * @file
+ *
+ * The main autoassignrole.module file
+ *
+ * Designate a role to assign all new users to in addition to providing a
+ * mechanism for new users to select a role or role for their account.
+ */
+
+/**
+ * Implementation of hook_menu().
+ *
+ * @return array
+ */
+function autoassignrole_menu() {
+  $items = array();
+  $items['admin/user/autoassignrole'] = array(
+    'title' => t('Auto assign role'),
+    'description' => t('Designate a role to assign all new users to.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('autoassignrole_admin_form'),
+    'access arguments' => array('administer autoassignrole'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'autoassignrole-admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ * @return array
+ */
+function autoassignrole_perm() {
+  return array('administer autoassignrole');
+}
+
+/**
+ * Implementation of hook_user().
+ */
+function autoassignrole_user($op, &$edit, &$account, $category = NULL) {
+  switch ($op) {
+    case 'insert':
+      if (_autoassignrole_settings('user_active') == 1) {
+        $roles = array();
+        $user_roles = _autoassignrole_settings('user_roles');
+        if(is_array($edit['user_roles'])) {
+          foreach ($edit['user_roles'] as $k => $v) {
+            if ($v != 0 && in_array($k, $user_roles)) {
+              $roles[$k] = $v;
+            }
+          }
+          $edit['roles'] = $roles;
+        }
+        elseif($edit['user_roles'] != '') {
+          $edit['roles'] = array($edit['user_roles'] => $edit['user_roles']);
+        }
+      }
+      if (_autoassignrole_settings('auto_active') == 1) {
+        $auto_roles = _autoassignrole_settings('auto_roles');
+        foreach($auto_roles as $k => $v) {
+          $edit['roles'][$k] = $v;
+        }
+      }
+      $account = user_load(array("uid"=>$account->uid));
+    break;
+    case 'register':
+      if (_autoassignrole_settings('user_active') == 1) {
+        $form['autoassignrole_user'] = array(
+          '#type' => 'fieldset',
+          '#title' => _autoassignrole_settings('user_fieldset_title'),
+          '#collapsible' => FALSE,
+          '#collapsed' => FALSE,
+        );
+        $roles = user_roles(TRUE);
+        $user_roles = _autoassignrole_settings('user_roles');
+        foreach ($roles as $k => $r) {
+          if (!in_array($k, $user_roles)) {
+            unset($roles[$k]);
+          }
+        }
+        if (_autoassignrole_settings('user_sort') == "SORT_ASC") {
+          uasort($roles,'_autoassignrole_array_asc');
+        }
+        else {
+          uasort($roles,'_autoassignrole_array_desc');
+        }
+        
+        if (!$edit || !array_key_exists('user_roles', $edit)) {
+          $edit['user_roles'] = array();
+        }
+        if (_autoassignrole_settings('user_selection') == 0) {
+          $form['autoassignrole_user']['user_roles'] = array(
+            '#type' => 'radios',
+            '#title' => t(_autoassignrole_settings('user_title')),
+            '#options' => $roles,
+            '#description' => t(_autoassignrole_settings('user_description')),
+          );
+        }
+        if (_autoassignrole_settings('user_selection') == 1) {
+          $form['autoassignrole_user']['user_roles'] = array(
+            '#type' => 'select',
+            '#title' => t(_autoassignrole_settings('user_title')),
+            '#default_value' => '',
+            '#description' => t(_autoassignrole_settings('user_description')),
+          );
+          
+          if(_autoassignrole_settings('user_multiple')) {
+            $form['autoassignrole_user']['user_roles']['#multiple'] = TRUE;
+            unset($form['autoassignrole_user']['user_roles']['#default_value']);
+          } else {
+            $roles[''] = '';
+          }
+          $form['autoassignrole_user']['user_roles']['#options'] = $roles;
+        }
+        if (_autoassignrole_settings('user_selection') == 2) {
+          $form['autoassignrole_user']['user_roles'] = array(
+            '#type' => 'checkboxes',
+            '#title' => t(_autoassignrole_settings('user_title')),
+            '#default_value' => $edit['user_roles'],
+            '#options' => $roles,
+            '#description' => _autoassignrole_settings('user_description'),
+          );
+        }
+        if(_autoassignrole_settings('user_required')) {
+          $form['autoassignrole_user']['user_roles']['#required'] = TRUE; 
+        }
+        return $form;
+      }
+    break;
+  }
+}
+function _autoassignrole_settings($value) {
+  static $settings = array();
+  if (count($settings) == 0) {
+    $result = db_query("SELECT arid, value from {autoassignrole}");
+    while ($s = db_fetch_object($result)) {
+      $settings[$s->arid] = $s->value;
+    }
+    return _autoassignrole_settings($value);
+  }
+  else {
+    switch ($value) {
+      case 'auto_roles':
+      case 'user_roles':
+        $roles = $settings[$value];
+        $roles = unserialize($roles);
+        foreach ($roles as $k => $r) {
+          if ($r == 0) {
+            unset($roles[$k]);
+          }
+        }
+        $return = $roles;
+        break;
+      default:
+        $return = $settings[$value];
+        break;
+    }
+    return $return;
+  }
+}
+
+function _autoassignrole_user_input($args) {
+  switch ($args) {
+    case 'type':
+      if (_autoassignrole_settings('user_multiple') == 0) {
+        $type = 'radios';
+      }
+      else {
+        $type = 'checkboxes';
+      }
+      return $type;
+      break;
+    case 'required':
+      if (_autoassignrole_settings('user_required') == 0) {
+        $required = FALSE;
+      }
+      else {
+        $required = TRUE;
+      }
+      return $required;
+      break;
+  }
+}
+
+function _autoassignrole_array_intersect_key($isec, $keys) {
+  $argc = func_num_args();
+  if ($argc > 2) {
+    for ($i = 1; !empty($isec) && $i < $argc; $i++) {
+      $arr = func_get_arg($i);
+      foreach (array_keys($isec) as $key) {
+        if (!isset($arr[$key])) {
+          unset($isec[$key]);
+        }
+      }
+    }
+    return $isec;
+  }
+  else {
+    $res = array();
+    foreach (array_keys($isec) as $key) {
+      if (isset($keys[$key])) {
+        $res[$key] = t($isec[$key]);
+      }
+    }
+    return $res;
+  }
+}
+
+/**
+ * method to sort array in a descending fashion while preserving keys
+ * @param string $a a string to compare
+ * @param string $b a string to compare
+ * @return int 
+ */
+function _autoassignrole_array_desc($a, $b) {
+  if ($a == $b) {
+    return 0;
+  }
+  return ($a < $b) ? -1 : 1;
+}
+
+/**
+ * method to sort array in an ascending fashion while preserving keys
+ * @param string $a a string to compare
+ * @param string $b a string to compare
+ * @return int 
+ */
+function _autoassignrole_array_asc($a, $b) {
+  if ($a == $b) {
+    return 0;
+  }
+  return ($a > $b) ? -1 : 1;
+}

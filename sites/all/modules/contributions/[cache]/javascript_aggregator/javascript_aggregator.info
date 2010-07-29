@@ -1,0 +1,12 @@
+; $Id: javascript_aggregator.info,v 1.2.2.1 2008/12/15 20:13:59 robloach Exp $
+name = Javascript Aggregator
+description = Compresses the aggregated JavaScript file when Optimize JavaScript is enabled.
+core = 6.x
+php = 5
+
+; Information added by drupal.org packaging script on 2008-12-24
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "javascript_aggregator"
+datestamp = "1230077672"
+

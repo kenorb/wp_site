@@ -1,0 +1,11 @@
+; $Id: mp3player.info,v 1.1.2.3 2009/01/02 12:18:02 starnox Exp $
+name = "MP3 Player"
+description = "A module to integrate the 1pixelout player into Drupal."
+core = 6.x
+package = "Audio"
+; Information added by drupal.org packaging script on 2009-01-11
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "mp3player"
+datestamp = "1231632662"
+

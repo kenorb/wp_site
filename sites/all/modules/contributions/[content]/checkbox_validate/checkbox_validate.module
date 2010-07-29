@@ -1,0 +1,61 @@
+<?php
+// $Id: checkbox_validate.module,v 1.2 2008/05/29 14:14:40 MegaGrunt Exp $
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function checkbox_validate_form_alter(&$form, $form_state, $form_id) {
+  $form = checkbox_validate_recurse($form);
+  return; 
+}
+
+/**
+ * Recurse through a form array to find required checkboxes
+ */
+function checkbox_validate_recurse($form_item) {
+  if (!is_array($form_item)) return;
+
+  while (list($key, $value) = each($form_item)) {
+
+    if (strpos($key, '#') === 0) {
+
+      if (isset($form_item['#type']) && $form_item['#type'] == 'checkbox' && isset($form_item['#required']) && $form_item['#required'] == TRUE) {
+         
+        $form_item['#element_validate'] = array('checkbox_validate_validation');
+        $form_item['#pre_render'][] = 'checkbox_validate_add_required_symbol'; 
+        return $form_item;
+      }
+      
+    }
+    else {
+
+      $form_item[$key] = checkbox_validate_recurse($value, $key);
+    }
+  }
+
+  return $form_item;
+}     
+
+/* add required symbol here in this pre_render function 
+   so it doresn't display on error messages  */
+function checkbox_validate_add_required_symbol($form) { 
+	$form['#title'] .= ' <span class="form-required" title="' . t('This field is required.') . '">*</span>';
+	return $form;
+}
+
+/* validate a required checkbox */
+function checkbox_validate_validation($element) { 
+  if (empty($element['#value'])) form_error($element, t('!title field is required.', array('!title' => filter_xss_admin(($element['#title'])))));
+  return;
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function checkbox_validate_theme() {
+  return array(
+    'checkbox_validate_required' => array(
+      'arguments' => array(),
+    ),
+  );
+}

@@ -1,0 +1,18 @@
+/* $Id: job-posting.css,v 1.1.2.5 2008/05/06 22:36:55 gmarus Exp $ */
+
+span.job-posting-label {
+  font-weight: bold;
+}
+
+div.job-posting-link {
+  margin: 0.5em 0;
+}
+
+#job-posting-nodelist {
+	margin-top: 1.5em;
+}
+
+/* job posting titles */
+#job-posting-nodelist h2 {
+  font-size: 1.5em;
+}

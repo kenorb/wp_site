@@ -1,0 +1,414 @@
+<?php
+
+// Drupal hook_menu
+function simplenews_digest_menu() {
+  $items = array();
+
+  $items['admin/settings/simplenews/digest_settings'] = array(
+    'title' => 'Digest settings',
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('administer digest settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('simplenews_digest_settings'),
+  );
+  //For debugging
+  /*$items[] = array(
+      'path' => 'test',
+      'title' => '',
+      'type' => MENU_CALLBACK,
+      'access arguments' => TRUE,
+      'page callback'  => 'simplenews_digest_select_nodes',
+      'page arguments' => array(array('start_time' => 0, 'end_time' => 1297451227)),
+  );*/
+
+  return $items;
+}
+
+// Drupal hook_perm
+function simplenews_digest_perm() {
+  return array('administer digest settings');
+}
+
+// Generate digest settings page form
+function simplenews_digest_settings() {
+  $form['simplenews_digest_status'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#title' => 'Status report',
+  );
+  $form['simplenews_digest_status']['simplenews_digest_status_content'] = array(
+    '#type' => 'item',
+    '#value' => simplenews_digest_get_status(),
+  );
+  $form['digest'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Digest newsletter selection',
+  );
+
+  foreach (taxonomy_get_tree(variable_get('simplenews_vid', '')) as $newsletter) {
+    $options[$newsletter->tid] = $newsletter->name;
+  }
+  $newsletters = $options;
+  $newsletter = (string)array_shift(array_keys($newsletters)); // Pick first newsletter if none selected
+  $form['digest']['simplenews_digest_newsletter'] = array(
+    '#type' => 'radios',
+    '#title' => 'Newsletter',
+    '#options' => $newsletters,
+    '#default_value' => variable_get('simplenews_digest_newsletter', $newsletter),
+    '#description' => 'Choose a newsletter you want to use to send out digest emails.',
+  );
+  $form['digest_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Digest newsletter settings'),
+  );
+  if (module_exists('mimemail')) {
+    $form['digest_settings']['simplenews_digest_format'] = array(
+      '#type' => 'radios',
+      '#title' => 'Format',
+      '#options' => array('plain' => 'Plain', 'html' => 'HTML'),
+      '#default_value' => variable_get('simplenews_digest_format', 'plain'),
+    );
+  }
+  $form['digest_settings']['simplenews_digest_hour'] = array(
+    '#type' => 'select',
+    '#title' => 'Hour',
+    '#options' => array(0 => '00:00', 3600 => '01:00', 7200 => '02:00', 10800 => '03:00', 14400 => '04:00', 18000 => '05:00', 21600 => '06:00', 25200 => '07:00', 28800 => '08:00', 32400 => '09:00', 36000 => '10:00', 39600 => '11:00', 43200 => '12:00',  46800 => '13:00', 50400 => '14:00', 54000 => '15:00', 57600 => '16:00', 61200 => '17:00', 64800 => '18:00', 68400 => '19:00', 72000 => '20:00', 75600 => '21:00', 79200 => '22:00', 82800 => '23:00'),
+    '#default_value' => variable_get('simplenews_digest_hour', '00:00'),
+    '#description' => 'Select the hour of the day to automatically send the digest newsletter. The first cron run after this hour will trigger the mailing.',
+  );
+  $form['digest_frequency_options'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Frequency settings',
+    '#collapsible' => FALSE,
+  );
+  $form['digest_frequency_options']['simplenews_digest_frequency'] = array(
+    '#type' => 'radios',
+    '#title' => 'Send newsletter every nth',
+    '#options' => array('daily' => t('Day'), 'weekly' => t('Week'), 'monthly' => t('Month')),
+    '#default_value' => variable_get('simplenews_digest_frequency', 'daily'),
+  );
+  $form['digest_frequency_options']['simplenews_digest_interval'] = array(
+    '#type' => 'select',
+    '#title' => 'Days/weeks/months between digest mailings',
+    '#options' => drupal_map_assoc(array(1, 2, 3, 4, 5, 6)), 
+    '#description' => 'Determine how frequently the newsletter should be sent.',
+    '#default_value' => variable_get('simplenews_digest_interval', 1),
+  );
+  $form['digest_frequency_options']['simplenews_digest_weekly'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Weekly settings',
+    '#description' => 'Weekly settings are used only when the newsletter is sent weekly.',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['digest_frequency_options']['simplenews_digest_weekly']['simplenews_digest_weekday'] = array(
+     '#type' => 'select',
+     '#title' => 'Send newsletter on',
+     '#options' => array('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'),
+     '#default_value' => variable_get('simplenews_digest_weekday', 0),
+   );
+  $form['digest_frequency_options']['simplenews_digest_monthly'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Monthly settings',
+    '#description' => 'Monthly settings are used only when the newsletter is sent monthly.',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['digest_frequency_options']['simplenews_digest_monthly']['simplenews_digest_monthly'] = array(
+    '#type' => 'select',
+    '#title' => 'Day of the month to send newsletter',
+    '#options' => drupal_map_assoc(array('First day', '15th', 'Last day', 'First Sun', 'First Mon', 'First Tue', 'First Wed', 'First Thu', 'First Fri', 'First Sat', 'Second Sun', 'Second Mon', 'Second Tue', 'Second Wed', 'Second Thu', 'Second Fri', 'Second Sat', 'Third Sun', 'Third Mon', 'Third Tue', 'Third Wed', 'Third Thu', 'Third Fri', 'Third Sat', 'Fourth Sun', 'Fourth Mon', 'Fourth Tue', 'Fourth Wed', 'Fourth Thu', 'Fourth Fri', 'Fourth Sat')),
+    '#default_value' => variable_get('simplenews_digest_monthly', 'First day'),
+   );
+  $form['digest_content'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Digest content',
+    '#collapsible' => FALSE,
+  );
+ $form['digest_content']['digest_content_rename'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Rename content types',
+    '#description' => 'You can rename what the content types are called in the newsletter.',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#weight' => 5,
+  );
+ $content_types = array();
+  foreach(node_get_types() as $system_name => $data) {
+    $content_types[$system_name] = $data->name;
+    $form['digest_content']['digest_content_rename']['simplenews_digest_content_rename_' . $system_name] = array(
+      '#type' => 'textfield',
+      '#title' => 'Rename "' . $data->name . '" content types as',
+      '#width' => 20,
+      '#required' => FALSE,
+      '#default_value' => variable_get('simplenews_digest_content_rename_'. $system_name, $data->name), 
+    );
+  }
+  asort($content_types);
+  $form['digest_content']['simplenews_digest_content_types'] = array(
+    '#type' => 'checkboxes',
+    '#title' => 'Send only the following types of content in the newsletter',
+    '#options' => $content_types,
+    '#default_value' => variable_get('simplenews_digest_content_types', array()),
+  );
+  $form['digest_content']['simplenews_digest_terms'] = array(
+    '#type' => 'select',
+    '#multiple' => TRUE,
+    '#size' => 20,
+    '#title' => 'Send only content from these categories',
+    '#default_value' => variable_get('simplenews_digest_terms', 0),
+    '#options' => taxonomy_form_all(),
+  );
+  return system_settings_form($form);
+}
+
+// Helper function for settings form for 
+// displaying status message on digest settings page
+function simplenews_digest_get_status() {
+  // Sets an initialization time first time page is loaded. Used
+  // as a stand-in for last time sent until last sent timestamp gets set
+  // when first newsletter is sent out.
+  if(!variable_get('simplenews_digest_initialization_time', 0)) {
+    variable_set('simplenews_digest_initialization_time', time());
+  }
+
+  // Set frequently used variables
+  $timezone = variable_get('date_default_timezone', 0);
+  $last_time_sent = variable_get('simplenews_digest_last_time_sent', 0);
+  $start_time = variable_get('simplenews_digest_start_time', 0);
+  $end_time = variable_get('simplenews_digest_end_time', 0);
+
+  // Generate output for display
+  if ($last_time_sent) {
+    $output .= '<p>Nodes created before: <b>' . gmdate('M j, Y h:i:s a', $last_time_sent + $timezone - 1) . ' </b> have been sent.</p>';
+  }
+  else {
+    $output .= '<p>' . t('No digest newsletters have been sent.') . '</p>';
+  }
+  if ($start_time) {
+    $output .= '<p>Newer nodes created between<b> ' . gmdate('M j, Y h:i:s a', $start_time + $timezone) . ' </b>and<b> ' . gmdate('M j, Y h:i:s a', $end_time + $timezone) . ' </b>will be sent out on a cron run per the settings below.</p>';
+  }
+  else {
+    $output .= '<p>' . t('No digest newsletters will be sent until you configure and save the digest newsletter settings below.') . '</p>';
+  }
+  return $output;
+}
+
+// This function is needed to insert our own form handler for digest settings page.
+function simplenews_digest_form_alter(&$form, &$form_state, $form_id) {
+  if($form_id == 'simplenews_digest_settings') {
+    $form_data['#submit'][] = 'simplenews_digest_settings_handler_submit';
+  }
+}
+
+// Our own form handler is needed in addition to system_settings_form handler so 
+// we can access saved variable_set() settings data which we can use to calculate
+// and update time variables in the database.
+function simplenews_digest_settings_handler_submit($form, &$form_state) {
+  simplenews_digest_set_next_times();
+}
+
+// Calculates start and end time variables for next digest mailing
+function simplenews_digest_set_next_times() {
+  // Last end time timestamp when nodes were sent last
+  $last_time_sent = variable_get('simplenews_digest_last_time_sent', 0);
+
+  // Use module's initialization timestamp for last time if newsletter has not been sent.
+  // Initialization time is set the first time a user visits the settings page.
+  if (!$last_time_sent) {
+    $last_time_sent = variable_get('simplenews_digest_initialization_time', time());
+  }
+
+  // Set start time for next batch of nodes to be sent and other frequently used variables
+  $next_start_time = $last_time_sent;
+  variable_set('simplenews_digest_start_time', $next_start_time);
+  $frequency = variable_get('simplenews_digest_frequency', 'daily');
+  $send_hour = variable_get('simplenews_digest_hour', '0');
+  $interval = variable_get('simplenews_digest_interval', 1);
+  $timezone = variable_get('date_default_timezone', 0);
+  $adjusted_last_time_sent = $last_time_sent + $timezone;
+
+  // Calculate next day to send daily/weekly/monthly digests
+  if ($frequency == 'daily') {
+    $next_day_to_send = gmmktime(0, 0, 0, gmdate("m", $adjusted_last_time_sent), gmdate('d', $adjusted_last_time_sent) + $interval, gmdate('Y', $adjusted_last_time_sent)); 
+  }
+
+  if ($frequency == 'weekly') {
+    $weekday = variable_get('simplenews_digest_weekday', 0);
+    $approx_date_to_send_next = $adjusted_last_time_sent + ($interval * 86400 * 7);
+    $next_day_of_year_to_send = gmdate('z', $approx_date_to_send_next);
+    $next_day_of_week_to_send = gmdate('w', $approx_date_to_send_next);
+    if($weekday > $next_day_of_week_to_send) {
+      $next_day_of_year_to_send += $weekday - $next_day_of_week_to_send;
+    }
+    else {
+      $next_day_of_year_to_send -= $next_day_of_week_to_send - $weekday;
+    }
+    $next_day_to_send = gmmktime(0, 0, 0, 1, $next_day_of_year_to_send, gmdate('Y', $adjusted_last_time_sent));
+  }
+
+  if ($frequency == 'monthly') {
+    $day_of_month = variable_get('simplenews_digest_monthly', 'First day');
+    $last_month_sent = gmdate('n', $adjusted_last_time_sent);
+    $next_month_to_send = $last_month_sent + $interval;
+    if ($day_of_month == 'First day') {
+      $next_day_to_send = gmmktime(0, 0, 0, $next_month_to_send, 1, gmdate('Y', $adjusted_last_time_sent));
+    }
+    else if ($day_of_month == 'Last day') {
+      $next_day_to_send = gmmktime(0, 0, 0, $next_month_to_send + 1, 0, gmdate('Y', $adjusted_last_time_sent));
+    }
+    else if ($day_of_month == '15th') {
+      $next_day_to_send = gmmktime(0, 0, 0, $next_month_to_send, 15, gmdate('Y', $adjusted_last_time_sent));
+    }
+    else {
+      $day_of_month = simplenews_digest_get_day_of_month($next_month_to_send, $day_of_month, $adjusted_last_time_sent);
+      $next_day_to_send = gmmktime(0, 0, 0, $next_month_to_send, $day_of_month, gmdate('Y', $adjusted_last_time_sent));
+    }
+  }
+
+  // Set next end time
+  $next_end_time = $next_day_to_send + $send_hour - $timezone - 1;
+  variable_set('simplenews_digest_end_time', $next_end_time);
+}
+
+// Calculate the day of the month for "nth weekday" frequencies 
+function simplenews_digest_get_day_of_month($next_month_to_send, $day_of_month, $adjusted_last_time_sent) {
+  $week = array(0 => 'First', 1 => 'Second', 2 => 'Third', 3 => 'Fourth');
+  $weekdays = array('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat');
+
+  //Find the day in the month
+  for($week_of_month = 0; $week_of_month < 5; $week_of_month++) {
+    for($days_of_week = 0; $days_of_week < 7; $days_of_week++) {
+      $day_index = ($week_of_month * 7) + $days_of_week + 1;
+      $day = gmdate('w', gmmktime(0, 0, 0, $next_month_to_send, $day_index, gmdate('Y', $adjusted_last_time_sent)));
+      if (($week[$week_of_month] . ' ' . $weekdays[$day]) == $day_of_month) {
+        return ($day_index);
+      }
+    }
+  }
+}
+
+// Called by cron, inserts digest newsletter into newsletter for immediate mail out
+function simplenews_digest_inject_node() {
+  $newsletter = array();
+  $newsletter_term = variable_get('simplenews_digest_newsletter', 0);
+  $newsletter['start_time'] = variable_get('simplenews_digest_start_time', time());
+  $newsletter['end_time'] = variable_get('simplenews_digest_end_time', time() + 1);
+
+  //rdpw(date('r', variable_get('simplenews_digest_start_time', 0))); //debug
+  //rdpw(date('r', variable_get('simplenews_digest_end_time', 0))); //debug
+  //rdpw(date('r', variable_get('simplenews_digest_last_time_sent', 0))); //debug
+  //$newsletter['start_time'] = 0; //debug
+
+  $newsletter['new_nodes'] = simplenews_digest_select_nodes($newsletter);
+  $newsletter['body'] = theme('simplenews_digest_format_newsletter', $newsletter);
+  //rdpw($newsletter['body']); //debug
+  //return; //debug;
+  $newsletter_tid = array($newsletter_term);
+  $term = taxonomy_get_term($newsletter_term);
+  
+  if($newsletter['body']) { // Don't send anything unless there are new nodes
+    $node->body = $newsletter['body'];
+    $node->uid = 1;
+    $node->title = $term->name;
+    $node->type = 'simplenews';
+    $node->teaser = node_teaser($node->body);
+    $node->filter = variable_get('filter_default_format', 1);
+    $node->status = 1;
+    $node->revision = 1;
+    $node->promote = 0;
+    $node->comment = 0;
+    $node->created = time();
+    $node->changed = time();
+    $node->taxonomy = $newsletter_tid;
+    $node->send = 1;
+    $node->s_format = variable_get('simplenews_digest_format', 'plain');
+    $node->priority = 0;
+    $node->receipt = 0;
+    node_save($node);
+  }
+
+  // Set and calculate new last, start, and end times
+  variable_set('simplenews_digest_last_time_sent', $newsletter['end_time'] + 1); 
+  simplenews_digest_set_next_times();
+}
+
+// Query the database for nodes to send in newsletter
+function simplenews_digest_select_nodes($newsletter) {
+  $terms = variable_get('simplenews_digest_terms', 0);
+  if (!empty($terms) && $terms != 0) {
+    $selected_terms = array_filter($terms);
+    $term_placeholders = implode(',', array_fill(0, count($selected_terms), '%d'));
+  }
+
+  $content_types = variable_get('simplenews_digest_content_types', 0);
+  $selected_content_types = array_filter($content_types);
+  $type_placeholders = implode(',', array_fill(0, count($selected_content_types), "'%s'"));
+
+  // Limit query to node types and terms that will go into newsletter
+
+  if (!empty($terms) && $terms != 0) {
+    $query = "SELECT DISTINCT n.nid, n.type, n.title from {node} n INNER JOIN {term_node} t ON n.nid = t.nid WHERE t.tid IN ($term_placeholders) AND n.type IN ($type_placeholders) AND n.created >= %d AND n.created < %d AND n.status = 1 ORDER BY n.created DESC";
+    $result = db_query($query, array_merge($selected_terms, $selected_content_types, array($newsletter['start_time'], $newsletter['end_time'])));
+  //while($node = db_fetch_object($result)) { //debug
+    //print 'hi'; //debug
+  //} //debug
+  } else {
+    $query = "SELECT DISTINCT nid, type, title from {node} WHERE type IN ($type_placeholders) AND created >= %d AND created < %d AND status = 1 ORDER BY created DESC";
+    $result = db_query($query, array_merge($selected_content_types, array($newsletter['start_time'], $newsletter['end_time'])));
+  }
+ 
+  return $result;
+}
+
+// Generate the body of the newsletter
+function theme_simplenews_digest_format_newsletter(&$newsletter) {
+
+  // Get sections of newsletter, each section is a listing of links to nodes sorted by content type/date
+  $content_types = variable_get('simplenews_digest_content_types', 0);
+  $output_by_type = array();
+  if ($content_types) {
+    $selected_content_types = array_filter($content_types);
+    while($node = db_fetch_object($newsletter['new_nodes'])) {
+      foreach($selected_content_types as $type) {
+        if($node->type == $type) {
+          $output_by_type[$type] .= simplenews_digest_create_node_link($node) . "\n\n";
+        }
+      }
+    }
+  }
+
+  // Nothing to send, no newsletter is sent
+  if (!$output_by_type) {
+    return '';
+  }
+
+  // $newsletter['body'] created here
+  $output = '';
+  // Sort content by type
+  foreach($output_by_type as $type => $content) {
+    $new_name = check_plain(variable_get('simplenews_digest_content_rename_' . $type, node_get_types('name', $type))); 
+    $output .= "<h1>$new_name</h1>" . $content . "\n";
+  }
+  return $output;
+}
+
+// Generates a hyperlink to the node, called by the format_newsletter theme 
+function simplenews_digest_create_node_link($node) {
+  return l(check_plain($node->title), 'node/' . $node->nid, array('absolute' => TRUE));
+}
+
+// Cron only sends out emails if current time > end time
+function simplenews_digest_cron() {
+  $current_time = time();
+  //variable_set('simplenews_digest_start_time', time() -86400);
+  //variable_set('simplenews_digest_end_time', time() + 3600);
+  //variable_set('simplenews_digest_last_time_sent', time() - 86400);
+  //return;
+  $end_time = variable_get('simplenews_digest_end_time', 0);
+  if ($end_time && $current_time > $end_time) {
+    simplenews_digest_inject_node();
+  }
+  //simplenews_digest_inject_node(); //debug
+}

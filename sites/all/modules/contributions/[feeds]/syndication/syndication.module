@@ -1,0 +1,599 @@
+<?php
+// $Id: syndication.module,v 1.58.2.2 2009/01/18 20:14:57 aaron1234nz Exp $
+
+/**
+ * @file
+ * This module collects RSS feeds from various parts of your site
+ * Current supported RSS feeds: 
+ * Views RSS, Blog RSS, Taxonomy RSS, Custom RSS, Atom feeds, and Aggregation OPML 
+ *
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function syndication_menu() {
+    $items['syndication'] = array(
+      'title' => 'RSS feeds',
+      'access arguments' => array('access content'),
+      'page callback' => 'syndication_page',
+      'weight' => 6
+    );
+    $items['admin/content/syndication'] = array(
+      'title' => 'RSS feed syndication',
+      'access arguments' => array('access administration pages'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('syndication_admin_settings'),
+    );
+    $items['syndication/builder'] = array(
+      'title' => 'RSS feed builder',
+      'access arguments' => array('access content'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('syndication_taxonomy_builder'),
+    );
+  return $items;
+}
+
+/**
+ * Implementation of hook_block().
+ */
+function syndication_block($op = 'list', $delta = 0) {
+  if ($op == 'list') {
+    $blocks[0]['info'] = t('Syndicate (more)');
+    return $blocks;
+  }
+  elseif ($op == 'view') {
+    if (user_access('access content')) {
+      $block['subject'] = t('Syndicate');
+      $pagetype = arg(0);
+      if ($pagetype == 'blog') {
+        $userid = arg(1);
+        $linkurl = is_numeric($userid) ? "blog/$userid/feed" : 'blog/feed';
+      }
+      else {
+        $linkurl = 'rss.xml';
+      }
+      $block['content'] = theme('feed_icon', url($linkurl), t('More'));
+      $block['content'] .= '<div class="more-link">'. l(t('more'), 'syndication', array('title' => t("Review all XML feeds exported by %sn", array("%sn" => variable_get('site_name', 'Drupal'))))) ."</div>\n";
+      return $block;
+    }
+  }
+}
+
+/**
+ * Menu callback
+ * Syndication page.
+ */
+function syndication_page() {
+  drupal_add_css(drupal_get_path('module', 'syndication') .'/syndication.css');
+  
+  //atom
+  if (module_exists('atom') && variable_get('syndication_atom', 0)) {
+    $output .= theme('box', t('Atom feed'), l(t('Atom front page feed'), 'atom/feed'));
+  }
+  
+  //blogs
+  if (module_exists('blog') && variable_get('syndication_blogs', 0)) {
+    $output .= theme('box', t('Blogs'), syndication_blogs());
+  }
+  
+  //aggregator
+  if (module_exists('aggregator') && user_access('access news feeds') && variable_get('syndication_aggregator', 0)) {
+    $output .= theme('box', t('External feeds'), syndication_opml());
+  }
+  
+  //taxonomy
+  $syndication_vocab =  variable_get('syndication_vocabularies', array());
+  foreach ($syndication_vocab as $key => $value) {
+    // Throw away the vids that aren't enabled.
+    if (!$value) {
+      unset($syndication_vocab[$key]);
+    }
+  }
+  if (module_exists('taxonomy') && user_access('access content') && !empty($syndication_vocab)) {
+    $output .= theme('box', t('Categories'), syndication_vocabularies());
+  }
+  
+  //views
+  $syndication_views = variable_get('syndication_views', array());
+  if (module_exists('views') && !empty($syndication_views)) {
+    if ($views = syndication_views_rss()) {
+      $output .= theme('box', t('Views'), $views);
+    }
+  }
+  
+  //custom
+  $syndication_custom = variable_get('syndication_custom', array());
+  if (!empty($syndication_custom)) {
+    foreach ($syndication_custom as $name) {
+      $result = module_invoke($name, 'syndication');
+      foreach ($result as $box) {
+        $output .= theme('box', $box['subject'], $box['content']);
+      }
+    }
+  }
+  if (empty($output)) {
+    $output = t('Sorry, there are no feeds available.');
+  }
+
+  return '<div id="syndication-page">'. $output .'</div>';
+}
+
+/**
+ * Generate a form for searching for user blogs feeds.
+ * @return $form fragment
+ */
+function syndication_users() {
+  if (module_exists('atom')) {
+    $prefix = '<p>'. t("At <i>%sn</i>, all users have a <a href='!rss'>RSS</a> and <a href='!atom'>Atom<a> feed for their blog, as well as each individual user.",
+      array('%sn' => variable_get('site_name', 'Drupal'), '!rss' => url('blog/feed'), '!atom' => url('blog/atom/feed'))) .'</p>';
+  }
+  else {
+    $prefix = '<p>'. t("At <i>%sn</i>, <a href='!all'>all users</a> and each user, have an RSS feed for their blog.",
+      array('%sn' => variable_get('site_name', 'Drupal'), '!all' => url('blog/feed'))) .'</p>';
+  }
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Search users'),
+    '#prefix' => $prefix,
+    '#description' => t('Enter a username to view her blog feed, and other details.'),
+    '#autocomplete_path' => 'user/autocomplete',
+  );
+  $form['submit'] = array('#type' => 'button', '#value' => t('Search'));
+
+  return $form;
+}
+
+/**
+ * Generate a list of feeds for personal blogs.
+ */
+function syndication_blogs() {
+  $result = db_query_range("SELECT DISTINCT(u.uid), u.name FROM {users} u INNER JOIN {node} n ON u.uid = n.uid WHERE n.type = 'blog' AND n.status = 1", 0, 16);
+  while ($account = db_fetch_object($result)) {
+    $author = $account->name .': '. l(t('RSS feed'), "blog/$account->uid/feed");
+    $author .= module_exists('atom') ? ', '. l(t('Atom feed'), "blog/$account->uid/atom/feed") : '';
+    $authors[] = $author;
+  }
+  if ($authors) {
+    $output = theme('item_list', $authors, t('Recent Blog Authors'));
+  }
+
+  $output .= drupal_get_form('syndication_users');
+
+  if ($name = $_POST['name']) {
+    $result = db_query("SELECT uid, name FROM {users} WHERE uid > 0 and name LIKE '%%%s%%' ORDER BY access DESC", $name);
+    $i=0;
+    while ($account = db_fetch_object($result)) {
+       $rows[$i][] = theme('username', $account) .':';
+       $rows[$i][] = l(t("RSS feed"), "blog/$account->uid/feed");
+      if (module_exists('atom')) {
+        $rows[$i][] = l(t("Atom feed"), "blog/$account->uid/atom/feed");
+      }
+      $rows[$i][] = l(t("blog"), "blog/$account->uid");
+      $i++;
+    }
+    if ($rows) {
+      $output .= theme('table', array(), $rows);
+    }
+  }
+  $output .= $frm;
+
+  return $output;
+}
+
+/**
+ * Produce a list of terms for each enabled vocabulary
+ * @return HTML
+ */
+function syndication_vocabularies() {
+  $syndication_columns = variable_get('syndication_columns', 3);
+  $vocab_number = 0;
+  for ($i=0; $i<$syndication_columns; $i++) {
+    $header[] = ' ';
+  }
+  foreach (variable_get('syndication_vocabularies', array()) as $vid) {
+    $vocab = taxonomy_vocabulary_load($vid);
+    $tree = taxonomy_get_tree($vid);
+    $items = syndication_taxonomy_build_list_items($index = 0, $tree);
+    if ($items) {
+      $col_num = $vocab_number % $syndication_columns;
+      $columns[$col_num] .= theme('item_list', $items, $vocab->name);
+      $vocab_number++;
+    }
+  }
+  $output = theme('syndication_columns', $columns);
+  $output .= l('Combine terms into a single feed', 'syndication/builder');
+  return $output;
+}
+
+/**
+ * Helper function for syndication_taxonomy.
+ */
+function syndication_taxonomy_build_list_items(&$index, $tree) {
+  $items = array();
+  $current_depth = $tree[$index]->depth;
+  while ($index < count($tree) && $tree[$index]->depth >= $current_depth) {
+    $term = $tree[$index];
+    $count = taxonomy_term_count_nodes($term->tid);
+    if ($count) {
+      $term_path = "taxonomy/term/$term->tid/0/feed";
+      $term_link = l(t($term->name), $term_path, array('title' => t($term->description)));
+      if ($term->depth) {
+        $prefix = str_repeat('--', $term->depth) .' ';
+      }
+      else {
+        $prefix = "";
+      }
+      $item = $prefix . $term_link ." ($count)";
+      $items[] = $item;
+      $index++;
+    }
+    else {
+      $index++;
+    }
+  }
+  return $items;
+}
+
+/**
+ * Menu callback for syndication_taxonomy_builder.
+ */
+function syndication_taxonomy_builder() {
+  $form['intro'] = array(
+    '#type' => 'markup',
+    '#value' => t('You can subscribe to more than one category in a single RSS feed.  Please select the RSS feeds you would like to subscribe to then press the "Generate feed" button.'),
+  );
+  foreach (variable_get('syndication_vocabularies', array()) as $vid) {
+    $vocab = taxonomy_vocabulary_load($vid);
+    $tree = taxonomy_get_tree($vid);
+    $items = syndication_taxonomy_build_list_items($index = 0, $tree);
+    if ($items) {
+      $index = 0;
+      $options = array();
+      $current_depth = $tree[$index]->depth;
+      $form['categories'][$vocab->name] = array(
+        '#type' => 'fieldset',
+        '#title' => $vocab->name,
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+      );
+      while ($index < count($tree) && $tree[$index]->depth >= $current_depth) {
+        $term = $tree[$index];
+        $count = taxonomy_term_count_nodes($term->tid);
+        if ($count) {
+          $options[$term->tid] = $term->name;
+          $index++;
+        }
+        else {
+          $index++;
+        }
+      }
+      //the vocab name must be urlencoded here because this breaks if there is a space in the vocab name
+      $form['categories'][$vocab->name][urlencode($vocab->name)] = array(
+        '#type' => 'checkboxes',
+        '#options' => $options,
+        '#columns' => variable_get('syndication_columns', 3),
+        '#theme' => 'syndication_taxonomy_builder_columns_checkboxes',
+      );
+    }
+  }
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Generate feed',
+  );
+  return $form;
+}
+
+/**
+ * Implementation of hook_submit
+ */
+function syndication_taxonomy_builder_submit($form, &$form_state) {
+  foreach ($form_state['values'] as $category) {
+    if (is_array($category) && !empty($category)) {
+      foreach ($category as $vid => $enabled) {
+        if ($enabled >0) {
+          $feed[] = $vid;
+        }
+      }
+    }
+  }
+  if (!empty($feed)) {
+    drupal_goto("taxonomy/term/". implode("+", $feed) ."/0/feed");
+  }
+}
+
+/**
+ * Validates user blog feed search form.
+ */
+function syndication_users_validate($form, &$form_state) {
+  $result = db_query("SELECT uid, name FROM {users} WHERE name LIKE '%%%s%%' AND uid > 0 ORDER BY access DESC", $form_state['values']["name"]);
+  if (db_fetch_object($result)) {
+    $form_state['values']['result'] = $result;
+  }
+  else {
+    form_set_error('name', t('Username not found.'));
+    drupal_goto('syndication');
+  }
+}
+
+/**
+ * Generates a link to aggregator.module OPML file.
+ */
+function syndication_opml() {
+  $output = t('In addition to displaying RSS feeds, <i>%sn</i> offers <a href="!link">this OPML</a> which lists all RSS feeds that are collected here.',
+              array('%sn' => variable_get('site_name', 'Drupal'), '!link' => url('aggregator/opml')));
+  return $output;
+}
+
+/**
+ * Generates a list of feeds from views_rss.module.
+ */
+function syndication_views_rss() {
+  $vids = variable_get('syndication_views', array());
+  foreach ($vids as $key => $value) {
+    // Throw away the vids that aren't enabled.
+    if (!$value) {
+      unset($vids[$key]);
+    }
+  }
+  // Only bother getting results if at least one vid is enabled.
+  if ($vids) {
+    $result = _syndication_return_views_rss_feeds($vids);
+    foreach ($result as $view_item) {
+      $view = views_get_view($view_item->name);
+      $feed_path = $view->display[$view_item->id]->display_options['path'];
+      $feed_title = $view_item->display_title;
+      $items[] = l($feed_title, $feed_path, array('attributes' => array('class' => 'syndication_view_rss')));
+    }
+    $output = theme('item_list', $items);
+  }
+  return $output;
+}
+
+/**
+ * Helper function to get all views that generate rss feeds from the database.
+ * Accepts an array of views ids (vids) to limit the results.
+ *
+ * @param $args
+ *   An array of views ids.
+ * @return
+ *   Database result object ( containing the vid, name, and display_title) or null if no feeds exist.
+ */
+function _syndication_return_views_rss_feeds($vids = array()) {
+  if (!empty($vids)) {
+    $limit = implode("', '", $vids);
+    $result = db_query("SELECT vv.vid, vd.id, vd.display_title, vv.name FROM {views_display} vd JOIN {views_view} vv ON vd.vid = vv.vid WHERE vd.display_plugin = 'feed' AND vv.name IN ('%s')", $limit);
+  }
+  else {
+    $result = db_query("SELECT vv.vid, vd.id, vd.display_title, vv.name FROM {views_display} vd JOIN {views_view} vv ON vd.vid = vv.vid WHERE vd.display_plugin = 'feed'");
+  }
+  
+  while ($row = db_fetch_object($result)) {
+    $view[] = $row;
+  }
+  return $view;
+}
+
+/**
+ * Theme views_rss feeds list.
+ */
+function theme_syndication_views_rss($rows) {
+  if (is_array($rows)) {
+    $output = theme('item_list', $rows, '', 'ul');
+  }
+  return $output;
+}
+
+/**
+ * Syndication module configuration form.
+ */
+function syndication_admin_settings() {
+  //general
+  $form['syndication_columns'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Columns'),
+    '#default_value' => variable_get('syndication_columns', 3),
+    '#description' => t('The number of columns to use on the display page?'),
+  );
+
+  //blogs
+  if (module_exists('blog')) {
+    $form['syndication_blogs'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Blogs'),
+      '#default_value' => variable_get('syndication_blogs', 0),
+      '#description' => t('Should be blogs be included on the syndication page?'),
+    );
+  }
+  
+  //atom front page feed
+   if (module_exists('atom')) {
+    $form['syndication_atom'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Atom feed'),
+      '#default_value' => variable_get('syndication_atom', 0),
+      '#description' => t('Should be front page atom feed be included on the syndication page?'),
+    );
+  }
+  //aggregotor front page feed
+   if (module_exists('aggregator'))  {
+    $form['syndication_aggregator'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Atom feed'),
+      '#default_value' => variable_get('syndication_aggregator', 0),
+      '#description' => t('Should be aggregator OPML feed be included on the syndication page?'),
+    );
+  }
+
+  //taxonomy
+  foreach (taxonomy_get_vocabularies() as $vid => $vocab) {
+    $options[$vid] = $vocab->name;
+  }
+  $form['syndication_vocabularies'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Vocabularies'),
+    '#options' => $options,
+    '#default_value' => variable_get('syndication_vocabularies', array()),
+    '#description' => t('Select the vocabularies which should appear in the <em>Categories</em> block on the <a href="@syndication">syndication page</a>', array('@syndication' => url('syndication'))),
+  );
+
+  //views
+  if (module_exists('views')) {
+    $options = array();
+    $views = _syndication_return_views_rss_feeds();
+    foreach ($views  as $view) {
+      $options[$view->name] = $view->display_title;
+    }
+    $form['syndication_views'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Views'),
+      '#options' => $options,
+      '#default_value' => variable_get('syndication_views', array()),
+      '#description' => t('Select the views which should appear in the <em>Views</em> block on the <a href="@syndication">syncidation page</a>', array('@syndication' => url('syndication'))),
+    );
+  }
+
+ //hook_syndication implementations
+ unset($options);
+  foreach (module_list() as $name) {
+    $result = module_invoke($name, 'syndication');
+    if (isset($result)) {
+      foreach ($result as $box) {
+        $options[] = $box['subject'];
+      }
+    }
+  }
+  if (!empty($options)) {
+    $form['syndication_custom'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Other'),
+      '#options' => $options,
+      '#default_value' => variable_get('syndication_custom', array()),
+      '#description' => t('Select the other feeds which should appear in the <em>Other</em> block on the <a href="@syndication">syncidation page</a>', array('@syndication' => url('syndication'))),
+    );
+  }
+  return system_settings_form($form);
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function syndication_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case 'admin/help#syndication':
+      $output = syndication_help_intro();
+      break;
+    case 'admin/modules#description':
+      $output .= t("Adds a Syndication block, links to more feeds");
+      break;
+  }
+  return $output;
+}
+
+/**
+ * Helper function for syndication_help().
+ * @return Help text
+ */
+function syndication_help_intro() {
+  $output = '
+<p>Syndication.module offers a web page which centralizes all of the RSS feeds
+generated by Drupal. This helps users find interesting feeds from your web site.</p>
+
+<p>Currently, the syndication page helps visitors find the following feeds.
+<ul>
+<li>the blog feed of any user or all users
+<li>node feeds for any taxonomy terms, including composites of terms (requires <i>taxonomy_dhtml.module</i>)
+<li>a directory of all feeds being consumed by the <i>import.module</i>
+</ul>
+</p>
+
+<h3>For Module Developers - Syndication hook</h3>
+<p> See hook_syndication() which is provided by this module.
+</p>';
+
+  return $output;
+}
+
+/**
+ * Allows modules to add RSS feeds to the Syndication page
+ *
+ * Any module can export boxes to the syndication page. You do so
+ * by creating a <i>modulename</i>_syndication function which returns
+ * an associative array of boxes, much like the block module. Each box
+ * in the array requires <i>subject</i> and <i>content</i> fields. Example:
+ * function mymodule_syndication() {
+ *   $box[0]["subject"] = "Existentialism";
+ *   $box[0]["content"] = "So many feeds in this world";
+ *
+ *   $box[1]["subject"] = "Got any question?";
+ *   $box[1]["content"] = "Who, Where, Why, When";
+ *  return  $box;
+ * }
+ */
+function hook_syndication() {
+  // Creating the first box
+  $box[0]["subject"] = "Existentialism";
+  $box[0]["content"] = "So many feeds in this world";
+
+  // Lets create a one box more
+  $box[1]["subject"] = "Got any question?";
+  $box[1]["content"] = "Who, Where, Why, When";
+  return  $box;
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function syndication_theme() {
+  return array(
+    'syndication_taxonomy_builder_columns_checkboxes' => array(
+      'arguments' => array('element' => array()),
+    ),
+    'syndication_columns' => array(
+      'arguments' => array('data' => array()),
+    ),
+  );
+}
+
+/**
+ * Converts a list of taxonomy terms into checkboxes and displays them in columns
+ * @param $elements A form element that contains the checkboxes to be themed
+ * @return HTML
+ */
+function theme_syndication_taxonomy_builder_columns_checkboxes($element) {
+  $options = $element['#options'];
+  if (count($options) < $element['#columns']) {
+    $element['#columns'] = 1; //if there are less terms than columns then put them in one column
+  }
+  $rows = array();
+  foreach ($options as $key => $value) {
+    $row[] = drupal_render($element[$key]);
+    if (count($row) == $element['#columns']) {
+      array_push($rows, $row);
+      $row = array();
+    }
+  }
+  // This flushes out the columns when the items don't divide evenly into the columns.
+  if (count($row)) {
+    array_push($rows, $row);
+  }
+  return theme('table', NULL, $rows);
+}
+
+/**
+ * Display data into columns
+ * @param $data Array of data.  One element per column
+ * @return HTML
+ */ 
+function theme_syndication_columns($data = array()) {
+  $cols = count($data);
+  $width = (int)((100/$cols) - 1); // make this a fraction smaller so the percentages won't add up to more than 100%
+  foreach ($data as $col) {
+    $output .= "<div class='syndication-column' style='width:$width%'>";
+    $output .= $col;
+    $output .= "</div>";
+  }
+  $output .= '<div class="syndication-clear"></div>';
+  return $output;
+}

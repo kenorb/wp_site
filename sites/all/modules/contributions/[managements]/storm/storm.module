@@ -1,0 +1,592 @@
+<?php
+// $Id: storm.module,v 1.10.4.16 2009/01/06 15:16:22 robertogerola Exp $
+
+/**
+ * @file
+ */
+
+function storm_help($path, $arg) {
+  $output = '';
+
+  switch ($path) {
+    case "admin/help#storm":
+      $output = '<p>'.  storm_t("Provides a complete project management environment") .'</p>';
+      break;
+  }
+
+  return $output;
+}
+
+function storm_perm() {
+  return array('Storm: access');
+}
+
+function storm_init() {
+  drupal_add_js(drupal_get_path('module', 'storm') .'/storm.js', 'module', 'header', FALSE);
+  drupal_add_css(drupal_get_path('module', 'storm') .'/storm.css', 'module');
+}
+
+function storm_menu() {
+  $items = array();
+
+  $items['storm'] = array(
+            'title' => storm_t('Storm'),
+            'description' => storm_t('SpeedTech Organizer and Resource Manager'),
+            'page callback' => 'storm_dashboard',
+            'access arguments' => array('Storm: access'),
+            'parent' => '',
+            'type' => MENU_NORMAL_ITEM);
+
+  $items['admin/storm'] = array(
+            'title' => storm_t('Storm'),
+            'description' => storm_t('SpeedTech Organizer and Resource Manager'),
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('storm_admin_settings'),
+            'access arguments' => array('access administration pages'),
+            'type' => MENU_NORMAL_ITEM);
+  return $items;
+}
+
+function storm_theme() {
+  return array(
+    'storm_form_group' => array(
+      'file'      => 'storm.theme.inc',
+      'arguments' => array('header', 'form'),
+    ),
+    'datetime' => array(
+      'file'      => 'storm.theme.inc',
+      'arguments' => array('element'),
+    ),
+    'dateext' => array(
+      'file'      => 'storm.theme.inc',
+      'arguments' => array('element'),
+    ),
+    'storm_list_report' => array(
+      'file'      => 'storm.theme.inc',
+      'arguments' => array('header', 'rows', 'title', 'footer', 'headtitle'),
+    ),
+    'storm_report' => array(
+      'file'      => 'storm.theme.inc',
+      'arguments' => array('header', 'content', 'title', 'footer'),
+    ),
+    'storm_view_item' => array(
+      'file'      => 'storm.theme.inc',
+      'arguments' => array('label', 'value'),
+    ),
+    'storm_texts' => array(
+      'file'      => 'storm.theme.inc',
+      'arguments' => array(),
+    ),
+    'storm_dashboard' => array(
+      'file'      => 'storm.theme.inc',
+      'arguments' => array(),
+    ),
+  );
+}
+
+function storm_dashboard() {
+  drupal_set_title(storm_t('Storm Dashboard'));
+  return theme('storm_dashboard');
+}
+
+function storm_admin_settings() {
+  $form = array();
+
+  $form['storm_icons_path'] = array(
+    '#type' => 'textfield',
+    '#title' => storm_t('Icons directory'),
+    '#default_value' => variable_get('storm_icons_path', drupal_get_path('module', 'storm') .'/icons'),
+    '#description' => storm_t("The directory that contains the Storm's icons"),
+    '#weight' => -11,
+  );
+
+  $form['yearsrange'] = array(
+    '#type' => 'fieldset',
+    '#title' => storm_t('Years range in dates'),
+    '#collapsed' => false,
+    '#collapsible' => true,
+    '#weight' => -10,
+  );
+
+  $form['yearsrange']['group0'] = array(
+    '#type' => 'markup',
+    '#theme' => 'storm_form_group',
+  );
+
+  $form['yearsrange']['group0']['storm_yearsrangebegin'] = array(
+    '#type' => 'select',
+    '#title' => storm_t('Begin'),
+    '#options' => drupal_map_assoc(range(1970, 2037)),
+    '#default_value' => variable_get('storm_yearsrangebegin', 2001),
+  );
+
+  $form['yearsrange']['group0']['storm_yearsrangeend'] = array(
+    '#type' => 'select',
+    '#title' => storm_t('End'),
+    '#options' => drupal_map_assoc(range(1970, 2037)),
+    '#default_value' => variable_get('storm_yearsrangeend', 2012),
+  );
+
+  $form['stormreports'] = array(
+    '#type' => 'fieldset',
+    '#title' => storm_t('Reports'),
+    '#collapsed' => false,
+    '#collapsible' => true,
+    '#weight' => -9,
+  );
+
+  $form['stormreports']['storm_report_header'] = array(
+    '#type' => 'textarea',
+    '#title' => storm_t('Report header'),
+    '#default_value' => variable_get('storm_report_header', ''),
+    '#description' => storm_t('The header that will appear on the reports'),
+  );
+
+  return system_settings_form($form);
+}
+
+function storm_elements() {
+  $type['datetime'] = array(
+    '#input' => TRUE,
+    '#process' => array('storm_datetime_expand'),
+    '#element_validate' => array('storm_datetime_validate' => array()),
+    '#default_value' => array(
+      'day' => format_date(time(), 'custom', 'j'),
+      'month' => format_date(time(), 'custom', 'n'),
+      'year' => format_date(time(), 'custom', 'Y'),
+      'hour' => format_date(time(), 'custom', 'H'),
+      'minute' => format_date(time(), 'custom', 'i'),
+    ),
+  );
+  $type['dateext'] = array(
+    '#input' => TRUE,
+    '#process' => array('storm_dateext_expand'),
+    '#element_validate' => array('storm_dateext_validate' => array()),
+    '#default_value' => array(
+      'day' => format_date(time(), 'custom', 'j'),
+      'month' => format_date(time(), 'custom', 'n'),
+      'year' => format_date(time(), 'custom', 'Y'),
+    ),
+  );
+  return $type;
+}
+
+function storm_datetime_expand($element) {
+  if (empty($element['#value'])) {
+    $element['#value'] = array(
+                          'day' => format_date(time(), 'custom', 'j'),
+                          'month' => format_date(time(), 'custom', 'n'),
+                          'year' => format_date(time(), 'custom', 'Y'),
+                          'hour' => format_date(time(), 'custom', 'H'),
+                          'minute' => format_date(time(), 'custom', 'i'),
+    );
+  }
+
+  $element['#tree'] = TRUE;
+
+  // Determine the order of day, month, year in the site's chosen date format.
+  $format = variable_get('date_format_short', 'm/d/Y - H:i');
+  $sort = array();
+  $sort['day'] = max(strpos($format, 'd'), strpos($format, 'j'));
+  $sort['month'] = max(strpos($format, 'm'), strpos($format, 'M'));
+  $sort['year'] = strpos($format, 'Y');
+  $sort['hour'] = strpos($format, 'H');
+  $sort['minute'] = strpos($format, 'i');
+  asort($sort);
+  $order = array_keys($sort);
+
+  // Output multi-selector for date.
+  foreach ($order as $type) {
+    switch ($type) {
+      case 'year':
+        $options = drupal_map_assoc(range(variable_get('storm_yearsrangebegin', 2001), variable_get('storm_yearsrangeend', 2012)));
+        break;
+      case 'month':
+        $options = drupal_map_assoc(range(1, 12), 'map_month');
+        break;
+      case 'day':
+        $options = drupal_map_assoc(range(1, 31));
+        break;
+      case 'hour':
+        $options = drupal_map_assoc(range(0, 23));
+        break;
+      case 'minute':
+        $options = drupal_map_assoc(range(0, 59));
+        break;
+    }
+    $parents = $element['#parents'];
+    $parents[] = $type;
+    $element[$type] = array(
+      '#type' => 'select',
+      '#value' => $element['#value'][$type],
+      '#attributes' => $element['#attributes'],
+      '#options' => $options,
+    );
+  }
+  return $element;
+}
+
+function storm_datetime_validate($form) {
+  if (!checkdate($form['#value']['month'], $form['#value']['day'], $form['#value']['year'])) {
+    form_error($form, storm_t('The specified date is invalid.'));
+  }
+}
+
+function storm_dateext_expand($element) {
+  if (empty($element['#value']) && !$element['#withnull']) {
+    $element['#value'] = array(
+                          'day' => format_date(time(), 'custom', 'j'),
+                          'month' => format_date(time(), 'custom', 'n'),
+                          'year' => format_date(time(), 'custom', 'Y'),
+    );
+  }
+
+  $element['#tree'] = TRUE;
+
+  // Determine the order of day, month, year in the site's chosen date format.
+  $format = variable_get('date_format_short', 'm/d/Y - H:i');
+  $sort = array();
+  $sort['day'] = max(strpos($format, 'd'), strpos($format, 'j'));
+  $sort['month'] = max(strpos($format, 'm'), strpos($format, 'M'));
+  $sort['year'] = strpos($format, 'Y');
+  asort($sort);
+  $order = array_keys($sort);
+
+  // Output multi-selector for date.
+  foreach ($order as $type) {
+    switch ($type) {
+      case 'year':
+        $options = drupal_map_assoc(range(variable_get('storm_yearsrangebegin', 2001), variable_get('storm_yearsrangeend', 2012)));
+        break;
+      case 'month':
+        $options = drupal_map_assoc(range(1, 12), 'map_month');
+        break;
+      case 'day':
+        $options = drupal_map_assoc(range(1, 31));
+        break;
+    }
+    if ($element['#withnull']) {
+      $options = array('-1' => '-') + $options;
+    }
+
+    $parents = $element['#parents'];
+    $parents[] = $type;
+    $element[$type] = array(
+      '#type' => 'select',
+      '#value' => $element['#value'][$type],
+      '#attributes' => $element['#attributes'],
+      '#options' => $options,
+      '#attributes' => array('onchange' => "storm_datext_tonull(this, '". $element['#id'] ."')"),
+    );
+  }
+  return $element;
+}
+
+function storm_dateext_validate($form) {
+}
+
+function storm_dependent_select_process($form, $edit, $form_state, $complete_form) {
+  unset($form['#needs_validation']);
+  return $form;
+}
+
+function storm_icon_add_node($node, $params=array()) {
+  return storm_icon_add('node/add/'. $node->type, $node, $params);
+}
+
+function storm_icon_edit_node($node, $params=array()) {
+  return storm_icon_edit('node/'. $node->nid .'/edit', $node, $params);
+}
+
+function storm_icon_delete_node($node, $params=array()) {
+  return storm_icon_delete('node/'. $node->nid .'/delete', $node, $params);
+}
+
+function storm_icon_add($path, $item, $params=array()) {
+  global $user;
+  $type = $item->type;
+  $af = $type .'_access';
+  if (!$af('create', $item, $user)) return '';
+  return storm_icon_l('application_add', $path, storm_t('Add'), '', $params);
+}
+
+function storm_icon_edit($path, $item, $params=array()) {
+  global $user;
+  $type = $item->type;
+  $af = $type .'_access';
+  if (!$af('update', $item, $user)) return '';
+  return storm_icon_l('application_edit', $path, storm_t('Edit'), '', $params);
+}
+
+function storm_icon_delete($path, $item, $params=array()) {
+  global $user;
+  $type = $item->type;
+  $af = $type .'_access';
+  if (!$af('delete', $item, $user)) return '';
+  return storm_icon_l('application_delete', $path, storm_t('Delete'), '', $params);
+}
+
+function storm_icon_l($icon, $path, $title, $permission='', $params=array(), $attributes=array()) {
+  if ($permission && !user_access($permission)) return '';
+  $icon = storm_icon($icon, $title);
+  $attributes ['title'] = $title;
+
+  $query = '';
+
+  if (array_key_exists('q', $params)) {
+    $destination = $params['q'];
+    unset($params['q']);
+    $c = 0;
+    if (array_key_exists('page', $params)) {
+      $destination .= '?page='. $params['page'];
+      unset($params['page']);
+      $c++;
+    }
+    if (array_key_exists('sort', $params)) {
+      if ($c) {
+        $destination .= '&';
+      }
+      else {
+        $destination .= '?';
+      }
+      $destination .= 'sort='. $params['sort'];
+      unset($params['sort']);
+      $c++;
+    }
+    if (array_key_exists('order', $params)) {
+      if ($c) {
+        $destination .= '&';
+      }
+      else {
+        $destination .= '?';
+      }
+      $destination .= 'order='. $params['order'];
+      unset($params['order']);
+      $c++;
+    }
+    $query .= 'destination='. urlencode($destination);
+  }
+
+  foreach ($params as $key => $value) {
+    if ($query) $query .= '&';
+    $query .= $key .'='. urlencode($value);
+  }
+
+  $o = l($icon, $path, array('attributes' => $attributes, 'query' => $query, 'html' => TRUE));
+  return $o;
+}
+
+function storm_icon($icon, $title) {
+  global $base_path;
+  $icon = str_replace(' ', '_', $icon);
+  $img_src = $base_path . variable_get('storm_icons_path', drupal_get_path('module', 'storm') .'/icons') .'/'. $icon .'.png';
+  $o = '<img src="'. $img_src .'" alt="'. $title .'" title="'. $title .'" />';
+  return $o;
+}
+
+function _storm_timestamp_to_gm($timestamp, $timezone=NULL) {
+  if (!isset($timezone)) {
+    global $user;
+    if (variable_get('configurable_timezones', 1) && $user->uid && drupal_strlen($user->timezone)) {
+      $timezone = $user->timezone;
+    }
+    else {
+      $timezone = variable_get('date_default_timezone', 0);
+    }
+  }
+  $timestamp -= $timezone;
+  return $timestamp;
+}
+
+function _storm_date_to_gmtimestamp($date, $timezone=NULL) {
+  if ($date['month'] == -1 || $date['year'] == -1 || $date['day'] == -1) {
+    return NULL;
+  }
+  else {
+    $gmttimestamp = gmmktime(0, 0, 0, intval($date['month']), intval($date['day']), intval($date['year']));
+    return _storm_timestamp_to_gm($gmttimestamp, $timezone);
+  }
+}
+
+function _storm_datetime_to_gmtimestamp($datetime, $timezone=NULL) {
+  $gmttimestamp = gmmktime(intval($datetime['hour']), intval($datetime['minute']), 0, intval($datetime['month']),
+  intval($datetime['day']), intval($datetime['year']));
+  return _storm_timestamp_to_gm($gmttimestamp, $timezone);
+}
+
+function _storm_gmtimestamp_to_datetime($timestamp, $timezone=NULL) {
+  $datetime = array(
+    'day' => format_date($timestamp, 'custom', 'j', $timezone),
+    'month' => format_date($timestamp, 'custom', 'n', $timezone),
+    'year' => format_date($timestamp, 'custom', 'Y', $timezone),
+    'hour' => (int)format_date($timestamp, 'custom', 'H', $timezone),
+    'minute' => (int)format_date($timestamp, 'custom', 'i', $timezone),
+  );
+  return $datetime;
+}
+
+function _storm_gmtimestamp_to_date($timestamp, $timezone=NULL) {
+  if ($timestamp) {
+    $date = array(
+      'day' => format_date($timestamp, 'custom', 'j', $timezone),
+      'month' => format_date($timestamp, 'custom', 'n', $timezone),
+      'year' => format_date($timestamp, 'custom', 'Y', $timezone),
+    );
+  }
+  else {
+    $date = array(
+      'day' => -1,
+      'month' => -1,
+      'year' => -1,
+    );
+  }
+
+  return $date;
+}
+
+function _storm_gmtimestamp_without_time($timestamp, $timezone=NULL) {
+  $date = _storm_gmtimestamp_to_date($timestamp, $timezone);
+  $gmttimestamp = gmmktime(0, 0, 0, $date['month'], $date['day'], $date['year']);
+  return _storm_timestamp_to_gm($gmttimestamp, $timezone);
+}
+
+function _storm_strtotime($timestr='') {
+  $timestr = drupal_substr($timestr, 0, 5);
+  $time = array();
+  $time['hour'] = 0;
+  $time['minute'] = 0;
+
+  $ar = explode(':', $timestr);
+  if (is_array($ar)) {
+    if (array_key_exists(0, $ar)) $time['hour'] = $ar[0];
+    if (array_key_exists(0, $ar)) $time['minute'] = $ar[1];
+  }
+  return $time;
+}
+
+function _storm_timetostr($time=array()) {
+  $timestr = str_pad($time['hour'], 2, "0", STR_PAD_LEFT) .':'. str_pad($time['minute'], 2, "0", STR_PAD_RIGHT);
+  return $timestr;
+}
+
+function storm_rewrite_sql($sql, $where=array(), $join=array()) {
+  $where = empty($where) ? '' : '('. implode(') AND (', $where) .')';
+  $join = empty($join) ? '' : implode(' ', $join);
+
+  if (!empty($where) || !empty($join)) {
+    if (!empty($where)) {
+      $new = "WHERE $where ";
+    }
+    $new = " $join $new";
+    if (strpos($sql, 'WHERE')) {
+      $sql = str_replace('WHERE', $new .'AND (', $sql);
+      $insert = ') ';
+    }
+    else {
+      $insert = $new;
+    }
+    if (strpos($sql, 'GROUP')) {
+      $replace = 'GROUP';
+    }
+    elseif (strpos($sql, 'HAVING')) {
+      $replace = 'HAVING';
+    }
+    elseif (strpos($sql, 'ORDER')) {
+      $replace = 'ORDER';
+    }
+    elseif (strpos($sql, 'LIMIT')) {
+      $replace = 'LIMIT';
+    }
+    else {
+      $sql .= $insert;
+    }
+    if (isset($replace)) {
+      $sql = str_replace($replace, $insert . $replace, $sql);
+    }
+  }
+
+  return $sql;
+}
+
+function storm_db_rewrite_sql($query, $primary_table, $primary_field, $args) {
+  if (($primary_table == 'n' || $primary_table == 'node') && $primary_field == 'nid') {
+
+    if (preg_match("/'storm_access'='storm_access'/", $query)) {
+      return array();
+    }
+
+    global $user;
+    $conditions = array();
+    foreach (module_invoke_all('storm_rewrite_where_sql', $query, $primary_table, $user) as $condition) {
+      if ($condition) {
+        $conditions[] = $condition;
+      }
+    }
+
+    $return = array();
+    $where = '';
+    if ($conditions) {
+      switch ($GLOBALS['db_type']) {
+        case 'mysql':
+        case 'mysqli':
+          $where  = '(';
+          $where .= " CASE ${primary_table}.type ";
+          foreach ($conditions as $condition) {
+            $where .= $condition .' ';
+          }
+          $where .= ' ELSE 1 END ';
+          $where .= ' )=1 ';
+          $return['where'] = $where;
+        break;
+        case 'pgsql':
+        break;
+      }
+    }
+    return $return;
+  }
+}
+
+function storm_form_alter(&$form, $form_state, $form_id) {
+  if (!isset($form['type'])) {
+    return;
+  }
+
+  if ($form_id == $form['type']['#value'] .'_node_form') {
+    $class = $form['#attributes']['class'];
+    if ($class) $class .= ' ';
+    $class .= $form_id;
+    $form['#attributes']['class'] = $class;
+    foreach($form as $key=>$elem) {
+      if(is_array($elem) && $elem['#type']=='fieldset') {
+        $class = $elem['#attributes']['class'];
+        if ($class) $class .= ' ';
+        $class .= $key;
+        $form[$key]['#attributes']['class'] = $class;
+      }
+    }
+  }
+}
+
+function storm_t($text, $domain='default', $args = array(), $langcode = NULL) {
+  if (!$text) return '';
+
+  static $items;
+  if (!$items) {
+    $items = theme('storm_texts');
+  }
+  if ($domain && is_array($items)) {
+    if (array_key_exists($domain, $items) && is_array($items[$domain]) && array_key_exists($text, $items[$domain])) {
+      return t($items[$domain][$text], $args, $langcode);
+    }
+    else if (array_key_exists('default', $items) && is_array($items['default']) && array_key_exists($text, $items['default'])) {
+      return t($items['default'][$text], $args, $langcode);
+    }    
+    else {
+      return t($text, $args, $langcode);
+    }
+  }
+  else {
+    return t($text, $args, $langcode);
+  }
+}
+

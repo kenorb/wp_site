@@ -1,0 +1,194 @@
+<?php
+// $Id: ab.module,v 1.3 2008/09/22 15:14:50 tjholowaychuk Exp $
+
+/**
+ * @file
+ * ApacheBench support and report generator.
+ */
+
+/* -----------------------------------------------------------------
+
+  Hook Implementations
+
+------------------------------------------------------------------ */
+
+/**
+ * Implementation of hook_perm().
+ */
+function ab_perm() {
+  return array('administer ab', 'view ab reports');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function ab_menu() {
+  $items = array();
+
+  $items['admin/reports/ab'] = array(
+      'title' => 'ApacheBench Reports',
+      'page callback' => 'ab_reports', 
+      'access arguments' => array('view ab reports'), 
+      'file' => 'ab.admin.inc',
+    );
+  $items['admin/settings/ab'] = array(
+      'title' => 'ApacheBench',
+      'page callback' => 'drupal_get_form', 
+      'page arguments' => array('ab_settings'), 
+      'access arguments' => array('administer ab'), 
+      'file' => 'ab.admin.inc',
+    );
+ 
+  return $items;
+}
+
+/**
+ * Implementation of hook_cron().
+ */
+function ab_cron() {
+  if ($last_run = variable_get('cron_last', FALSE)){
+		$frequency = variable_get('ab_frequency', 0);
+	  $last_run_hours = floor((time() - $last_run) / (60 * 60));
+
+	  // Ensure we can invoke ab
+	  if ($frequency <= 0 || $last_run_hours <= $frequency){
+		  return;
+	  }
+	 
+	  // Perform tests
+	  $uris = explode("\n", variable_get('ab_uris', ''));
+	  // @todo allow $uri(s) for ab().
+	  foreach((array) $uris AS $uri){
+		  ab(trim($uri), variable_get('ab_requests', 100), variable_get('ab_concurrency', 25), TRUE); 
+	  }
+	 
+	  // Log success
+	  watchdog('ab', 'ApacheBench invoked on %count uris.', array('%count' => count($uris)), WATCHDOG_INFO);
+	}
+}
+
+/* -----------------------------------------------------------------
+
+  Public API
+
+------------------------------------------------------------------ */
+
+/**
+ * Invoke ApacheBench
+ *
+ * @param string $uri
+ *   Valid absolute URI and path such as 'http://vision-media.ca/', 
+ *   note the trailing slash (/).
+ *
+ * @param int $requests
+ *   (optional) Total number of requests.
+ *	
+ * @param int $concurrency
+ *   (optional) Concurrency of requests.
+ *
+ * @param bool $store
+ *   (optional) Bool indicating database storage for reporting.
+ *
+ * @return mixed
+ *   - success: Array of results
+ *   - failure: int
+ */
+function ab($uri, $requests = 100, $concurrency = 25, $store = FALSE) {
+	$results = array();
+	
+	// Ensure concurrency is larger than requests
+  if ($concurrency > $requests){
+	  return -1;
+  }
+
+  // Preven malicious args
+  if (!is_numeric($concurrency) || !is_numeric($requests)){
+	  return -3;
+  }
+
+  // Ensure a valid uri
+  if (!valid_url($uri, TRUE)){
+	  return -2;
+  }
+
+  $results = ab_parse_output(shell_exec("ab -n {$requests} -c {$concurrency} {$uri}"));
+
+  // Store data
+  if ($store === TRUE){
+	  $args = array();
+	  $args[] = $results['complete_requests'];
+	  $args[] = $results['document_length'];
+	  $args[] = $results['failed_requests'];
+	  $args[] = $results['total_transferred'];
+	  $args[] = $results['html_transferred'];
+	  $args[] = $results['requests_per_second'];
+	  $args[] = $results['time_taken_for_tests'];
+	  $args[] = $uri;
+	  $args[] = $concurrency;
+	  $args[] = $requests;
+	  $args[] = time(); 
+	  db_query("
+		  	INSERT INTO {ab_results} 
+		  	SET 
+		  		rid = '',  
+		  		complete_requests = %d, 
+		  		document_length = %d, 
+		  		failed_requests = %d, 
+		  		total_transferred = %d, 
+		  		html_transferred = %d, 
+		  		requests_per_second = %d, 
+		  		time_taken_for_tests = %f, 
+		      uri = '%s',
+		  		concurrency = %d, 
+					requests = %d, 
+					created = %d
+			", $args);
+  }
+
+  return $results;
+}
+
+/**
+ * Clear all ab results.
+ */
+function ab_clear_all() {
+  db_query("DELETE FROM {ab_results}");
+}
+
+/**
+ * Parse ab invocation output.
+ *
+ * @param string $output
+ * 
+ * @return array
+ */
+function ab_parse_output($output) {
+	$results = array();
+	
+	$cols = array();
+	$cols[] = 'complete requests';
+	$cols[] = 'document length';
+	$cols[] = 'failed requests';
+	$cols[] = 'total transferred';
+	$cols[] = 'html transferred';
+	$cols[] = 'requests per second';
+	$cols[] = 'time taken for tests';
+	
+	preg_match_all('!('. implode('|', $cols) . '):\s+([0-9\.]+)!i', $output, $matches, PREG_SET_ORDER);
+  foreach((array) $matches AS $match){
+	  $results[drupal_strtolower(strtr($match[1], ' ', '_'))] = $match[2];
+  }
+
+  return $results;
+}
+
+/**
+ * Require ABChart class.
+ */
+function ab_require_chart() {
+	if (module_exists('open_flash_chart_api')){
+    require_once(dirname(__FILE__) . '/ab.chart.inc');
+  }
+}
+
+

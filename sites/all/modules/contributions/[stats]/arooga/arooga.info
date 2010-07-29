@@ -1,0 +1,10 @@
+; $Id: arooga.info,v 1.1 2008/08/19 05:57:52 deekayen Exp $
+name = Arooga
+description = "Logs (in the Drupal watchdog) page generation times that exceed a threshold value, or are a record for the site so far."
+core = 6.x
+; Information added by drupal.org packaging script on 2008-10-01
+version = "6.x-1.1"
+core = "6.x"
+project = "arooga"
+datestamp = "1222883102"
+

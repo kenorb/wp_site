@@ -1,0 +1,99 @@
+<?php
+// $Id: composite.install,v 1.1.2.4 2009/01/15 02:41:13 bengtan Exp $
+
+function composite_schema() {
+  $schema['node_composite'] = array(
+    'description' => t('Base table for Composite Layout module. '), 
+    'fields' => array(
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'disp-width' => '10'),
+      'vid'  => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'disp-width' => '10'),
+      'layout' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
+      // data contains additional settings
+      'data' => array('type' => 'text', 'size' => 'medium', 'not null' => TRUE, 'serialize' => TRUE), 
+    ),
+    'indexes' => array(
+      'nid' => array('nid'),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  $schema['node_composite_references'] = array(
+    'description' => t('References table for Composite Layout module. '), 
+    'fields' => array(
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'disp-width' => '10'),
+      'vid'  => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'disp-width' => '10'),
+      'type' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
+      'weight' => array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'disp-width' => '11'),
+      // id identifies the thing (ie. node, block etc.) to display
+      'id' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
+      // data contains additional settings
+      'data' => array('type' => 'text', 'size' => 'medium', 'not null' => TRUE, 'serialize' => TRUE), 
+      'zone' => array('type' => 'varchar', 'length' => '64', 'not null' => TRUE, 'default' => ''),
+    ),
+    'primary key' => array('vid', 'id'),
+  );
+
+  $schema['node_composite_sets'] = array(
+    'description' => t('Table for storing Composite Layout sets.'), 
+    'fields' => array(
+      'sid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'name' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
+      'data' => array('type' => 'text', 'size' => 'medium', 'not null' => TRUE, 'serialize' => TRUE), 
+    ),
+    'primary key' => array('sid'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function composite_install() {
+  drupal_install_schema('composite');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function composite_uninstall() {
+  drupal_uninstall_schema('composite');
+  variable_del('composite_extra_config');
+}
+
+function composite_update_6001() {
+  // Add defaults for node_composite.data and node_composite_references.data
+  $ret = array();
+  /*
+  // These are incorrect. See http://drupal.org/node/327130
+  db_field_set_default($ret, 'node_composite', 'data', '');
+  db_field_set_default($ret, 'node_composite_references', 'data', '');
+  */
+  return $ret;
+}
+
+function composite_update_6002() {
+  // Undo previous update (which is itself incorrect). 
+  $ret = array();
+  db_field_set_no_default($ret, 'node_composite', 'data');
+  db_field_set_no_default($ret, 'node_composite_references', 'data');
+  return $ret;
+}
+
+function composite_update_6003() {
+  // Add table node_composite_sets
+  $schema['node_composite_sets'] = array(
+    'description' => t('Table for storing Composite Layout sets.'), 
+    'fields' => array(
+      'sid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'name' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
+      'data' => array('type' => 'text', 'size' => 'medium', 'not null' => TRUE, 'serialize' => TRUE), 
+    ),
+    'primary key' => array('sid'),
+  );
+
+  $ret = array();
+  db_create_table($ret, 'node_composite_sets', $schema['node_composite_sets']);
+  return $ret;
+}
+

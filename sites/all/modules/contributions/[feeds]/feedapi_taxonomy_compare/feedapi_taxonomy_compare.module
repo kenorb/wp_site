@@ -1,0 +1,249 @@
+<?php
+// $Id: feedapi_taxonomy_compare.module,v 1.1.2.4 2009/01/31 12:56:05 indytechcook Exp $
+
+/**
+ * @file
+ * Allow incoming tags to be catorigized against existing terms.  Add an approval queue for terms that are not processed
+ * This is an add on processor for FeedAPI
+ *
+ * @author
+ *  Neil Hastings
+ */
+
+//define constants
+define('FEEDAPI_TAX_COMPARE_REMOVE', 1);
+define('FEEDAPI_TAX_COMPARE_DELETE', 2);
+define('FEEDAPI_TAX_COMPARE_APPLY', 3);
+define('FEEDAPI_TAX_COMPARE_NONE', 4);
+
+/**
+ * Implementation of hook_help().
+ */
+function feedapi_taxonomy_compare_help($section) {
+  switch ($section) {
+    case 'admin/help#feedapi_taxonomy_compare':
+      return t('FeedAPI Taxonomy Compare - compare taxonomy terms to Vocab.');
+    case 'feedapi/full_name':
+      return t('FeedAPI Taxonomy Compare - compare taxonomy terms to Vocab.');
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function feedapi_taxonomy_compare_menu() {
+  $items['admin/settings/feedapi_taxonomy_compare_settings'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => 'FeedAPI Taxonomy Compare',
+    'description' => 'Change the settings on the FeedAPI Taxonomy Compare',
+    'page callback'  => 'drupal_get_form',
+    'page arguments' => array('feedapi_taxonomy_compare_admin_settings'),
+    'access callback' => TRUE,
+    'file' => 'feedapi_taxonomy_compare_admin.pages.inc',
+  );
+
+  return $items;
+}
+
+
+/**
+ * Implementation of feedapi_after_refresh
+ */
+function feedapi_taxonomy_compare_feedapi_after_refresh($feed) {
+
+ //check to see if feed is to be used
+ $feed_node = node_load($feed->nid);
+
+ foreach ($feed->items as $feed_item) {
+   if ($feed_item->is_updated || $feed_item->is_new) {
+    $item_node = node_load($feed_item->nid);
+    _feedapi_taxonomy_compare($item_node, $feed_node);
+   }
+ }
+
+
+}
+
+/**
+ * Implementation of hook_feedapi_item().
+ * Do nothing here, this function only makes us a feedapi processor,
+ * which means that we can be enabled/disabled on a per node type
+ * basis.
+ */
+function feedapi_taxonomy_compare_feedapi_item($op) {
+}
+
+/**
+ * See if tags exists agaist select vocabularies
+ * if they exist, then add the exists
+ */
+function _feedapi_taxonomy_compare(&$item_node, $feed_node) {
+  $vocabs_compare = array();
+  $terms_keep = array();
+  $terms_remove = array();
+
+  //pull in settings
+  $vocabs_compare = variable_get('feedapi_taxonomy_compare_vocabs_compare', NULL);
+
+  if (!empty($vocabs_compare)) {
+
+    // Check to see if there is a value in  the settings
+    if (module_exists('taxonomy')) {
+
+      //get terms for node
+      $terms = taxonomy_node_get_terms($item_node);
+      //cycle through terms
+      foreach ($terms as $tid => $term) {
+        // check to see if term exists in any vocabulary
+        $terms_by_name = taxonomy_get_term_by_name($term->name);
+        $terms_syn = taxonomy_get_synonym_root($term->name);
+        //if there are found terms then check if they are in the correct vocabulary
+        if (!empty($terms_by_name)) {
+          foreach ($terms_by_name as $tid_found => $term_found) {
+            // check to see if the found vid are in the $vocabs_compare variable
+            // if so then add the term to the node
+
+            foreach ($vocabs_compare as $vid => $enabled) {
+              if ($enabled) {
+                if ($vid == $term_found->vid) {
+                  //check to see if the term is already assoicated to the node
+                  if (_feedapi_taxonomy_compare_check_node_term($item_node,$term_found->tid) == TRUE) {
+                    //save nid and term object in array to save later
+                    $terms_keep[] = $term_found;
+                  }
+                  if (variable_get('feedapi_taxonomy_remove_found', 0) == 1) {
+                    $terms_remove[] = $term;
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (!empty($terms_syn)) {
+          // check to see if the found vid are in the $vocabs_compare variable
+          // if so then add the term to the node
+          $use_syn = variable_get('feedapi_taxonomy_compare_syn',0);
+          if ($use_syn == 1) {
+            foreach ($vocabs_compare as $vid => $enabled) {
+              if ($enabled) {
+                if ($vid == $terms_syn->vid) {
+                  //check to see if the term is already assoicated to the node
+                  if (_feedapi_taxonomy_compare_check_node_term($item_node,$terms_syn->tid) == TRUE) {
+                    //save nid and term object in array to save later
+                    $terms_keep[] = $terms_syn;
+                  }
+                  if (variable_get('feedapi_taxonomy_remove_found', 0) == 1) {
+                    $terms_remove[] = $term;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      //if there are any terms to save the save them now
+      // and remove from current node
+      if (!empty($terms_keep)) {
+        _feedapi_taxonomy_compre_taxonomy_node_add($item_node, $terms_keep);
+        _feedapi_taxonomy_compare_remove_term($item_node, $terms_remove);
+      }
+    }
+  }
+}
+
+/**
+ * helper function to remove the term from the node
+ *
+ * @param <type> $node
+ * @param <type> $tid
+ */
+
+function _feedapi_taxonomy_compare_remove_term($node, $terms) {
+  //if term is not assoiated with any other nodes then delete the term.
+  // o.w. just more the term from the node
+  foreach ($terms as $tid => $term) {
+    db_query('DELETE FROM {term_node} WHERE nid = %d AND tid = %d', $node->nid, $term->tid);
+  }
+}
+
+function _feedapi_taxonomy_compare_check_node_term($node, $tid) {
+
+  //check for relationship of node to term
+  $output = TRUE;
+  $result = taxonomy_node_get_terms($node);
+  if (!empty($result)) {
+    foreach ($result as $node_tid => $node_terms) {
+      if ($tid == $node_tid) {
+        $output = FALSE;
+        break;
+      }
+    }
+  }
+
+  return $output;
+
+}
+
+/**
+ * Save term associations for a given node.
+ * A modification of taxonomy_node_save from taxonomy.module
+ */
+function _feedapi_taxonomy_compre_taxonomy_node_add($node, $terms) {
+
+  //REMOVE THE DELTE STATEMENT
+  //taxonomy_node_delete_revision($node);
+
+  // Free tagging vocabularies do not send their tids in the form,
+  // so we'll detect them here and process them independently.
+  if (isset($terms['tags'])) {
+    $typed_input = $terms['tags'];
+    unset($terms['tags']);
+
+    foreach ($typed_input as $vid => $vid_value) {
+      $typed_terms = drupal_explode_tags($vid_value);
+
+      $inserted = array();
+      foreach ($typed_terms as $typed_term) {
+        // See if the term exists in the chosen vocabulary
+        // and return the tid; otherwise, add a new record.
+        $possibilities = taxonomy_get_term_by_name($typed_term);
+        $typed_term_tid = NULL; // tid match, if any.
+        foreach ($possibilities as $possibility) {
+          if ($possibility->vid == $vid) {
+            $typed_term_tid = $possibility->tid;
+          }
+        }
+
+        if (!$typed_term_tid) {
+          $edit = array('vid' => $vid, 'name' => $typed_term);
+          $status = taxonomy_save_term($edit);
+          $typed_term_tid = $edit['tid'];
+        }
+
+        // Defend against duplicate, differently cased tags
+        if (!isset($inserted[$typed_term_tid])) {
+          db_query('INSERT INTO {term_node} (nid, vid, tid) VALUES (%d, %d, %d)', $node->nid, $node->vid, $typed_term_tid);
+          $inserted[$typed_term_tid] = TRUE;
+        }
+      }
+    }
+  }
+
+  if (is_array($terms)) {
+    foreach ($terms as $term) {
+      if (is_array($term)) {
+        foreach ($term as $tid) {
+          if ($tid) {
+            db_query('INSERT INTO {term_node} (nid, vid, tid) VALUES (%d, %d, %d)', $node->nid, $node->vid, $tid);
+          }
+        }
+      }
+      else if (is_object($term)) {
+        db_query('INSERT INTO {term_node} (nid, vid, tid) VALUES (%d, %d, %d)', $node->nid, $node->vid, $term->tid);
+      }
+      else if ($term) {
+        db_query('INSERT INTO {term_node} (nid, vid, tid) VALUES (%d, %d, %d)', $node->nid, $node->vid, $term);
+      }
+    }
+  }
+}

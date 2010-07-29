@@ -1,0 +1,12 @@
+; $Id: better_formats.info,v 1.1 2008/12/03 21:17:28 dragonwize Exp $
+name = Better Formats
+description = "Enhances the core input format system by managing input format defaults and settings."
+core = 6.x
+;dependencies[] = 
+;package = 
+; Information added by drupal.org packaging script on 2008-12-26
+version = "6.x-1.0-beta6"
+core = "6.x"
+project = "better_formats"
+datestamp = "1230273903"
+

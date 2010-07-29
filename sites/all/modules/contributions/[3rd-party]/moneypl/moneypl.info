@@ -1,0 +1,9 @@
+; $Id: blockbar.info,v 1.1 2007/01/30 20:56:11 der Exp $
+name = "Money.pl"
+description = "Aktualności i narzędzia biznesowe z portalu Money.pl".
+
+; Information added by drupal.org packaging script on 2007-01-30
+version = "6.x-1.0"
+project = "moneypl"
+core = 6.x
+

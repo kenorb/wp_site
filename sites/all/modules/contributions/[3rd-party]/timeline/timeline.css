@@ -1,0 +1,11 @@
+.timeline-wrapper {
+}
+
+.timeline {
+  border: 1px solid #aaa;
+}
+
+.timeline-controls {
+  margin: 1em 0;
+  padding: 0.5em;
+}

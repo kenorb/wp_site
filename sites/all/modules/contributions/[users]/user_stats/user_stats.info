@@ -1,0 +1,13 @@
+; $Id: user_stats.info,v 1.2.2.3.2.3 2008/11/16 05:17:11 liammcdermott Exp $
+
+name = User Stats
+dependencies[] = profile
+description = "Provides post count and other user statistics. Integrates well with Token and Advanced Forum (if installed)."
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-02-01
+version = "6.x-1.0-alpha3"
+core = "6.x"
+project = "user_stats"
+datestamp = "1233460856"
+

@@ -1,0 +1,12 @@
+; $Id: lowername.info,v 1.1 2009/01/22 11:34:57 sdrycroft Exp $
+name = "Lowername"
+description = "Adds an additional table to improve searching for terms by name"
+package = "EDIT"
+dependencies[] = taxonomy
+core = 6.x
+; Information added by drupal.org packaging script on 2009-01-22
+version = "6.x-1.1"
+core = "6.x"
+project = "lowername"
+datestamp = "1232638533"
+

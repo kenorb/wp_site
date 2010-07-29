@@ -1,0 +1,76 @@
+<?php
+
+class NodeGalleryConfigTestCase extends DrupalWebTestCase {
+  function getInfo() {
+    return array(
+      'name' => t('Node Gallery Config'),
+      'description' => t('Node gallery config testcase.'),
+      'group' => t('Module'),
+    );
+  }
+  
+  function setUp() {
+    parent::setUp('imageapi', 'imagecache', 'upload', 'node_gallery');
+  }
+  
+  function testGalleryConfigList() {
+    $user = $this->drupalCreateUser(array(NODE_GALLERY_PERM_ADMIN_GALLERY));
+    $this->drupalLogin($user);
+    $this->drupalGet('admin/build/node_gallery');
+    $this->assertText(t('There\'s no gallery type now.'), 'Gallery config list empty test.');
+  }
+}
+
+class NodeGalleryTestCase extends DrupalWebTestCase {
+  
+  function getInfo() {
+    return array(
+      'name' => t('Node Gallery'),
+      'description' => t('Node gallery testcase.'),
+      'group' => t('Module'),
+    );
+  }
+  
+  function setUp() {
+    parent::setUp('imageapi', 'imagecache', 'upload', 'node_gallery');
+    
+    $this->creator = $this->drupalCreateUser(array('create page content', 'create story content'));
+    include('node_gallery.fixture.inc');
+    $gc = (object)$gallery_config;
+    drupal_write_record('ng_gallery_config', $gc);
+    
+    $n = (object)$gallery1;
+    $n->uid = $this->creator->uid;
+    node_save($n);
+    $this->gallery = $n;
+    
+    $image = (object)$image1;
+    $image->uid = $n->uid;
+    node_save($image);
+    drupal_write_record('files', $image);
+    $image->gid = $n->nid;
+    drupal_write_record('ng_images', $image);
+    $this->image = $image;
+  }
+  
+  function testGalleryList() {
+    $user = $this->drupalCreateUser(array(NODE_GALLERY_PERM_VIEW_GALLERY));
+    $this->drupalLogin($user);
+    $this->drupalGet('galleries/'.$user->uid);
+    $this->assertText(t('There\'s no gallery now.'), 'test gallery list empty.');
+    
+    $this->drupalGet('galleries/'.$this->creator->uid);
+    $this->assertText('Test Album', 'test gallery list not empty.');
+    $this->assertNoText('Edit gallery', 'test view other user\'s gallery.');
+    $this->assertNoText('Upload images', 'test view other user\'s gallery.');
+    $this->assertText('1 image', 'test gallery list with 1 image.');
+  }
+  
+  function testImageEdit() {
+    $image = new Image($this->image);
+    $image->delete();
+    $this->assertFalse(db_result(db_query("SELECT nid FROM {node} WHERE nid = %d", $this->image->nid)), 'Deleting image: node.');
+    $this->assertFalse(db_result(db_query("SELECT nid FROM {ng_images} WHERE nid = %d", $this->image->nid)), 'Deleting image: ng_image.');
+    $this->assertFalse(db_result(db_query("SELECT fid FROM {files} WHERE fid = %d", $this->image->fid)), 'Deleting image: files.');
+  }
+}

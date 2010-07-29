@@ -1,0 +1,86 @@
+<?php
+// $Id: ulink_gallery.module,v 1.2 2008/03/08 10:26:36 garthee Exp $
+
+/**
+ * @file
+ * An extension module of ulink, provides specific implementations for image types.
+ * Automates the generation of ulink image links by passing in a directory
+ */
+ 
+/**
+ * Implementation of hook_ulink_files().
+ */
+function ulink_gallery_ulink_intern($link){
+  $path = $link['path'];
+  
+  if (!is_dir($path)) {
+    // Not a directory so return NULL so that the next implementation configured for files can decide what to output for the file link
+    return NULL;
+  }
+  
+  drupal_add_css(drupal_get_path('module', 'ulink_gallery') . '/ulink_gallery.css', 'module');
+  $filter = $link['attributes']['filter'];
+  if ($filter == 'none' || $filter == NULL)
+    $regex = ".*";
+  else if ($filter == 'images')
+    $regex = ".*([jJ][pP][eE]?[gG]|[gG][iI][fF]|[pP][nN][gG])";
+  else {
+    $regex = $filter;
+    $filter = 'custom';
+  }
+  $attributes  = "class=";
+  $attributes .= $link['attributes']['class'] ? $link['attributes']['class'] : "ulink_gallery_item";
+  $attributes .= ",force_link=";
+  $attributes .= $link['attributes']['force_link'] ? $link['attributes']['force_link'] : variable_get('ulink_gallery_forcelink', 0);
+
+  $ignore_paths = array('.', '..', 'CVS');
+  $recurse = $link['attributes']['recurse'] ? (strcasecmp($link['attributes']['recurse'],'true') == 0 ? TRUE : FALSE) : FALSE; 
+  $files = file_scan_directory($path, $regex, $ignore_paths, NULL, $recurse);
+  
+  $value .= "<div class='clear-block ulink_gallery'>";
+  if (strlen($link['text']) > 0)
+    $value .= "<h3 class='ulink_gallery_header'>" . $link['text'] . "</h3>";
+  
+  $value .= "<ul>";
+  foreach ($files as $file) {
+		$value .= "<li class='ulink_gallery_$filter'>" . _ulink_substitute_tags("[l|$file->filename|$file->filename|$attributes]"). "</li>";
+  }
+  $value .= "</ul>"; $value .= "</div>";  
+  return $value;
+}
+/**
+ * Implementation of hook_ulink_files_settings().
+ */
+function ulink_gallery_ulink_intern_settings() {
+  $form['ulink_gallery_forcelink'] = array(
+    '#title' => t('Force Link'),    
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('ulink_gallery_forcelink', 0),  
+    '#description' => t('Adds forelink=true to all links.'),
+  );
+  return $form;
+}
+/**
+ * Implementation of hook_ulink_files_info().
+ */
+function ulink_gallery_ulink_intern_info() {
+  return t("
+    <p class='ulink_help'>    
+    Creates links for files in a directory.  The link output for each file link will depend on the univeral link settings for that file type.
+    <dl>
+    <dt>example:</dt><dd><em>[l|files/somedirectory|filter=images]</em></dd>
+    </dl>
+    <dl>
+    <lh>attributes:</lh>
+      <dt><em>recurse=true/false [default - false]</em></dt><dd>Controls recursion into sub-directories of the specified directory.</dd>
+      <dt><em>forcelink=true/false [default -value set in the settings page]</em></dt><dd>Output only links to the images</dd>
+      <dt><em>filter=none [default]</em></dt><dd>Process all files</dd>
+      <dt><em>filter=images</em></dt><dd>Process image files only</dd>
+      <dt><em>filter=regex</em></dt><dd>Process only files matching the supplied regular expression</dd>
+      <dt><em>class=ulink_gallery_portrait2 [ulink_gallery_item]</em></dt><dd>Apply CSS class</dd>
+     </dl>
+    Note that anyother attributes will be stripped, however attributes such as image width / height or border options can be inserted by modifying
+'#.ulink_gallery_images' in ulink_gallery.css. You can either modify existing classes or create new classes.
+    </p>
+  ");
+}

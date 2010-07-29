@@ -1,0 +1,17 @@
+; $Id: gallery_field.info,v 1.1 2008/06/09 17:29:41 profix898 Exp $
+
+name = "Gallery Field"
+description = "Gallery2 elements => Content field"
+package = "Gallery2"
+dependencies[] = gallery
+dependencies[] = content
+core = 6.x
+
+version = "6.x-1.x (unstable)"
+
+; Information added by drupal.org packaging script on 2008-06-10
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "gallery_addon"
+datestamp = "1213056232"
+

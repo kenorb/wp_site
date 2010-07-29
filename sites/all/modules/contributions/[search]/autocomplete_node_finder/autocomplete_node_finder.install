@@ -1,0 +1,44 @@
+<?php
+// $Id: autocomplete_node_finder.install,v 1.1.2.1 2008/11/29 01:37:57 danielb Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function autocomplete_node_finder_install() {
+
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function autocomplete_node_finder_uninstall() {
+    variable_del('autocomplete_node_finder_num_blocks');
+    for ($delta = 0; variable_get('autocomplete_node_finder_'.$delta.'_title', FALSE) !== FALSE; $delta++) {
+      variable_del('autocomplete_node_finder_'.$delta.'_title');
+      variable_del('autocomplete_node_finder_'.$delta.'_element');
+      variable_del('autocomplete_node_finder_'.$delta.'_label');
+      variable_del('autocomplete_node_finder_'.$delta.'_desc');
+      variable_del('autocomplete_node_finder_'.$delta.'_prefix');
+      variable_del('autocomplete_node_finder_'.$delta.'_suffix');
+      variable_del('autocomplete_node_finder_'.$delta.'_default');
+      variable_del('autocomplete_node_finder_'.$delta.'_size');
+      variable_del('autocomplete_node_finder_'.$delta.'_max');
+      variable_del('autocomplete_node_finder_'.$delta.'_search');
+      variable_del('autocomplete_node_finder_'.$delta.'_types');
+      variable_del('autocomplete_node_finder_'.$delta.'_field');
+      variable_del('autocomplete_node_finder_'.$delta.'_num_options');
+      variable_del('autocomplete_node_finder_'.$delta.'_sort');
+      variable_del('autocomplete_node_finder_'.$delta.'_parent');
+      variable_del('autocomplete_node_finder_'.$delta.'_depth');
+      variable_del('autocomplete_node_finder_'.$delta.'_children');
+      variable_del('autocomplete_node_finder_'.$delta.'_tree');
+      variable_del('autocomplete_node_finder_'.$delta.'_omit');
+      variable_del('autocomplete_node_finder_'.$delta.'_delimiter');
+      variable_del('autocomplete_node_finder_'.$delta.'_exact');
+      variable_del('autocomplete_node_finder_'.$delta.'_validation');
+      variable_del('autocomplete_node_finder_'.$delta.'_submission');
+      variable_del('autocomplete_node_finder_'.$delta.'_path');
+      variable_del('autocomplete_node_finder_'.$delta.'_results');
+      variable_del('autocomplete_node_finder_'.$delta.'_pager');
+    }
+}

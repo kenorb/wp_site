@@ -1,0 +1,13 @@
+; $Id: jobtrack.info,v 1.1.2.3 2009/01/25 11:11:36 jeremy Exp $
+name = JobTrack
+package = JobTrack
+description = Track jobs.
+dependencies[] = comment
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-01-25
+version = "6.x-1.0-beta2"
+core = "6.x"
+project = "jobtrack"
+datestamp = "1232902841"
+

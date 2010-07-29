@@ -1,0 +1,401 @@
+<?php
+
+// $Id: pong.module,v 1.8 2009/01/25 00:22:11 skinhat Exp $
+
+/*
+ * Drupal Module: Pong
+ *
+ * @author: Glenn Linde <www.skinhat.com/contact>
+ */
+
+function pong_menu() {
+  $items = array();
+
+
+    $items['admin/settings/pong'] = array(
+      'title' => t('Pong Configuration'),
+      'description' => t('Configure the game.'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('pong_admin_settings'),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM,// optional
+    );
+
+    $items['pong/win'] = array(
+      'title' => '',
+      'page callback' => 'pong_win',
+      'access callback' => TRUE,
+      'type' => MENU_CALLBACK,
+	  'access' => TRUE
+    );
+  return $items;
+}
+
+/**
+* Display help and module information
+* @param section which section of the site we're displaying help
+* @return help text for section
+*/
+function pong_help($path,$arg) {
+
+  $output = '';
+
+  switch ($path) {
+    case "admin/modules#description":
+      $output = t("Displays links to nodes created on this date");
+      break;
+  }
+
+  return $output;
+} // function pong_help
+
+
+function strip($val) 
+{
+	return str_replace("'","",$val);
+}
+/**
+/* Generate HTML for the pong block
+* @param op the operation from the URL
+* @param delta offset
+* @returns block HTML
+*/
+function pong_block($op='list', $delta=0) {
+  if ($op == "list") {
+    $block[0]["info"] = t('Pong');
+    return $block;
+  } else if ($op == 'view') {
+    $block['subject'] = 'Pong';
+   // $modulepath="./".drupal_get_path('module', 'pong');
+    drupal_add_js(drupal_get_path('module', 'pong') .'/pong.js');
+
+
+    $content='';
+    $content.='<div id="pong_formmessage" style="height:20px;"></div>';
+	//$content.='<script language=\'javascript\' src=\''. $modulepath.'/pong.js\'></script>';
+
+    $content.='<div id="pong_area_game" onClick="javascript:do_click();" onMouseMove="javascript:move_mouse(event);" style="border:solid #888 1px; position:absolute; position:relative; "  >';
+    $content.=' <div id="pong_scoreboard_user" style="position:absolute; height:20px;"  >0</div>';
+    $content.=' <div id="pong_scoreboard_computer" style="position:absolute; height:20px;" >0</div>';
+    $content.=' <img id="pong_background_image"   hspace="0" vspace="0"/>';
+    $content.=' <div id="pong_paddle_user" style="position:absolute; top:0px;"  ></div>';
+    $content.=' <div id="pong_message" style="position:absolute; width:100px; height:60px; text-align:center; ibackground:#d4eeff;"  ></div>';
+    $content.=' <div id="pong_ball" style="position:absolute;"  ></div>';
+    $content.=' <div id="pong_paddle_computer" style="position:absolute; top:0px;"  ></div>';
+    $content.='</div>';
+    $content.='<div id="pong_state"  align="center" style="position:relative; "  >&nbsp; Loading...</div>';
+    $content.='<input type="button" value="New game" onClick="ball_moving = false; se_ha_de_extract = false;  clearInterval(ball_movement); clearInterval(computer_movement); prevent_movement = true; pong_initiate_game();" />';
+    $content.='&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    $content.='<span align=\'right\' style=\'font-size:0.6em\'><a href=\'http://www.skinhat.com/drupal\'>Skinhat</a></span>';
+    $content.='<script language=\'javascript\' >';
+    if (variable_get('pong_bestscore', '')!='')
+      $content.='pong_bestscore='.variable_get('pong_bestscore', '').'; ';
+    $content.=  "
+	    pong_start_message='".strip(variable_get('pong_start_message', 'Click to start.'))."';
+        pong_user_winsmessage='".strip(variable_get('pong_user_winsmessage', 'You beat the computer.'))."';
+        pong_user_winningmessage='".strip(variable_get('pong_user_winningmessage', 'You are beating the computer.'))."';
+        pong_computer_winsmessage='".strip(variable_get('pong_computer_winsmessage', 'Computer beats you.'))."';
+        pong_computer_winningmessage='".strip(variable_get('pong_computer_winningmessage', 'Computer is beating you.'))."';
+        pong_tie_message='".strip(variable_get('pong_tie_message', 'Currently tied.'))."';
+        pong_gameover_message='".strip(variable_get('pong_gameover_message', 'Game over.'))."';
+        pong_countdown_message='".strip(variable_get('pong_countdown_message', 'Countdown'))."';
+        pong_countdown='".strip(variable_get('pong_countdown', 0))."'	;
+        pong_area_game_x=".strip(variable_get('pong_area_game_x', 170)).";
+        pong_area_game_y=".strip(variable_get('pong_area_game_y', 200)).";
+        pong_background='".strip(variable_get('pong_background', '/'.drupal_get_path('module', 'pong').'/img/drupal.jpg'))."';
+        pong_background_transparency='".strip(variable_get('pong_background_transparency', 0.2))."'; ";
+    if (variable_get('pong_paddles_width', '')!='')
+      $content.=  '  pong_paddles_width='.strip(variable_get('pong_paddles_width', '')).'; ';	
+
+    if (variable_get('pong_paddles_height', '')!='')
+      $content.=  '  pong_paddles_height='.strip(variable_get('pong_paddles_height', '')).'; ';	
+	
+	$content.=  'pong_paddles_user_image=\''.strip(variable_get('pong_paddles_user_image', '/'.drupal_get_path('module', 'pong').'/img/paddlered.png')).'\'; ';	
+    $content.=  'pong_paddles_user_color=\''.strip(variable_get('pong_paddles_user_color', '#f00')).'\'; ';	
+	$content.=  'pong_paddles_computer_image=\''.strip(variable_get('pong_paddles_computer_image', '/'.drupal_get_path('module', 'pong').'/img/paddleblue.png')).'\'; ';	
+    $content.=  'pong_paddles_computer_color=\''.strip(variable_get('pong_paddles_computer_color', '#00f')).'\'; ';	
+	
+    if (variable_get('pong_ball_width', '')!='')
+      $content.=  '  pong_ball_width='.strip(variable_get('pong_ball_width', '')).'; ';	
+
+    if (variable_get('pong_ball_height', '')!='')
+      $content.=  '  pong_ball_height='.strip(variable_get('pong_ball_height', '')).'; ';		  
+	$content.=  'pong_ball_img=\''.strip(variable_get('pong_ball_img', '/'.drupal_get_path('module', 'pong').'/img/ball.png')).'\'; ';	
+    $content.=  'pong_ball_color=\''.strip(variable_get('pong_ball_color', '#000')).'\'; ';	
+	 if (variable_get('pong_inverted', true))
+       $content.='pong_inverted=true; ';
+	 else
+       $content.='pong_inverted=false; ';
+    $content.=  'pong_speed_ball_initial_pixels='.strip(variable_get('pong_speed_ball_initial_pixels', 20)).'; ';	   
+    $content.=  'pong_lives_initial='.strip(variable_get('pong_lives_initial', 5)).'; ';	   
+
+	$content.=  'pong_initiate_game(); ';
+    $content.=  '</script>';
+ 
+ 
+
+    $content.='<form id=\'pong_winform\' method=\'POST\' action=\'/pong/win\' > ';
+    $content.='<input type=\'hidden\' id=\'pong_win_message\' name=\'pong_win_message\'/>';
+    $content.='<input type=\'hidden\' id=\'pong_ticker\' name=\'pong_ticker\'/>';
+    $content.='<input type=\'hidden\' id=\'pong_win\'/>';
+    $content.='</form>';
+    if (variable_get('pong_bestscore', -1)>0)
+      $content.='Best: '.variable_get('pong_bestscore', -1).' by <b>'.variable_get('pong_bestuser', 'anon').'</b>';
+
+    $block['content'] = $content;
+    return $block;
+  }
+
+} // end pong_block
+
+/**
+ * Implementation of hook_settings()
+ */
+function pong_admin_settings() {
+  $form = array();
+  $form['pong_start_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Start Message'),
+    '#default_value' => variable_get('pong_start_message', 'Click to start.'),
+    '#description' => t('When a player first starts what is the message?'), 
+    '#required' => TRUE,
+  );
+
+
+  $form['pong_user_winsmessage'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Message when beat computer'),
+    '#default_value' => variable_get('pong_user_winsmessage', 'You beat the computer.'),
+    '#description' => t('Message when player beats the computer'), 
+    '#required' => TRUE,
+  );
+
+  $form['pong_user_winningmessage'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Message when winning'),
+    '#default_value' => variable_get('pong_user_winningmessage', 'You are beating the computer'),
+    '#description' => t('Message when winning against the computer'), 
+    '#required' => TRUE,
+  );
+  
+  
+  $form['pong_computer_winsmessage'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Message when lose'),
+    '#default_value' => variable_get('pong_computer_winsmessage', 'Computer beats you.'),
+    '#description' => t('Message when player loses'), 
+    '#required' => TRUE,
+  );
+  
+
+   $form['pong_computer_winningmessage'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Message when losing'),
+    '#default_value' => variable_get('pong_computer_winningmessage', 'Computer is beating you.'),
+    '#description' => t('Message when losing against the computer'), 
+    '#required' => TRUE,
+  );
+
+  $form['pong_tie_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Message when tied'),
+    '#default_value' => variable_get('pong_tie_message', 'Currently tied.'),
+    '#description' => t('Message when tied against the computer'), 
+    '#required' => TRUE,
+  );  
+
+  $form['pong_gameover_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Message when game over'),
+    '#default_value' => variable_get('pong_gameover_message', 'Game over'),
+    '#description' => t('Message when the game is over.'), 
+    '#required' => TRUE,
+  );  
+
+  $form['pong_countdown_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Message when counting down'),
+    '#default_value' => variable_get('pong_countdown_message', 'Countdown'),
+    '#description' => t('Message when counting down to start game. Is not shown if countdown is zero.'), 
+    '#required' => TRUE,
+  );  
+
+  $form['pong_countdown'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Seconds till countdown to start game'),
+    '#default_value' => variable_get('pong_countdown', 0),
+    '#description' => t('Seconds till countdown to start game. Set to zero to have no countdown.'), 
+    '#required' => TRUE,
+  );  
+   
+  $form['pong_area_game_x'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Width of board in pixels'),
+    '#default_value' => variable_get('pong_area_game_x', 170),
+    '#description' => t('Width of board in pixels. Leave blank to use background image width.'), 
+  ); 
+  
+  $form['pong_area_game_y'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Height of board in pixels'),
+    '#default_value' => variable_get('pong_area_game_y', 200),
+    '#description' => t('Height of board in pixels. Leave blank to use background image height.'), 
+  );    
+  
+  $form['pong_background'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Background Image'),
+    '#default_value' => variable_get('pong_background', '/'.drupal_get_path('module', 'pong').'/img/drupal.jpg'),
+    '#description' => t('URL of image to use as background to board. Leave blank if no image.')
+  );
+    
+  $form['pong_background_transparency'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Transparency of board'),
+    '#default_value' => variable_get('pong_background_transparency', 0.2),
+    '#description' => t('Transparency of board on page. 1 is no transparency. 0 is completely transparent.'), 
+    '#required' => TRUE,
+  );  
+	
+
+  $form['pong_paddles_width'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Width of paddle in pixels'),
+    '#default_value' => variable_get('pong_paddles_width', ''),
+    '#description' => t('How wide is the paddle in pixels? Leave blank if use paddle image width.'), 
+  );
+
+  $form['pong_paddles_height'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Height of paddle in pixels'),
+    '#default_value' => variable_get('pong_paddles_height', ''),
+    '#description' => t('How high is the paddle in pixels? Leave blank if use paddle image height.'), 
+  );
+  
+  $form['pong_paddles_user_image'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User paddle image'),
+    '#default_value' => variable_get('pong_paddles_user_image', '/'.drupal_get_path('module', 'pong').'/img/paddlered.png'),
+    '#description' => t('URL of image to use as users pong paddle. Leave blank if no image. Will use user paddle color instead.')
+  );
+
+  $form['pong_paddles_user_color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Color of users paddle if no image'),
+    '#default_value' => variable_get('pong_paddles_user_color', '#f00'),
+    '#description' => t('The color of users paddle if no image set.')
+  );
+			
+  $form['pong_paddles_computer_image'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Computer paddle image'),
+    '#default_value' => variable_get('pong_paddles_computer_image', '/'.drupal_get_path('module', 'pong').'/img/paddleblue.png'),
+    '#description' => t('URL of image to use as computers pong paddle. Leave blank if no image. Will use computer paddle color instead.')
+  );  
+
+  $form['pong_paddles_computer_color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Color of computers paddle if no image'),
+    '#default_value' => variable_get('pong_paddles_computer_color', '#00f'),
+    '#description' => t('The color of computers paddle if no image set.')
+  );
+			
+  $form['pong_ball_width'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Width of ball in pixels'),
+    '#default_value' => variable_get('pong_ball_width', ''),
+    '#description' => t('How wide is the ball in pixels? Leave blank if use ball image width.'), 
+  );
+
+  $form['pong_ball_height'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Height of ball in pixels'),
+    '#default_value' => variable_get('pong_ball_height', ''),
+    '#description' => t('How high is the ball in pixels? Leave blank if use ball image height.'), 
+  );	
+
+  $form['pong_ball_img'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Computer paddle image'),
+    '#default_value' => variable_get('pong_ball_img', '/'.drupal_get_path('module', 'pong').'/img/ball.png'),
+    '#description' => t('URL of image to use as the pong ball. Leave blank if no image. Will use ball color instead.')
+  );  	
+
+  $form['pong_ball_color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Color of ball if no image'),
+    '#default_value' => variable_get('pong_ball_color', '#000'),
+    '#description' => t('The color of ball if no image set.')
+  );  
+
+  $form['pong_speed_ball_initial_pixels'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Initial speed of ball (pixels per second)'),
+    '#default_value' => variable_get('pong_speed_ball_initial_pixels', 20),
+    '#description' => t('How fast does the ball initially move off the paddle in pixels per second?'), 
+    '#required' => TRUE,
+  );    
+  
+  $form['pong_lives_initial'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of player lives'),
+    '#default_value' => variable_get('pong_lives_initial', 5),
+    '#description' => t('How many lives does the player get before the game is over?'), 
+    '#required' => TRUE,
+  );    
+
+
+  $form['pong_inverted'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Game is player up and down instead of left to right.'),
+    '#default_value' => variable_get('pong_inverted', true),
+    '#description' => t('Is the game played vertically with the ball going up and down or left to right? If horizontal paddle images used will have to rotate so vertical.')
+  );  
+    
+  $form['pong_bestscore'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Best score'),
+    '#default_value' => variable_get('pong_bestscore', ''),
+    '#description' => t('Set the best game score. Set to blank to reset.')
+  );
+
+  $form['pong_bestuser'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User with best score'),
+    '#default_value' => variable_get('pong_bestuser', ''),
+    '#description' => t('Set the user who got the best score')
+  );
+
+  return system_settings_form($form);
+}
+
+
+function pong_win()
+{      
+  global $user;
+  $ticker=$_POST['pong_ticker'];
+  $output='';
+  if ($ticker)
+  {
+    if ($user->name)
+    {
+      $message=$_POST['pong_message'];
+ 
+      if ($message)
+        $output=$message.'<br/>';
+      $output.='Congratulations '.$user->name.' on getting a score of '.$ticker.'.';
+      variable_set('pong_bestscore',$ticker);
+      variable_set('pong_bestuser',$user->name);
+    }
+    else
+      $output='Congratulations. You got the best score. If you were logged in your score would have been recorded!';
+
+  }
+    return  $output;
+  //return theme('table', $output);
+
+}
+
+
+
+?>

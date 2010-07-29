@@ -1,0 +1,12 @@
+; $Id: abuse.info,v 1.5.6.4 2008/10/15 17:50:58 btmash Exp $
+name = abuse
+description = An abuse system to flag content on the site
+package = "Administration"
+version = VERSION
+core = 6.x
+; Information added by drupal.org packaging script on 2008-11-06
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "abuse"
+datestamp = "1225929615"
+

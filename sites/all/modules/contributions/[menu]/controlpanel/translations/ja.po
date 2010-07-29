@@ -1,0 +1,110 @@
+# $Id: ja.po,v 1.1 2008/08/17 07:57:33 imagine Exp $
+# -----------------------------------------------------------------------------
+# Japanese translation of Drupal (modules-controlpanel)
+#
+# Copyright (c) 2006-2008  Drupal Japan  ( http://drupal.jp/ )  /
+#                          Takafumi      ( jp.drupal@imagine **reverse order**)
+#
+# Generated from file:
+#  controlpanel.module,v 1.22 2006/02/28 15:49:18 der
+#  controlpanel.info: n/a
+#
+# -----------------------------------------------------------------------------
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2008-08-16 23:55+0900\n"
+"Last-Translator: Takafumi <jp.drupal@imagine **reverse order**>\n"
+"Language-Team: Drupal Japan\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: controlpanel.module:15
+msgid "Enables the use of a graphical Control Panel."
+msgstr "グラフィカルなコントロールパネルを利用できるようにします。"
+
+#: controlpanel.module:26;46 controlpanel.info:0
+msgid "Control Panel"
+msgstr "コントロールパネル"
+
+#: controlpanel.module:47
+msgid "Configure Control Panel behavior."
+msgstr "コントロールパネルの振る舞いを設定します。"
+
+#: controlpanel.module:198
+msgid "Block settings"
+msgstr "ブロックの設定"
+
+#: controlpanel.module:202
+msgid "Number of blocks"
+msgstr "ブロック数"
+
+#: controlpanel.module:203
+msgid "Select the number of Control Panel blocks you wish to generate.  Control Panel blocks are configured individually in the block configuration pages."
+msgstr "生成したいコントロールパネルのブロック数を指定してください。 コントロールパネルのブロックは、ブロックの設定ページで個々に設定されます。"
+
+#: controlpanel.module:219
+msgid "General settings"
+msgstr "全般の設定"
+
+#: controlpanel.module:224
+msgid "Control Panel name"
+msgstr "コントロールパネル名"
+
+#: controlpanel.module:226
+msgid "Enter the name of this Control Panel."
+msgstr "このコントロールパネルの名称を入力してください。"
+
+#: controlpanel.module:233
+msgid "Source menu item"
+msgstr "起点メニューアイテム"
+
+#: controlpanel.module:239
+msgid "Icon size"
+msgstr "アイコンサイズ"
+
+#: controlpanel.module:241
+msgid "Select the size of the control panel icons."
+msgstr "コントロールパネルのアイコンサイズを指定してください。"
+
+#: controlpanel.module:245
+msgid "Child Panels"
+msgstr "下位パネル"
+
+#: controlpanel.module:251
+msgid "Build Child Menu Panels"
+msgstr "下位メニューパネルを構築"
+
+#: controlpanel.module:254
+msgid "Check this box to recursively build child panels."
+msgstr "ここにチェックを入れると、再帰的に下位パネルを構築します。"
+
+#: controlpanel.module:258
+msgid "Number of levels"
+msgstr "レベル数"
+
+#: controlpanel.module:260
+msgid "Select how many control panel levels to build."
+msgstr "構築するコントロールパネルのレベルを指定してください。"
+
+#: controlpanel.module:264
+msgid "Make child panels collapsable"
+msgstr "下位パネルを折りたたみ可能にする"
+
+#: controlpanel.module:267
+msgid "Check this box to allow child panels to be collapsed."
+msgstr "ここにチェックを入れると、下位パネルが折りたためるようになります。"
+
+#: controlpanel.module:58
+msgid "access control panel"
+msgstr "コントロールパネルへのアクセス"
+
+#: controlpanel.module:0
+msgid "controlpanel"
+msgstr "controlpanel"
+
+#: controlpanel.info:0
+msgid "Build graphical Control Panels."
+msgstr "グラフィカルなコントロールパネルを構築します。"
+

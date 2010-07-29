@@ -1,0 +1,97 @@
+<?php
+// $Id: translation_overview.install,v 1.2 2008/10/17 23:57:24 drewish Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function translation_overview_install() {
+  drupal_install_schema('translation_overview');
+
+  // Insert records for all the source nodes, and untranslated nodes.
+  db_query('INSERT INTO {translation_overview_priority} (tnid) SELECT DISTINCT(nid) FROM {node} WHERE nid = tnid OR tnid = 0 OR tnid IS NULL');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function translation_overview_uninstall() {
+  drupal_uninstall_schema('translation_overview');
+
+  variable_del('translation_overview_management');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function translation_overview_schema() {
+  $schema['translation_overview_priority'] = array(
+    'description' => t('Track the priority in which nodes should be translated into various languages.'),
+    'fields' => array(
+      'tnid' => array(
+        'description' => t('The identifier for a node or set of node translations.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('tnid'),
+  );
+
+  // And dynamically assemble the table with a column per languages. Call
+  // language_list() with $reset = TRUE in case the languages have changed.
+  foreach (language_list('language', TRUE) as $lang_code => $language) {
+    $field = db_escape_table($lang_code);
+    $schema['translation_overview_priority']['fields'][$field] = array(
+      'type' => 'int',
+      'size' => 'tiny',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      // The default should be equivalent to TRANSLATION_OVERVIEW_NORMAL
+      // which isn't defined since the module hasn't been loaded yet.
+      'default' => 1,
+    );
+    $schema['translation_overview_priority']['indexes'][$field] = array($field);
+  }
+
+  return $schema;
+}
+
+function translation_overview_update_6000() {
+  $ret = array();
+
+  $schema['translation_overview_priority'] = array(
+    'description' => t('Track the priority in which nodes should be translated into various languages.'),
+    'fields' => array(
+      'tnid' => array(
+        'description' => t('The identifier for a node or set of node translations.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('tnid'),
+  );
+
+  // And dynamically assemble the table with a column per languages. Call
+  // language_list() with $reset = TRUE in case the languages have changed.
+  foreach (language_list('language', TRUE) as $lang_code => $language) {
+    $field = db_escape_table($lang_code);
+    $schema['translation_overview_priority']['fields'][$field] = array(
+      'type' => 'int',
+      'size' => 'tiny',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      // The default should be equivalent to TRANSLATION_OVERVIEW_NORMAL
+      // which isn't defined since the module hasn't been loaded yet.
+      'default' => 1,
+    );
+    $schema['translation_overview_priority']['indexes'][$field] = array($field);
+  }
+
+  db_create_table($ret, 'translation_overview_priority', $schema['translation_overview_priority']);
+
+  // Insert records for all the source nodes, and untranslated nodes.
+  $ret[] = update_sql('INSERT INTO {translation_overview_priority} (tnid) SELECT DISTINCT(nid) FROM {node} WHERE nid = tnid OR tnid = 0 OR tnid IS NULL ORDER BY tnid');
+
+  return $ret;
+}

@@ -1,0 +1,304 @@
+# $Id: el.po 18174 2008-10-17 07:52:33Z andy_st $
+#
+# Gallery - a web based photo album viewer and editor
+# Copyright (C) 2000-2008 Bharat Mediratta
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA  02110-1301, USA.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Gallery: Registration 1.0.14\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-09-15 17:59+0000\n"
+"PO-Revision-Date: 2007-03-24 19:57+0200\n"
+"Last-Translator: Anthi Andreou <tp_s@hotmail.com>\n"
+"Language-Team: Greek <gallery-devel@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Greek\n"
+"X-Poedit-Country: GREECE\n"
+
+msgid "Activation by administrator"
+msgstr "Ενεργοποίηση από τον Διαχειριστή"
+
+msgid "Use confirmation emails"
+msgstr "Επιβεβαίωση με email"
+
+msgid "Accept without confirmation"
+msgstr "Αποδοχή χωρίς επιβεβαίωση"
+
+msgid "Yes"
+msgstr "Ναι"
+
+msgid "No"
+msgstr "Όχι"
+
+msgid "Registration"
+msgstr "Εγγραφή"
+
+msgid "New User Registration"
+msgstr "Εγγραφή Νέου Χρήστη"
+
+msgid "Gallery"
+msgstr "Γκαλερί"
+
+msgid "Account activation"
+msgstr "Ενεργοποίηση Λογαριασμού"
+
+msgid "New user registration"
+msgstr "Εγγραφή Νέου Χρήστη"
+
+msgid "Welcome to Gallery"
+msgstr ""
+
+msgid "Register"
+msgstr "Εγγραφείτε"
+
+msgid "New user registration:"
+msgstr "Εγγραφή Νέου Χρήστη:"
+
+#, c-format
+msgid "    Username: %s"
+msgstr "    Όνομα Χρήστη: %s"
+
+#, c-format
+msgid "   Full name: %s"
+msgstr "   Πλήρες Όνομα: %s"
+
+#, c-format
+msgid "       Email: %s"
+msgstr "       Ηλεκτ.Διεύθυνση(email): %s"
+
+msgid "Activate or delete this user here"
+msgstr "Ενεργοποιήστε ή διαγράψτε αυτό τον χρήστη εδώ"
+
+msgid "Registration Settings"
+msgstr "Ρυθμίσεις Εγγραφής"
+
+msgid "Settings saved successfully"
+msgstr "Οι Ρυθμίσεις αποθηκεύτηκαν με επιτυχία"
+
+#, c-format
+msgid "Activated user %s"
+msgstr "Ενεργοποιηθηκε ο χρήστης %s"
+
+#, c-format
+msgid "Deleted user %s"
+msgstr "Διαγράφηκε ο χρήστης %s"
+
+msgid "Confirmation Policy"
+msgstr "Πολιτική Επιβεβαίωσης"
+
+msgid ""
+"The Registration module can accept new user registrations instantly, require the user to "
+"click a confirmation link in an email that is sent by the module, or require account "
+"activation by a site administrator."
+msgstr ""
+"Το module εγγραφής μπορεί να δεχτεί εγγραφές νέων χρηστών αμέσως, να απαιτήσει επιβεβαίωση "
+"από τον χρήστη πατώντας σε μια διεύθυνση σε ένα ηλεκτρονικό μήνυμα που του αποστέλνεται από "
+"το module, ή να απαιτήσει ενεργοποίηση του νέου λογαριασμού από τον Διαχειριστή."
+
+msgid "Choose policy:"
+msgstr "Επιλογή Πολιτκής:"
+
+msgid "Email details"
+msgstr "Λεπτομέρειες Ηλεκτρoνικής Διεύθυνσης (email)"
+
+msgid "Sender(From) Email Address:"
+msgstr "Ηλεκτρονική Διεύθυνση Αποστολέα(From):"
+
+msgid "Confirmation Email Subject:"
+msgstr "Θέμα Ηλεκτρ. Μηνύματος Επιβεβαίωσης:"
+
+msgid "Email Site Administrators for all new registrations"
+msgstr "Να αποστέλνεται ηλεκτρονικό μήνυμα στον διαχειριστή για όλες τις νέες εγγραφές"
+
+msgid "Admin Email Subject:"
+msgstr "Τίτλος Ηλεκτρ. Μηνύματος Διαχειριστή:"
+
+msgid "Email new users upon account activation"
+msgstr ""
+
+#, fuzzy
+msgid "Welcome Email Subject:"
+msgstr "Τίτλος Ηλεκτρ. Μηνύματος Διαχειριστή:"
+
+msgid "Save"
+msgstr "Αποθήκευση"
+
+msgid "Reset"
+msgstr "Επαναφορά"
+
+msgid "Pending Registrations"
+msgstr "Εκκρεμή Εγγραφές"
+
+msgid "&laquo; first"
+msgstr "&laquo; πρώτη"
+
+msgid "&laquo; back"
+msgstr "&laquo; πίσω"
+
+#, c-format
+msgid "Viewing page %d of %d"
+msgstr "Σελίδα %d από %d"
+
+msgid "next &raquo;"
+msgstr "επόμενη &raquo;"
+
+msgid "last &raquo;"
+msgstr "τελευταία &raquo;"
+
+msgid "Username"
+msgstr "Όνομα Χρήστη"
+
+msgid "Full Name"
+msgstr "Πλήρες Όνομα"
+
+msgid "Email"
+msgstr "Ηλεκτρονική Διεύθυνση"
+
+msgid "Date"
+msgstr "Ημερομηνία"
+
+msgid "Action"
+msgstr "Ενέργεια"
+
+msgid "activate"
+msgstr "ενεργοποίηση"
+
+msgid "delete"
+msgstr "διαγραφή"
+
+msgid "Account Activation"
+msgstr "Ενεργοποίηση Λογαριασμού"
+
+msgid "This user cannot be activated."
+msgstr "Αυτός ο χρήστης δεν μπορεί να ενεργοποιηθεί"
+
+msgid ""
+"This can happen if the URL you entered is not correct or you already activated this account. "
+"Please check if your mail client broke the link into several lines and append them without "
+"spaces."
+msgstr ""
+"Αυτό μπορεί να συνέβηκε αν το URL που δώσατε δεν είναι ορθό ή αν έχετε ήδη ενεργοποιήσει τον "
+"λογαριασμό σας. Παρακαλούμε ελέγξτε αν η διεύθυνση στο ηλεκτρονικό μήνυμα που λάβατε έχει "
+"σπάσει σε πολλές γραμμές και επισυνάψετε την σε μία αφαιρώντας οποιαδήποτε διαστήματα."
+
+msgid "Your account has been activated."
+msgstr "Ο Λογαριασμός σας ενεργοποιηθηκε"
+
+msgid "You can now login to your account with your username and password."
+msgstr ""
+"Τώρα μπορείτε να συνδεθείτε στον λογαριασμός σας χρησιμοποιώντας το όνομα χρήστη και τον "
+"κωδικό πρόσβασης σας."
+
+#, c-format
+msgid "Hello %s,"
+msgstr "Γεια σου %s,"
+
+#, c-format
+msgid "You receive this email because you have registered at %s"
+msgstr "Λάβατε αυτό το μήνυμα λόγο της εγγραφής σας στο %s"
+
+#, c-format
+msgid "Your username is: %s"
+msgstr "Το όνομα χρήστη σας είναι: %s"
+
+msgid "To finish the registration process please click the following link:"
+msgstr "Για να ολοκληρώσετε την εγγραφή σας παρακαλούμε ακολουθήστε την ακόλουθη διεύθυνση:"
+
+msgid ""
+"If you did not register at this site then please ignore this email.  The registration will "
+"not become valid and you will not receive any further emails.  Sorry for the inconvenience."
+msgstr ""
+"Αν δεν έχετε κάνει εγγραφή σ' αυτή την ιστοσελίδα τότε παρακαλούμε αγνοήστε αυτό το "
+"ηλεκτρονικό μήνυμα. Η εγγραφή δεν θα είναι έγκυρη και δεν θα λάβετε ξανά οποιοδήποτε "
+"ηλεκτρονικό μήνυμα από αυτή την ιστοσελίδα. Απολογούμαστε για την ενόχληση."
+
+msgid "Thank you!"
+msgstr "Ευχαριστούμε!"
+
+msgid "Registration successful"
+msgstr "Επιτυχημένη Εγγραφή"
+
+msgid "Your registration was successful."
+msgstr "Η Εγγραφή σας ήταν επιτυχής"
+
+msgid ""
+"You will shortly receive an email containing a link. You have to click this link to confirm "
+"and activate your account.  This procedure is necessary to prevent account abuse."
+msgstr ""
+"Σύντομα θα λάβετε ένα ηλεκτρονικό μήνυμα που θα περιέχει μια διεύθυνση.  Πρέπει να "
+"ακολουθήσετε αυτή την διεύθυνση για επιβεβαίωση και ενεργοποίηση του λογαριασμού σας. Αυτή η "
+"διαδικασία είναι αναγκαία για αποφυγή κατάχρησης του λογαριασμού."
+
+msgid "Your registration will be processed and your account activated soon."
+msgstr "Η Εγγραφή σας θα προωθηθεί και ο λογαριασμός σας θα ενεργοποιηθεί σύντομα"
+
+msgid "Your registration was successful and your account has been activated."
+msgstr "Η Εγγραφή σας ήταν επιτυχής και ο λογαριασμός σας ενεργοποιήθηκε"
+
+#, c-format
+msgid "You can now %slogin%s to your account with your username and password."
+msgstr ""
+"Τώρα μπορείτε να %sσυνδεθείτε%s στον λογαριασμό σας χρησιμοποιώντας το όνομα χρήστη και τον "
+"κωδικό πρόσβασης σας."
+
+msgid "Register As New User"
+msgstr "Εγγραφείτε ως νέος χρήστης"
+
+msgid "(required)"
+msgstr "(απαιτείται)"
+
+msgid "You must enter a username"
+msgstr "Πρέπει να δώσετε ένα όνομα χρήστη"
+
+#, c-format
+msgid "Username '%s' already exists"
+msgstr "Ο Χρήστης '%s' υπάρχει ήδη"
+
+msgid "You must enter your full name"
+msgstr "Πρέπει να δώσετε το Πλήρες Όνομα σας"
+
+msgid "Email Address"
+msgstr "Ηλεκτρονική Διεύθυνση"
+
+msgid "You must enter an email address"
+msgstr "Πρέπει να δώσετε μία Ηλεκτρονική Διεύθυνση(email)"
+
+msgid "Invalid email address"
+msgstr "Άκυρη Ηλεκτρονική Διεύθυνση"
+
+msgid "Password"
+msgstr "Κωδικός Πρόσβασης"
+
+msgid "You must enter a password"
+msgstr "Πρέπει να δώσετε έναν κωδικό"
+
+msgid "Verify Password"
+msgstr "Επιβεβαίωση Κωδικού"
+
+msgid "You must enter the password a second time"
+msgstr "Πρέπει να δώσετε τον κωδικό ξανά"
+
+msgid "The passwords you entered did not match"
+msgstr "Οι κωδικοί που δώσατε δεν ταιριάζουν"
+
+msgid "Cancel"
+msgstr "Ακύρωση"
+
+msgid "Your account is now active. Visit the site listed above to login."
+msgstr ""

@@ -1,0 +1,57 @@
+July 29th 2008
+ - ad_geoip.install
+    o bug #288641: create ad_geoip_ads_city table
+ - ad_geoip.module
+    o fix typo in GEOIP_CITY_EDITION_REV1 definition
+
+July 23rd 2008
+ - ad_geoip.module
+    o add detailed status report to assist in locating installed GeoIP databases
+    o add support for geotargeting by region (state & province)
+    o add support for geotargeting by city
+    o add help text to geotargeting fieldset
+ - ad_geoip.inc
+    o add support for geotargeting by region (state & province)
+    o add support for geotargeting by city
+    o move duplicated code into a single function
+    o code cleanup and simplification
+ - ad_geoip.install
+    o rename ad_geoip_ads to ad_geoip_ads_country
+    o add ad_geoip_ads_region table
+    o add ad_geoip_ads_city table
+
+July 11th 2008
+ - ad_geoip.inc
+    o add additional debug tracing
+    o notify adserve when there are no more available ads
+    o properly support displaying ads when quantity > 1
+    o optimize when processing an unkown IP address
+
+July 10th 2008
+ - ad_geoip.inc
+    o support geotargeting with ad cache enabled
+ - ad_geoip.module
+    o populate cache with geotargeting information
+
+July 9th 2008
+ - ad_geoip.module
+    o add defines for three types of geotargeting support
+ - ad_geoip.inc
+    o implement basic support for geotargeting countries (no cache support yet)
+
+June 27th 2008
+ - ad_geoip.module
+    o initial test definition of adapi() 'adserve_select' hook
+    o code cleanup, make current ad_geoip_update_iso3166() usage default
+
+June 11th 2008
+ - ad_geoip.module
+    o alter advertisement forms, adding section to configure GeoTargeting
+    o automatically populate ad_geoip_codes table, downloading ISO3166 document
+      every 30 days to register 2 letter country codes and country names
+ - ad_geoip.install
+    o create ad_geoip_codes table for storing country codes and names
+    o create ad_geoip_ads table for storing ad geotargeting configuration
+
+June 10th 2008
+ - Initial release.

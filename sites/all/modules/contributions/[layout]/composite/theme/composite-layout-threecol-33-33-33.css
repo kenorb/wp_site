@@ -1,0 +1,27 @@
+/* $Id: composite-layout-threecol-33-33-33.css,v 1.1.2.1 2009/01/15 02:41:13 bengtan Exp $ */
+
+.composite-threecol-33-33-33 .composite-row {
+  width: 100%;
+  clear: both;
+}
+
+.composite-threecol-33-33-33 .composite-column {
+  float: left; 
+  width: 33.33%; 
+}
+
+.composite-threecol-33-33-33 .composite-row-top .composite-zone-inner {
+  margin-bottom: 1em;
+}
+
+.composite-threecol-33-33-33 .composite-column-first .composite-zone-inner {
+  margin: 0 .67em 1em 0;
+}
+
+.composite-threecol-33-33-33 .composite-column-middle .composite-zone-inner {
+  margin: 0 .33em 1em .33em;
+}
+
+.composite-threecol-33-33-33 .composite-column-last .composite-zone-inner {
+  margin: 0 0 1em .67em;
+}

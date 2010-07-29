@@ -1,0 +1,31 @@
+DEVELOPERS
+----------
+* Arto Bendiken <http://bendiken.net/>
+  Project leader, Drupal 4.7.x branch maintainer
+  <http://drupal.org/user/26089>
+
+* Jeff Miccolis <http://www.developmentseed.org/blog/blog/66>
+  Drupal 5.x branch maintainer
+  <http://drupal.org/user/31731>
+
+* David Donohue <http://drdonohue.com/>
+  Original module developer & project founder
+  <http://drupal.org/user/16745>
+
+SPONSORS
+--------
+* MakaluMedia Group <http://www.makalumedia.com/>
+* SPAWAR Europe <https://www.eur.spawar.navy.mil/>
+
+CONTRIBUTIONS
+-------------
+* Pete, aka fm <http://drupal.org/user/96243>
+* hickory <http://drupal.org/user/70429>
+* John Stalcup, aka MrTaco <http://drupal.org/user/86930>
+* Erwin Lion, aka belio <http://drupal.org/user/44922>
+* Eric Charikane, aka ec <http://drupal.org/user/16813>
+
+LIBRARIES
+---------
+* MIT's SIMILE Timeline
+  <http://simile.mit.edu/timeline/>

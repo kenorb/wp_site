@@ -1,0 +1,10 @@
+; $Id: syndication.info,v 1.2.2.1 2009/01/18 06:14:53 aaron1234nz Exp $
+name = Syndication
+description = Module to consolidate RSS feeds on to a single page.
+core = 6.x
+; Information added by drupal.org packaging script on 2009-01-18
+version = "6.x-1.1"
+core = "6.x"
+project = "syndication"
+datestamp = "1232310037"
+

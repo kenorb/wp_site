@@ -1,0 +1,10 @@
+; $Id: nofollowlist.info,v 1.3 2008/03/05 21:19:30 greggles Exp $
+name = nofollowlist
+description = "Links to certain hosts will have a rel=nofollow added to them."
+core = "6.x"
+; Information added by drupal.org packaging script on 2008-08-08
+version = "6.x-1.0"
+core = "6.x"
+project = "nofollowlist"
+datestamp = "1218210622"
+

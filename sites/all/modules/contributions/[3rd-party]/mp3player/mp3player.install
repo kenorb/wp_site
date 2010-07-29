@@ -1,0 +1,49 @@
+<?php
+// $Id: mp3player.install,v 1.1.2.3 2009/01/02 12:18:02 starnox Exp $
+
+/**
+ * @file
+ * The install file for MP3 Player.
+ */
+
+
+/**
+ * Implementation of hook_install().
+ */
+function mp3player_install() {
+  //Do Nothing
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function mp3player_uninstall() {
+  //Delete set variables from database
+  variable_del('mp3player_autostart');
+  variable_del('mp3player_loop');
+  variable_del('mp3player_animation');
+  variable_del('mp3player_remaining');
+  variable_del('mp3player_noinfo');
+  variable_del('mp3player_initialvolume');
+  variable_del('mp3player_buffer');
+  variable_del('mp3player_encode');
+  variable_del('mp3player_rtl');
+  variable_del('mp3player_width');
+  variable_del('mp3player_transparentpagebg');
+  variable_del('mp3player_pagebg');
+  variable_del('mp3player_bg');
+  variable_del('mp3player_leftbg');
+  variable_del('mp3player_lefticon');
+  variable_del('mp3player_voltrack');
+  variable_del('mp3player_volslider');
+  variable_del('mp3player_rightbg');
+  variable_del('mp3player_rightbghover');
+  variable_del('mp3player_righticon');
+  variable_del('mp3player_righticonhover');
+  variable_del('mp3player_loader');
+  variable_del('mp3player_track');
+  variable_del('mp3player_tracker');
+  variable_del('mp3player_border');
+  variable_del('mp3player_skip');
+  variable_del('mp3player_text');
+}

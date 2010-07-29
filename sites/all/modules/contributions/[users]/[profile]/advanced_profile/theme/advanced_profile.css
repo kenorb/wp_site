@@ -1,0 +1,172 @@
+/* $Id: advanced_profile.css,v 1.2.4.4 2009/01/05 05:19:43 michellec Exp $ */
+
+/**
+ * @file
+ * Contains styling for the user page when overridden by APK.
+*/
+
+/*** ROUNDED PANES ***********************************************************/
+#user-profile .wrap-corner .r-edge {
+  padding: 1px 10px;
+}
+
+/*** SECTION HEADINGS ********************************************************/
+
+#user-profile .panel-pane h2.title {
+  background: #A8A8A8;
+  color: #ffffff;
+  font-size: 120%;
+  font-weight: bold;
+  padding: 3px 0px 3px 5px;
+}
+
+/*** DEFAULT PANES ***********************************************************/
+
+#user-profile #profile-author-pane {
+}
+
+#user-profile #profile-contact{
+}
+
+#user-profile #profile-links {
+}
+
+#user-profile #profile-stats {
+}
+
+#user-profile #profile-comments {
+}
+
+#user-profile #profile-comment-form {
+}
+
+#user-profile #profile-about {
+}
+
+#user-profile #profile-topics {
+}
+
+#user-profile #profile-friends {
+}
+
+#user-profile #profile-friends img {
+  max-width: 85px;
+}
+
+#user-profile #profile-friends td {
+  text-align: center;
+}
+
+
+/*** AUTHOR PANE  ************************************************************/
+
+/* Wrappers */
+#user-profile .author-pane {
+}
+
+#user-profile .author-pane-inner {
+}
+
+/* Sections */
+#user-profile .author-pane-section {
+  margin-bottom: 10px;
+}
+
+#user-profile .author-pane-name-status {
+}
+
+#user-profile .author-pane-stats {
+}
+
+#user-profile .author-pane-admin {
+}
+
+#user-profile .author-pane-contact {
+}
+
+/* Lines & icons*/
+#user-profile .author-pane-line {
+  padding-bottom: 5px;
+}
+
+#user-profile .author-pane-icon {
+  display: inline;
+  padding: 10px 2px 2px 0;
+}
+
+/* Fields */
+#user-profile .author-pane .author-pane-label {
+  font-weight: bold;
+}
+
+#user-profile .author-pane-name-status .picture {
+  float: none;
+  padding-left: 0px;
+}
+
+#user-profile .author-pane-name-status .picture img {
+  border: 1px solid #CCCCCC;
+  height: auto;
+  padding: 8px;
+  max-width: 120px;
+}
+
+#user-profile .author-facebook-status {
+}
+
+#user-profile .author-title {
+}
+
+#user-profile .author-badges {
+}
+
+#user-profile .author-joined {
+}
+
+#user-profile .author-posts {
+}
+
+#user-profile .author-points {
+}
+
+#user-profile .author-ip {
+}
+
+#user-profile .author-fasttoggle-block {
+}
+
+/*** USER LIST VIEW **********************************************************/
+
+.user-list-item {
+  border: 1px solid #CCCCCC;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+.user-list-author-pane {
+  float: left;
+  margin-right: 10px;
+}
+
+.user-list-item .author-name {
+  padding-bottom: 5px;
+}
+
+.user-list-item .author-name a {
+  font-size: 120%;
+  font-weight: bold;
+}
+
+.user-list-author-pane .picture {
+  float: none;
+  clear: none;
+  padding-left: 0;
+}
+
+.user-list-author-pane .picture img {
+  height: auto;
+  padding: 8px;
+  max-width: 120px;
+  border: 1px solid #CCCCCC;
+}
+

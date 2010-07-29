@@ -1,0 +1,285 @@
+# $Id: el.po 18173 2008-10-17 07:14:30Z andy_st $
+#
+# Gallery - a web based photo album viewer and editor
+# Copyright (C) 2000-2008 Bharat Mediratta
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA  02110-1301, USA.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Gallery: Getid3 1.0.6\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2006-03-15 17:59+0100\n"
+"PO-Revision-Date: 2007-03-28 23:59+0200\n"
+"Last-Translator: Anthi Andreou <tp_s@hotmail.com>\n"
+"Language-Team: Greek <gallery-devel@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"X-Poedit-Language: Greek\n"
+"X-Poedit-Country: GREECE\n"
+
+msgid "Getid3"
+msgstr "Getid3"
+
+msgid "A toolkit for getting id3 tag information"
+msgstr "Εργαλειοθήκη για πληροφορίες ετικετών id3"
+
+msgid "Extra Data"
+msgstr "Επιπρόσθετα Στοιχεία"
+
+msgid "Get the origination timestamp"
+msgstr "Λήψη αρχικού χρονόσημου"
+
+msgid "Album"
+msgstr "Άλμπουμ"
+
+msgid "Artist"
+msgstr "Καλλιτέχνης"
+
+msgid "Audio Bit Rate"
+msgstr "Ρυθμός μετάδοσης bit ήχου (Bit Rate)"
+
+msgid "Audio Bit Rate Mode"
+msgstr "Κατάσταση Ρυθμού Μετάδοσης bit Ήχου (Bit Rate)"
+
+msgid "Audio Channels"
+msgstr "Κανάλια Ήχου"
+
+msgid "Audio Codec"
+msgstr "Κωδικοποίηση Ήχου (Codec)"
+
+msgid "Channel Mode"
+msgstr "Κατάσταση Καναλιών"
+
+msgid "Audio Sample Rate"
+msgstr "Audio Sample Rate"
+
+msgid "Copyright"
+msgstr "Πνευματικά Δικαιώματα"
+
+msgid "Date/Time"
+msgstr "Ημερομηνία/Ώρα"
+
+msgid "Genre"
+msgstr "Είδος"
+
+msgid "Playtime (Seconds)"
+msgstr "Χρόνος Αναπαραγωγής (δευτερόλεπτα)"
+
+msgid "Playtime"
+msgstr "Χρόνος Αναπαραγωγής"
+
+msgid "Title"
+msgstr "Τίτλος"
+
+msgid "Track"
+msgstr "Κομμάτι"
+
+msgid "Video Bit Rate"
+msgstr "Ρυθμός μετάδοσης bit Ταινίας (Bit Rate)"
+
+msgid "Video Bit Rate Mode"
+msgstr "Κατάσταση Ρυθμού μετάδοσης bit Ταινίας (Bit Rate)"
+
+msgid "Video Codec"
+msgstr "Κωδικοποιηση Ταινίας"
+
+msgid "Video Data Format"
+msgstr "Video Data Format"
+
+msgid "Video Frame Rate"
+msgstr "Video Frame Rate"
+
+msgid "Video Resolution X"
+msgstr "Ανάλυση Ταινίας X"
+
+msgid "Video Resolution Y"
+msgstr "Ανάλυση Ταινίας Y"
+
+msgid "Video Software"
+msgstr "Λογισμικό Ταινίας"
+
+msgid "Year"
+msgstr "Έτος"
+
+msgid "getID3() Settings"
+msgstr "Ρυθμίσεις getID3()"
+
+#, c-format
+msgid "Added %d property to the Summary view"
+msgid_plural "Added %d properties to the Summary view"
+msgstr[0] "Προστέθηκε %d ιδιότητα στην προβολή περίληψης"
+msgstr[1] "Προστέθηκαν %d ιδιότητες στην προβολή περίληψης"
+
+#, c-format
+msgid "Removed %d property from the Summary view"
+msgid_plural "Removed %d properties from the Summary view"
+msgstr[0] "Αφαιρέθηκε %d ιδιότητα από την προβολή περίληψης"
+msgstr[1] "Αφαιρέθηκαν %d ιδιότητες από την προβολή περίληψης"
+
+msgid "Restored the default properties for the Summary view"
+msgstr "Ανακτήθηκαν οι προεπιλεγμένες ιδιότητες για την προβολή Περίληψης"
+
+#, c-format
+msgid "Moved %d property up in the Summary view"
+msgid_plural "Moved %d properties up in the Summary view"
+msgstr[0] "Μεταφέρθηκε πάνω %d ιδιότητα στην προβολή περίληψης"
+msgstr[1] "Μεταφέρθηκαν πάνω %d ιδιότητες στην προβολή περίληψης"
+
+#, c-format
+msgid "Moved %d property down in the Summary view"
+msgid_plural "Moved %d properties down in the Summary view"
+msgstr[0] "Μεταφέρθηκε κάτω %d ιδιότητα στην προβολή περίληψης"
+msgstr[1] "Μεταφέρθηκαν κάτω %d ιδιότητες στην προβολή περίληψης"
+
+#, c-format
+msgid "Added %d property to the Detailed view"
+msgid_plural "Added %d properties to the Detailed view"
+msgstr[0] "Προστέθηκε %d ιδιότητα στην Λεπτομερή προβολή"
+msgstr[1] "Προστέθηκαν %d ιδιότητες στην Λεπτομερή προβολή"
+
+#, c-format
+msgid "Removed %d property from the Detailed view"
+msgid_plural "Removed %d properties from the Detailed view"
+msgstr[0] "Αφαιρέθηκε %d ιδιότητα από την Λεπτομερή προβολή"
+msgstr[1] "Αφαιρέθηκαν %d ιδιότητες από την Λεπτομερή προβολή"
+
+msgid "Restored the default properties for the Detailed view"
+msgstr "Ανακτήθηκαν οι προεπιλεγμένες ιδιότητες για την προβολή Λεπτομερειών"
+
+#, c-format
+msgid "Moved %d property up in the Detailed view"
+msgid_plural "Moved %d properties up in the Detailed view"
+msgstr[0] "Μεταφέρθηκε πάνω %d ιδιότητα στην Λεπτομερή προβολή"
+msgstr[1] "Μεταφέρθηκαν πάνω %d ιδιότητες στην Λεπτομερή προβολή"
+
+#, c-format
+msgid "Moved %d property down in the Detailed view"
+msgid_plural "Moved %d properties down in the Detailed view"
+msgstr[0] "Μεταφέρθηκε κάτω %d ιδιότητα στην Λεπτομερή προβολή"
+msgstr[1] "Μεταφέρθηκαν κάτω %d ιδιότητες στην Λεπτομερή προβολή"
+
+msgid "Settings saved successfully"
+msgstr "Οι Ρυθμίσεις αποθηκεύτηκαν με επιτυχία"
+
+msgid ""
+"getID3() is a PHP4 script that extracts useful information (such as ID3 tags, bitrate, "
+"playtime, etc.) from MP3s &amp; other multimedia file formats (Ogg, WMA, WMV, ASF, WAV, AVI, "
+"AAC, VQF, FLAC, MusePack, Real, QuickTime, Monkey's Audio, MIDI and more)."
+msgstr ""
+"Το getID3() είναι ένα PHP4 script που εξάγει χρήσιμες πληροφορίες (όπως ID3 ετικέτες, "
+"bitrate,   διάρκεια αναπαραγωγής,  playtime, κ.λπ....) από MP3s &amp; άλλα πολυμέσα (Ogg, "
+"WMA, WMV, ASF, WAV, AVI, AAC, VQF, FLAC, MusePack, Real, QuickTime, Monkey's Audio, MIDI και "
+"πολλά άλλα)."
+
+msgid "Summary and Detailed displays"
+msgstr "Προβολή Περίληψης και Λεπτομερειών"
+
+msgid ""
+"There can be a great deal of information stored in many file formats.  We display that data "
+"in two different views, summary and detailed.  You can choose which properties are displayed "
+"in each view."
+msgstr ""
+"Μπορεί να υπάρχουν πολλές πληροφορίες οι οποίες αποθηκεύονται σε πολλούς τύπους αρχείων.  "
+"Εμφανίζουμε τα στοιχεία  σε δύο διαφορετικές προβολές, περίληψη και λεπτομερής. Μπορείτε να "
+"επιλέξετε ποιες ιδιότητες εμφανίζονται στην κάθε προβολή. "
+
+msgid "Available"
+msgstr "Διαθέσιμο"
+
+msgid "Summary"
+msgstr "Περίληψη"
+
+msgid "Detailed"
+msgstr "Dettagli"
+
+msgid "You must select at least one value in the available column"
+msgstr "Πρέπει να επιλέγξετε τουλάχιστον μία τιμή στην διαθέσιμη στήλη"
+
+msgid "You must select at least one value in the summary column"
+msgstr "Πρέπει να επιλέγξετε τουλάχιστον μία τιμή στην στήλη περίληψης"
+
+msgid "You must select at least one value in the detailed column"
+msgstr "Πρέπει να επιλέξετε τουλάχιστον μία τιμή στην στήλη λεπτομερειών"
+
+msgid "Add to Summary"
+msgstr "Προσθέστε την Περίληψη"
+
+msgid "Add to Detailed"
+msgstr "Προσθέστε στις Λεπτομέρειες"
+
+msgid "Remove"
+msgstr "Αφαίρεση"
+
+msgid "Up"
+msgstr "Πάνω"
+
+msgid "Down"
+msgstr "Κάτω"
+
+msgid "Reset to Defaults"
+msgstr "Επαναφορά στα προεπιλεγμένα"
+
+msgid ""
+"Restore the original values for the Summary and Detailed views.  Use with caution, there is "
+"no undo!"
+msgstr ""
+"Ανακτήστε τις πρωτότυπες τιμές για τις προβολές Περίληψης και Λεπτομερειών. Χρησιμοποιήστε "
+"με προσοχή, δεν υπάρχει αναίρεση!"
+
+msgid "Restore Summary Defaults"
+msgstr "Επαναφορά προεπιλεγμένων περίληψης"
+
+msgid "Restore Detailed Defaults"
+msgstr "Ανάκτηση προεπιλεγμένων Λεπτομερειών"
+
+msgid "Item Upload"
+msgstr "Ανέβασμα Αρχείου"
+
+#, fuzzy
+msgid "When MP3s are added to Gallery check the ID3 title field and apply to:"
+msgstr "Όταν προσθέτονται mp3s στην Γκαλερί να ελέγχεται το πεδίο id3 και να εφαρμόζεται στο:"
+
+msgid "Save"
+msgstr "Αποθήκευση"
+
+msgid "Getid3 Module"
+msgstr "Getid3 Module"
+
+msgid "This module does not work on Windows, yet."
+msgstr "Αυτό το module δεν δουλεύει στα Windows, ακόμη."
+
+msgid "Audio/Video Properties"
+msgstr "Ιδιότητες Ήχου/Ταινίας"
+
+msgid "summary"
+msgstr "περίληψη"
+
+msgid "details"
+msgstr "λεπτομέρειες"
+
+msgid "Archive File List"
+msgstr "Λίστα Αρχείων(Αρχειοθέτηση)"
+
+msgid "Name"
+msgstr "Όνομα"
+
+msgid "Size"
+msgstr "Μέγεθος"
+
+msgid "GetID3/Misc info"
+msgstr "GetID3/Διάφορες πληροφορίες"

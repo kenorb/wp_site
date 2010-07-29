@@ -1,0 +1,42 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Shows in admin/build/modules how modules can be enhanced by other modules by
+ * using the supports[] information in modules' .info files.
+ */
+
+/**
+ * Implementation of hook_form_FORM_ID_alter().
+ */
+function module_supports_form_system_modules_alter(&$form, $form_state) {
+  $files = module_rebuild_cache();
+  foreach ($files as $filename => $file) {
+    $supports = array();
+    if (isset($file->info['supports']) && is_array($file->info['supports'])) {
+      foreach ($file->info['supports'] as $supported_module) {
+        if (!isset($files[$supported_module]) || !$files[$supported_module]->status) {
+          if (isset($files[$supported_module])) {
+            $supports[] = t('@module (<span class="admin-disabled">disabled</span>)', array('@module' => $files[$supported_module]->info['name']));
+          }
+          else {
+            $supports[] = t('<a href="@link">@module</a> (<span class="admin-missing">missing</span>)', array('@module' => drupal_ucfirst($supported_module), '@link' => 'http://drupal.org/project/'. $supported_module));
+            $disabled[] = $filename;
+            $form['disabled_modules']['#value'][$filename] = FALSE;
+          }
+        }
+        else {
+          $supports[] = t('@module (<span class="admin-enabled">enabled</span>)', array('@module' => $files[$supported_module]->info['name']));
+        }
+      }
+      if (!empty($supports)) {
+        $form['description'][$file->name]['supports'] = array(
+          '#value' => t('Enhanced by: !supports', array('!supports' => implode(', ', $supports))),
+          '#prefix' => '<div class="admin-dependencies">',
+          '#suffix' => '</div>',
+        );
+      }
+    }
+  }
+}

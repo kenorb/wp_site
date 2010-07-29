@@ -1,0 +1,40 @@
+<?php
+// $Id: storminvoiceitem.install,v 1.1.4.1 2008/09/01 08:50:21 robertogerola Exp $
+
+/**
+ * @file
+ */
+
+function storminvoiceitem_install() {
+  drupal_install_schema('storminvoiceitem');
+}
+
+function storminvoiceitem_uninstall() {
+  drupal_uninstall_schema('storminvoiceitem');
+}
+
+function storminvoiceitem_schema() {
+  $schema['storminvoiceitem'] = array(
+    'fields'                => array(
+      'vid'                 => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'nid'                 => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'invoice_nid'         => array('type' => 'int'),
+      'weight'              => array('type' => 'int'),
+      'amount'              => array('type' => 'float'),
+      'taxpercent'          => array('type' => 'float'),
+      'tax'                 => array('type' => 'float'),
+      'total'               => array('type' => 'float'),
+    ),
+    'primary key' => array('vid', 'nid'),
+  );
+
+  return $schema;
+}
+
+function storminvoiceitem_update_1() {
+  $ret = array();
+  db_change_field($ret, 'storminvoiceitem', 'vatpercent', 'taxpercent', array('type' => 'float'));
+  db_change_field($ret, 'storminvoiceitem', 'vat', 'tax', array('type' => 'float'));
+  return $ret;
+}
+

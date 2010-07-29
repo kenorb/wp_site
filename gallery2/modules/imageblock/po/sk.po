@@ -1,0 +1,312 @@
+# $Id: sk.po 18173 2008-10-17 07:14:30Z andy_st $
+#
+# Gallery - a web based photo album viewer and editor
+# Copyright (C) 2000-2008 Bharat Mediratta
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Branislav Hanacek <brango@radegast>, 2006.
+# Branislav Hanacek <brango@brango.sk>, 2006.
+msgid ""
+msgstr ""
+"Project-Id-Version: Gallery: Image Block 1.1.9\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2006-09-03 10:22+0200\n"
+"PO-Revision-Date: 2007-11-29 00:25+0100\n"
+"Last-Translator: Matej Spanik <retsamm@gmail.com>\n"
+"Language-Team: Slovak <gallery-devel@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"X-Generator: KBabel 1.11.4\n"
+"X-Poedit-Language: Slovak\n"
+"X-Poedit-Country: SLOVAKIA\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+msgid "Image Block"
+msgstr "Blok Obrázku"
+
+msgid "Random, Most Recent or Most Viewed Photo or Album"
+msgstr "Náhodná, Najnovšia a Najviac Pozeraná Fotka alebo Album"
+
+msgid "Blocks"
+msgstr "Bloky"
+
+msgid "Random Image"
+msgid_plural "Random Images"
+msgstr[0] "Náhodný Obrázok"
+msgstr[1] "Náhodné Obrázky"
+msgstr[2] "Náhodné Obrázky"
+
+msgid "Newest Image"
+msgid_plural "Newest Images"
+msgstr[0] "Najnovší Obrázok"
+msgstr[1] "Najnovšie Obrázky"
+msgstr[2] "Najnovšie Obrázky"
+
+msgid "Most Viewed Image"
+msgid_plural "Most Viewed Images"
+msgstr[0] "Najviac Prezeraný Obrázok"
+msgstr[1] "Najviac Prezerané Obrázky"
+msgstr[2] "Najviac Prezerané Obrázky"
+
+msgid "Random Album"
+msgid_plural "Random Albums"
+msgstr[0] "Náhodný Album"
+msgstr[1] "Náhodné Albumy"
+msgstr[2] "Náhodné Albumy"
+
+msgid "Newest Album"
+msgid_plural "Newest Albums"
+msgstr[0] "Najnovší Album"
+msgstr[1] "Najnovšie Albumy"
+msgstr[2] "Najnovšie Albumy"
+
+msgid "Most Viewed Album"
+msgid_plural "Most Viewed Albums"
+msgstr[0] "Najviac Prezeraný Album"
+msgstr[1] "Najviac Prezerané Albumy"
+msgstr[2] "Najviac Prezerané Albumy"
+
+msgid "Picture of the Day"
+msgstr "Obrázok Dňa"
+
+msgid "Picture of the Week"
+msgstr "Obrázok Týždňa"
+
+msgid "Picture of the Month"
+msgstr "Obrázok Mesiaca"
+
+msgid "Album of the Day"
+msgstr "Album Dňa"
+
+msgid "Album of the Week"
+msgstr "Album Týždňa"
+
+msgid "Album of the Month"
+msgstr "Album Mesiaca"
+
+msgid "Date:"
+msgstr "Dátum:"
+
+#, c-format
+msgid "Views: %d"
+msgstr "Zobrazené: %d-krát "
+
+#, c-format
+msgid "Owner: %s"
+msgstr "Vlastník: %s"
+
+msgid "Prevent this album from being displayed in the Image Block"
+msgstr "Zabrániť, aby bol tento album zobrazený v Bloku Obrázku"
+
+msgid "Apply ImageBlock settings to sub-albums"
+msgstr "Aplikovať nastavenia Bloku Obrázku na pod-albumy"
+
+msgid "Image Block Settings"
+msgstr "Nastavenia Bloku Obrázku"
+
+msgid "Settings saved successfully"
+msgstr "Nastavenia boli úspešne uložené"
+
+msgid "Show"
+msgstr "Zobraz"
+
+msgid "Heading"
+msgstr "Hlavička"
+
+msgid "Title"
+msgstr "Titulok"
+
+msgid "Date"
+msgstr "Dátum"
+
+msgid "View Count"
+msgstr "Počet zobrazení"
+
+msgid "Owner"
+msgstr "Vlastník"
+
+msgid "Frames"
+msgstr "Rámčeky"
+
+msgid "View samples"
+msgstr "Zobraziť vzorky"
+
+msgid "Album Frame"
+msgstr "Rám albumu"
+
+msgid "Photo Frame"
+msgstr "Rám fotografie"
+
+msgid "Save"
+msgstr "Uložiť"
+
+msgid "Reset"
+msgstr "Východzie hodnoty"
+
+msgid "External Image Block"
+msgstr "Externý Blok Obrázku"
+
+msgid ""
+"Use a PHP block like the one shown below to include an image block in a PHP page outside of "
+"Gallery."
+msgstr ""
+"Použite PHP blok podobný tomu čo je zobrazený dole na pridanie Bloku Obrázku do PHP stránky "
+"mimo Galérie."
+
+msgid ""
+"Pipe(|) separate list chosen from: randomImage, recentImage, viewedImage, randomAlbum, "
+"recentAlbum, viewedAlbum, dailyImage, weeklyImage, monthlyImage, dailyAlbum, weeklyAlbum, "
+"monthlyAlbum, specificItem; default is randomImage"
+msgstr ""
+"Pipa(|) oddeľuje zoznam vybraný z: randomImage, recentImage, viewedImage, randomAlbum, "
+"recentAlbum, viewedAlbum, dailyImage, weeklyImage, monthlyImage, dailyAlbum, weeklyAlbum, "
+"monthlyAlbum, specificItem / predvoľené je randomImage"
+
+#, fuzzy
+msgid ""
+"Pipe(|) separated list chosen from: title, date, views, owner, heading, fullSize, rawImage; "
+"the value can also be: none"
+msgstr ""
+"Pipov(|) oddelený zoznam vybraný z: title, date, views, owner, heading, fullSize; hodnota "
+"môže byť tiež: none"
+
+msgid ""
+"Limit the item selection to the subtree of the gallery under the album with the given id; or "
+"the id of the item to display when used with specificItem block type"
+msgstr ""
+"Obmedziť výber položiek iba na podstrom galérie pod albumom s daným id/ alebo id položky, "
+"ktorá sa má zobraziť, keď použijete špecifický typ bloku"
+
+#, c-format
+msgid ""
+"Scale images to this maximum size. If used alone Gallery will locate the most-closely-sized "
+"image to the specified value - larger images will be scaled down as necessary in your "
+"browser. If specified along with %sshow=fullSize the full size image will always be used and "
+"scaled down as necessary."
+msgstr ""
+"Zmeniť veľkosť obrázkov maximálne na túto veľkost.  Ak toto bude použité samostatne, Galéria "
+"nájde veľkosťou najbližší obrázok - väčšie obrázky budú automaticky zmenšené vo vašom "
+"prehliadači.  Ak je zadané aj %sshow=fullSize tak bude vždy použitá plná veľkosť obrázka a "
+"táto bude zmenšená ako bude potrebné."
+
+#, c-format
+msgid ""
+"Just like %smaxSize except that it will not substitute an image smaller than the size you "
+"request, so you'll get the closest match in size possible.  Note that this may use a lot "
+"more bandwidth if a much larger image has to be scaled down in your browser."
+msgstr ""
+"Rovnako ako %smaxSize s tým rozdielom, že toto nenahradí menší obrázok, ktorý nepresahuje "
+"veľkosť ktorú požadujete, takže získate najbližšiu zhodu veľkosti aká je možná.  Toto však "
+"môže využívať oveľa viac sieťových prostriedkov, ak sa bude veľmi veľký obrázok zmenšovať v "
+"prehliadači."
+
+msgid ""
+"Href for link on image; value of none for no link; default is link to item in the Gallery"
+msgstr ""
+"Linka pre Váš obrázok / žiadna hodnota znamená žiadnu linku / predvolená linka je linka na "
+"položku v Galérii"
+
+msgid "Add a link target (for example, to open links in a new browser window)"
+msgstr "Pridať cieľ linky (napríklad na otváranie liniek v novom okne)"
+
+msgid "Image frame to use around images"
+msgstr "Rámček, ktorý má byť zobrazený okolo obrázkov"
+
+msgid "Image frame to use around albums"
+msgstr "Rámček, ktorý má byť zobrazený okolo albumov"
+
+msgid "If a parameter marked with * is omitted then the site default defined above is used."
+msgstr "Ak vynecháte parameter označený * tak bude použitá predvolená hodnota definovaná hore."
+
+#, c-format
+msgid ""
+"Image frames require CSS to be displayed correctly. Include the following in the %s section "
+"to support image frames."
+msgstr ""
+"Rámčeky obrázkov potrebujú CSS, aby boli zobrazené správne.  Použite nasledujúce v sekcii %s "
+"pre podporu rámčekov."
+
+#, c-format
+msgid ""
+"Specify the frame id (or pipe separated list of ids) in the frames parameter. Omit the "
+"parameter to support the image frames configured above. Frame ids are the directory names in "
+"the %s directory."
+msgstr ""
+"Zadajte id rámčeka (alebo zoznam odelený |) v parametri rámčekov.  Vynechajte tento "
+"parameter na podporu rámčekov obrázkov, ktoré sú konfigurované vyššie.  Id rámčekov su mená "
+"adresárov nachádzajucich sa v adresári %s."
+
+msgid "Image type"
+msgstr "Typ obrázku"
+
+msgid "Random image"
+msgstr "Náhodný obrázok"
+
+msgid "Recent image"
+msgstr "Najnovší obrázok"
+
+msgid "Viewed image"
+msgstr "Pozretý obrázok"
+
+msgid "Random album"
+msgstr "Náhodný album"
+
+msgid "Recent album"
+msgstr "Najnovší album"
+
+msgid "Viewed album"
+msgstr "Pozretý album"
+
+msgid "Daily image"
+msgstr "Obrázok Dňa"
+
+msgid "Weekly image"
+msgstr "Obrázok Týždňa"
+
+msgid "Monthly image"
+msgstr "Obrázok Mesiaca"
+
+msgid "Daily album"
+msgstr "Album Dňa"
+
+msgid "Weekly album"
+msgstr "Album Týždňa"
+
+msgid "Monthly album"
+msgstr "Albumu Mesiaca"
+
+msgid "Number of items"
+msgstr "Počet položiek"
+
+msgid "Use default settings"
+msgstr "Použiť predvolené nastavenia"
+
+msgid "Show heading"
+msgstr "Zobraziť hlavičku"
+
+msgid "Show title"
+msgstr "Zobraziť titulok"
+
+msgid "Show date"
+msgstr "Zobraziť dátum"
+
+msgid "Show view count"
+msgstr "Zobraziť počet prezrení"
+
+msgid "Show owner"
+msgstr "Zobraziť vlastníka"

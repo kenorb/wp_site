@@ -1,0 +1,14 @@
+; $Id: parser_csv.info,v 1.1 2008/12/01 23:26:26 alexb Exp $
+name = "CSV Parser"
+description = "Downloads and parses CSV files."
+package = FeedAPI Add On
+dependencies[] = feedapi
+core = 6.x
+php = 5.0
+
+; Information added by drupal.org packaging script on 2008-12-02
+version = "6.x-1.0-alpha1"
+core = "6.x"
+project = "parser_csv"
+datestamp = "1228176029"
+

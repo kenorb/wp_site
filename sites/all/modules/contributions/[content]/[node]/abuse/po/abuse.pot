@@ -1,0 +1,422 @@
+# $Id: abuse.pot,v 1.2 2007/05/16 14:52:32 btmash Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  abuse.module,v 1.18 2007/04/24 19:55:09 btmash
+#  abuse.install,v 1.4 2007/03/30 17:38:06 btmash
+#  watchlist.module,v 1.4 2007/04/11 15:55:33 btmash
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2007-05-05 20:10+0100\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: abuse.module:32
+msgid "allow users to report abusive content"
+msgstr ""
+
+#: abuse.module:45
+msgid "flag"
+msgstr ""
+
+#: abuse.module:50
+msgid "warn user"
+msgstr ""
+
+#: abuse.module:55
+msgid "ban user"
+msgstr ""
+
+#: abuse.module:60
+msgid "update"
+msgstr ""
+
+#: abuse.module:66
+msgid "Abuse moderation"
+msgstr ""
+
+#: abuse.module:82
+msgid "Abuse settings"
+msgstr ""
+
+#: abuse.module:83
+msgid "Describes what the settings generally do."
+msgstr ""
+
+#: abuse.module:91
+msgid "Abuse reason configuration"
+msgstr ""
+
+#: abuse.module:92
+msgid "Administer the list of reasons available for users to choose from the site"
+msgstr ""
+
+#: abuse.module:104
+msgid "Pending (!num)"
+msgstr ""
+
+#: abuse.module:110
+msgid "Hidden (!num)"
+msgstr ""
+
+#: abuse.module:116
+msgid "Removed (!num)"
+msgstr ""
+
+#: abuse.module:129
+msgid "Reasons"
+msgstr ""
+
+#: abuse.module:130
+msgid "You can configure the list of reasons at !link"
+msgstr ""
+
+#: abuse.module:134
+msgid "Settings for all abuse content"
+msgstr ""
+
+#: abuse.module:135
+msgid "These settings apply to all content that is allowed to be flagged into the abuse administration system"
+msgstr ""
+
+#: abuse.module:141
+msgid "Abuse threshold"
+msgstr ""
+
+#: abuse.module:150;686;694
+msgid "Warning subject"
+msgstr ""
+
+#: abuse.module:158
+msgid "Warning body"
+msgstr ""
+
+#: abuse.module:166
+msgid "Warning BCC"
+msgstr ""
+
+#: abuse.module:173
+msgid "Abuse form intro text"
+msgstr ""
+
+#: abuse.module:181
+msgid "Enable flagging for these content types"
+msgstr ""
+
+#: abuse.module:200
+msgid "Add new reason"
+msgstr ""
+
+#: abuse.module:207
+msgid "Reason"
+msgstr ""
+
+#: abuse.module:208
+msgid "Provide a short form of what the reason is"
+msgstr ""
+
+#: abuse.module:214;252
+msgid "Description"
+msgstr ""
+
+#: abuse.module:215
+msgid "A more details description of what the reason is"
+msgstr ""
+
+#: abuse.module:221
+msgid "Argumentation"
+msgstr ""
+
+#: abuse.module:222
+msgid "Text that will automatically be included in the warning email."
+msgstr ""
+
+#: abuse.module:228;268;285
+msgid "add"
+msgstr ""
+
+#: abuse.module:235
+msgid "Current list of reasons - check items that you wish to remove"
+msgstr ""
+
+#: abuse.module:256
+msgid "Email content"
+msgstr ""
+
+#: abuse.module:261;279;290
+msgid "remove"
+msgstr ""
+
+#: abuse.module:270
+msgid "You MUST provide a reason."
+msgstr ""
+
+#: abuse.module:273
+msgid "You MUST provide a description of the reason."
+msgstr ""
+
+#: abuse.module:276
+msgid "You MUST provide an email notice that may be sent to the user for this reason."
+msgstr ""
+
+#: abuse.module:280
+msgid "An invalid option was chosen."
+msgstr ""
+
+#: abuse.module:381;391;410;420
+msgid "Flag as offensive"
+msgstr ""
+
+#: abuse.module:384;394
+msgid "Notify administrators of problematic content"
+msgstr ""
+
+#: abuse.module:413;423
+msgid "Notify administrators of problematic comment"
+msgstr ""
+
+#: abuse.module:452;577
+msgid "You cannot flag your own content"
+msgstr ""
+
+#: abuse.module:457
+msgid "Thank you for your report.  The item in question with be looked at by our moderators shortly."
+msgstr ""
+
+#: abuse.module:478;493;547
+msgid "from"
+msgstr ""
+
+#: abuse.module:500
+msgid "email"
+msgstr ""
+
+#: abuse.module:508
+msgid "about"
+msgstr ""
+
+#: abuse.module:518
+msgid "reason"
+msgstr ""
+
+#: abuse.module:524
+msgid "message"
+msgstr ""
+
+#: abuse.module:530
+msgid "send"
+msgstr ""
+
+#: abuse.module:534;552;565;706;713
+msgid "cancel"
+msgstr ""
+
+#: abuse.module:547
+msgid "<em>!field</em> is required"
+msgstr ""
+
+#: abuse.module:550
+msgid "a valid email address is required"
+msgstr ""
+
+#: abuse.module:553
+msgid "please give a reason"
+msgstr ""
+
+#: abuse.module:571
+msgid "We have already received your report.  Thank you very much!"
+msgstr ""
+
+#: abuse.module:592
+msgid "Thank you for your report."
+msgstr ""
+
+#: abuse.module:612;644
+msgid "Allow"
+msgstr ""
+
+#: abuse.module:616;648
+msgid "Remove"
+msgstr ""
+
+#: abuse.module:620;652;749
+msgid "Warn and Remove"
+msgstr ""
+
+#: abuse.module:624;655;746
+msgid "Warn and Allow"
+msgstr ""
+
+#: abuse.module:628;658
+msgid "Ban"
+msgstr ""
+
+#: abuse.module:646
+msgid "Item allowed"
+msgstr ""
+
+#: abuse.module:650
+msgid "Item removed"
+msgstr ""
+
+#: abuse.module:663
+msgid "Unknown operation on content"
+msgstr ""
+
+#: abuse.module:698
+msgid "available fields are !title, !url, and !name"
+msgstr ""
+
+#: abuse.module:735
+msgid "Drupal"
+msgstr ""
+
+#: abuse.module:752
+msgid "Your email has been sent."
+msgstr ""
+
+#: abuse.module:770
+msgid "Are you sure you want to ban !name?"
+msgstr ""
+
+#: abuse.module:774;785
+msgid "Yes"
+msgstr ""
+
+#: abuse.module:778
+msgid "No"
+msgstr ""
+
+#: abuse.module:805
+msgid "The user !name has been banned."
+msgstr ""
+
+#: abuse.module:827
+msgid "by: !name"
+msgstr ""
+
+#: abuse.module:828
+msgid "[!offence offences | !warning warnings]"
+msgstr ""
+
+#: abuse.module:1044
+msgid "OK"
+msgstr ""
+
+#: abuse.module:1045
+msgid "Pending"
+msgstr ""
+
+#: abuse.module:1046
+msgid "Hidden"
+msgstr ""
+
+#: abuse.module:1047
+msgid "Removed"
+msgstr ""
+
+#: abuse.module:0
+msgid "abuse"
+msgstr ""
+
+#: abuse.install:43
+msgid "abuse module database table {abuse} created successfully."
+msgstr ""
+
+#: abuse.install:45
+msgid "abuse module database table {abuse} creation failure. Please view the abuse module folder and read the README.txt"
+msgstr ""
+
+#: abuse.install:48
+msgid "abuse module database table {abuse_warnings} created successfully."
+msgstr ""
+
+#: abuse.install:50
+msgid "abuse module database table {abuse_warnings} creation failure. Please view the abuse module folder and read the README.txt"
+msgstr ""
+
+#: abuse.install:53
+msgid "abuse module database table {abuse_status} created successfully."
+msgstr ""
+
+#: abuse.install:55
+msgid "abuse module database table {abuse_status} creation failure. Please view the abuse module folder and read the README.txt"
+msgstr ""
+
+#: abuse.install:70;96
+msgid "The user wrote very mean things"
+msgstr ""
+
+#: abuse.install:70;71;72;73;74;96;97;98;99;100
+msgid "Please refrain from writing such mean things"
+msgstr ""
+
+#: abuse.install:71;97
+msgid "The user's wrote very explicit language"
+msgstr ""
+
+#: abuse.install:72;98
+msgid "The user wrote very derogatory comments"
+msgstr ""
+
+#: abuse.install:73;99
+msgid "The user wrote about private information"
+msgstr ""
+
+#: abuse.install:74;100
+msgid "The user wrote about other types of mean things"
+msgstr ""
+
+#: watchlist/watchlist.module:10
+msgid "Checks for words as part of a watchlist and adds them to the abuse backend for verification"
+msgstr ""
+
+#: watchlist/watchlist.module:30
+msgid "Watchlist Settings"
+msgstr ""
+
+#: watchlist/watchlist.module:31
+msgid "Area to enter a regular expression of all watchlist content"
+msgstr ""
+
+#: watchlist/watchlist.module:47
+msgid "Watch list"
+msgstr ""
+
+#: watchlist/watchlist.module:51
+msgid "The watch list, one per line"
+msgstr ""
+
+#: watchlist/watchlist.module:124
+msgid "Badwords filter"
+msgstr ""
+
+#: watchlist/watchlist.module:126
+msgid "Allows filtering for bad words.  Uses words from the watchlist settings."
+msgstr ""
+
+#: watchlist/watchlist.module:154
+msgid "Replacement string"
+msgstr ""
+
+#: watchlist/watchlist.module:159
+msgid "The list of words to check for, one per line"
+msgstr ""
+
+#: watchlist/watchlist.module:18
+msgid "administer watchlist words"
+msgstr ""
+
+#: watchlist/watchlist.module:0
+msgid "watchlist"
+msgstr ""
+

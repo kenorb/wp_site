@@ -1,0 +1,134 @@
+******************************************************************************
+                     D R U P A L    M O D U L E
+******************************************************************************
+Name: uLink developer documentation
+Author: Gartheeban Ganeshapillai 
+        AKA garthee at drupal <garthee at gmail dot com>
+Dependencies: filter.module, comment.module(optional),
+              php.module(optional), tokens.module(optional)
+Required by: uAuto.module, ulink_gallery.module, ulink_image.module, etc
+
+******************************************************************************
+This document explains how to develop modules to extend the rendering
+and configuring the default rendering through phpmode.
+
+******************************************************************************
+WRITING MODULES TO EXTEND ULINK
+
+When it is required  to write a new module
+--------------------------------------------------------------------
+Often by configuring the default implementation provided by ulink
+and using hard code you could obtain the needed output. In specific cases but
+trivial, where it is not adequate, users can go for Macro mode or PHPmode 
+(explained below).
+
+However, there will be highly specific and complex situations where PHPmode 
+won't suit the need. ulink_gallery.module and ulink_image.module address
+such cases, where they extend the ulink-functions by implementing the hooks.
+
+Available hooks to be implemented
+--------------------------------------------------------------------
+1. function hook_ulink_*type*($link, $object=NULL)
+2. function hook_ulink_*type*_settings()
+3. function hook_ulink_*type*_info()
+
+here *type* can be node, user, intern or extern.
+
+After providing the module.info file, it is enough to provide only
+the first function ie. hook_ulink_*type*, and it is ESSENTIAL. 
+Implementation of other two functions is optional.
+
+
+hook_ulink_*type*($link, $object=Null)
+--------------------------------------------------------------------
+Provides the html code of the output by making use out of 
+
+return: HTML code of the output
+parameters:
+  $link - array contains information about the target link
+	  $link['text'] = text to be referenced
+		$link['path'] = recognized path
+    $link['spath'] = user entered path of the link, eg: node/44
+		$link['type'] = type of the target, eg: image, node
+		$link['mime'] = extension of the target if it is supplied,
+                    else contains the user entered path
+		$link['title'] = title to the link, if it is specified in attributes,
+		                else equivalent to 'text'
+    $link['alt'] = title to the link, if it is specified in attributes,
+		                else equivalent to 'text'
+		$link['attr'] = user entered array as string in raw format
+		$link['attributes']
+                  = user entered attributes in an array as key,value pair
+	$object - for internal links it contains the reference to
+						target object in drupal format. For example, for node types
+						it contains node object
+							
+eg:
+function mymodule_ulink_node($link, $object=Null) {
+  return l($link['text'], $link['path']);
+}  
+
+
+hook_ulink_*type*_settings()
+--------------------------------------------------------------------
+This can be used by other modules to hook into ulink configurations and add
+their own settings needed.
+
+return: $form - an array in drupal form api format
+
+eg:
+function mymodule_ulink_node_settings($link, $object=Null) {
+  $form['settings']['mymodule_text'] =  array(
+    '#type' => 'textfield',
+    '#title' => t('Use this when text is empty'),
+		'#default_value' => variable_get('mymodule_text', ''),	
+  );
+  return $form;
+}  
+
+hook_ulink_*type*_info()
+--------------------------------------------------------------------
+Using this other modules can provide details about the module
+in the settings page where user enables module and gives the preference
+of rendering.
+
+return: HTML text.
+
+eg:
+function mymodule_ulink_comment_info() {
+  return t('mymodule is providing an extended functionality to ulink');
+}
+
+Detailed demo
+--------------------------------------------------------------------
+I encourage the developers to look into ulink_image, ulink_gallery to
+understand the situations requiring extensions to be written, and the right way
+of implementing the hooks.
+
+*****************************************************************************
+PROVIDING TRIVIAL IMPLEMENTATIONS THROUGH PHPMODE OF DEFAULT IMPLEMENTATION
+
+Although it is possible to write a new module and implement the hooks,
+it is not advisable always. For the example given above, ie 
+
+ return l($link['text'], $link['path']);
+ 
+user need not go for a new module, instead he could choose PHPmode whose
+configuration is available at.
+
+admin > settings > type (eg: node) > ulink - module implementation > phpcode - configure
+eg: for node type it could be admin/settings/ulink/default/node/3
+
+there it is enough to provide the phpcode that is intended to come within 
+the function
+
+eg:
+return l($link['text'], $link['path']);
+
+help on variables available for the user to be used, is given in the settings page.
+
+*****************************************************************************
+I encourage  developers to share the modules with ulink users. If the module 
+addresses an important requirement, that can be included with ulink package.
+Please send an email to <garthee at gmail dot com> to share your modules or 
+for other suggestions; also you are welcome to ask for further assistance.

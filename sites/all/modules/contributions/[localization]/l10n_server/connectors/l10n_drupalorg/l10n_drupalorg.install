@@ -1,0 +1,142 @@
+<?php
+// $Id: l10n_drupalorg.install,v 1.1.2.3.2.1 2008/10/14 22:13:49 goba Exp $
+/**
+ * @file
+ *   Localization community for drupal.org, update and uninstallation.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function l10n_drupalorg_install() {
+  // Add languages and plurals we know have Drupal translations
+  // to some degree already. See l10n_drupalorg_plurals().
+  $languages = l10n_drupalorg_plurals();
+  include_once 'includes/locale.inc';
+  $predefined =_locale_get_predefined_list();
+  foreach ($languages as $langcode => $plural_formula) {
+    // Use artificial file name. Although this is not localizable, because this is only run once,
+    // it is not considered to be a problem.
+    list($plurals, $formula) = _locale_import_parse_plural_forms($plural_formula, 'automatic install of '. $predefined[$langcode][0]);
+    if (!$locale = db_result(db_query("SELECT language FROM {languages} WHERE language = '%s'", $langcode))) {
+      db_query(
+        "INSERT INTO {languages}
+         (language, name, native, direction, enabled, plurals, formula, domain, prefix, weight, javascript) VALUES
+         ('%s', '%s', '%s', %d, %d, %d, '%s', '%s', '%s', %d, '%s')",
+        $langcode,
+        $predefined[$langcode][0],
+        isset($predefined[$langcode][1]) ? $predefined[$langcode][1] : $predefined[$langcode][0],
+        isset($predefined[$langcode][2]) ? $predefined[$langcode][2] : LANGUAGE_LTR,
+        1,
+        $plurals,
+        $formula,
+        '',
+        $langcode,
+        0,
+        ''
+      );
+    }
+    else {
+      // Update plural formula to the one we know works.
+      db_query("UPDATE {languages} SET plurals = %d, formula = '%s' WHERE language = '%s'", $plurals, $formula, $langcode);
+    }
+  }
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function l10n_drupalorg_uninstall() {
+  variable_del('l10n_drupalorg_cron');
+  variable_del('l10n_drupalorg_limit');
+}
+
+/**
+ * A list of "Drupal languages" compiled from the list of languages
+ * in drupal.org CVS on July 18th, 2007.
+ *
+ * Plural information based on:
+ *   - http://www.wordforge.org/static/l10n-pluralforms.html
+ *   - our own CVS repository information from core translations
+ *   - feedback from drupal.org users and translators: http://groups.drupal.org/node/5216
+ */
+function l10n_drupalorg_plurals() {
+  $default = 'nplurals=2; plural=(n!=1);';
+  $one = 'nplurals=1; plural=0;';
+  return array(
+    'af' => $default,
+    // Wordforge says nplurals=4!?
+    'ar' => 'nplurals=6; plural=n==1 ? 0 : n==0 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;',
+    'bg' => $default,
+    'bn' => $default,
+    'bs' => 'nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);',
+    // Wordforge has different rules!?
+    'ca' => 'nplurals=2; plural=(n > 1);',
+    // Wordforge has different rules!?
+    'cs' => 'nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);',
+    'da' => $default,
+    'de' => $default,
+    // Wordforge has nplurals=1, but this might fit us better.
+    'dz' => $default,
+    'el' => $default,
+    'eo' => $default,
+    'es' => $default,
+    'et' => $default,
+    'eu' => $default,
+    // Wordforge has nplurals=1, but this might fit us better.
+    'fa' => $default,
+    'fi' => $default,
+    'fo' => $default,
+    'fr' => 'nplurals=2; plural=(n > 1);',
+    'gl' => $default,
+    'gu' => $default,
+    'he' => $default,
+    'hi' => $default,
+    'hr' => 'nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;',
+    // Wordforge has nplurals=1, but this might fit us better.
+    'hu' => $default,
+    // Wordforge has nplurals=1, but this might fit us better.
+    'id' => $default,
+    'is' => $default,
+    'it' => $default,
+    // Wordforge has nplurals=1, but this might fit us better.
+    'ja' => $default,
+    'km' => $default,
+    'kn' => $default,
+    'ko' => $default,
+    'lt' => 'nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2;',
+    'lv' => 'nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2;',
+    'mk' => $default,
+    'mr' => $default,
+    'ms' => $default,
+    'my' => $default,
+    'nb' => $default,
+    'nl' => $default,
+    'nn' => $default,
+    // The 'no' code is superceeded by nb and nn
+    //'no' => array('Norwegian', $default),
+    'ne' => $default,
+    'pl' => 'nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);',
+    // Wordforge has different rules!?
+    'pt-br' => $default,
+    'pt-pt' => $default,
+    // Wordforge has completely different rules with nplurals=3!?
+    'ro' => $default,
+    'ru' => 'nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);',
+    // This should not be there in CVS, needs cleanup!
+    // 'ru-ru' => array(),
+    'sk' => 'nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;',
+    'sl' => 'nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3);',
+    'sq' => $default,
+    // Wordforge has nplurals=4 here, and could be right, based on the .po file data?!?
+    'sr' => $default,
+    'sv' => $default,
+    'th' => $default,
+    'tr' => $one,
+    'uk' => 'nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;',
+    'uz' => $default,
+    'vi' => $one,
+    'zh-hans' => $one,
+    'zh-hant' => $one,
+  );
+}

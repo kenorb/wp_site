@@ -1,0 +1,36 @@
+// $Id: INSTALL.txt,v 1.4 2008/09/12 02:15:02 jmiccolis Exp $
+
+REQUIREMENTS
+------------
+Requires Drupal 6.x
+Requires the Views module [1] in order to create and display timelines.
+
+Requires SIMILE Timeline 1.2
+
+Supports plotting timeline events for any Drupal content type, and includes
+extended support for Event nodes [2] as well as custom content types created
+using CCK [3] with the Date field type [4].
+
+For developers: the Simpletest module [5] is needed to run the unit tests.
+
+[1] http://drupal.org/project/views
+[2] http://drupal.org/project/event
+[3] http://drupal.org/project/cck
+[4] http://drupal.org/project/date
+[5] http://drupal.org/project/simpletest
+
+INSTALLATION
+------------
+1. Copy all the module files into a subdirectory called sites/all/modules/timeline/
+   under your Drupal installation directory.
+2. Place the timeline widget code in a /api sub-directory in timeline folder.
+3. Go to administer >> modules and enable the timeline module.
+   NOTE: also ensure the Views module is installed and enabled.
+4. Go to administer >> settings >> timeline to review and change the
+   configuration options to your liking.
+5. See README.txt for information on creating timeline views.
+
+TABLES ADDED
+------------
+This module does not add any new database tables or otherwise modify the
+Drupal database upon installation.

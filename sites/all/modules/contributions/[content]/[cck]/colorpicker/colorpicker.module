@@ -1,0 +1,120 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Implements the Farbtastic color picker as form fields.
+ */
+
+/*
+ * Implementation of hook_elements().
+ */
+function colorpicker_elements() {
+  // the Farbtastic colorpicker
+  $type['colorpicker'] = array(
+    '#attributes' => array('class' => 'colorpicker'),
+    '#input' => TRUE
+  );
+
+  // a textfield to associate with the Farbtastic colorpicker
+  $type['colorpicker_textfield'] = array(
+    '#attributes' => array('class' => 'colorpicker_textfield'), 
+    '#input' => TRUE,
+    '#element_validate' => array('colorpicker_textfield_validate')
+  );
+  return $type;
+}
+
+/**
+ * Register our theme functions
+ */
+function colorpicker_theme() {
+  return array(
+    'colorpicker' => array(
+      'arguments' => array('element' => NULL)
+    ),
+    'colorpicker_textfield' => array(
+      'arguments' => array('element' => NULL)
+    )
+  );
+}
+
+/**
+ * Format our colorpicker.
+ *
+ * @param $element
+ *   An associative array containing the properties of the element.
+ *   Properties used:  title, description, attributes, id
+ *   Note that if no #id is provided, every colorpicker_textfield will be linked to the same colorpicker
+ * @return
+ *   A themed HTML string that represents the placeholder for the Farbtastic colorpicker.
+ */
+function theme_colorpicker($element) {
+  $path = drupal_get_path('module', 'colorpicker');
+
+  // Add Farbtastic color picker
+  drupal_add_css('misc/farbtastic/farbtastic.css');
+  drupal_add_js('misc/farbtastic/farbtastic.js');
+
+  // Add our custom js and css for our colorpicker
+  drupal_add_js($path .'/js/colorpicker.js');
+  drupal_add_css($path .'/css/colorpicker.css');
+
+  $size = $element['#size'] ? ' size="'. $element['#size'] .'"' : '';
+
+  $output = '';
+
+  if (isset($element['#field_prefix'])) {
+    $output .= '<span class="field-prefix">'. $element['#field_prefix'] .'</span> ';
+  }
+
+  $output .= '<div class="colorpicker" id="'. $element['#id'] .'" '. drupal_attributes($element['#attributes']) .' ></div>';
+
+  if (isset($element['#field_suffix'])) {
+    $output .= ' <span class="field-suffix">'. $element['#field_suffix'] .'</span>';
+  }
+
+  return theme('form_element', $element, $output);
+}
+
+/**
+ * Format our colorpicker textfield.
+ *
+ * @param $element
+ *   An associative array containing the properties of the element.
+ *   Properties used:  title, value, description, size, maxlength, required, attributes
+ * @return
+ *   A themed HTML string representing the textfield.
+ */
+function theme_colorpicker_textfield($element) {
+  $path = drupal_get_path('module', 'colorpicker');
+
+  $size = $element['#size'] ? ' size="'. $element['#size'] .'"' : '';
+
+  $output = '';
+
+  if (isset($element['#colorpicker'])) {
+    $element['#attributes']['class'] .= ' edit-'. str_replace("_", "-", $element['#colorpicker']);
+  }
+
+  if (isset($element['#field_prefix'])) {
+    $output .= '<span class="field-prefix">'. $element['#field_prefix'] .'</span> ';
+  }
+
+  $output .= '<input type="text" maxlength="'. $element['#maxlength'] .'" name="'. $element['#name'] .'" id="'. $element['#id'] .'" '. $size .' value="'. check_plain($element['#value']) .'"'. drupal_attributes($element['#attributes']) .' />';
+
+  if (isset($element['#field_suffix'])) {
+    $output .= ' <span class="field-suffix">'. $element['#field_suffix'] .'</span>';
+  }
+
+  return theme('form_element', $element, $output);
+}
+
+/**
+ *  Check to make sure the user has entered a valid 3 or 6 digit hex color.
+ */
+function colorpicker_textfield_validate($element, &$form_values) {
+  if (!preg_match('/^#(?:(?:[a-f\d]{3}){1,2})$/i', $element['#value'])) {
+    form_error($element, "'". check_plain($element['#value']) ."'". t(' is not a valid hex color'));
+  }
+}

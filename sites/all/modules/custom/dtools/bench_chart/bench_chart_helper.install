@@ -1,0 +1,9 @@
+<?php
+
+/**
+ * Implementation of hook_enable().
+ */
+function bench_chart_helper_enable() {
+    db_query("UPDATE {system} SET weight = '100' WHERE name = 'bench_chart_helper'");
+}
+

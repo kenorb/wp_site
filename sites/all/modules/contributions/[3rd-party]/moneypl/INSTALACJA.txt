@@ -1,0 +1,23 @@
+********************************************************************
+                     D R U P A L    M O D U L E
+********************************************************************
+Name: Money.pl
+Author:	Grzegorz Murdzek <grxmrx@gmail.com>
+
+********************************************************************
+OPIS: 
+Moduł umożliwia wyświetlanie bloków z aktualnościami i tabelami 
+z portalu finansowego Money.pl.
+
+********************************************************************
+INSTALACJA:
+Instalacja modułu sprowadza się do skopiowania katalogu "moneypl" 
+do katalogu "modules". Drupal sam wykryje nowy moduł 
+(sekcja Administer/Site building/Modules w panelu administracyjnym).
+Po aktywacji modułu bloki z aktualnościami i tabelami pojawią się w ustawieniach
+wyświetlania bloków na stronie (sekcja Administer/Site building/Blocks).
+
+********************************************************************
+WYMAGANIA:
+
+Moduł wymaga wersji 5.x systemu Drupal.

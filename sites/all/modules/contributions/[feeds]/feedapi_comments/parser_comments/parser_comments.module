@@ -1,0 +1,261 @@
+<?php
+// $Id: parser_comments.module,v 1.5 2008/11/26 22:22:28 alexb Exp $
+
+/**
+ * @file
+ *   Scrapes comments from other sites
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function parser_comments_help($path, $arg) {
+  switch ($path) {
+    case 'admin/modules#description':
+      return t('Provide a comment parser for FeedAPI-compatible modules. Only PHP5-compatible.');
+    case 'feedapi/full_name':
+      return t('Comments parser');
+  }
+}
+
+/**
+ * Implementation of hook_feedapi_feed().
+ */
+function parser_comments_feedapi_feed($op) {
+  $args = func_get_args();
+  switch ($op) {
+    case 'type':
+      return array("comment feed");
+    case 'compatible':
+      // The site-specific include files provide a regex for URLs to decide the compatibility.
+      $url = $args[1]->url;
+      $choose = _parser_comments_type_choose($url);
+      if (is_array($choose)) {
+        return TRUE;
+      }
+      else {
+        return FALSE;
+      }
+    case 'parse':
+      $url = $args[1]->url;
+      $choose = _parser_comments_type_choose($url);
+      if (is_array($choose)) {
+        list($xpath_comments, $placeholders, $xpath_data_members) = $choose;
+      }
+      else {
+        return FALSE;
+      }
+      $placeholders = _parser_comments_placeholder_defaults($placeholders);
+      
+      $url_contents = _parser_common_syndication_feedapi_get($url);
+
+      // Detect the character encoding of the site
+      if (function_exists('mb_detect_encoding')) {
+        $encoding = mb_detect_encoding($url_contents);
+      }
+      else {
+        // Fallback to a hardcoded value, no better guess at the moment.
+        $encoding = 'UTF-8';
+      }
+
+      // Parse the HTML document with the help of SimpleXML
+      @$html = DOMDocument::loadHTML($url_contents);
+      $site_parsed = simplexml_import_dom($html);
+
+      // Grab data with the help of predefined xpaths and apply placeholders
+      $comments = array();
+      foreach ($xpath_comments as $path) {
+        list($holder, $to) = _parser_comments_placeholder_choose($placeholders, $path);
+        if (is_array($to)) {
+          if ($to[1] !== UNLIMITED) {
+            // If we know the end of the running variable placeholder, then do a for cycle
+            for ($i = $to[0]; $i <= $to[1]; $i += $to[2]) {
+              $path = str_replace($holder, $i, $path);
+              $comment = $site_parsed->xpath($path);
+              if (is_array($comment)) {
+                $comment = array_pop($comment);
+                $item = _parser_comments_xpath_get_data($comment, $xpath_data_members, $encoding);
+                if (!empty($item)) {
+                  $comments[] = $item;
+                }
+              }
+            }
+          }
+          else {
+            // If we don't know the end of the running variable placeholder, then do this while sane data is there
+            $stop = FALSE;
+            $i = $to[0];
+            while (!$stop) {
+              $path_mod = str_replace($holder, $i, $path);
+              $comment = $site_parsed->xpath($path_mod);
+              $comment = is_array($comment) ? array_pop($comment) : $comment;
+              if (empty($comment)) {
+                $stop = TRUE;
+              }
+              else {
+                $item = _parser_comments_xpath_get_data($comment, $xpath_data_members, $encoding);
+                if (!empty($item)) {
+                  $comments[] = $item;
+                }
+              }
+              $i += $to[2];
+            }
+          }
+        }
+        else {
+          // If we no running variable, just pick up the stuff
+          $comment = array_pop($site_parsed->xpath($path));
+          $item = _parser_comments_xpath_get_data($comment, $xpath_data_members, $encoding);
+          if (!empty($item)) {
+            $comments[] = $item;
+          }
+        }
+      }
+      
+      // Generate standard data structure for FeedAPI
+      $parsed_source = new stdClass();
+      $parsed_source->title = t('Comments from !url', array('!url' => $url));
+      $parsed_source->description = '';
+      $parsed_source->options->link = $url;
+      $parsed_source->items = array();
+      foreach ($comments as $comment) {
+        $item = new stdClass();
+        $words = split("[\n\r\t ]+", $comment['body']);
+        // Grab the first two words from comment body as title if no title
+        $item->title = !empty($comment['title']) ? $comment['title'] : implode(' ', array_slice($words, 0, min(2, count($words))));
+        $item->description = $comment['body'];
+        $item->options = new stdClass();
+        $item->options->guid = md5($item->description . $item->title);
+        $item->options->timestamp = _parser_comments_parse_date($comment['date']);
+        if (isset($comment['author'])) {
+          $item->options->original_author = new stdClass();
+          $item->options->original_author->name = $comment['author'];
+          if (isset($comment['author_picture'])) {
+            $item->options->original_author->picture = $comment['author_picture'];
+            unset($comment['author_picture']);
+          }
+          unset($comment['author']);
+        }
+        
+        // Just exposing the others in the options
+        foreach ($comment as $key => $value) {
+          $item->options->{$key} = $value;
+        }
+        if (!valid_url($item->options->original_url, TRUE)) {
+          $item->options->original_url = $url .'#'. $item->options->original_url;
+        }
+        $parsed_source->items[] = $item;
+      }
+      return $parsed_source;
+  }
+}
+
+/**
+ * Fill placeholder arrays with default values to make the other parts of the code cleaner
+ */
+function _parser_comments_placeholder_defaults($placeholders) {
+  foreach ($placeholders as $from => $to) {
+    if (!is_array($to) || count($to) == 0) {
+      $placeholders[$from] = array(0, UNLIMITED, 1);
+    }
+    if (count($to) == 1) {
+      $placeholders[$from][1] = UNLIMITED;
+    }
+    if (count($to) == 2 || count($to) == 1) {
+      $placeholders[$from][2] = 1;
+    }
+  }
+  return $placeholders;
+}
+
+/**
+ * Returns the placeholder which is in the path
+ */
+function _parser_comments_placeholder_choose($placeholders, $path) {
+  foreach ($placeholders as $holder => $to) {
+    if (strstr($path, $holder)) {
+      return array($holder, $to);
+    }
+  }
+}
+
+/**
+ * Extracts data members from the comments
+ */
+function _parser_comments_xpath_get_data($comment, $xpaths, $encoding) {
+  if ($comment instanceof SimpleXMLElement) {
+    
+    // Get the HTML from the SimpleXML object
+    $html_between = $comment->asXML();
+
+    // Soo ugly trick because of this issue: http://www.nabble.com/Encoding-issues-with-Zend_Dom_Query-td18952575.html
+    $html_start = '<html><head><meta http-equiv="Content-Type" content="text/html; charset='. $encoding .'"></head><body>';
+    $html_end = '</body></html>';
+    
+    // Parse new HTML document, only a full HTML doc can be parsed
+    $doc = new DOMDocument();
+    @$doc->loadHTML($html_start . $html_between . $html_end);
+    $comment = simplexml_import_dom($doc);
+    
+    // Extract the data with the help of xpaths
+    $item = array();
+    foreach ($xpaths as $key => $path) {
+      if (is_string($path) && !empty($path)) {
+        $data = $comment->xpath($path);
+        if (is_array($data) && count($data) > 0) {
+          $data = array_pop($data);
+        }
+        if (!empty($data)) {
+          $data = trim($data);
+          if (strlen($data) > 0) {
+            $item[$key] = $data;
+          }
+        }
+      }
+    }
+    return $item;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Choose the correct .inc site-specific data
+ */
+function _parser_comments_type_choose($url) {
+  $dir = drupal_get_path('module', 'parser_comments') .'/sites/';
+  $site_specs = scandir($dir);
+  foreach ($site_specs as $site) {
+    if (is_file($dir . $site) && preg_match('/inc$/', $site)) {
+      include $dir . $site;
+      if (preg_match($url_checker_regexp, $url)) {
+        return array($xpath_comments, $placeholders, $xpath_data_members);
+      }
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Parse textual relative date definitions (like: 5 minutes ago)
+ * or fallback to Parser Common Syndication date parsing method
+ */
+function _parser_comments_parse_date($date_str) {
+  $multipliers = array(
+    'second' => 1,
+    'minute' => 60,
+    'hour' => 3600,
+    'day' => 86400,
+    'week' => 604800,
+    'month' => 2635200,
+    'year' => 31536000,
+  );
+  $now = time();
+  $matches = array();
+  preg_match('/([0-9]+) *(second|minute|hour|day|month|year|week)s* *ago/', $date_str, $matches);
+  if (count($matches) == 3) {
+    return $now - ($matches[1] * $multipliers[$matches[2]]);
+  }
+  return _parser_common_syndication_parse_date($date_str);
+}

@@ -1,0 +1,11 @@
+; $Id: search_and_replace.info,v 1.1 
+name = "Search and Replace"
+description = "This allows you to perform a search or search-and-replace of your Drupal node bodies and titles."
+project = "search_and_replace"
+core=6.x
+; Information added by drupal.org packaging script on 2008-10-07
+version = "6.x-1.1-beta1"
+core = "6.x"
+project = "search_and_replace"
+datestamp = "1223399425"
+

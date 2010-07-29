@@ -1,0 +1,57 @@
+<?php
+//$Id: resume_access.module,v 1.2 2009/01/02 02:49:22 kbahey Exp $
+
+// Copyright Khalid Baheyeldin 2006-2009 http://2bits.com
+
+define('RESUME_PERM_VIEW', 'view resumes');
+
+/**
+ * Implementation of hook_node_grants().
+ */
+function resume_access_node_grants($account, $op) {
+  global $user;
+
+  $grants = array();
+  if ($op == 'view') {
+    if (user_access(RESUME_PERM_VIEW, $account)) {
+      $grants['resume_view'] = array(1);
+    }
+    $grants['resume_owner'] = array($user->uid);
+  }
+  return $grants;
+}
+
+/**
+ * Implementation of hook_node_access_records().
+ */
+function resume_access_node_access_records($node) {
+  $grants = array();
+  if (variable_get(RESUME_NODE_TYPE . $node->type, 0)) {
+    $grants[] = array(
+      'realm' => 'resume_view',
+      'gid' => 1,
+      'grant_view' => TRUE,
+      'grant_update' => FALSE,
+      'grant_delete' => FALSE,
+      'priority' => 0,
+    );
+    $grants[] = array(
+      'realm' => 'resume_owner',
+      'gid' => $node->uid ,
+      'grant_view' => TRUE,
+      'grant_update' => TRUE,
+      'grant_delete' => TRUE,
+      'priority' => 0,
+    );
+  }
+  return $grants;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function resume_access_perm() {
+  return array(
+    RESUME_PERM_VIEW,
+  );
+}

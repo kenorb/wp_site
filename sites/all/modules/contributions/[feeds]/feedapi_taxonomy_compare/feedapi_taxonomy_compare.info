@@ -1,0 +1,14 @@
+name = FeedAPI Taxonomy Compare
+description = "Compares incomming taxonomy terms to a selected vocabulary.  If they do not exist then sent them to another vocabular to be approved."
+dependencies[] = feedapi
+dependencies[] = feedapi_node
+dependencies[] = feedapi_mapper
+dependencies[] = taxonomy
+package = "FeedAPI Add On"
+core = 6.x
+; Information added by drupal.org packaging script on 2009-01-31
+version = "6.x-1.4"
+core = "6.x"
+project = "feedapi_taxonomy_compare"
+datestamp = "1233408915"
+

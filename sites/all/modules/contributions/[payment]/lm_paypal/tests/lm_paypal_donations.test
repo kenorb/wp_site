@@ -1,0 +1,256 @@
+<?php
+// $Id: lm_paypal_donations.test,v 1.1.2.4 2009/01/19 07:46:57 lyricnz Exp $
+
+class LmPaypalDonationsTestCase extends AbstractLmPaypalTestCase {
+
+  function getInfo() {
+    return array(
+      'name' => t('Donations'),
+      'description' => t('Tests the creation and processing of &quot;donations&quot;'),
+      'group' => t('LM Paypal'),
+    );
+  }
+
+  /**
+   * SimpleTest core method: code run before each and every test method.
+   */
+  function setUp() {
+    // Always call the setUp() function from the parent class.
+    parent::setUp('lm_paypal_donations', 'block', 'php');
+
+    // Create users.
+    $admin_permissions = array(
+      'administer lm_paypal',
+      'access lm_paypal_donate',
+      'view lm_paypal_all_donations',
+      'access administration pages',
+      'administer blocks',
+      'administer filters',
+      'access user profiles',
+    );
+    $this->admin_user = $this->drupalCreateUser($admin_permissions);
+    $this->web_user = $this->drupalCreateUser(array('access lm_paypal_donate'));
+
+    // We don't care where it is, but it needs to be set
+    variable_set('lm_paypal_donations_thanks', LM_PAYPAL_DONATIONS_THANKS_DEFAULT);
+  }
+
+  /**
+   * SimpleTest core method: code run after each and every test method.
+   */
+  function tearDown() {
+
+    // Always call the tearDown() function from the parent class.
+    parent::tearDown();
+  }
+
+
+  /**
+   * Exercise the basic LM PayPal Donations pages.
+   */
+  function testLmPaypal() {
+    // Check Settings page.
+    $thanks_page = variable_get('lm_paypal_donations_thanks', NULL);
+    $this->drupalLogin($this->admin_user);
+    $this->drupalGet('admin/settings/lm_paypal/donations');
+    $this->assertField('lm_paypal_donations_thanks');
+    $this->assertRaw($thanks_page);
+
+    // Check the help page
+    $this->clickLink('LM PayPal Donations Help');
+
+    // Check the page configured as the thanks page.
+    $this->drupalGet($thanks_page);
+
+    // Check the (empty) Donations page
+    $this->drupalGet('lm_paypal/donations');
+    $this->assertText('No donations found.');
+
+    // Create a custom block with three paypal donation buttons on it
+    $this->_createPayPalBlock();
+
+    /*
+    // Fetch all the forms (from paypal) and see if they look okay.
+    // WARNING: requires internet access.
+    $this->drupalGet('/');
+    preg_match_all('#<form action="(.*?)" method="post">(.*?)</form>#is', $this->drupalGetContent(), $forms, PREG_SET_ORDER);
+    foreach ($forms as $i => $form) {
+      // [0] = form html, [1] = action, [2] = form contents html
+      $action = $form[1];
+      preg_match_all('#<input type="hidden" name="(.*?)" value="(.*?)">#', $form[2], $fields, PREG_SET_ORDER);
+      $post = array();
+      foreach ($fields as $j => $field) {
+        // [0] = field html, [1] = key, [2] = value
+        // Encode according to application/x-www-form-urlencoded
+        // Both names and values needs to be urlencoded, according to
+        // http://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.1
+        $post[] = urlencode($field[1]) . '=' . urlencode($field[2]);
+      }
+      $post = implode('&', $post);
+
+
+      $out = $this->curlExec(array(CURLOPT_URL => $action, CURLOPT_POST => TRUE, CURLOPT_POSTFIELDS => $post));
+      $this->assertText('To access the PayPal Sandbox, please log in to ', 'PayPal Sandbox login page found');
+      // $this->writeFile("paypal-$i.html");
+    }
+    */
+  }
+
+
+  /**
+   * Test IPN processing by submitting fake Donation IPNs.
+   *
+   */
+  function testDonationIPN() {
+    // Check All Donations page - it should be empty.
+    $this->drupalLogin($this->admin_user);
+    $this->drupalGet('lm_paypal/donations');
+    $this->assertText('No donations found.');
+
+    // Post fake Donation IPNs (txn_id=0)
+    $num_users = 3;
+    $num_donations_per_user = 3;
+    $ipns = array();
+    for ($user = 0; $user < $num_users; $user++) {
+
+      // Create a new user.
+      $temp_user = $this->drupalCreateUser(array('access lm_paypal_donate'));
+      $temp_user_name = $temp_user->name;
+
+      // Make some donations, checking each as we go (using the admin user)
+      $this->drupalLogin($this->admin_user);
+      for ($donation = 0; $donation < $num_donations_per_user; $donation++) {
+        // Post the IPN with some unique values
+        $offset = 100 * $user + 10 * $donation; // just a number to make values unique(ish)
+        $ipn = $this->postPreparedIpn(
+          'ipn-web_accept-inprogress.txt',
+          array(
+            'item_number' => 0,
+            'item_name' => $this->randomName(6, 'ITEM_'),
+            'receiver_email' => variable_get('lm_paypal_business', NULL),
+            'payer_email' => $temp_user->mail,
+            'mc_gross' => 52.34 + $offset,
+            'mc_gross1' => 49.34 + $offset,
+            'txn_id' => 548954 + $offset,
+            'mc_currency' => 'USD',
+          )
+        );
+
+        // Check for errors processing IPN.
+        $this->assertWatchdogError('IPN web_accept no uid, found payer_email%%');
+        $this->assertNoWatchdogError('No web_accept processor registered for this item_number:%%');
+        $this->assertNoWatchdogErrors(WATCHDOG_WARNING);
+
+        // Check All Donations page for the new IPN.
+        $this->drupalGet('lm_paypal/donations');
+        $this->assertNoText('No donations found.');
+        $this->assertLink($temp_user_name, 0, "Found payer name $temp_user_name");
+        $this->assertText($ipn['item_name'], "Found item_name $ipn[item_name]");
+        $this->assertText($ipn['mc_gross'], "Found item_name $ipn[mc_gross]");
+        $this->assertText($ipn['mc_currency'], "Found item_name $ipn[mc_currency]");
+
+         // Check user account page for the new IPN.
+        $this->clickLink($temp_user_name);
+        $this->assertNoText('No donations found.');
+        $this->assertLink($temp_user_name, 0, "Found payer name $temp_user_name");
+        $this->assertText($ipn['item_name'], "Found $ipn[item_name]");
+        $this->assertText($ipn['mc_gross'], "Found $ipn[mc_gross]");
+        $this->assertText($ipn['mc_currency'], "Found $ipn[mc_currency]");
+
+        // Save IPN.
+        $ipns[$user][$donation] = $ipn;
+      }
+
+      // Check the user has all donations on their page (as admin).
+      $this->drupalGet("user/$temp_user->uid");
+      $this->assertNoText('No donations found.');
+      foreach ($ipns[$user] as $ipn) {
+        $this->assertText($ipn['item_name'], "Found $ipn[item_name]");
+        $this->assertText($ipn['mc_gross'], "Found $ipn[mc_gross]");
+        $this->assertText($ipn['mc_currency'], "Found $ipn[mc_currency]");
+      }
+
+      // Check the user has all donations on their page (as user).
+      $this->drupalLogin($temp_user);
+      $this->clickLink('My account');
+      $this->assertText('Paypal Donations');
+      $this->assertNoText('No donations found.');
+      foreach ($ipns[$user] as $ipn) {
+        $this->assertText($ipn['item_name'], "Found $ipn[item_name]");
+        $this->assertText($ipn['mc_gross'], "Found $ipn[mc_gross]");
+        $this->assertText($ipn['mc_currency'], "Found $ipn[mc_currency]");
+      }
+      $num_matches = preg_match_all('#USD#is', $this->drupalGetContent(), $matches);
+      $this->assertEqual($num_matches, $num_donations_per_user, "Found $num_matches USD matches");
+    }
+
+    // Check All Donations page for all payments.
+    $this->drupalLogin($this->admin_user);
+    $this->drupalGet('lm_paypal/donations');
+    $this->assertNoText('No donations found.');
+    $num_matches = preg_match_all('#USD#is', $this->drupalGetContent(), $matches);
+    $this->assertEqual($num_matches, $num_users * $num_donations_per_user, "Found $num_matches USD matches");
+
+    // Manual verification
+    // $this->dumpAllIpns();
+
+    // TODO: check for inprogress/completed.
+  }
+
+
+  function _createPayPalBlock() {
+    // Enable PHP Input Format for authenticated users
+    $edit = array(
+      'roles[2]' => TRUE, // authenticated user
+    );
+    $this->drupalPost('admin/settings/filters/3', $edit, 'Save configuration');
+
+
+    // Create a Block with the Donate PHP in it
+    $body = <<<EOF
+<?php
+if (function_exists('lm_paypal_donate')) {
+  // 10 = amount, 'USD' is the currency followed by a description
+  print 'We would really like a $10 donation ' .
+    lm_paypal_donate(10, 'USD', 'donation to example.com') .'<br>';
+  // The amount is a one element array so an text input with the one value as
+  //  default
+  print 'Write your own amount to give, we suggest $5' .
+    lm_paypal_donate(array(5), 'USD', 'donation to example.com') . '<br>';
+  // The amount is a multi element array so a select will be used. Note if one
+  //   of the elements is itself an array that will be the default selection
+  // The final two parameters are an alternative button (here we use the default)
+  //   and a replacement label before the amount
+  print 'We would really like a $10, or more, donation ' .
+    lm_paypal_donate(array(5,array(10),15), 'USD', 'donation to example.com', '', 'Donation') .'<br>';
+}
+EOF;
+    $edit = array(
+      'info' => $this->randomName(),
+      'title' => $this->randomName(),
+      'body' => $body,
+      'format' => 3, // PHP
+    );
+    $this->drupalPost('admin/build/block/add', $edit, t('Save block'));
+
+    // Confirm that the box has been created, and then query the created bid.
+    $this->assertText(t('The block has been created.'), t('Box successfully created.'));
+    $bid = db_result(db_query("SELECT bid FROM {boxes} WHERE info = '%s'", array($edit['info'])));
+
+    // Check to see if the box was created by checking that it's in the database..
+    $this->assertNotNull($bid, t('Box found in database'));
+
+    // Set the created box to a specific region.
+    // TODO: Implement full region checking.
+    $edit = array();
+    $edit['block_' . $bid . '[region]'] = 'left';
+    $this->drupalPost('admin/build/block', $edit, t('Save blocks'));
+
+    // Check the block appeared and was executed correctly
+    $this->drupalGet('/');
+    $this->assertText('We would really like a $10 donation');
+    $this->assertNoRaw('<?php', 'No unparsed PHP code found');
+    $this->assertRaw('<form action="https://www.sandbox.paypal.com/cgi-bin/webscr" method="post">', 'Sandbox form(s) found');
+  }
+
+}

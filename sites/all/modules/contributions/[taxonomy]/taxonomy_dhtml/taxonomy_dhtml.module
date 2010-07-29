@@ -1,0 +1,196 @@
+<?php
+// $Id: taxonomy_dhtml.module,v 1.69 2008/12/12 21:54:10 darthclue Exp $
+
+/**
+ * Implementation of hook_theme()
+ */
+function taxonomy_dhtml_theme() {
+  return array(
+    'taxonomy_dhtml_admin' => array(
+      'arguments' => array('form' => array()),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_block()
+ */
+function taxonomy_dhtml_block($op = "list", $delta = 0) {
+  if($op == "list") {
+    $vocabularies = taxonomy_dhtml_get_vocabularies(TRUE);
+    foreach ($vocabularies as $vocabulary) {
+      $blocks[$vocabulary->vid]["info"] = 'Taxonomy DHTML: '. $vocabulary->name;
+    }
+    return $blocks;
+  }
+  elseif ($op == 'view') {
+    if (user_access("access content")) {
+      $vocabularies = taxonomy_dhtml_get_vocabularies(TRUE);
+      $block["subject"]= t($vocabularies[$delta]->name);
+      $block["content"]= menu_tree_output(taxonomy_dhtml_vocab_vert($vocabularies[$delta]->vid));
+      return $block;
+    }
+  }
+}
+
+/**
+ * TODO: Review comments from the original code ...
+ * TODO: recipe.module and node_aggregator did use $type to filter results to their own node type. no longer supported (but should be)
+ */
+function taxonomy_dhtml_vocab_vert($vocabulary_id, $op = NULL) {
+  $tree = taxonomy_get_tree($vocabulary_id);
+  $taxonomy_menu = array();
+  foreach ($tree as $term) {
+    if ($term->parents[0]==0) {
+      $taxonomy_menu[$term->name] = taxonomy_dhtml_process_term($term,taxonomy_dhtml_get_depth($term->vid));
+    }
+  }
+  return $taxonomy_menu;
+}
+
+/**
+ * Retrieve term data recursively
+ *
+ * @param term
+ * The term to process.  Expected structure is a single term from the array returned by taxonomy_get_tree.
+ *
+ * @param depth
+ * The depth at which we are processing.  We stop recursion if this is zero.
+ */
+function taxonomy_dhtml_process_term($term, $depth) {
+  switch ($depth) {
+    case 0:
+      $url = "taxonomy/term/$term->tid";
+      break;
+    case 10:
+      $url = "taxonomy/term/$term->tid/all";
+      break;
+    default:
+      $url = "taxonomy/term/$term->tid/$depth";
+  }
+
+  $count = taxonomy_dhtml_term_count_nodes($term, $depth);
+  $out = '';
+  if ($count) {
+    $out .= " ($count)";
+  }
+  $taxonomy_menu = array('link' => array('href' => $url, 'title' => $term->name . $out, 'expanded' => 1));
+  if ($depth>0) {
+    if ($tree = taxonomy_get_children($term->tid,$term->vid)) {
+      $taxonomy_menu['below'] = array();
+      foreach ($tree as $child) {
+        $taxonomy_menu['below'][$child->name] = taxonomy_dhtml_process_term($child, $depth-1);
+      }
+    }
+  }
+  return $taxonomy_menu;
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function taxonomy_dhtml_menu() {
+  global $user;
+  $items['admin/settings/taxonomy_dhtml'] = array(
+    'title' => 'Taxonomy DHTML',
+    'description' => t('Manage settings for taxonomy DHTML.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('taxonomy_dhtml_admin'),
+    'access arguments' => array('administer taxonomy'),
+    'file' => 'taxonomy_dhtml.admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function taxonomy_dhtml_help($path, $arg) {
+  switch ($path) {
+    case 'admin/modules#description':
+      return '<p>'. t("A user interface for taxonomy featuring a collapsible list.") .'</p>';
+    case 'admin/help#taxonomy_dhtml':
+    case 'admin/settings/taxonomy_dhtml':
+      $output = '<p>';
+      $output .= "This module provides a DHTML representation of this site's taxonomy. ". l("Blocks", "admin/build/block"). " are also provided for each vocabulary.";
+      return $output;
+  }
+}
+
+/**
+ * Return the number of items (noi) to display for the provided vocabulary id.
+ *
+ * @param vid
+ * The vocabulary id to get noi data for.
+ */
+function taxonomy_dhtml_get_noi($vid) {
+  $noi_return = 25;
+  $result = db_query("SELECT v.vid, v.noi FROM {taxonomy_dhtml} v WHERE v.vid = '%s'", $vid);
+  while ($noi_row = db_fetch_object($result)) {
+    $noi_return = $noi_row->noi;
+  }
+
+  return $noi_return;
+}
+
+/**
+ * Rewrite of taxonomy_get_vocabularies to allow us to pull in additional information from the taxonomy_dhtml table.
+ *
+ * @param exposed
+ * If TRUE, we only return vocabularies that are set for exposure with a number of items to display greater than 0.
+ */
+function taxonomy_dhtml_get_vocabularies($exposed = FALSE) {
+  if ($exposed) {
+    $result = db_query(db_rewrite_sql('SELECT v.*, t.noi, t.depth, t.expblock FROM {vocabulary} v LEFT JOIN {taxonomy_dhtml} t ON v.vid = t.vid WHERE t.expblock=1 AND t.noi>0 ORDER BY v.weight, v.name', 'v', 'vid'));
+  }
+  else {
+    $result = db_query(db_rewrite_sql('SELECT v.*, t.noi, t.depth, t.expblock FROM {vocabulary} v LEFT JOIN {taxonomy_dhtml} t ON v.vid = t.vid ORDER BY v.weight, v.name', 'v', 'vid'));
+  }
+
+  $vocabularies = array();
+  $node_types = array();
+  while ($voc = db_fetch_object($result)) {
+    $vocabularies[$voc->vid] = $voc;
+  }
+
+  return $vocabularies;
+}
+
+/**
+ * Retrieve term count recursively
+ * Rewrite of taxonomy_term_count_nodes to allow us to eliminate children from the count.
+ *
+ * @param term
+ * The term to process.  Expected structure is a single term from the array returned by taxonomy_get_tree.
+ *
+ * @param depth
+ * The depth at which we are processing.  We stop recursion if this is zero.
+ */
+function taxonomy_dhtml_term_count_nodes($term, $depth) {
+  $count = 0;
+  $result = db_query(db_rewrite_sql('SELECT t.tid, COUNT(n.nid) AS c FROM {term_node} t INNER JOIN {node} n ON t.vid = n.vid WHERE n.status = 1 AND t.tid = %d GROUP BY t.tid'), $term->tid);
+  while ($terms = db_fetch_object($result)) {
+    $count = $terms->c;
+  }
+  if ($depth>0) {
+    $tree = taxonomy_get_children($term->tid,$term->vid);
+    foreach ($tree as $child) {
+      $count += taxonomy_dhtml_term_count_nodes($child, $depth-1);
+    }
+  }
+  return $count;
+}
+
+/**
+ * Retrieve the depth for a specific vocab.
+ *
+ * @param vid
+ * The vocabulary id to return the depth for.
+ */
+function taxonomy_dhtml_get_depth($vid) {
+  $result = db_query('SELECT t.depth FROM {taxonomy_dhtml} t WHERE t.vid = %d', $vid);
+
+  $voc = db_fetch_object($result);
+
+  return $voc->depth;
+}

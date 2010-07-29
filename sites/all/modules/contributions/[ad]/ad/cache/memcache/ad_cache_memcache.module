@@ -1,0 +1,282 @@
+<?php
+// $Id: ad_cache_memcache.module,v 1.1.2.9.2.6 2009/02/16 23:12:28 jeremy Exp $
+
+/**
+ * @file
+ * A plug in for the ad.module, integrating the ad module with memcache.
+ *
+ * Copyright (c) 2005-2009.
+ *   Jeremy Andrews <jeremy@tag1consulting.com>.
+ */
+
+/**
+ * Implementation of hook_requirements().
+ */
+function ad_cache_memcache_requirements($phase = NULL) {
+  include_once './includes/install.inc';
+  // Connect to memcached so we can retrieve its version.
+  if (function_exists('memcache_add_server')) {
+    require_once(drupal_get_path('module', 'ad_cache_memcache') .'/ad_cache_memcache.inc');
+    $memcache = ad_memcache_init();
+    // Retrieve the version of memcache.
+    if (function_exists('memcache_get_version')) {
+      $severity = REQUIREMENT_OK;
+      $value = memcache_get_version($memcache);
+    }
+    else {
+      $severity = REQUIREMENT_ERROR;
+      $value = t('Memcache installation not valid, %function not found.', array('%function' => 'memcache_get_version'));
+    }
+  }
+  else {
+    $severity = REQUIREMENT_ERROR;
+    $value = t('Memcache is not installed, %function not found.', array('%function' => 'memcache_add_server'));
+  }
+
+  if ($phase) {
+    return array(
+      'memcache' => array(
+        'title' => t('Memcache'),
+        'value' => $value,
+        'severity' => $severity,
+      ),
+    );
+  }
+  else {
+    if ($severity == REQUIREMENT_OK) {
+      return TRUE;
+    }
+    else {
+      return $value;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function ad_cache_memcache_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case 'admin/modules#description':
+      $output = t('Utilize memcached to improve the performance of the ad module.');
+      break;
+
+  }
+  return $output;
+}
+
+/**
+ * Implementation of hook_adcacheapi().
+ */
+function ad_cache_memcache_adcacheapi($op, &$node = array()) {
+  switch ($op) {
+    case 'method':
+      ad_cache_memcache_sync();
+      ad_cache_memcache_build();
+      return array('memcache' => t('Memcache'));
+    case 'description':
+      return t('Memcache allows improved performance by caching data directly in RAM.');
+    case 'settings':
+      $form['memcache'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Memcache settings'),
+        '#collapsible' => TRUE,
+        '#collapsed' => (variable_get('ad_cache', 'none') == 'memcache') ? FALSE : TRUE,
+      );
+      $period = drupal_map_assoc(array(60,120,180,240,300,600,900,1800,2700,3600,10800,21600,43200,86400), 'format_interval');
+      $form['memcache']['ad_cache_memcache_sync'] = array(
+        '#type' => 'select',
+        '#title' => t('Sync frequency'),
+        '#default_value' => variable_get('ad_cache_memcache_sync', 600),
+        '#options' => $period,
+        '#description' => t('Specify how often statistics stored in RAM should be synced to the database (requires cron runs with the same or greater frequency). The longer you store data in memcache, the more data you risk loosing in the event of a system failure. This configuration option is only relevant if memcache is enabled.'),
+      );
+      // Sanity tests...
+      if (variable_get('ad_cache', 'none') == 'memcache') {
+        $sync = variable_get('ad_cache_memcache_sync', 600);
+        $cron_last = variable_get('cron_last', NULL);
+        if (is_numeric($cron_last)) {
+          if (time() - $cron_last > $sync) {
+            drupal_set_message(t('Memcache warning:  your last cron run was !time ago.  Advertisement impressions data is only synchronized into the database when cron runs.  You are risking data loss.  To learn more about how Drupal cron works, please check the online help pages for <a href="@url">configuring cron jobs</a>.', array('@url' => 'http://drupal.org/cron', '!sync' => format_interval($sync), '!time' => format_interval(time() - $cron_last))), 'error');
+          }
+        }
+        else {
+          drupal_set_message(t('Memcache warning:  Cron has not run.  Advertisement impressions data is only synchronized into the database when cron runs.  You are risking data loss.  It appears cron jobs have not been setup on your system. Please check the help pages for <a href="@url">configuring cron jobs</a>.', array('@url' => 'http://drupal.org/cron')), 'error');
+        }
+      }
+      return $form;
+    case 'settings_submit':
+      variable_set('ad_cache_memcache_sync', $node['ad_cache_memcache_sync']);
+      break;
+
+    case 'insert':
+    case 'update':
+    case 'delete':
+      if (variable_get('ad_cache', 'none') == 'memcache') {
+        ad_cache_memcache_sync_ad($node->nid);
+        ad_cache_memcache_build($node);
+      }
+      break;
+  }
+}
+
+/**
+ * Regularily syncronize counters into RAM.
+ */
+function ad_cache_memcache_cron() {
+  $ad_memcache_timestamp = variable_get('ad_memcache_timestamp', '');
+  if ((time() - $ad_memcache_timestamp) >= variable_get('ad_cache_memcache_sync', 600)) {
+    ad_cache_memcache_sync();
+  }
+
+  $ad_memcache_build = variable_get('ad_memcache_build', '');
+  // rebuild cache every 12 hours
+  // TODO: Make configurable
+  if ((time() - $ad_memcache_build) >= 43200) {
+    ad_cache_memcache_build();
+  }
+}
+
+/**
+ * Load advertisements into memory.
+ */
+function ad_cache_memcache_sync() {
+  variable_set('ad_memcache_timestamp', time());
+  if (($error = ad_cache_memcache_requirements()) === TRUE) {
+    $result = db_query("SELECT aid, adtype FROM {ads} WHERE adstatus = 'active'");
+    while ($ad = db_fetch_object($result)) {
+      ad_cache_memcache_sync_ad($ad->aid);
+    }
+    // Sync counters.
+    ad_cache_memcache_sync_ad(0);
+  }
+  else {
+    drupal_set_message(t('!module: Unable to syncronize cache: !error', array('!module' => 'ad_cache_memcache.module', '!error' => $error)), 'error');
+  }
+}
+
+/**
+ * Syncronize counts for given advertisement with database.
+ */
+function ad_cache_memcache_sync_ad($aid) {
+  if (($error = ad_cache_memcache_requirements()) !== TRUE) {
+    drupal_set_message(t('!module: Unable to syncronize cache: !error', array('!module' => 'ad_cache_memcache.module', '!error' => $error)), 'error');
+    return;
+  }
+
+  if (!ad_memcache_lock("ad-counters-$aid")) {
+    // Another process is already updating these values.
+    return;
+  }
+  $counters = ad_memcache_get("ad-counters-$aid");
+  if (!is_array($counters)) {
+    ad_memcache_unlock("ad-counters-$aid");
+    // There's nothing currently in memory for this ad.
+    return;
+  }
+  ad_memcache_delete("ad-counters-$aid");
+  ad_memcache_unlock("ad-counters-$aid");
+  foreach ($counters as $map) {
+    list($action, $group, $hostid, $timestamp) = explode(':', $map);
+    if ($action && $group && $hostid && $timestamp) {
+      $count = ad_memcache_get("ad-$action-$aid-$group-$hostid-$timestamp");
+      if ($count) {
+        ad_memcache_decrement("ad-$action-$aid-$group-$hostid-$timestamp", $count);
+        db_query("UPDATE {ad_statistics} SET count = count + %d WHERE aid = %d AND action = '%s' AND date = %d AND adgroup = '%s' AND hostid = '%s'", $count, $aid, $action, $timestamp, $group, $hostid);
+        // If column doesn't already exist, we need to add it.
+        if (!db_affected_rows()) {
+          db_query("INSERT INTO {ad_statistics} (aid, date, action, adgroup, hostid, count) VALUES(%d, %d, '%s', '%s', '%s', %d)", $aid, $timestamp, $action, $group, $hostid, $count);
+          // If another process already added this row our INSERT will fail, if
+          // so we still need to increment it so we don't loose a count.
+          if (!db_affected_rows()) {
+            db_query("UPDATE {ad_statistics} SET count = count + %d WHERE aid = %d AND action = '%s' AND date = %d AND adgroup = '%s' AND hostid = '%s'", $count, $aid, $action, $timestamp, $group, $hostid);
+          }
+        }
+      }
+      // If counting ad impressions, see if we've hit a limit
+      if ($action = 'view') {
+        $limits = db_fetch_object(db_query('SELECT activated, maxviews, maxclicks, adstatus FROM {ads} WHERE aid = %d', $aid));
+        if ($limits->adstatus == 'active') {
+          if ($limits->maxviews) {
+            $views = (int)db_result(db_query("SELECT SUM(count) FROM {ad_statistics} WHERE aid = %d AND action = 'view' AND date >= %d", $aid, date('YmdH', $limits->activated)));
+            if ($views >= $limits->maxviews) {
+              db_query("UPDATE {ads} SET adstatus = 'expired', autoexpire = 0, autoexpired = %d, expired = %d WHERE aid = %d", time(), time(), $aid);
+              ad_statistics_increment($aid, 'autoexpired');
+              ad_statistics_increment($aid, 'expired');
+            }
+          }
+          if ($limits->maxclicks) {
+            $clicks = (int)db_result(db_query("SELECT SUM(count) FROM {ad_statistics} WHERE aid = %d AND action = 'click' AND date >= %d", $aid, date('YmdH', $limits->activated)));
+            if ($clicks >= $limits->maxclicks) {
+              db_query("UPDATE {ads} SET adstatus = 'expired', autoexpire = 0, autoexpired = %d, expired = %d WHERE aid = %d", time(), time(), $aid);
+              ad_statistics_increment($aid, 'autoexpired');
+              ad_statistics_increment($aid, 'expired');
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Caches ad information into memory.
+*/
+function ad_cache_memcache_build($changed = NULL) {
+  variable_set('ad_memcache_build', time());
+  if (($error = ad_cache_memcache_requirements()) !== TRUE) {
+    drupal_set_message(t('!module: Unable to build cache: !error', array('!module' => 'ad_cache_memcache.module', '!error' => $error)), 'error');
+    return;
+  }
+
+  if (is_object($changed) && isset($changed->aid)) {
+    // An advertisement has changed, rebuild cache on next cron run.
+    variable_set('ad_memcache_build', '');
+  }
+  else {
+    // Rebuilding entire cache.
+    $result = db_query("SELECT aid, adtype, redirect FROM {ads} WHERE adstatus = 'active' OR adstatus = 'approved' OR adstatus = 'offline'");
+    while ($ad = db_fetch_object($result)) {
+      $node = node_load($ad->aid);
+      $ad->display = module_invoke("ad_$ad->adtype", 'display_ad', $node);
+      ad_memcache_set("ad-aid-$ad->aid", $ad);
+      $ads[] = $ad->aid;
+
+      // Owner indexes.
+      $ad_owners = db_query('SELECT o.uid, h.hostid FROM {ad_owners} o LEFT JOIN {ad_hosts} h ON o.uid = h.uid WHERE aid = %d', $ad->aid);
+      $counter = 0;
+      while ($owner = db_fetch_object($ad_owners)) {
+        $owners[$owner->uid][$ad->aid] = $ad->aid;
+        ad_memcache_set("ad-$ad->aid-uid", $owner->uid);
+      }
+
+      $match = FALSE;
+      // Taxonomy index.
+      $terms = db_query('SELECT tid FROM {term_node} WHERE nid = %d', $ad->aid);
+      while ($term = db_fetch_object($terms)) {
+        $taxonomy[$term->tid][$ad->aid] = $ad->aid;
+        $match = TRUE;
+      }
+      if (!$match) {
+        $taxonomy[0][] = $ad->aid;
+      }
+    }
+    ad_memcache_set("ad-ads", $ads);
+    ad_memcache_set("ad-owners", $owners);
+    ad_memcache_set("ad-taxonomy", $taxonomy);
+
+    // HostID index
+    $owners = db_query('SELECT uid, hostid FROM {ad_hosts}');
+    while ($owner = db_fetch_object($owners)) {
+      ad_memcache_set("ad-hosts-$owner->uid", $owner->hostid);
+      if (($user = user_load(array('uid' => $owner->uid))) &&
+          (user_access('host remote advertisements', $user))) {
+        ad_memcache_set("ad-hostid-$owner->hostid", TRUE);
+      }
+    }
+    // Always invoke hooks, they can decide to queue or act immediately.
+    ad_memcache_set('ad-cache-hook', module_invoke_all('ad_build_cache'));
+  }
+}
+

@@ -1,0 +1,55 @@
+<?php
+// $Id: upload_preview.install,v 1.3 2008/12/29 03:27:08 rmiddle Exp $
+
+/**
+ * @file
+ * The install file that controls to setup of the module.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function upload_preview_install() {
+  $preview = file_create_path(variable_get('upload_preview_path', 'preview'));
+
+  // Make sure that the file preview directory exists
+  if (!file_check_directory($preview, FILE_CREATE_DIRECTORY)) {
+    drupal_set_message(t('Attachment previews are disabled. The preview directory %directory has not been properly configured.', array('%directory' => $preview)), 'error');
+  }
+
+  // Also ensure, that we have a image toolkit available.
+  if (!image_get_toolkit()) {
+    drupal_set_message(t('Make sure you have a working image toolkit installed and enabled. Further information can be found on the <a href="@url">Image toolkit settings page</a>.', array('@url' => url('admin/settings/image-toolkit'))), 'error');
+  }
+}
+
+/**
+ * Implementation of hook_disable().
+ */
+function upload_preview_disable() {
+  // Remove all preview files as they aren't necessary if the module is disabled
+  $previews = variable_get('upload_preview_files', array());
+
+  // Delete all preview files.
+  foreach ($previews as $file => $timestamp) {
+    file_delete($file);
+  }
+
+  variable_del('upload_preview_files');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function upload_preview_uninstall() {
+  // Remove the file preview directory
+  $directory = file_create_path(variable_get('upload_preview_path', 'preview'));
+  if (is_dir($directory)) {
+    rmdir($directory);
+  }
+
+  // Remove all variables
+  variable_del('upload_preview_size');
+  variable_del('upload_preview_path');
+  variable_del('upload_preview_lifetime');
+}

@@ -1,0 +1,6 @@
+; $Id: ad_geoip.info,v 1.1 2008/06/10 20:40:36 jeremy Exp $
+name = Ad GeoIP
+package = Ad
+dependencies[] = ad
+description = Integrates Drupal's ad module with the MaxMind GeoIP database, providing geotargeting of advertisements.
+core = 6.x

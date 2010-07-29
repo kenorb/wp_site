@@ -1,0 +1,12 @@
+; $Id: ajaxsubmit.info,v 1.2 2008/10/12 23:18:58 nedjo Exp $
+name =  AJAX submit
+description = Makes designated forms submit via AJAX.
+package = User interface
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-12-19
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "ajaxsubmit"
+datestamp = "1229644861"
+

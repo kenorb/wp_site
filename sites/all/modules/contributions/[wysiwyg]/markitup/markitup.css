@@ -1,0 +1,24 @@
+/* $Id:  */
+
+/* Setting teaser textarea height to something reasonable. */
+textarea.teaser {
+  height:80px !important;
+}
+/* Fixing a .preview class collision with Drupal's Garland theme which caused
+  the preview check button to inherit the Garland .preview rules. */
+div.markItUpContainer .preview {
+  border:none !important;
+  background:none !important;
+  margin:0px !important;
+  padding:0px !important;
+}
+/* Overriding the standard markItUp textarea width. */
+.markItUp {
+  width:99%;
+}
+/* Prevent backgrounds on buttons. Garland applies background images to list
+  items. The problem was visible in both the markitup and simple skins, so
+  applying the fix here. */
+ul li.markItUpButton {
+  background:none;
+}

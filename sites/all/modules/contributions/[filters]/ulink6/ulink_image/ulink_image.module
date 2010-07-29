@@ -1,0 +1,59 @@
+<?php
+// $Id: ulink_image.module,v 1.2 2008/03/08 10:26:36 garthee Exp $
+/**
+ * @file
+ * An extension module of ulink,
+* Mode - INTERN
+* provides specific implementations for images defined by their extensions
+ */
+  
+/**
+ * Implementation of hook_ulink_intern()
+ */
+function ulink_image_ulink_intern($link, $object = NULL) {
+
+  $img = explode(' ', strtolower(variable_get('ulink_image_ext', "jpg png gif")));
+  if (!(in_array($link['mime'], $img) && strncasecmp($link['attributes']['force_link'], "TRUE", 4))) {
+    return NULL;
+  }
+  
+  switch (variable_get('ulink_image_settings', '0')) {
+    case '0':
+  	  return theme('image', $link['path'], $link['attributes']['alt'], $link['attributes']['title'], $link['attributes'], FALSE);	
+  	case '1':  
+  	  $text = $link['text'] ? $link['text'] : $link['path'];
+  	  return l($text, $link['path'], $link['attributes'], NULL, NULL, FALSE, TRUE);
+    case '2':
+  	  $image = theme('image', $link['path'], $link['attributes']['alt'], $link['attributes']['title'], $link['attributes'], FALSE);
+      return l($image, file_create_url($link['path']), $link['attributes'], NULL, NULL, FALSE, TRUE);
+  }  	
+}
+/**
+ * Implementation of hook_ulink_intern_settings().
+ */
+function ulink_image_ulink_intern_settings() {
+  $form['image']['ulink_image_ext'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Extensions supported by IMG tag'),
+    '#size' => 60,
+    '#maxlength' => 64, 
+    '#default_value' => variable_get('ulink_image_ext', "jpg png gif"),
+    '#description' => t("Enter the extensions separated by space. eg: jpg png gif"),
+  ); 
+  $options = array('0' => t('Only image'), '1' =>t('Only link'), '2' => t('Image and link'));
+  $form['ulink_image_settings'] = array(
+    '#title' => t('Redering option'),    
+    '#type' => 'radios',
+    '#options' => $options,
+    '#default_value' => variable_get('ulink_image_settings', '0'),  
+    '#description' => (module_exists('imagecache')&&module_exists('ulink_imagecache') ? t('Please use <a href="!settings">ulink_imagecache</a> implementation for images. For specific rendering, please remove the extension from the list and add it in the others/files category with implementation.', array('!settings' => url('admin/settings/ulink/image'))) : t('<strong>Note:</strong> If <a href="!imagecache">Imagecache</a> module and  ulink_imagecache are installed, uLink provides support for image scaling. For specific rendering, please remove the extension from the list and add it in the others/files category with implementation.', array('!imagecache' => url('http://drupal.org/project/imagecache')))),
+  );  
+  return $form;      
+}
+/**
+ * Implementation of hook_ulink_image_info().
+ */
+function ulink_image_ulink_intern_info() {
+  return t('If imagecache is available, please use ulink_imagecache implementation - it is used for images from "files/". Otherwise HTML image tag is rendered. User can override this by specifying force_link=true : attach the imagefile instead displaying it.');
+}
+

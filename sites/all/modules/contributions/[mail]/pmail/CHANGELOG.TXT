@@ -1,0 +1,10 @@
+// $Id: CHANGELOG.TXT,v 1.1 2007/12/04 15:54:02 smk Exp $
+
+Personalized E-mails 5.x-1.x, xxxx-xx-xx
+----------------------------------------
+
+
+Personalized E-mails 5.x-1.0, 2007-12-04
+----------------------------------------
+Initial release.
+

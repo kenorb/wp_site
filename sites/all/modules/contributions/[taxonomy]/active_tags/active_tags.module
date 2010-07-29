@@ -1,0 +1,43 @@
+<?php
+// $Id: active_tags.module,v 1.2.2.1 2008/09/12 17:05:03 darrenmuk Exp $
+
+/**
+ * @file
+ * Active Tags widget for free tagging taxonomies
+ */
+
+
+function active_tags_init() {
+  if (arg(2) == 'edit' || arg(1) == 'add') {
+    drupal_add_css(drupal_get_path('module', 'active_tags') .'/active_tags.css', 'module');
+    $settings = array();
+    foreach (taxonomy_get_vocabularies() as $id => $values) {
+      if (variable_get('active_tags_'. $id, 0) == 1) {
+        $settings[] = "#edit-taxonomy-tags-$id-wrapper";
+      } 
+    }
+    drupal_add_js(array('active_tags' => $settings), 'setting');
+    drupal_add_js(drupal_get_path('module', 'active_tags') .'/active_tags.js', 'module');
+  }
+}
+
+function active_tags_form_alter(&$form, $form_state, $form_id) { 
+  if ($form_id == 'taxonomy_form_vocabulary') {
+    $form['settings']['active_tags'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Active Tags'),
+      '#weight' => 10,
+      '#default_value' => (isset($form['vid'])) ? variable_get('active_tags_'. $form['vid']['#value'], 0) : 0,
+      '#description' => t('Swaps this vocabulary widget for an enhanced tag field if browser supports javascript.'), 
+    );
+    $form['#submit'][] = 'active_tags_form_vocabulary_submit';
+  } 
+}
+
+function active_tags_form_vocabulary_submit($form, &$form_state) {
+  variable_set('active_tags_'. $form_state['values']['vid'], $form_state['values']['active_tags']);
+  return TRUE;
+}
+
+
+

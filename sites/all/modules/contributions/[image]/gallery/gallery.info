@@ -1,0 +1,14 @@
+; $Id: gallery.info,v 1.4.2.2 2007/11/27 18:10:32 profix898 Exp $
+
+name = "Gallery"
+description = "Embeds Gallery2 into Drupal."
+
+package = "Gallery2"
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-01-26
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "gallery"
+datestamp = "1232928289"
+

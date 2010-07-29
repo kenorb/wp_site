@@ -1,0 +1,31 @@
+// $Id: changelog.txt,v 1.9.2.1 2009/01/06 17:01:05 aaron Exp $
+
+January 2009
+------------
+ * 324640/KarenS PHP Notices (robertDouglass/Karens).
+
+2008-09
+-------
+ * Port to d6 (aaron).
+
+2008-03
+----------
+ * Move js to /js folder (aaron).
+ * #237259 fix endless upload of images in xp/ff (aaron).
+
+2008-01
+-------
+ * Smoother hovers if hoverintent is installed (aaron).
+ * Allow teasers in slideshow (aaron).
+ * Allow change of placement of teasers in breakout hover mode (aaron).
+
+2007-09
+-------
+ * Added functionality for 'multi-thumbnail hover' mode slideshows (aaron).
+ * Separated theme functions (aaron).
+ * Cleaned up & documented code (aaron).
+
+2007-07
+-------
+ * Added global settings & instructions to override (aaron).
+ * Began project for views slideshow (aaron).

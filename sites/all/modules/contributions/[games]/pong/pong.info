@@ -1,0 +1,20 @@
+; $Id: pong.info,v 1.2 2008/07/19 10:10:27 skinhat Exp $
+
+name = "Pong"
+description = "Pong game for drupal"
+version = "$Name: DRUPAL-6--1-5 $"
+core = 6.x
+
+; Information added by drupal.org packaging script on 2007-03-04
+version = "6.x-1.0"
+project = "pong"
+
+
+
+
+; Information added by drupal.org packaging script on 2009-01-25
+version = "6.x-1.5"
+core = "6.x"
+project = "pong"
+datestamp = "1232843129"
+

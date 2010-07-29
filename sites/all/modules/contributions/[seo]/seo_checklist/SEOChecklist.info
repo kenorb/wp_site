@@ -1,0 +1,17 @@
+; $Id: SEOChecklist.info,v 1.7 2009/01/26 21:26:04 sprydev Exp $
+name = '"SEO" Checklist'
+description = A Search Engine Optimization checklist for Drupal 6.
+
+package = '"SEO" Checklist'
+version = "6.8 Beta"
+; Information added by drupal.org packaging script on 2007-11-20
+version = "6.8"
+project = "seo_checklist"
+datestamp = "1195529707"
+core="6.x"
+; Information added by drupal.org packaging script on 2009-01-26
+version = "6.x-1.0-beta2"
+core = "6.x"
+project = "seo_checklist"
+datestamp = "1233006063"
+

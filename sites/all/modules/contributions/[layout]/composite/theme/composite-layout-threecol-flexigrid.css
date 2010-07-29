@@ -1,0 +1,76 @@
+/* $Id: composite-layout-threecol-flexigrid.css,v 1.1.2.2 2009/01/15 02:41:13 bengtan Exp $ */
+
+.composite-threecol-flexigrid .composite-row {
+  width: 100%;
+  clear: both;
+}
+
+.composite-threecol-flexigrid .composite-column {
+  float: left; 
+}
+
+/* Two side columns with no middle */
+.composite-threecol-flexigrid .without-middle-column .composite-column {
+  width: 49.9%; 
+}
+
+/* Side column next to a middle column */
+.composite-threecol-flexigrid .with-middle-column .composite-column-first, .composite-threecol-flexigrid .with-middle-column .composite-column-last {
+  width: 33.33%; 
+}
+
+.composite-threecol-flexigrid .three-columns .composite-column-middle {
+  width: 33.33%; 
+}
+
+.composite-threecol-flexigrid .two-columns .composite-column-middle {
+  width: 66.66%; 
+}
+
+/* One column */
+.composite-threecol-flexigrid .one-column .composite-column {
+  width: 100%; 
+}
+
+.composite-threecol-flexigrid .composite-column-first .composite-zone-inner {
+  margin: 0 .67em 1em 0;
+}
+
+.composite-threecol-flexigrid .composite-column-middle .composite-zone-inner {
+  margin: 0 .33em 1em .33em;
+}
+
+.composite-threecol-flexigrid .with-left-middle-columns .composite-column-middle .composite-zone-inner {
+  margin: 0 0 1em .33em;
+}
+
+.composite-threecol-flexigrid .with-middle-right-columns .composite-column-middle .composite-zone-inner {
+  margin: 0 .33em 1em 0;
+}
+
+.composite-threecol-flexigrid .composite-column-last .composite-zone-inner {
+  margin: 0 0 1em .67em;
+}
+
+/* Override widths for 25-50-25 column proportions */
+.composite-threecol-flexigrid-25-50-25 .without-middle-column .composite-column {
+  width: 49.9%; 
+}
+
+.composite-threecol-flexigrid-25-50-25 .with-middle-column .composite-column-first,
+.composite-threecol-flexigrid-25-50-25 .with-middle-column .composite-column-last {
+  width: 25%; 
+}
+
+.composite-threecol-flexigrid-25-50-25 .three-columns .composite-column-middle {
+  width: 49.9%; 
+}
+
+.composite-threecol-flexigrid-25-50-25 .two-columns .composite-column-middle {
+  width: 74.9%; 
+}
+
+.composite-threecol-flexigrid-25-50-25 .one-column .composite-column {
+  width: 100%; 
+}
+

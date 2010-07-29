@@ -1,0 +1,222 @@
+<?php
+// $Id: gallery.install,v 1.3.2.6 2008/06/10 14:58:13 profix898 Exp $
+
+/**
+ * gallery.module : gallery.install
+ * Install/Uninstall functions
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function gallery_install() {
+}
+
+/**
+ * Implementation of hook_update_N().
+ * (migrate settings from the 5.x-1.x to 5.x-2.x series)
+ */
+function gallery_update_1() {
+  // Array containing 'old name' => 'new name' map
+  $migrate = array(
+    // Image block settings
+    'gallery_album_frame'               => 'gallery_block_image_0_album_frame',
+    'gallery_block_block'               => 'gallery_block_image_0_block_block',
+    'gallery_block_show'                => 'gallery_block_image_0_block_show',
+    'gallery_item_frame'                => 'gallery_block_image_0_item_frame',
+    'gallery_item_id'                   => 'gallery_block_image_0_item_id',
+    'gallery_link_target'               => 'gallery_block_image_0_link_target',
+    'gallery_block_num_images'          => 'gallery_block_image_0_num_images',
+    'gallery_maxsize'                   => 'gallery_block_image_0_size',
+    // Grid block settings
+    'gallery_grid_album_frame'          => 'gallery_block_grid_0_album_frame',
+    'gallery_grid_block_block'          => 'gallery_block_grid_0_block_block',
+    'gallery_grid_block_show'           => 'gallery_block_grid_0_block_show',
+    'gallery_grid_item_frame'           => 'gallery_block_grid_0_item_frame',
+    'gallery_grid_item_id'              => 'gallery_block_grid_0_item_id',
+    'gallery_grid_link_target'          => 'gallery_block_grid_0_link_target',
+    'gallery_grid_maxsize'              => 'gallery_block_grid_0_size',
+    'gallery_grid_num_cols'             => 'gallery_block_grid_0_num_cols',
+    'gallery_grid_num_rows'             => 'gallery_block_grid_0_num_rows',
+    // G2 filter settings
+    'gallery_filter_default_size'       => 'gallery_filter_default_maxsize',
+    // Search settings
+    'gallery_search_max_rows_per_pager' => 'gallery_search_rows_per_pager',
+    'gallery_search_maxsize'            => 'gallery_search_size',
+    // Fullname support
+    'gallery_use_full_name'             => 'gallery_use_fullname',
+    'gallery_profile_full_name_field'   => 'gallery_profile_fullname_field'
+  );
+  // Array containing obsolete variables
+  $obsolete = array('gallery_search_max_items', 'gallery_autodetect_dir', 'gallery_uri', 'gallery_dir');
+  
+  // Update variables
+  $ret = gallery_update_variables($migrate, $obsolete);
+  
+  // Update the blocks
+  db_query("UPDATE {blocks} SET delta = '%s' WHERE module = '%s' AND delta = '%d'", 'image-0', 'gallery', 0);
+  $ret[] = array('success' => TRUE, 'query' => 'Updating block [image-0]');
+  db_query("UPDATE {blocks} SET delta = '%s' WHERE module = '%s' AND delta = '%d'", 'navigation', 'gallery', 1);
+  $ret[] = array('success' => TRUE, 'query' => 'Updating block [navigation]');
+  db_query("UPDATE {blocks} SET delta = '%s' WHERE module = '%s' AND delta = '%d'", 'grid-0', 'gallery', 2);
+  $ret[] = array('success' => TRUE, 'query' => 'Updating block [grid-0]');
+ 
+  // Mark gallery configuration invalid. This does NOT reset the configuration, but
+  // forces the user to run the install wizard to (re)set and verify critical settings.
+  variable_set('gallery_valid', FALSE);
+  drupal_set_message('You were updating from gallery module 5.x-1.x (or earlier) to the 6.x-1.x
+                      series of the module. All your settings were migrated automatically (see below),
+                      but you will need to re-configure some basic options. Please visit the
+                      Gallery settings page (admin/settings/gallery) to complete the update.',
+                      'error');
+  
+  cache_clear_all('variables', 'cache');
+  menu_rebuild();
+  
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * (initial update to Drupal 6)
+ */
+function gallery_update_6000() {
+  $delta = 0;
+  $new = $migrate = array();
+  
+  // Image block settings
+  $imageblock_num = variable_get('gallery_block_image_num', 1);
+  for ($i=0; $i<$imageblock_num; $i++) {
+    $delta++;
+    $new += array(
+      'gallery_block_'. $delta .'_type'                 => 'imageblock',
+      'gallery_block_'. $delta .'_imageblock_num_cols'  => 1
+    );
+    $migrate += array(
+      'gallery_block_image_'. $i .'_blockid'      => 'gallery_block_'. $delta .'_blockid',
+      'gallery_block_image_'. $i .'_num_images'   => 'gallery_block_'. $delta .'_imageblock_num_rows',
+      'gallery_block_image_'. $i .'_block_block'  => 'gallery_block_'. $delta .'_imageblock_block_block',
+      'gallery_block_image_'. $i .'_item_id'      => 'gallery_block_'. $delta .'_imageblock_item_id',
+      'gallery_block_image_'. $i .'_block_show'   => 'gallery_block_'. $delta .'_imageblock_block_show',
+      'gallery_block_image_'. $i .'_size_method'  => 'gallery_block_'. $delta .'_imageblock_size_method',
+      'gallery_block_image_'. $i .'_size'         => 'gallery_block_'. $delta .'_imageblock_size',
+      'gallery_block_image_'. $i .'_album_frame'  => 'gallery_block_'. $delta .'_imageblock_album_frame',
+      'gallery_block_image_'. $i .'_item_frame'   => 'gallery_block_'. $delta .'_imageblock_item_frame',
+      'gallery_block_image_'. $i .'_link_target'  => 'gallery_block_'. $delta .'_imageblock_link_target',
+      'gallery_block_image_'. $i .'_link'         => 'gallery_block_'. $delta .'_imageblock_link'
+    );
+    db_query("UPDATE {blocks} SET delta = '%s' WHERE module = '%s' AND delta = '%s'", 'block-'. $delta, 'gallery', 'image-'. $i);
+    $ret[] = array('success' => TRUE, 'query' => 'Updating block [image-'. $i .']');
+  }
+  
+  // Grid block settings
+  $gridblock_num = variable_get('gallery_block_grid_num', 1);
+  for ($i=0; $i<$gridblock_num; $i++) {
+    $delta++;
+    $new['gallery_block_'. $delta .'_type'] = 'imageblock';
+    $migrate += array(
+      'gallery_block_grid_'. $i .'_blockid'       => 'gallery_block_'. $delta .'_blockid',
+      'gallery_block_grid_'. $i .'_num_cols'      => 'gallery_block_'. $delta .'_imageblock_num_cols',
+      'gallery_block_grid_'. $i .'_num_rows'      => 'gallery_block_'. $delta .'_imageblock_num_rows',
+      'gallery_block_grid_'. $i .'_item_id'       => 'gallery_block_'. $delta .'_imageblock_item_id',
+      'gallery_block_grid_'. $i .'_block_show'    => 'gallery_block_'. $delta .'_imageblock_block_show',
+      'gallery_block_grid_'. $i .'_size_method'   => 'gallery_block_'. $delta .'_imageblock_size_method',
+      'gallery_block_grid_'. $i .'_size'          => 'gallery_block_'. $delta .'_imageblock_size',
+      'gallery_block_grid_'. $i .'_album_frame'   => 'gallery_block_'. $delta .'_imageblock_album_frame',
+      'gallery_block_grid_'. $i .'_item_frame'    => 'gallery_block_'. $delta .'_imageblock_item_frame',
+      'gallery_block_grid_'. $i .'_link_target'   => 'gallery_block_'. $delta .'_imageblock_link_target',
+      'gallery_block_grid_'. $i .'_link'          => 'gallery_block_'. $delta .'_imageblock_link'
+    );
+    db_query("UPDATE {blocks} SET delta = '%s' WHERE module = '%s' AND delta = '%s'", 'block-'. $delta, 'gallery', 'grid-'. $i);
+    $ret[] = array('success' => TRUE, 'query' => 'Updating block [grid-'. $i .']');
+    
+    // gallery_block_grid_X_block_block must be handled differently. In D5 this was a single value,
+    // but in D6 it is an array of size cols*rows (to allow different values for each item).
+    $num_images = variable_get('gallery_block_grid_'. $i .'_num_cols', 2) * variable_get('gallery_block_grid_'. $i .'_num_rows', 2);
+    $old_block = variable_get('gallery_block_grid_'. $i .'_block_block', array('randomImage'));
+    $new_block = array_fill(0, $num_images, $old_block);
+    $new['gallery_block_'. $delta .'_imageblock_block_block'] = $new_block;
+  }
+  $new['gallery_block_num'] = $delta;
+  
+  // Other variables
+  $migrate += array(
+    'gallery_g2image_only_listed_pages'   => 'gallery_g2image_visibility',
+    'gallery_g2image_std_pages'           => 'gallery_g2image_visibility_pages'
+  );
+  
+  // Array containing obsolete variables
+  $obsolete = array(
+    'gallery_page_callback',
+    'gallery_block_image_num',
+    'gallery_block_grid_num',
+    'gallery_menu_timestamp'
+  );
+  
+  // Update variables
+  $ret += gallery_update_variables($migrate, $obsolete);
+  
+  // Add new variables
+  foreach ($new as $name => $value) {
+    db_query("INSERT INTO {variable} (name, value) VALUES ('%s', '%s')", $name, serialize($value));
+    $ret[] = array('success' => TRUE, 'query' => 'Adding variable ['. $name .']');
+  }
+  cache_clear_all('variables', 'cache');
+  menu_rebuild();
+  
+  return $ret;
+}
+
+/**
+ * Function gallery_update_variables().
+ */
+function gallery_update_variables($migrate, $obsolete) {
+  $ret = array();
+  
+  $variables = array();
+  // Fetch all gallery-related variables
+  $result = db_query("SELECT * FROM {variable} WHERE name LIKE '%s'", 'gallery_%');
+  while ($var = db_fetch_object($result)) {
+    $variables[$var->name] = $var->value;
+  }
+  
+  // Remove old variables
+  db_query("DELETE FROM {variable} WHERE name LIKE '%s'", 'gallery_%');
+  
+  // Migrate old variables
+  foreach ($migrate as $old => $new) {
+    if (isset($variables[$old])) {
+      $variables[$new] = $variables[$old];
+      unset($variables[$old]);
+      $ret[] = array('success' => TRUE, 'query' => 'Migrating variable ['. $old .' => '. $new .']');
+    }
+  }
+
+  // Unset obsolete variables
+  foreach ($obsolete as $var) {
+    if (isset($variables[$var])) {
+      unset($variables[$var]);
+      $ret[] = array('success' => TRUE, 'query' => 'Removing variable ['. $var .']');
+    }
+  }
+  // Save resulting variables array
+  // (all variables not migrated or unset are taken over directly)
+  foreach ($variables as $name => $serialized_value) {
+    // We dont use variable_set() to reduce overhead
+    // (i.e. unserialize/serialize cache_clear_all() for each variable)
+    // Cannot use update_sql with % substitution.
+    db_query("INSERT INTO {variable} (name, value) VALUES ('%s', '%s')", $name, $serialized_value);
+  }
+  
+  return $ret;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function gallery_uninstall() {
+  // Remove all gallery related variables and blocks
+  db_query("DELETE FROM {variable} WHERE name LIKE '%s'", 'gallery_%');
+  db_query("DELETE FROM {blocks} WHERE module = '%s'", 'gallery');
+  cache_clear_all('variables', 'cache');
+}

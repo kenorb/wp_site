@@ -1,0 +1,123 @@
+<?php
+// $Id: textlinkads.install,v 1.4 2008/07/14 17:26:36 mikejoconnor Exp $
+
+function textlinkads_schema() {
+  $schema['textlinkads'] = array(
+    'description' => t('The base table for the Text-Link-Ads.com module'),
+    'fields' => array(
+      'tlid' => array(
+        'description' => t('The primary id for an ad'),
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'nid' => array(
+        'description' => t('The nid associated with an inlinks ad'),
+        'type' => 'int',
+        'length' => 11,
+        'not null' => TRUE,
+      ),
+      'url' => array(
+        'description' => t('the url for the ad'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'text' => array(
+        'description' => t('The ad text'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'beforetext' => array(
+        'description' => t('Text to be displayed before the ad'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'aftertext' => array(
+        'description' => t('Text to be displayed after the ad'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'rsstext' => array(
+        'description' => t('The rss ad text'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'rssbeforetext' => array(
+        'description' => t('Text to be displayed before the rss ad'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'rssaftertext' => array(
+        'description' => t('Text to be displayed after the rss ad'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('tlid'),
+  );
+  return $schema;
+}
+
+function textlinkads_install() {
+  drupal_install_schema('textlinkads');
+  include_once(drupal_get_path('module', 'textlinkads') .'/textlinkads.module');
+  textlinkads_inlinks_set_max_post_id();
+  variable_set('textlinkads_inlinks_last_sync_post_id', 0);
+  textlinkads_inlinks_notify_tla('install');
+}
+
+function textlinkads_uninstall() {
+  drupal_uninstall_schema('textlinkads');
+  variable_del('textlinkads_inlinks_max_sync_post_id');
+  variable_del('textlinkads_inlinks_last_sync_post_id');
+}
+
+function textlinkads_update_1() {
+  textlinkads_check_update();
+  variable_del('textlinkads_ad_data');
+  return array();
+}
+
+function textlinkads_update_2() {
+  $return = array();
+  db_add_field($return, 'textlinkads', 'nid', array('type' => 'int', length => 11, 'not null' => TRUE));
+  return array();
+}
+
+function textlinkads_update_3() {
+  $return = array();
+  $schema['textlinkads_inlinks'] = array(
+    'description' => t('The this table allows node level permission to sell links within a post'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('The node id'),
+        'type' => 'int',
+        'length' => 11,
+        'not null' => TRUE,
+      ),
+      'status' => array(
+        'description' => t('The status of inlinks for the node'),
+        'type' => 'int',
+        'length' => 1,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('nid'),
+  );
+  db_create_table($return, 'textlinkads_inlinks', $schema['textlinkads_inlinks']);
+  return $return;
+}

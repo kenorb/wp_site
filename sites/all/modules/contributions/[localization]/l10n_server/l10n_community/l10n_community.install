@@ -1,0 +1,506 @@
+<?php
+// $Id: l10n_community.install,v 1.1.2.11.2.7 2008/10/26 20:56:42 goba Exp $
+/**
+ * @file
+ *   Localization community installation, update and uninstallation.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function l10n_community_install() {
+  drupal_install_schema('l10n_community');  
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function l10n_community_uninstall() {
+  drupal_uninstall_schema('l10n_community');  
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function l10n_community_schema() {
+  $t = get_t();
+  $schema = array();
+  
+  $schema['l10n_community_project'] = array(
+    'description' => $t('Projects for which translation is running on the server.'),
+    'fields' => array(
+      'pid' => array(
+        'description' => $t('Internal numeric identifier for a project.'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        'disp-width' => '11'
+      ),
+      'uri' => array(
+        'description' => $t('A unique short name to identify the project nicely in paths.'),
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => TRUE
+      ),
+      'title' => array(
+        'description' => $t('Human readable name for project used on the interface.'),
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => TRUE
+      ),
+      'home_link' => array(
+        'description' => $t('Link to project home page.'),
+        'type' => 'text',
+        'not null' => TRUE
+      ),
+      'last_parsed' => array(
+        'description' => $t('Unix timestamp of last time project was parsed.'),
+        'type' => 'int',
+        'not null' => FALSE,
+        'disp-width' => '11'
+      ),
+      'connector_module' => array(
+        'description' => $t('Connector module for this project, such as l10n_localpacks or l10n_drupalorg.'),
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => TRUE,
+      ),
+      'status' => array(
+        'description' => $t('Status flag. 1 if new project releases should be looked for, 0 if new scanning and parsing is disabled.'),
+        'type' => 'int',
+        'not null' => TRUE,
+      )
+    ),
+    'primary key' => array('pid'),
+    'indexes' => array(
+      'uri' => array('uri')
+    ),
+    'unique keys' => array(
+      'uri_connector_module' => array('uri', 'connector_module')
+    ),
+  );
+
+  $schema['l10n_community_release'] = array(
+    'description' => $t('The releases we handle for each project.'),
+    'fields' => array(
+      'rid' => array(
+        'description' => $t('Internal numeric identifier for a release.'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        'disp-width' => '11'
+      ),
+      'pid' => array(
+        'description' => $t('Reference to the {l10n_community_project}.pid of the parent project.'),
+        'type' => 'int',
+        'not null' => FALSE,
+        'disp-width' => '11'
+      ),
+      'title' => array(
+        'description' => $t('Human readable name for release used on the interface.'),
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => TRUE
+      ),
+      'download_link' => array(
+        'description' => $t('Link to download this release.'),
+        'type' => 'text',
+        'not null' => TRUE
+      ),
+      'file_date' => array(
+        'description' => $t('Unix timestamp with release file date. Used to identify file changes.'),
+        'type' => 'int',
+        'not null' => FALSE,
+        'disp-width' => '11'
+      ),
+      'file_hash' => array(
+        'description' => $t('Hash of file for easy identification of changed files.'),
+        'type' => 'varchar',
+        'length' => '32',
+        'not null' => FALSE
+      ),
+      'last_parsed' => array(
+        'description' => $t('Unix timestamp of last parsing time for this release package.'),
+        'type' => 'int',
+        'not null' => FALSE,
+        'disp-width' => '11'
+      )
+    ),
+    'primary key' => array('rid'),
+    'indexes' => array(
+      'pid' => array('pid')
+    ),
+  );
+
+  $schema['l10n_community_error'] = array(
+    'description' => $t('Errors found while parsing release packages. Although we find errors in the release files, we store error notes on a release level, to make them easily accessible without the need for extraneous detail.'),
+    'fields' => array(
+      'eid' => array(
+        'description' => $t('Internal numeric identifier for an error.'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        'disp-width' => '11'),
+      'rid' => array(
+        'description' => $t('Reference to the {l10n_community_release}.rid of the affected release.'),
+        'type' => 'int',
+        'not null' => FALSE,
+        'disp-width' => '11'),
+      'value' => array(
+        'description' => $t('Text of the error message.'),
+        'type' => 'text',
+        'not null' => TRUE
+      )
+    ),
+    'primary key' => array('eid'),
+    'indexes' => array(
+      'rid' => array('rid')
+    ),
+  );
+
+  $schema['l10n_community_file'] = array(
+    'description' => $t('Information on files found and parsed in a release.'),
+    'fields' => array(
+      'fid' => array(
+        'description' => $t('Internal numeric identifier for a file.'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        'disp-width' => '11'
+      ),
+      'rid' => array(
+        'description' => $t('Reference to the {l10n_community_release}.rid of the parent release.'),
+        'type' => 'int',
+        'not null' => FALSE,
+        'disp-width' => '11'
+      ),
+      'location' => array(
+        'description' => $t('Path to the file within the release package.'),
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE
+      ),
+      'revision' => array(
+        'description' => $t('CVS revision number extracted for reuse in exports.'),
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE
+      )
+    ),
+    'primary key' => array('fid'),
+    'indexes' => array(
+      'rid' => array('rid')
+    ),
+  );
+
+  $schema['l10n_community_line'] = array(
+    'description' => $t('Information on occurances of strings on lines of specific files.'),
+    'fields' => array(
+      'fid' => array(
+        'description' => $t('Reference to the {l10n_community_file}.fid of the parent file.'),
+        'type' => 'int',
+        'not null' => FALSE,
+        'disp-width' => '11'
+      ),
+      'lineno' => array(
+        'description' => $t('Number of line where the string occurance was found.'),
+        'type' => 'int',
+        'not null' => FALSE,
+        'disp-width' => '11'
+      ),
+      'type' => array(
+        'description' => $t('Type of occurance. Possible values are constants POTX_STRING_INSTALLER, POTX_STRING_RUNTIME or POTX_STRING_BOTH.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '11'
+      ),
+      'sid' => array(
+        'description' => $t('Reference to the {l10n_community_string}.sid found on this line.'),
+        'type' => 'int',
+        'not null' => FALSE,
+        'disp-width' => '11'
+      )
+    ),
+    'indexes' => array(
+      'fid' => array('fid'),
+      'sid' => array('sid')
+    ),
+  );
+
+  $schema['l10n_community_string'] = array(
+    'description' => $t('Value of translatable strings found.'),
+    'fields' => array(
+      'sid' => array(
+        'description' => $t('Internal numeric identifier for a source string.'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        'disp-width' => '11'
+      ),
+      'value' => array(
+        'description' => $t('The actual translatable string. For strings with multiple plural versions, we store them as the same translatable with a \0 separator (unlike Drupal itself), because it is easier to match translations with them (for multiple plural versions) this way, and we can force people to translate both at once.'),
+        'type' => 'text',
+        'not null' => TRUE
+      )
+    ),
+    'primary key' => array('sid'),
+  );
+
+  $schema['l10n_community_translation'] = array(
+    'fields' => array(
+      'tid' => array(
+        'description' => $t('Internal numeric identifier for a translation.'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        'disp-width' => '11'
+      ),
+      'sid' => array(
+        'description' => $t('Reference to the {l10n_community_string}.sid which is being translated.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'disp-width' => '11'
+      ),
+      'language' => array(
+        'description' => $t('Reference to the {languages}.language to which the string is being translated.'),
+        'type' => 'varchar',
+        'length' => '12',
+        'not null' => TRUE
+      ),
+      'translation' => array(
+        'description' => $t('The actual translation or suggestion.'),
+        'type' => 'text',
+        'not null' => TRUE
+      ),
+      'uid_entered' => array(
+        'description' => $t('Reference to the {users}.uid who entered this translation or suggestion.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '11'
+      ),
+      'uid_approved' => array(
+        'description' => $t('Reference to the {users}.uid who approved this translation or suggestion.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '11'
+      ),
+      'time_entered' => array(
+        'description' => $t('Unix timestamp of time when the translation or suggestion was entered.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '11'
+      ),
+      'time_approved' => array(
+        'description' => $t('Unix timestamp of time when the translation or suggestion was approved.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '11'
+      ),
+      'has_suggestion' => array(
+        'description' => $t('Cached flag of whether there is at least one other row in the table where is_suggestion = 1, is_active = 1 and sid and language is the same as this one. Only applicable to rows where is_suggestion = 0.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '11'
+      ),
+      'is_suggestion' => array(
+        'description' => $t('Flag of whether this is a suggestion (1) or not (0). If 0, *_approved fields should also be 0.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '11'
+      ),
+      'is_active' => array(
+        'description' => $t('Flag of whether this is an active (1) suggestion or translation. Older suggestions and translations are kept (0). Unprocessed suggestions and active translations have this as 1.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'disp-width' => '11'
+      )
+    ),
+    'primary key' => array('tid'),
+    'indexes' => array(
+      'is_active' => array('is_active'),
+      'is_suggestion' => array('is_suggestion'),
+      'language' => array('language'),
+      'suggestion_active' => array('is_suggestion', 'is_active'),
+      'uid_entered' => array('uid_entered'),
+      'sid_language_suggestion' => array('sid', 'language', 'is_suggestion'),
+      'sid' => array('sid')
+    ),
+  );
+  
+  return $schema;
+}
+
+/**
+ * Implementation of hook_requirements().
+ */
+function l10n_community_requirements($phase) {
+  $requirements = array();
+  // Ensure translations don't break at install time.
+  $t = get_t();
+  
+  // Look for Tar library used for compression and uncompression.
+  $tar_library = @file_get_contents('Archive/Tar.php', TRUE);
+  $tar_available = !empty($tar_library);
+  $requirements['l10n_community_tar'] = array(
+    'title' => $t('Compression functionality'),
+    'value' => $t('Archive/Tar.php available'),
+  );
+  if (!$tar_available) {
+    $requirements['l10n_community_tar']['description'] = $t('The PEAR library Archive/Tar.php is missing. Please <a href="@pear">obtain PEAR</a> or a copy of this file and put it on the include path.', array('@pear' => 'http://pear.php.net/'));
+    $requirements['l10n_community_tar']['severity'] = REQUIREMENT_ERROR;
+    $requirements['l10n_community_tar']['value'] = $t('Not available');
+  }
+  
+  if (module_exists('potx')) {
+    // If potx is already installed and enabled, check its version by looking at
+    // the specific API piece which lets us fingerprint the right version.
+    // The 2.x branch introduced potx_status() in place of _potx_status().
+
+    include_once drupal_get_path('module', 'potx') .'/potx.inc';
+    $requirements['l10n_community_potx'] = array(
+      'title' => $t('Translation template extractor'),
+      'value' => $t('Localization Server compatible version'),
+    );
+    if (!function_exists('potx_status')) {
+      $requirements['l10n_community_potx']['description'] = $t('The Translation template extractor should be from the 6.x-2.x branch to be compatible with Localization Server.');
+      $requirements['l10n_community_potx']['severity'] = REQUIREMENT_ERROR;
+      $requirements['l10n_community_potx']['value'] = $t('Not compatible with Localization Server');
+    }
+  }
+  
+  return $requirements;
+}
+
+// -- Drupal 5 updates ---------------------------------------------------------
+
+/**
+ * Add home_link column so we can interlink projects with drupal.org pages.
+ *
+ * The uri is not enough as with local projects, we should not automatically
+ * link to http://drupal.org/project/$uri.
+ */
+function l10n_community_update_5000() {
+  $ret = array();
+  $ret[] = update_sql('ALTER TABLE {l10n_community_project} ADD home_link TEXT NOT NULL AFTER title');
+  return $ret;
+}
+
+/**
+ * Add DEFAULT 0 to integer fields we not always fill in.
+ */
+function l10n_community_update_5001() {
+  $default_to_zero = array('uid_entered', 'uid_approved', 'time_entered', 'time_approved', 'has_suggestion', 'is_suggestion', 'is_active');  
+  $ret = array();
+  foreach ($default_to_zero as $column) {
+    $ret[] = update_sql('ALTER TABLE {l10n_community_translation} CHANGE '. $column .' '. $column .' INTEGER NOT NULL DEFAULT 0');
+  }
+  return $ret;
+}
+
+/**
+ * Add type column to lines, so we can track installer and non-installer
+ * string usage separately.
+ */
+function l10n_community_update_5002() {
+  $ret = array();
+  $ret[] = update_sql('ALTER TABLE {l10n_community_line} ADD type INTEGER AFTER lineno');
+  drupal_set_message('An update was executed to support installer string identification in scanned projects. You need to rescan all your prjects to make this work as expected. Delete data from the project, release, file, error and line tables, and rescan all projects. Make sure to leave the source string and translation tables intact. It is always a good idea to make backups!');
+  return $ret;
+}
+
+/**
+ * Clean up starting and trailing spaces and new lines in translations.
+ */
+function l10n_community_update_5003() {
+  $ret = array();
+  // We just search for strings that begin or end with these characters.
+  foreach (array('\n', ' ') as $char) {
+    $result = db_query("SELECT s.sid, s.value, t.tid, t.translation FROM {l10n_community_string} s INNER JOIN {l10n_community_translation} t ON s.sid = t.sid WHERE s.value LIKE '%s%%' OR  s.value LIKE '%%%s' OR t.translation LIKE '%s%%' OR t.translation LIKE '%%%s'", $char, $char, $char, $char);
+    while ($string = db_fetch_object($result)) {
+      if ($string->translation) {
+        $trimmed = l10n_community_trim($string->translation, $string->value);
+        if ($trimmed != $string->translation) {
+          db_query("UPDATE {l10n_community_translation} SET translation = '%s' WHERE tid = %d", $trimmed, $string->tid);
+          drupal_set_message("Fixed string $string->sid: ". check_plain(substr($string->translation, 0, 50)));
+        }
+      }
+    }
+  }
+  return $ret;
+}
+
+// -- Drupal 6 updates ---------------------------------------------------------
+// -- Use schema API from here -------------------------------------------------
+
+/**
+ * Add connector_module column and update existing projects to use the right one.
+ */
+function l10n_community_update_6000() {
+  $ret = array();
+
+  // Add connector_module column for use as a clue for modules to tap onto their projects.
+  db_add_field($ret, 'l10n_community_project', 'connector_module', array('type' => 'varchar', 'length' => '50', 'not null' => TRUE));
+  
+  if (!module_exists('l10n_drupalorg') && !module_exists('l10n_localpacks')) {
+    // Inform users if no known connector modules were turned on.
+    drupal_set_message("Neither l10n_drupalorg nor l10n_localpacks modules were turned on, while the updates ran. The newly updated Localization Server requires knowledge of connector modules associated to projects. If you run your own connector module, please update the database with the module's internal name.");
+  }
+  else {
+    // Update existing projects to our best guess on what they use. Give priority
+    // to l10n_localpacks, since l10n_drupalorg is often just used for a test-drive
+    // and possibly left turned on.
+    $connector_module = module_exists('l10n_localpacks') ? 'l10n_localpacks' : 'l10n_drupalorg';
+    $ret[] = update_sql("UPDATE {l10n_community_project} SET connector_module = '". $connector_module ."'");
+    if (module_exists('l10n_drupalorg') && module_exists('l10n_localpacks')) {
+      // Inform users if both modules were turned on.
+      drupal_set_message('Both l10n_drupalorg and l10n_localpacks modules were turned on, while the updates ran. We picked l10n_localpacks as the connector for existing projects. You might need to adjust your database if this was not the right choice.');
+    }
+  }
+
+  // The same URI should not appear with multiple connector modules.
+  db_add_unique_key($ret, 'l10n_community_project', 'l10n_community_project_uri_connector_module', array('uri', 'connector_module'));
+
+  return $ret;
+}
+
+/**
+ * Add support for enabled and disabled projects.
+ *
+ * Disabled projects will not participate in the scanning process.
+ */
+function l10n_community_update_6001() {
+  $ret = array();
+  db_add_field($ret, 'l10n_community_project', 'status', array('type' => 'int', 'not null' => TRUE));
+  // Make all existing projects enabled.
+  $ret[] = update_sql("UPDATE {l10n_community_project} SET status = 1");
+  return $ret;
+}
+
+/**
+ * Add an index to the translations table to improve performance.
+ */
+function l10n_community_update_6002() {
+  $ret = array();
+  db_add_index($ret, 'l10n_community_translation', 'suggestion_active', array('is_suggestion', 'is_active'));
+  return $ret;
+}
+
+/**
+ * Add an index to the translations table to improve performance.
+ */
+function l10n_community_update_6003() {
+  $ret = array();
+  db_add_index($ret, 'l10n_community_translation', 'uid_entered', array('uid_entered'));
+  return $ret;
+}
+
+/**
+ * Add an index to the translations table to improve performance.
+ */
+function l10n_community_update_6004() {
+  $ret = array();
+  db_add_index($ret, 'l10n_community_translation', 'sid_language_suggestion', array('sid', 'language', 'is_suggestion'));
+  return $ret;
+}

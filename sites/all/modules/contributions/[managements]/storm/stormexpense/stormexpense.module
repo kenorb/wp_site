@@ -1,0 +1,533 @@
+<?php
+// $Id: stormexpense.module,v 1.4.4.16 2009/01/06 15:16:22 robertogerola Exp $
+
+/**
+ * @file
+ */
+
+function stormexpense_help($path, $arg) {
+  $o = '';
+
+  switch ($path) {
+    case "admin/help#stormexpense":
+      $o = '<p>'. storm_t("Provides expense support for Storm", 'expense') .'</p>';
+      break;
+  }
+
+  return $o;
+}
+
+function stormexpense_perm() {
+  return array(
+                'Storm expense: access',
+                'Storm expense: add',
+                'Storm expense: delete all',
+                'Storm expense: delete own',
+                'Storm expense: delete of user organization',
+                'Storm expense: edit all',
+                'Storm expense: edit own',
+                'Storm expense: edit of user organization',
+                'Storm expense: view all',
+                'Storm expense: view own',
+                'Storm expense: view of user organization',
+  );
+}
+
+function stormexpense_access($op, $node, $account=NULL) {
+  if (empty($account)) {
+    global $user;
+    $account = $user;
+  }
+
+  if ($op == 'create') {
+    return user_access('Storm expense: add');
+  }
+
+  if (is_numeric($node)) $node = node_load($node);
+
+  if ($op == 'delete') {
+    if (user_access('Storm expense: delete all')) {
+      return TRUE;
+    }
+    else if (user_access('Storm expense: delete own') && ($account->uid == $node->uid)) {
+      return TRUE;
+    }
+    else if (user_access('Storm expense: delete of user organization') && ($account->stormorganization_nid == $node->organization_nid)) {
+      return TRUE;
+    }
+  }
+
+  if ($op == 'update') {
+    if (user_access('Storm expense: edit all')) {
+      return TRUE;
+    }
+    else if (user_access('Storm expense: edit own') && ($account->uid == $node->uid)) {
+      return TRUE;
+    }
+    else if (user_access('Storm expense: edit of user organization') && ($account->stormorganization_nid == $node->organization_nid)) {
+      return TRUE;
+    }
+  }
+
+  if ($op == 'view') {
+    if (user_access('Storm expense: view all')) {
+      return TRUE;
+    }
+    else if (user_access('Storm expense: view own') && ($account->uid == $node->uid)) {
+      return TRUE;
+    }
+    else if (user_access('Storm expense: view of user organization') && ($account->stormorganization_nid == $node->organization_nid)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+function stormexpense_access_sql($sql, $where = array()) {
+  if (user_access('Storm expense: view all')) {
+    $where[] = "'storm_access'='storm_access'";
+    return storm_rewrite_sql($sql, $where);
+  }
+
+  global $user;
+
+  $cond = '';
+  if (user_access('Storm expense: view own')) {
+    $cond .= 'n.uid='. $user->uid;
+  }
+  if (user_access('Storm expense: view of user organization')) {
+    if (!empty($cond)) $cond .= ' OR ';
+    $cond .= 'sex.organization_nid='. $user->stormorganization_nid;
+  }
+  if (empty($cond)) $cond = '0=1';
+  $where[] = $cond;
+
+  $where[] = "'storm_access'='storm_access'";
+  return storm_rewrite_sql($sql, $where);
+}
+
+function stormexpense_storm_rewrite_where_sql($query, $primary_table, $account) {
+  static $conds = array();
+
+  if ($conds[$account->uid]) {
+    return $conds[$account->uid];
+  }
+
+  if (preg_match("/'storm_access'='storm_access'/", $query)) {
+    $cond = '';
+  }
+  else {
+    if (user_access('Storm expense: view all', $account)) {
+      return '';
+    }
+
+    $cond = '';
+    if (user_access('Storm expense: view own', $account)) {
+      $cond .= "${primary_table}.uid=". $account->uid;
+    }
+    if (user_access('Storm expense view of user organization', $account)) {
+      if ($cond) $cond .= ' OR ';
+      $cond .= ' sex1.organization_nid='. $account->stormorganization_nid;
+    }
+    if ($cond) {
+      $cond = " WHEN 'stormexpense' THEN (SELECT IF($cond,1,0) FROM {stormexpense} sex1 WHERE sex1.vid=${primary_table}.vid) ";
+    }
+    else {
+      $cond = " WHEN 'stormexpense' THEN 0 ";
+    }
+  }
+
+  $conds[$account->uid] = $cond;
+  return $cond;
+}
+
+function stormexpense_menu() {
+  $items = array();
+
+  $items['storm/expenses'] = array(
+    'title' => storm_t('Expenses', 'expense'),
+    'description' => storm_t('Storm expenses', 'expense'),
+    'page callback' => 'stormexpense_list',
+    'access arguments' => array('Storm expense: access'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'stormexpense.admin.inc',
+  );
+
+  $items['storm/expenses/report/%/%'] = array(
+    'title' => storm_t('Expenses', 'expense'),
+    'page arguments' => array(3, 4),
+    'description' => storm_t('Storm expenses', 'expense'),
+    'page callback' => 'stormexpense_list_report',
+    'access arguments' => array('Storm expense: access'),
+    'type' => MENU_CALLBACK,
+    'file' => 'stormexpense.admin.inc',
+  );
+
+  $items['storm/expenses/provider_autocomplete'] = array(
+    'title' => 'Provider autocomplete',
+    'page callback' => 'stormexpense_autocomplete',
+    'access arguments' => array('Storm expense: access'),
+    'type' => MENU_CALLBACK,
+    'file' => 'stormexpense.admin.inc',
+  );
+
+  return $items;
+}
+
+function stormexpense_theme() {
+  return array(
+    'stormexpense_list' => array(
+      'file'      => 'stormexpense.theme.inc',
+      'arguments' => array('header', 'tasks', 'duration'),
+    ),
+    'stormexpense_view' => array(
+      'file'      => 'stormexpense.theme.inc',
+      'arguments' => array('node', 'teaser', 'page'),
+    ),
+    'stormexpense_list_form_report_reports' => array(
+      'file'      => 'stormexpense.theme.inc',
+    ),
+    'stormexpense_list_report' => array(
+      'file'      => 'stormexpense.theme.inc',
+      'arguments' => array('report', 'language', 'timetrackings'),
+    ),
+  );
+}
+
+function stormexpense_node_info() {
+  return array(
+    'stormexpense' => array(
+      'name' => storm_t('Expense', 'expense'),
+      'module' => 'stormexpense',
+      'description' => storm_t("An expense for Storm.", 'expense'),
+      'title_label' => storm_t("Title", 'expense'),
+      'body_label' => storm_t("Description", 'expense'),
+    )
+  );
+}
+
+function stormexpense_stormorganization_change($organization_nid, $organization_title) {
+  $s = "UPDATE {stormexpense} SET organization_title='%s' WHERE organization_nid=%d AND organization_title <> '%s'";
+  db_query($s, $organization_title, $organization_nid, $organization_title);
+}
+
+function stormexpense_stormproject_change($project_nid, $project_title) {
+  $s = "UPDATE {stormexpense} SET project_title='%s' WHERE project_nid=%d AND project_title <> '%s'";
+  db_query($s, $project_title, $project_nid, $project_title);
+}
+
+function stormexpense_stormtask_change($task_nid, $task_stepno, $task_title) {
+  $s = "UPDATE {stormexpense} SET task_title='%s', task_stepno='%s' WHERE task_nid=%d AND
+      (task_title<>'%s' OR task_stepno<>'%s')";
+  db_query($s, $task_title, $task_stepno, $task_nid, $task_title, $task_stepno);
+}
+
+function stormexpense_stormticket_change($ticket_nid, $ticket_title) {
+  $s = "UPDATE {stormexpense} SET ticket_title='%s' WHERE ticket_nid=%d AND ticket_title <> '%s'";
+  db_query($s, $ticket_title, $ticket_nid, $ticket_title);
+}
+
+function stormexpense_form(&$node) {
+  $breadcrumb = array();
+  $breadcrumb[] = l(t('Storm'), 'storm');
+  $breadcrumb[] = l(t('Expenses'), 'storm/expenses');
+  drupal_set_breadcrumb($breadcrumb);
+
+  if (arg(1)=='add') {
+    if (array_key_exists('organization_nid', $_GET) && !$node->organization_nid) {
+      $node->organization_nid = $_GET['organization_nid'];
+    }
+    if (array_key_exists('project_nid', $_GET) && !$node->project_nid) {
+      $node->project_nid = $_GET['project_nid'];
+      $p = node_load($node->project_nid);
+      $node->organization_nid = $p->organization_nid;
+    }
+    if (array_key_exists('task_nid', $_GET) && !$node->task_nid) {
+      $node->task_nid = $_GET['task_nid'];
+      $t = node_load($node->task_nid);
+      $node->organization_nid = $t->organization_nid;
+      $node->project_nid = $t->project_nid;
+    }
+    if (array_key_exists('ticket_nid', $_GET) && !$node->ticket_nid) {
+      $node->ticket_nid = $_GET['ticket_nid'];
+      $t = node_load($node->ticket_nid);
+      $node->organization_nid = $t->organization_nid;
+      $node->project_nid = $t->project_nid;
+      $node->task_nid = $t->task_nid;
+    }
+
+    if ($_SESSION['stormexpense_list_filter']['organization_nid'] && !$node->organization_nid) {
+      $node->organization_nid = $_SESSION['stormexpense_list_filter']['organization_nid'];
+    }
+    if ($_SESSION['stormexpense_list_filter']['project_nid'] && !$node->project_nid) {
+      $node->project_nid = $_SESSION['stormexpense_list_filter']['project_nid'];
+    }
+    if ($_SESSION['stormexpense_list_filter']['task_nid'] && !$node->task_nid) {
+      $node->task_nid = $_SESSION['stormexpense_list_filter']['task_nid'];
+    }
+    if ($_SESSION['stormexpense_list_filter']['ticket_nid'] && !$node->ticket_nid) {
+      $node->ticket_nid = $_SESSION['stormexpense_list_filter']['ticket_nid'];
+    }
+    if (array_key_exists('organization_nid', $_GET)) $node->organization_nid = $_GET['organization_nid'];
+    if (array_key_exists('project_nid', $_GET)) $node->project_nid = $_GET['project_nid'];
+    if (array_key_exists('task_nid', $_GET)) $node->task_nid = $_GET['task_nid'];
+    if (array_key_exists('ticket_nid', $_GET)) $node->ticket_nid = $_GET['ticket_nid'];
+
+    $node->expensedate = time();
+    $s_org = "SELECT n.nid, n.title FROM {stormorganization} so INNER JOIN {node} n 
+              ON so.nid=n.nid WHERE n.status=1 AND so.isactive=1 AND so.iscustomer=1 AND n.type='stormorganization' ORDER BY n.title";
+  }
+  else {
+    $s_org = "SELECT n.nid, n.title FROM {stormorganization} so INNER JOIN {node} n 
+              ON so.nid=n.nid WHERE n.status=1 AND so.iscustomer=1 AND n.type='stormorganization' ORDER BY n.title";
+  }
+
+  $type = node_get_types('type', $node);
+
+  $form['#attributes']['class'] = 'stormcomponent_node_form';
+
+  $form['group1'] = array(
+    '#type' => 'markup',
+    '#theme' => 'storm_form_group',
+    '#weight' => -50,
+  );
+
+  $form['group1']['title'] = array(
+    '#type' => 'textfield',
+    '#title' => check_plain($type->title_label),
+    '#required' => TRUE,
+    '#default_value' => $node->title,
+  );
+
+  $form['group2'] = array(
+    '#type' => 'markup',
+    '#theme' => 'storm_form_group',
+    '#weight' => -49,
+  );
+
+  $s_org = stormorganization_access_sql($s_org);
+  $s_org = db_rewrite_sql($s_org);
+  $r = db_query($s_org);
+  $organizations = array();
+  while ($organization = db_fetch_object($r)) {
+    $organizations[$organization->nid] = $organization->title;
+    if (!$node->organization_nid) $node->organization_nid = $organization->nid;
+  }
+  $form['group2']['organization_nid'] = array(
+    '#type' => 'select',
+    '#title' => storm_t('Organization', 'expense'),
+    '#default_value' => $node->organization_nid,
+    '#options' => $organizations,
+    '#required' => true,
+    '#attributes' => array('onchange' => "stormticket_organization_project_task_tickets(this, 'edit-project-nid', 'edit-task-nid', 'edit-ticket-nid', true, '-')"),
+  );
+
+  $s = "SELECT n.nid, n.title FROM {node} AS n INNER JOIN {stormproject} AS spr ON spr.vid=n.vid
+  WHERE spr.organization_nid=%d AND n.status=1 AND n.type='stormproject' ORDER BY n.title";
+  $s = stormproject_access_sql($s);
+  $s = db_rewrite_sql($s);
+  $r = db_query($s, $node->organization_nid);
+  $projects = array();
+  while ($project = db_fetch_object($r)) {
+    $projects[$project->nid] = $project->title;
+  }
+  $projects = array(0 => '-') + $projects;
+  $form['group2']['project_nid'] = array(
+    '#type' => 'select',
+    '#title' => storm_t('Project', 'expense'),
+    '#default_value' => $node->project_nid,
+    '#options' => $projects,
+    '#process' => array('storm_dependent_select_process'),
+    '#attributes' => array('onchange' => "stormticket_project_task_tickets(this, 'edit-organization-nid', 'edit-task-nid', 'edit-ticket-nid', true, '-')"),
+  );
+
+  $tree = _stormtask_get_tree($node->project_nid);
+  $tasks = _stormtask_plain_tree($tree);
+  $tasks = array(0 => '-') + $tasks;
+  $form['group2']['task_nid'] = array(
+    '#type' => 'select',
+    '#title' => storm_t('Task', 'expense'),
+    '#default_value' => $node->task_nid,
+    '#options' => $tasks,
+    '#process' => array('storm_dependent_select_process'),
+    '#attributes' => array('onchange' => "stormticket_task_tickets(this, 'edit-organization-nid', 'edit-project-nid', 'edit-ticket-nid', true, '-')"),
+  );
+
+  $tickets = array();
+  $s = "SELECT n.nid, n.title FROM {node} AS n INNER JOIN {stormticket} AS sti ON sti.vid=n.vid WHERE n.status=1 AND n.type='stormticket'
+  AND sti.organization_nid=%d AND sti.project_nid=%d AND sti.task_nid=%d ORDER BY n.title";
+  $s = stormticket_access_sql($s);
+  $s = db_rewrite_sql($s);
+  $r = db_query($s, $node->organization_nid, $node->project_nid, $node->task_nid);
+  while ($ticket = db_fetch_object($r)) {
+    $tickets[$ticket->nid] = $ticket->title;
+  }
+  $form['group2']['ticket_nid'] = array(
+    '#type' => 'select',
+    '#title' => storm_t('Ticket', 'expense'),
+    '#default_value' => $node->ticket_nid,
+    '#options' => array(0 => '-') + $tickets,
+    '#process' => array('storm_dependent_select_process'),
+  );
+
+  $form['group3'] = array(
+    '#type' => 'markup',
+    '#theme' => 'storm_form_group',
+    '#weight' => -48,
+  );
+
+  $form['group3']['expensedate'] = array(
+    '#type' => 'date',
+    '#title' => storm_t('Date', 'expense'),
+    '#default_value' => _storm_gmtimestamp_to_date($node->expensedate),
+  );
+
+  $form['group3']['provider_title'] = array(
+    '#type' => 'textfield',
+    '#title' => storm_t('Provider', 'expense'),
+    '#size' => 50,
+    '#default_value' => $node->provider_title,
+    '#autocomplete_path' => 'storm/expenses/provider_autocomplete',
+  );
+
+  $form['group4'] = array(
+    '#type' => 'markup',
+    '#theme' => 'storm_form_group',
+    '#weight' => -47,
+  );
+
+  $form['group4']['amount'] = array(
+    '#type' => 'textfield',
+    '#title' => storm_t('Amount', 'expense'),
+    '#size' => 15,
+    '#default_value' => $node->amount,
+  );
+
+  $form['group4']['tax'] = array(
+    '#type' => 'textfield',
+    '#title' => storm_t('Tax', 'expense'),
+    '#size' => 15,
+    '#default_value' => $node->tax,
+  );
+
+  $form['group4']['total'] = array(
+    '#type' => 'textfield',
+    '#title' => storm_t('Total', 'expense'),
+    '#size' => 15,
+    '#default_value' => $node->total,
+  );
+
+  if ($type->has_body) {
+    $form['body'] = array(
+      '#type' => 'textarea',
+      '#title' => check_plain($type->body_label),
+      '#default_value' => $node->body,
+      '#required' => FALSE,
+      '#weight' => -46,
+    );
+    $form['body_filter']['format'] = filter_form($node->format);
+  }
+  return $form;
+}
+
+function stormexpense_insert($node) {
+  _stormexpense_beforesave($node);
+
+  db_query("INSERT INTO {stormexpense}
+            (vid, nid,
+            organization_nid, organization_title,
+            project_nid, project_title,
+            task_nid, task_title, task_stepno,
+            ticket_nid, ticket_title,
+            provider_nid, provider_title,
+            expensedate, amount, tax, total) VALUES
+            (%d, %d,
+            %d, '%s',
+            %d, '%s',
+            %d, '%s', '%s',
+            %d, '%s',
+            %d, '%s',
+            %d, %f, %f, %f)",
+            $node->vid, $node->nid,
+            $node->organization_nid, $node->organization_title,
+            $node->project_nid, $node->project_title,
+            $node->task_nid, $node->task_title, $node->task_stepno,
+            $node->ticket_nid, $node->ticket_title,
+            $node->provider_nid, $node->provider_title,
+            $node->expensedate, $node->amount, $node->tax, $node->total);
+}
+
+function stormexpense_update($node) {
+  _stormexpense_beforesave($node);
+
+  db_query("UPDATE {stormexpense} SET
+            organization_nid=%d, organization_title='%s',
+            project_nid=%d, project_title='%s',
+            task_nid=%d, task_title='%s', task_stepno='%s',
+            ticket_nid=%d, ticket_title='%s',
+            provider_nid=%d, provider_title='%s',
+            expensedate=%d, amount=%f, tax=%f, total=%f WHERE vid = %d",
+            $node->organization_nid, $node->organization_title,
+            $node->project_nid, $node->project_title,
+            $node->task_nid, $node->task_title, $node->task_stepno,
+            $node->ticket_nid, $node->ticket_title,
+            $node->provider_nid, $node->provider_title,
+            $node->expensedate, $node->amount, $node->tax, $node->total, $node->vid);
+}
+
+function _stormexpense_beforesave(&$node) {
+  $node->expensedate = _storm_date_to_gmtimestamp($node->expensedate);
+
+  if (!$node->total) {
+    $node->total = $node->amount + $node->tax;
+  }
+
+  $s = "SELECT n.title FROM {node} AS n
+        INNER JOIN {stormorganization} AS o ON n.nid=o.nid
+        WHERE type='stormorganization' AND n.nid=%d";
+  $r = db_query($s, $node->organization_nid);
+  $o = db_fetch_object($r);
+  $node->organization_title = $o->title;
+
+  $s = "SELECT n.title, p.organization_title 
+        FROM {node} n INNER JOIN {stormproject} p ON n.nid=p.nid
+        WHERE type='stormproject' AND n.nid=%d";
+  $r = db_query($s, $node->project_nid);
+  $p = db_fetch_object($r);
+  $node->project_title = $p->title;
+
+  $s = "SELECT title, stepno FROM {node} AS n INNER JOIN {stormtask} AS t ON n.vid=t.vid WHERE n.type='stormtask' AND n.nid=%d";
+  $r = db_query($s, $node->task_nid);
+  $ta = db_fetch_object($r);
+  $node->task_title = $ta->title;
+  $node->task_stepno = $ta->stepno;
+
+  $s = "SELECT title FROM {node} AS n INNER JOIN {stormticket} AS t ON n.vid=t.vid WHERE n.type='stormticket' AND n.nid=%d";
+  $r = db_query($s, $node->ticket_nid);
+  $ti = db_fetch_object($r);
+  $node->ticket_title = $ti->title;
+}
+
+function stormexpense_nodeapi(&$node, $op, $teaser, $page) {
+  switch ($op) {
+    case 'delete revision':
+      // Notice that we're matching a single revision based on the node's vid.
+      db_query('DELETE FROM {stormexpense} WHERE vid = %d', $node->vid);
+      break;
+  }
+}
+
+function stormexpense_delete($node) {
+  db_query('DELETE FROM {stormexpense} WHERE nid = %d', $node->nid);
+}
+
+function stormexpense_load($node) {
+  $additions = db_fetch_object(db_query('SELECT * FROM {stormexpense} WHERE vid = %d', $node->vid));
+  return $additions;
+}
+
+function stormexpense_view($node, $teaser = FALSE, $page = FALSE) {
+  return theme('stormexpense_view', $node, $teaser, $page);
+}
+
+

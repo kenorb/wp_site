@@ -1,0 +1,30 @@
+<?php
+// $Id: ajaxsubmit.install,v 1.1 2008/12/18 17:06:11 nedjo Exp $
+
+/** 
+ * Implementation of hook_install(). 
+ */
+function ajaxsubmit_install() {  
+  // Set a high weight so the module is called after other modules that
+  // modify forms.
+  db_query("UPDATE {system} SET weight = %d WHERE name = 'ajaxsubmit'", _ajaxsubmit_module_weight());
+}
+
+/** 
+ * Implementation of hook_update_x(). 
+ */
+function ajaxsubmit_update_1() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {system} SET weight = " . _ajaxsubmit_module_weight() . " WHERE name = 'ajaxsubmit'");
+  return $ret;
+}
+
+/** 
+ * Set a high weight so the module is called after other modules that
+ * modify forms.
+ */
+function _ajaxsubmit_module_weight() {
+  $weight = db_result('SELECT MAX(weight) FROM system');
+  return $weight + 20;
+}
+

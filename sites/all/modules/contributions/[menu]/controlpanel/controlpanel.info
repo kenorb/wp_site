@@ -1,0 +1,11 @@
+; $Id: controlpanel.info
+name = Control Panel
+description = Build graphical Control Panels.
+dependencies[]  = menu
+core = 6.x
+; Information added by drupal.org packaging script on 2008-09-22
+version = "6.x-1.1"
+core = "6.x"
+project = "controlpanel"
+datestamp = "1222045808"
+

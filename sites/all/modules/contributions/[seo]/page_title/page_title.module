@@ -1,0 +1,340 @@
+<?php
+// $Id: page_title.module,v 1.18.2.6 2008/12/16 18:28:38 njt1982 Exp $
+
+/**
+ * @file
+ * Enhanced control over the page title (in the head tag).
+ *
+ * This module gives you control over the page title. It gives you the chance
+ * to provide patterns for how the title should be structured, and on node
+ * pages, gives you the chance to specify the page title rather than defaulting
+ * to the node title.
+ */
+
+
+/**
+ * Implementation of hook_help().
+ */
+function page_title_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#page_title':
+      $output  = '<p>'. t('Provides control over the &lt;title> element on a page using token patterns and an optional textfield to override the node title.') .'</p>';
+      $output .= '<p>'. t('Below are all the tokens you can use with <strong><em>Page Title</em></strong>:') .'</p>';
+      $output .= theme('token_help');
+      break;
+    case 'admin/content/page_title':
+      $output = t("<p>Drupal's default page title follows one of two patterns:</p>
+        <ol>
+          <li><strong>Default Page:</strong> <em>page title</em> | <em>site name</em></li>
+          <li><strong>Default Frontpage:</strong> <em>site name</em> | <em>site slogan</em></li>
+        </ol>
+        <p>The <strong>Page Title</strong> module lets you change these defaults in two ways. First, you can adjust the patterns below using the placeholders given. This will change the way the default page titles are created. Second, on every content creation form you can have the option of specifying a title that is different than the title of the node. If a value is provided, this will be used to generate the <code>[page-title]</code> placeholder. If left blank, <code>[page-title]</code> will inherit the node's title.</p>
+        <p><code>[page-title]</code> will default to the value returned from <code>drupal_get_title</code> if there is no overriden page title.</p>");
+      break;
+    case 'admin/content/page_title/types':
+      $output = '<p>'. t('To display a <em>Page Title</em> field on a node (just below the <em>Title</em> field), you will need to enable it for the appropriate content types below.') .'</p>';
+      break;
+  }
+  return $output;
+}
+
+
+/**
+ * Implementation of hook_perm().
+ */
+function page_title_perm() {
+  return array('set page title', 'administer page titles');
+}
+
+
+/**
+ * Implementation of hook_menu().
+ */
+function page_title_menu() {
+  $items = array();
+
+  $items['admin/content/page_title'] = array(
+    'title' => 'Page titles',
+    'description' => 'Enhanced control over the page titles (in the &lt;head&gt; tag).',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('page_title_admin_settings'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer page titles'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'page_title.admin.inc',
+  );
+  $items['admin/content/page_title/settings'] = array(
+    'title' => 'Default settings',
+    'description' => 'Control the page title settings.',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer page titles'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'file' => 'page_title.admin.inc',
+    'weight' => -10,
+  );
+  $items['admin/content/page_title/types'] = array(
+    'title' => 'Content type settings',
+    'description' => 'Control the display of the Page title field.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('page_title_admin_types'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer page titles'),
+    'file' => 'page_title.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+
+/**
+ * Implementation of hook_theme().
+ */
+function page_title_theme() {
+  return array(
+    'page_title_admin_settings' => array(
+      'template' => 'page_title-admin-settings-form',
+      'arguments' => array('form' => NULL),
+    ),
+
+    'page_title_preprocess_page' => array(
+      'arguments' => array('vars' => NULL),
+    ),
+  );
+}
+
+
+/**
+ * Implementation of hook_node_type().
+ *
+ * Updates settings after a node type change.
+ */
+function page_title_node_type($op, $info) {
+  if ($op == 'update' && !empty($info->old_type) and $info->type != $info->old_type) {
+    //Get the display settings for node types
+    $display = variable_get('page_title_display', array());
+
+    //If the old one is set, set the new one
+    if ($display[$info->old_type]) {
+      $display[$info->type] = $info->type;
+    }
+    //Otherwise the new type is disabled like the old one was
+    else {
+      $display[$info->type] = 0;
+    }
+
+    //Unset the old type
+    unset($display[$info->old_type]);
+
+    //Save the settings
+    variable_set('page_title_display', $display);
+
+    //Get the old pattern, if set
+    $old_pattern = variable_get('page_title_type_'. $info->old_type, '');
+
+    //If it was set then set the new one to whatever the old pattern was
+    if (!empty($old_pattern)) {
+      variable_set('page_title_type_'. $info->type, $old_pattern);
+    }
+
+    //Delete the old pattern
+    variable_del('page_title_type_'. $info->old_type);
+  }
+}
+
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function page_title_form_alter(&$form, $form_state, $form_id) {
+  //If we dont have permission to set the title then we need to abort this alter now!
+  if (!user_access('set page title')) return;
+
+  $display = variable_get('page_title_display', array());
+
+  //Check we're editing a node form and also check that the node type 'value' is enabled
+  if ($form['#id'] == 'node-form' && $display[$form['type']['#value']]) {
+    $form['page_title'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Page title'),
+      '#description' => t('Optionally specify a different title to appear in the &lt;title&gt; tag of the page.'),
+      '#default_value' => $form['#node']->page_title,
+      '#size' => 60,
+      '#maxlength' => 255,
+      '#weight' => -4,
+    );
+  }
+}
+
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function page_title_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
+  switch ($op) {
+    case 'update':
+      if (user_access('set page title')) {
+        db_query("DELETE FROM {page_title} WHERE nid = %d", $node->nid);
+      }
+      // fallthrough to insert intentional!
+    case 'insert':
+      if (isset($node->page_title) && drupal_strlen(trim($node->page_title)) > 0 && user_access('set page title')) {
+        db_query("INSERT INTO {page_title} VALUES (%d, '%s')", $node->nid, $node->page_title);
+      }
+      break;
+
+    case 'delete':
+      db_query('DELETE FROM {page_title} WHERE nid = %d', $node->nid);
+      break;
+
+    case 'load':
+      return array('page_title' => page_title_node_get_title($node->nid));
+  }
+}
+
+
+/**
+ * Simple wrapper function to get the currently set title for a page
+ *
+ * @return unknown
+ */
+function page_title_get_title() {
+  $display_options = variable_get('page_title_display', array());
+  if ((arg(0) == 'node') && (is_numeric(arg(1)))) {
+    $node = menu_get_object();
+  }
+  elseif ((arg(0) == 'comment') && (arg(1) == 'reply') && (is_numeric(arg(2)))) {
+    $node = menu_get_object();
+  }
+  else {
+    $node = NULL;
+  }
+
+  if ($node && $display_options[$node->type] && !empty($node->page_title)) {
+    return check_plain(strip_tags($node->page_title));
+  }
+  else {
+    return strip_tags(drupal_get_title());
+  }
+}
+
+
+// Public API (every module's gotta have one =)
+
+/**
+ * Gets the page title for a node id.
+ *
+ * @param $nid
+ *   int The node's id.
+ * @return
+ *   string The node's page title.
+ */
+function page_title_node_get_title($nid) {
+  return db_result(db_query('SELECT page_title FROM {page_title} WHERE nid = %d', $nid));
+}
+
+
+/**
+ * Determines what title should be sent to the page template.
+ *
+ * Call this function from the page hook of function _phptemplate_variables in
+ * template.php.
+ *
+ * @return
+ *   string The page's title.
+ */
+function page_title_page_get_title() {
+  static $title = NULL;
+
+  if (is_null($title)) {
+    // If frontpage, then use the frontpage pattern and set the title.
+    if (drupal_is_front_page()) {
+      //Get the frontpage pattern
+      $page_title_pattern = variable_get('page_title_front', '[site-name] | [site-slogan]');
+
+      //If the frontpage pattern is empty, fallback to the default.
+      if (empty($page_title_pattern)) {
+        $page_title_pattern = variable_get('page_title_default', '[page-title] | [site-slogan]');
+      }
+
+      $title = token_replace($page_title_pattern, 'page_title');
+    }
+    //Otherwise this is a non-frontpage page title.
+    else {
+      //Get the node for this page
+      $node = ((arg(0) == 'node') && (is_numeric(arg(1)))) ? menu_get_object() : NULL;
+
+      //Get the pattern for the node type. If no node type available, assume blank
+      $title = variable_get('page_title_type_'. (isset($node->type) ? $node->type : ''), '');
+
+      //If pattern is emtpy (either if the type is not overridable or simply not set) fallback to the default pattern
+      if (empty($title)) {
+        $title = variable_get('page_title_default', '[page-title] | [site-name]');
+      }
+
+      //Define Token Types array
+      $types = array();
+
+      //Return the title using the node scope if node is set, and then add our scope replacements
+      if (isset($node)) {
+        $types['node'] = $node;
+      }
+
+      //Finally, the page_title fallback
+      $types['page_title'] = NULL;
+
+      //Apply token patterns using token_replace_multiple
+      $title = token_replace_multiple($title, $types);
+    }
+  }
+
+  return $title;
+}
+
+
+/**
+ * Implementation of hook_token_values().
+ *
+ * @param
+ *   string The type of token being generated
+ *
+ * @return
+ *   array An array of Token ID and Token Value pairs
+ */
+function page_title_token_values($type) {
+  $values = array();
+
+  if ($type == 'global') {
+    $values['page-title'] = page_title_get_title();
+  }
+
+  return $values;
+}
+
+
+/**
+ * Implementation of hook_token_list().
+ *
+ * @param
+ *   string Which type of token list are we generating?
+ *
+ * @return
+ *   array Nested array of Token ID and Token Name pairs.
+ */
+function page_title_token_list($type = 'all') {
+  $tokens = array();
+
+  if ($type == 'global' || $type == 'all') {
+    $tokens['global']['page-title'] = t("The page title.");
+  }
+
+  return $tokens;
+}
+
+
+/**
+ * Implementation of hook_preprocess_page().
+ */
+function page_title_preprocess_page(&$vars) {
+  $vars['head_title'] = page_title_page_get_title();
+}

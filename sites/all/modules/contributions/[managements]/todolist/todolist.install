@@ -1,0 +1,64 @@
+<?php
+// $Id: todolist.install,v 1.4.2.1 2009/01/10 08:53:48 marvil07 Exp $
+
+/**
+ * @file
+ * todolist installation
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function todolist_schema() {
+  $schema['todolist_task'] = array(
+    'description' => t('The base table for tasks.'),
+    'fields' => array(
+      'tid' => array(
+        'description' => t('The primary identifier for a task.'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        ),
+      'nid' => array(
+        'description' => t('A node identifier.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        ),
+      'sort' => array(
+        'description' => t('This field decide task order.'),
+        'type' => 'int',
+        'unsigned' => FALSE,
+        'not null' => TRUE,
+        ),
+      'status' => array(
+        'description' => t('The task status.'),
+        'type' => 'int',
+        'unsigned' => FALSE,
+        'not null' => TRUE,
+        ),
+      'task' => array(
+        'description' => t('The task content.'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        ),
+      ),
+    'primary key' => array('tid'),
+  );
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function todolist_install() {
+  drupal_install_schema('todolist');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function todolist_uninstall() {
+  drupal_uninstall_schema('todolist');
+}

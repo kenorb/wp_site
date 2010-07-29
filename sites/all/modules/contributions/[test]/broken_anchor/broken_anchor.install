@@ -1,0 +1,62 @@
+<?php
+
+/* This file is part of "Broken Anchor for Node comments Module".
+ *    Copyright 2009, arNuméral
+ *    Author : Yoran Brault
+ *    eMail  : yoran.brault@bad_arnumeral.fr (remove bad_ before sending an email)
+ *    Site   : http://www.arnumeral.fr/node/2
+ *
+ * "Broken Anchor for Node comments Module" is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * "Broken Anchor for Node comments Module" is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with "Broken Anchor for Node comments Module"; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function broken_anchor_schema() {
+  $schema['broken_anchor_errors'] = array(
+    'description' => t('Le node Produit.'),
+    'fields' => array(
+      'eid' => array('type' => 'serial','unsigned' => TRUE,'not null' => TRUE),
+      'cid' => array('type' => 'int','unsigned' => TRUE,'not null' => TRUE),
+      'module' => array('type' => 'varchar','length' => 50,'not null' => TRUE, 'default'=>'node'),
+      'value' => array('type' => 'varchar', 'length'=> 255, 'not null' => TRUE),
+      'value_type' => array('type' => 'int', 'unsigned'=> TRUE, 'not null' => TRUE),
+      'checked' => array('type' => 'int','unsigned' => TRUE,'not null' => TRUE),
+      'status' => array('type' => 'varchar', 'length'=> 30, 'not null' => TRUE),
+      'ignored' => array('type' => 'int', 'unsigned'=> TRUE, 'not null' => FALSE),
+      'count' => array('type' => 'int', 'unsigned'=> TRUE, 'not null' => TRUE, 'default'=>0),
+  ),
+   'primary key' => array('eid')
+  );
+  
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function broken_anchor_install() {
+  $result=drupal_install_schema('broken_anchor');
+  return $result;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function broken_anchor_uninstall() {
+  $result=drupal_uninstall_schema('broken_anchor');
+  return $result;
+}

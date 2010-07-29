@@ -1,0 +1,37 @@
+To upgrade from 1.17, or newer, extract these files over your original module.
+Go to admin/modules and run the update.php script.
+
+Done!
+
+
+-----
+
+To upgrade older versions ONLY
+
+
+If you used an early version of this module (1.5 or below) then you
+will need to:
+
+1. cancel any existing subscriptions on paypal/sandbox
+2. remove any locally writen inline php generating subscriptions/donations
+3. Disable the lm_paypal* modules in admin/modules
+4. Drop the lm_paypal* tables from your database and delete the entry for
+   these module from the system table:
+     mysql -u user -p pass mydrupaldatabase < drop_test.sql
+
+Then follow the standard instructions in INSTALL.txt
+
+--
+
+If you used a previous version of this module (1.6 or above) then after
+installing this version (see INSTALL.txt) you will need to upgrade the
+modules. Follow the link to update.php at the top of administer/modules.
+
+You will also have to reset your access permissions in administer/access control
+as some of the permission names have changed.
+
+--
+
+If you used 1.17 or below after upgrading please disable all the lm_paypal
+modules and then re-enable them. This is to avoid the hook_init() problem
+reported by one user.

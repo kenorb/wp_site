@@ -1,0 +1,36 @@
+<?php
+// $Id: domain_theme.install,v 1.4 2008/03/30 17:51:47 agentken Exp $
+
+/**
+ * @file
+ * Install file for the Domain Theme module
+ */
+
+/**
+ * Implements hook_install()
+ */
+function domain_theme_install() {
+  drupal_install_schema('domain_theme');
+}
+
+/**
+ * Implements hook_schema()
+ */
+function domain_theme_schema() {
+  $schema['domain_theme'] = array(
+    'fields' => array(
+      'domain_id' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'theme' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
+      'settings' => array('type' => 'blob', 'not null' => FALSE)),
+    'primary key' => array('domain_id'),
+  );
+  return $schema;
+}
+
+/**
+ * Implements hook_uninstall()
+ */
+function domain_theme_uninstall() {
+  drupal_uninstall_schema('domain_theme');
+  variable_del('domain_theme_weight');
+}

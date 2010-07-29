@@ -1,0 +1,113 @@
+/* $Id: smileys-admin.css,v 1.1.2.5 2009/01/05 09:04:16 Gurpartap Exp $ */
+
+div.smileys-progress-panel {
+  background: #CF4342 url(images/loading.gif) no-repeat 3px center;
+  color: #fff;
+  font-family: Arial, Helvetica, Verdana;
+  padding: 1px 4px 1px 22px;
+  z-index: 999;
+  position: fixed;
+  top: 0;
+  right: 16px;
+  -moz-border-radius-bottomleft:5px;
+  -moz-border-radius-bottomright:5px;
+}
+
+#smileys-admin-form img {
+  vertical-align: middle;
+}
+
+#smileys-admin-form span.smiley-selected {
+  background: transparent url(images/smileys-selected.png) no-repeat scroll 50% 0%;
+  padding: 2px 35px;
+  cursor: pointer;
+}
+
+#smileys-admin-form span.smiley-deselected {
+  background: transparent url(images/smileys-deselected.png) no-repeat scroll 50% 0%;
+  padding: 2px 35px;
+  cursor: pointer;
+  text-align: center;
+}
+
+#smileys-admin-form span.smiley-middle {
+  background: transparent url(images/smileys-middle.png) no-repeat scroll 50% 0%;
+  padding: 2px 35px;
+  cursor: pointer;
+  text-align: center;
+}
+
+#smileys_admin_list tr.category-message {
+  font-weight: normal;
+  color: #999;
+}
+#smileys_admin_list tr.category-populated {
+  display: none;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+.nub {
+  background: url(images/nub.png) no-repeat;
+  font: normal 10px/11px "Lucida Grande", verdana, arial, helvetica, sans-serif;
+  float: left;
+  padding: 7px;
+}
+
+.nub a {
+  display: block;
+  float: left;
+  height: 11px;
+  text-decoration: underline;
+}
+
+#smileys_admin_list a.save {
+  background: url(images/save.png) no-repeat;
+  font-size: 0;
+  line-height: 0;
+  margin: 0 4px 0;
+  padding: 10px;
+  text-indent: -9999px;
+  width: 10px;
+}
+
+div.nub a.delete {
+  background: url(images/delete.gif) no-repeat;
+  font-size: 0;
+  line-height: 0;
+  margin: 1px 4px 0 0;
+  text-indent: -9999px;
+  width: 10px;
+}
+
+div.nub a.edit {
+  margin: 1px 4px 0 0;
+}
+
+#smileys_admin_list a.tabledrag-handle {
+  padding-right: .4em;
+}
+
+#smileys_admin_list a.tabledrag-handle .handle {
+  background: url(images/reorder.gif) no-repeat;
+  cursor: move;
+  font-size: 0;
+  line-height: 0;
+  margin: 1px 0 0;
+  text-indent: -9999px;
+  width: 11px;
+  padding: 7px 0;
+}
+
+.nub-td {
+  min-width: 120px;
+}

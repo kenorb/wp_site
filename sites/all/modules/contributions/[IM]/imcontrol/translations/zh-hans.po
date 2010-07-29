@@ -1,0 +1,247 @@
+# $Id$
+#
+# Generated from files:
+#  imcontrol.display.inc: n/a
+#  imcontrol.edit.inc: n/a
+#  imcontrol.page.inc: n/a
+#  imcontrol.setup.inc: n/a
+#  imcontrol.module: n/a
+#  imcontrol.install: n/a
+#  imcontrol.info: n/a
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: IM Control 1.x\n"
+"POT-Creation-Date: 2008-07-31 03:11+0800\n"
+"PO-Revision-Date: 2008-07-31 04:16+0800\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Chinese, Simplified\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: imcontrol.display.inc:37;37
+msgid "QQ"
+msgstr ""
+
+#: imcontrol.edit.inc:26
+msgid "User does not exist."
+msgstr "使用者不存在。"
+
+#: imcontrol.edit.inc:41
+msgid "No record found."
+msgstr "找不到申请资料。"
+
+#: imcontrol.edit.inc:47
+msgid "You may setup your messenger <a href=\"@setup\">here</a>."
+msgstr "请到<a href=\"@setup\">此网页</a>进行安装。"
+
+#: imcontrol.edit.inc:70
+msgid "IM Accounts"
+msgstr "即时通戶口"
+
+#: imcontrol.edit.inc:75
+msgid "Windows Live Messenger Unique ID"
+msgstr ""
+
+#: imcontrol.edit.inc:76;84;92;100
+msgid "Do not change unless you intend to use a different account."
+msgstr "除了想显示另一个戶口之外，否则请勿修改。"
+
+#: imcontrol.edit.inc:83
+msgid "Yahoo! ID"
+msgstr "Yahoo!奇摩账号"
+
+#: imcontrol.edit.inc:91
+msgid "QQ/TM number"
+msgstr "QQ/TM 号码"
+
+#: imcontrol.edit.inc:99
+msgid "Skype name"
+msgstr "Skype 账号名称"
+
+#: imcontrol.edit.inc:110
+msgid "Settings"
+msgstr "设定"
+
+#: imcontrol.edit.inc:116
+msgid "Display"
+msgstr "显示"
+
+#: imcontrol.edit.inc:118
+msgid "Button format"
+msgstr "按钮"
+
+#: imcontrol.edit.inc:118
+msgid "Default format"
+msgstr "预设"
+
+#: imcontrol.edit.inc:118
+msgid "Delete all"
+msgstr "全部删除"
+
+#: imcontrol.edit.inc:122
+msgid "Windows Live Messenger theme"
+msgstr "Windows Live Messenger 颜色组"
+
+#: imcontrol.edit.inc:125
+msgid "Default"
+msgstr "预设"
+
+#: imcontrol.edit.inc:126
+msgid "Blue"
+msgstr "蓝色"
+
+#: imcontrol.edit.inc:127
+msgid "Green"
+msgstr "绿色"
+
+#: imcontrol.edit.inc:128
+msgid "Orange"
+msgstr "橘色"
+
+#: imcontrol.edit.inc:129
+msgid "Pink"
+msgstr "粉紅色"
+
+#: imcontrol.edit.inc:130
+msgid "Purple"
+msgstr "紫色"
+
+#: imcontrol.edit.inc:131
+msgid "Black"
+msgstr "黑色"
+
+#: imcontrol.edit.inc:132
+msgid "Custom"
+msgstr "自订"
+
+#: imcontrol.edit.inc:139
+msgid "Custom options"
+msgstr "自订选择"
+
+#: imcontrol.edit.inc:152
+msgid "Text color"
+msgstr "文字颜色"
+
+#: imcontrol.edit.inc:160
+msgid "Background color"
+msgstr "背景"
+
+#: imcontrol.edit.inc:168
+msgid "Hyperlink"
+msgstr "网址"
+
+#: imcontrol.edit.inc:176
+msgid "Border color"
+msgstr "边界"
+
+#: imcontrol.edit.inc:184
+msgid "Text color for active buttons"
+msgstr "活跃按钮字"
+
+#: imcontrol.edit.inc:192
+msgid "Background color for active buttons"
+msgstr "活跃按钮背景"
+
+#: imcontrol.edit.inc:200
+msgid "Border color for buttons"
+msgstr "按鈕边界"
+
+#: imcontrol.edit.inc:208
+msgid "Background color for a disabled button"
+msgstr "无功能按鈕背景"
+
+#: imcontrol.edit.inc:216
+msgid "Text color for the header area"
+msgstr "头部字"
+
+#: imcontrol.edit.inc:224
+msgid "Background color for the header area"
+msgstr "头部背景"
+
+#: imcontrol.edit.inc:232
+msgid "Display name color"
+msgstr "名称"
+
+#: imcontrol.edit.inc:242
+#: imcontrol.page.inc:121
+msgid "Submit"
+msgstr "发送"
+
+#: imcontrol.edit.inc:257
+msgid "Color value is invalid!"
+msgstr "颜色不正確！"
+
+#: imcontrol.edit.inc:260
+msgid "Color value length incorrect!"
+msgstr "颜色长度不正确！"
+
+#: imcontrol.page.inc:137
+#: imcontrol.edit.inc:279
+msgid "Messenger ID is invalid!"
+msgstr "Messenger ID 不正確！"
+
+#: imcontrol.edit.inc:283
+#: imcontrol.page.inc:141
+msgid "Yahoo! ID is invalid!"
+msgstr "Yahoo!奇摩账号不正確！"
+
+#: imcontrol.edit.inc:287
+#: imcontrol.page.inc:145
+msgid "QQ/TM number is invalid!"
+msgstr "QQ/TM 号码不正確！"
+
+#: imcontrol.edit.inc:291
+#: imcontrol.page.inc:149
+msgid "Skype name is invalid!"
+msgstr "Skype 账号名称不正確！"
+
+#: imcontrol.edit.inc:304
+msgid "IM Control record deleted"
+msgstr "资料删除成功"
+
+#: imcontrol.edit.inc:327
+msgid "IM Control settings saved"
+msgstr "资料储存成功"
+
+#: imcontrol.page.inc:37
+msgid "I am also available on:"
+msgstr "我的其他状态："
+
+#: imcontrol.page.inc:58
+msgid "Let others send you instant messages from this page! Setup your account at <a href=\"@setup\">Windows Live</a> or enter your unique ID below:"
+msgstr "想让其他访客密你吗？立即进行<a href=\"@setup\">Windows Live</a>服务启动或输入你独有的账号 ID："
+
+#: imcontrol.page.inc:67
+msgid "User has no instant messenger account."
+msgstr "使用者沒有即时通戶口。"
+
+#: imcontrol.page.inc:95
+msgid "Additional messengers"
+msgstr "其他即时通"
+
+#: imcontrol.page.inc:177
+msgid "Setup complete."
+msgstr "安装完毕。"
+
+#: imcontrol.setup.inc:30
+msgid "Windows Live Messenger IM Control successfully installed."
+msgstr "Windows Live Messenger　安裝成功。"
+
+#: imcontrol.setup.inc:34
+msgid "Windows Live Messenger IM Control failed to install."
+msgstr "Windows Live Messenger　安裝失败。"
+
+#: imcontrol.module:23
+msgid "Online Presence"
+msgstr "线上状态"
+
+#: imcontrol.module:32
+msgid "View"
+msgstr "监视"
+
+#: imcontrol.module:37
+msgid "Edit"
+msgstr "编辑"
+

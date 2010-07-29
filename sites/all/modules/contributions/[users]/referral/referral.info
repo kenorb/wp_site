@@ -1,0 +1,11 @@
+; $Id: referral.info,v 1.3 2008/07/27 23:46:26 kbahey Exp $
+name = User Referral
+description = Give users a way to refer others to your site, optionally earn points for referrals, and revenue sharing via adsense.
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-12-04
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "referral"
+datestamp = "1228349653"
+

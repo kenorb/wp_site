@@ -1,0 +1,10 @@
+; $Id: urlicon.info,v 1.6 2008/07/28 21:07:54 sanduhrs Exp $
+name = "URL Icon"
+description = "Filter all external links in nodes and comments."
+core = 6.x
+; Information added by drupal.org packaging script on 2008-10-06
+version = "6.x-2.1"
+core = "6.x"
+project = "urlicon"
+datestamp = "1223327725"
+

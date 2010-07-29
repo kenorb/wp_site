@@ -1,0 +1,24 @@
+.draggableviews-expand{
+  margin-left: 3px;
+  position: relative;
+  top:3px;
+  
+  background-image: url("graphics/icon_expand.gif");
+  width: 15px;
+  height: 20px;
+  display: inline-block;
+  
+  cursor: pointer;
+}
+.draggableviews-collapse{
+  margin-left: 3px;
+  position: relative;
+  top:3px;
+  
+  background-image: url("graphics/icon_collapse.gif");
+  width: 15px;
+  height: 20px;
+  display: inline-block;
+  
+  cursor: pointer;
+}

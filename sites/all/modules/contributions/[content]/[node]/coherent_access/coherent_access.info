@@ -1,0 +1,12 @@
+; $Id: coherent_access.info,v 1.2 2008/06/06 22:35:05 jgraham Exp $
+name = Coherent Access
+description = Provides user level node access for viewing and editing.
+package = Access control
+version = 6.x-dev
+core = 6.x
+; Information added by drupal.org packaging script on 2009-02-03
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "coherent_access"
+datestamp = "1233619419"
+

@@ -1,0 +1,240 @@
+<?php
+// $Id: composite_cck.module,v 1.1.2.1 2009/01/15 02:41:13 bengtan Exp $
+
+function composite_cck_composite_types() {
+  $types = array(
+    'field' => array(
+      'type' => 'field',
+      'label' => array('singular' => t('Field'), 'plural' => t('Fields')),
+      'local task' => TRUE,
+      'potentials callback' => 'composite_cck_field_potentials', 
+    ),
+  );
+  return $types;
+}
+
+/***********************************************************
+*                          FIELDS                          *
+************************************************************/
+
+function composite_cck_composite_field_api(&$reference, $op, $node = NULL, $a4 = NULL) {
+  if (strpos($reference['id'], '-')) {
+    // This is a field value, dispatch it. 
+    return composite_cck_composite_field_value_api($reference, $op, $node, $a4);
+  }
+  else if ($reference['id'] == 'body') {
+    // Dispatch for special case
+    return composite_cck_composite_field_body_api($reference, $op, $node, $a4);
+  }
+
+  switch ($op) {
+    // Generate and insert an informative human-readable string into ['info']
+    case 'info':
+      $field = content_fields($reference['id']);
+      $reference['info'] = t('Field: @label', array('@label' => $field['widget']['label']));
+      break;
+
+    // Return a rendering of the reference item
+    case 'view':
+      $field_id = $reference['id'];
+      $types = content_types();
+      $field = $types[$node->type]['fields'][$field_id];
+
+      // We're going to be naughty here and poke our display settings in.
+      // Unfortunately, we can't do this for the label - content_preprocess_content_field()
+      //    re-fetches the label display setting from content.module. 
+      $field['display_settings']['full']['format'] = $reference['data']['format'];
+
+      $data = content_field('view', $node, $field, $node->$field_id, FALSE, FALSE);
+      return drupal_render($data);
+      break;
+      
+    // Return form elements for additional settings
+    case 'settings':      
+      $form['format'] = array(
+        '#title' => t('Display as'),
+        '#type' => 'select',
+        '#options' => _composite_cck_formatter_options($reference['id']),
+        '#default_value' => $reference['data']['format'],
+      );
+      return $form;
+      break;
+  }
+}
+
+function composite_cck_field_potentials($node) {
+  $types = content_types();
+  $fields = $types[$node->type]['fields'];
+
+  $options = array();
+
+  // Special: If this content type has a body, add it as a field
+  $node_content_type = node_get_types('type', $node);
+  if ($node_content_type->has_body) {
+    $options['body'] = t('Node: Body');
+    $element['value'] = strip_tags($node->body);
+    $preview = _composite_cck_preview_element($element);
+    if (!empty($preview)) {
+      $options ['body'] = '<em>' . $preview . '</em><br />' . $options ['body'];
+    }
+  }
+  
+  // Get a list of individual field values for multi valued fields or single fields
+  foreach ($fields as $field => $field_info) {
+    $item = $node->$field;
+    if ($field_info['multiple']) {
+      foreach ($node->$field as $delta => $field_value) {
+        $options[$field . '-' . $delta] = t('Field value: @label @delta', array('@label' => $field_info['widget']['label'], '@delta' => "[$delta]"));
+        $preview = _composite_cck_preview_element($item[$delta]);
+        if (!empty($preview)) {
+          $options[$field . '-' . $delta] = '<em>' . $preview . '</em><br />' . $options[$field . '-' . $delta];
+        }
+      }
+    }
+    else {
+      $options[$field] = t('Field: @label', array('@label' => $field_info['widget']['label']));
+      $preview = _composite_cck_preview_element($item[0]);
+      if (!empty($preview)) {
+        $options[$field] = '<em>' . $preview . '</em><br />' . $options[$field];
+      }
+      else {
+      }
+    }
+  }
+  
+  return $options;
+}
+
+/***********************************************************
+*                   BODY (special case)                    *
+************************************************************/
+
+function composite_cck_composite_field_body_api(&$reference, $op, $node = NULL, $a4 = NULL) {
+  switch ($op) {
+    // Generate and insert an informative human-readable string into ['info']
+    case 'info':
+      $element['value'] = strip_tags($node->body);
+      $preview = _composite_cck_preview_element($element);
+      $reference['info'] = t('Node: Body');
+      if (!empty($preview)) {
+        $reference['info'] = '<em>' . $preview . '</em><br />' . $reference['info'];
+      }
+      break;
+
+    // Return a rendering of the reference item
+    case 'view':
+      // Have to reload this node because, at this point, $node->body
+      //   already includes cck stuff
+      $new = node_load($node->nid);
+      node_prepare($new);      
+      return $new->body;
+      break;
+  }
+}
+
+/***********************************************************
+*                       FIELD VALUES                       *
+************************************************************/
+
+function composite_cck_composite_field_value_api(&$reference, $op, $node = NULL, $a4 = NULL) {
+  switch ($op) {
+    // Derive additional fields 
+    case 'load':
+      list($reference['parent_field'], $reference['delta']) = explode('-', $reference['id'], 2);
+      break;
+
+    // Generate and insert an informative human-readable string into ['info']
+    case 'info':
+      $field = content_fields($reference['parent_field']);
+      $item = $node->$reference['parent_field'];
+      $reference['info'] = t('Field value: @label @delta', array('@label' => $field['widget']['label'], '@delta' => '['. $reference['delta'] .']'));
+      $preview = _composite_cck_preview_element($item[$reference['delta']]);
+      if (!empty($preview)) {
+        $reference['info'] = '<em>' . $preview . '</em><br />' . $reference['info'];
+      }
+      break;
+
+    // Return a rendering of the reference item
+    case 'view':
+      $field_id = $reference['parent_field'];
+      $types = content_types();
+      $field = $types[$node->type]['fields'][$field_id];
+
+      // Extract out the field value
+      $field_items = $node->$field_id;
+      if ($field_items[$reference['delta']]) {
+        $field_item = array(0 => $field_items[$reference['delta']]);        
+        $field['display_settings']['full']['format'] = $reference['data']['format'];
+        $data = content_field('view', $node, $field, $field_item, FALSE, FALSE);
+        return drupal_render($data);
+      }
+      break;
+      
+    case 'settings':
+      $form['format'] = array(
+        '#title' => t('Display as'),
+        '#type' => 'select',
+        '#options' => _composite_cck_formatter_options($reference['parent_field']),
+        '#default_value' => $reference['data']['format'],
+      );
+      return $form;
+      break;
+  }
+}
+
+
+/***********************************************************
+*                     HELPER FUNCTIONS                     *
+************************************************************/
+
+// Retrieve a select list of formatter options for a field
+function _composite_cck_formatter_options($field_id) {
+  $field = content_fields($field_id);
+
+  $field_types = _content_field_types();
+  $field_type = $field_types[$field['type']];
+  
+  // Construct a formatters select list
+  $formatter_options = array();
+  foreach ($field_type['formatters'] as $formatter_name => $formatter_info) {
+    $formatter_options[$formatter_name] = $formatter_info['label'];
+  }
+  $formatter_options['hidden'] = t('<Hidden>');
+  
+  return $formatter_options;
+}
+
+/**
+ * Take a cck element and return a preview string for use when sorting.
+ *
+ * @param $element
+ * The raw cck element, taken from node_load().
+ * @return
+ * A human-readable and sanitized preview string.
+ */
+function _composite_cck_preview_element($element) {
+  if (isset($element['value'])) {
+    if (strlen($element['value']) < 40 || is_int($element['value'])) {
+      return check_plain($element['value']);
+    }
+    else {
+     return check_plain(substr($element['value'], 0, 40)) .'...';
+    }
+  }
+  else if (isset($element['nid'])) {
+    $data = db_fetch_object(db_query("SELECT nid, title FROM {node} WHERE nid = %d", $element['nid']));
+    if (!empty($data->nid)) {
+      return l($data->title, "node/$data->nid");
+    }
+  }
+  // File reference
+  else if (isset($element['fid'])) {
+    return l($element['filename'], $element['filepath']);
+  }
+  else if (isset($element['uid'])) {
+    $data = db_fetch_object(db_query("SELECT uid, name FROM {users} WHERE uid = %d", $element['uid']));
+    if (!empty($data->uid)) {
+      return l($data->name, "user/$data->uid");
+    }
+  }
+}

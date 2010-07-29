@@ -1,0 +1,118 @@
+# $Id: modules-l10n_groups.de.po,v 1.1.2.1 2008/10/14 22:18:08 goba Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  l10n_groups.module,v 1.1.2.4 2007/12/24 23:43:40 goba
+#  l10n_groups.info,v 1.1.2.1 2007/10/03 19:57:24 goba
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: German translation for l10n_server\n"
+"POT-Creation-Date: 2008-02-01 20:54+0100\n"
+"PO-Revision-Date: 2008-02-03 14:10+0100\n"
+"Last-Translator: Alexander Hass\n"
+"Language-Team: Alexander Haß\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"X-Poedit-Language: German\n"
+"X-Poedit-Country: GERMANY\n"
+
+#: l10n_groups.module:39
+msgid "All available languages have groups now. You cannot create another group until a new language is added on the administration interface."
+msgstr ""
+
+#: l10n_groups.module:55
+msgid "Translation group"
+msgstr "Übersetzungsgruppe"
+
+#: l10n_groups.module:57
+msgid "A language community around Drupal project translations."
+msgstr ""
+
+#: l10n_groups.module:129
+msgid "Group name"
+msgstr "Gruppenname"
+
+#: l10n_groups.module:130
+msgid "Name of the translation group."
+msgstr "Name der Übersetzungsgruppe."
+
+#: l10n_groups.module:139;149
+msgid "Language"
+msgstr "Sprache"
+
+#: l10n_groups.module:140
+msgid "The language managed by this group. This cannot be modified."
+msgstr ""
+
+#: l10n_groups.module:150
+msgid "The language managed by this group. Languages not shown here are either not active on the site, or already have a translation group."
+msgstr ""
+
+#: l10n_groups.module:158
+msgid "Permission model"
+msgstr "Berechtigungsmodell"
+
+#: l10n_groups.module:159
+msgid "Whether different types of group members have different permissions."
+msgstr ""
+
+#: l10n_groups.module:162
+msgid "Open. Everybody is equal, all members can suggest and approve translations."
+msgstr "Offen. Jeder ist gleich, alle Mitglieder können Übersetzungen vorschlagen und bestätigen."
+
+#: l10n_groups.module:163
+msgid "Controlled. Members can only suggest translations, group administrators can approve them."
+msgstr ""
+
+#: l10n_groups.module:169
+msgid "Welcome message"
+msgstr "Willkommensmitteilung"
+
+#: l10n_groups.module:170
+msgid "Welcome message to display on the group homepage."
+msgstr "Willkommensmitteilung zur Anzeige auf der Gruppen-Homepage."
+
+#: l10n_groups.module:200
+msgid "You are not a member of this translation group, but you can still view the existing translations and export templates or translations for your own use."
+msgstr ""
+
+#: l10n_groups.module:200
+msgid "<a href=\"@group\">Subscribe to this group</a> if you would like to help out."
+msgstr ""
+
+#: l10n_groups.module:200
+msgid "<a href=\"@register\">Create an account or log in</a> and <a href=\"@group\">subscribe to this group</a> if you would like to help out."
+msgstr ""
+
+#: l10n_groups.module:203
+msgid "You are a member of this translation group, so you can suggest translations or import complete Gettext translation files to suggest multiple translations at once. Administrators of this group either accept or decline suggestions provided by members of the group. To work offline, export a translation template, which contains the current state of the translation."
+msgstr ""
+
+#: l10n_groups.module:206
+msgid "As a member of this translation group, you can suggest translations as well as approve translations suggested by other members of the group. Export/import of Gettext translation files is also possible."
+msgstr ""
+
+#: l10n_groups.module:25
+msgid "administer localization groups"
+msgstr "Lokalisierungsgruppen verwalten"
+
+#: l10n_groups.module:0
+msgid "l10n_groups"
+msgstr "l10n_groups"
+
+#: l10n_groups.info:0
+msgid "Localization groups"
+msgstr "Lokalisierungsgruppen"
+
+#: l10n_groups.info:0
+msgid "Organic groups mapping for localization server"
+msgstr ""
+
+#: l10n_groups.info:0
+msgid "Localization server"
+msgstr "Lokalisierungsserver"
+

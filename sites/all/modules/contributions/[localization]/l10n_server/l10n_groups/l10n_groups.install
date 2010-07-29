@@ -1,0 +1,61 @@
+<?php
+// $Id: l10n_groups.install,v 1.1.2.1.2.2 2008/10/15 15:25:05 goba Exp $
+/**
+ * @file
+ *   Localization groups installation, update and uninstallation.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function l10n_groups_install() {
+  drupal_install_schema('l10n_groups');  
+  // Designate our node type as an OG group node type.
+  variable_set('og_content_type_usage_l10n_group', 'group');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function l10n_groups_uninstall() {
+  drupal_uninstall_schema('l10n_groups');
+}
+
+/**
+ * Implementation of hook_install().
+ *
+ * With this module, the translations are maintained by communities,
+ * who share a common space based on organic groups. We need to store
+ * their permission model and language association.
+ */
+function l10n_groups_schema() {
+  $t = get_t();
+  $schema = array();
+  $schema['l10n_groups_group'] = array(
+    'description' => $t('Organic groups mapper for the localization server. Each language team is a group.'),
+    'fields' => array(
+      'nid' => array(
+        'description' => $t('References {node}.nid, pointing to the organic group node for this translation group.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'disp-width' => '11'
+      ),
+      'language' => array(
+        'description' => $t('References {language}.language, pointing to the language of this translation group.'),
+        'type' => 'varchar',
+        'length' => '12',
+        'not null' => TRUE
+      ),
+      'model' => array(
+        'description' => $t('Permission model for this translation group. Can be L10N_MODEL_OPEN or L10N_MODEL_CONTROLLED.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'disp-width' => '11'
+      )
+    ),
+    'indexes' => array(
+      'l10n_groups_group_nid' => array('nid')
+    ),
+  );
+  return $schema;
+}

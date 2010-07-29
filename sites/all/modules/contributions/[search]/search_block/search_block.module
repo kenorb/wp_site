@@ -1,0 +1,324 @@
+<?php
+//$Id: search_block.module,v 1.1.4.5.2.2 2008/08/06 00:58:48 deviantintegral Exp $
+
+/**
+ * search_block.module
+ * This module allows for the removal of individual nodes or
+ * entire content types from the search index.
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function search_block_menu() {
+    $items['admin/settings/search/main'] = array(
+      'title' => 'Main',
+      'access callback' => 'user_access',
+      'access arguments' => array('administer search'),
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+    );
+    $items['admin/settings/search/restrict'] = array(
+      'title' => 'Restrict Search',
+      'description' => 'Restrict the node types that are searched.',
+      'access callback' => 'user_access',
+      'access arguments' => array('restrict searches'),
+      'page callback' => 'search_block_restrict_page',
+      'type' => MENU_LOCAL_TASK,
+    );
+
+  return $items;
+}
+
+/**
+ * Menu Callback; provides a page to restrict or allow search settings
+ * for each Node type
+ */
+function search_block_restrict_page() {
+  $output = "<p>Restrict search results by node type.</p>";
+  $output .= drupal_get_form('search_block_restrict_form');
+  return $output;
+}
+
+/**
+ * Implementation of hook_form()
+ */
+function search_block_restrict_form() {
+  $types = node_get_types($op = 'types', $node);
+
+  foreach ($types as $key => $array) {
+    $enabled = variable_get('search_block_'. $key, FALSE);
+    if ($enabled) {
+      $icon = theme('image', 'misc/watchdog-error.png', t('error'), t('error'));
+    }
+    else {
+      $icon = theme('image', 'misc/watchdog-ok.png', t('ok'), t('ok'));
+    }
+    $form[$key] = array(
+      '#type' => 'radios',
+      '#title' =>  $icon .'&nbsp;'. $array->name ,
+      '#default_value' => $enabled,
+      '#options' => array(
+        FALSE => t('Allow Searches'),
+        TRUE => t('Restrict Searches'),
+      ),
+    );
+  }
+
+  $form['submit'] = array('#type' => 'submit', '#value' => t('Save'));
+  return $form;
+}
+
+/**
+ * Implementation of hook_form_submit
+ */
+function search_block_restrict_form_submit($form, &$form_state) {
+  foreach ($form_state['values'] as $key => $data) {
+    switch ($key) {
+      case 'op':
+      case 'submit':
+      case 'form_token':
+      case 'form_id':
+        break;
+      default:
+        variable_set('search_block_'. $key, $data);
+    }
+  }
+  drupal_set_message(t('Your restricted search settings have been saved.'));
+}
+
+/**
+ * Implementation of hook_perm in order to restrict function to trusted users.
+ */
+function search_block_perm() {
+  return array('restrict searches');
+}
+
+
+ /**
+  * Implementation of hook_form_alter
+  */
+function search_block_form_alter(&$form, $form_state, $form_id) {
+  if (isset($form['type'])) {
+    $type = $form['type']['#value'];
+  }
+  elseif (isset($form['old_type'])) {
+    $type = $form['old_type']['#value'];
+  }
+  
+  $enabled = variable_get('search_block_'. $type, FALSE);
+
+  switch ($form_id) {
+    case 'node_type_form':
+      // Display each radio option
+      $form['workflow']['search_block'] = array(
+        '#type' => 'radios',
+        '#title' => t('Restrict Searches of this Content Type'),
+        '#default_value' => $enabled,
+        '#options' => array(
+          FALSE => t('Allow Searches'),
+          TRUE => t('Restrict Searches'),
+        ),
+        '#description' => t('Use the above options to hide this content type
+          from the search index. Changing this overwrites all previous node settings.'),
+      );
+    break;
+    
+    // Here, we allow for a per-node search block.
+    // This is not shown if the content is globally blocked
+    // Perhaps we want to include the reverse option (index a single node)?
+    case $type .'_node_form':
+      if (user_access('restrict searches')) {
+        $form['search_block_set'] = array(
+          '#type' => 'fieldset',
+          '#title' => t('Restricted Search'),
+          '#collapsible' => TRUE,
+          '#collapsed' => TRUE,
+        );
+        if (!$enabled) {
+          $form['search_block_set']['search_block'] = array(
+            '#type' => 'checkbox',
+            '#title' => t('Restrict this node from the search index'),
+            '#default_value' => $form['#node']->search_block,
+            '#description' => t('Enable this option to hide this node from the search index.'),
+          );
+        }
+        else {
+          // We need the divs otherwise the fieldset misrenders
+          $form['search_block_set']['notice'] = array(
+            '#prefix' => '<div>',
+            '#suffix' => '</div>',
+            '#value' => t('This content type is globally restricted from searches.'),
+          );
+        }
+      }
+      break;
+      
+    case 'search_form':
+      if (empty($form['advanced']['type']['#options'])) break;
+      foreach ($form['advanced']['type']['#options'] as $type2 => $name) {
+        if (variable_get('search_block_'. $type2, FALSE)) {
+          unset($form['advanced']['type']['#options'][$type2]);
+        }
+      }
+      break;
+   }
+}
+
+/**
+ * Implementation of hook_nodeapi
+ */
+function search_block_nodeapi(&$node, $op, $teaser, $page) {
+  $type_enabled = variable_get('search_block_'. $node->type, FALSE);
+  switch ($op) {
+    case 'validate':
+      break;
+    case 'load':
+      $query = "SELECT enabled FROM {search_block} WHERE nid = %d";
+      $result = db_query($query, $node->nid);
+      if ((db_result($result) == TRUE) || $type_enabled) {
+        $node->search_block = TRUE;
+      }
+      else {
+        $node->search_block = FALSE;
+      }
+      break;
+    case 'insert':
+      $query = "";
+      if ($node->search_block || $type_enabled) {
+        $query = "INSERT INTO {search_block} VALUES ('%d', '1', '1')";
+      }
+      else {
+        $query = "INSERT INTO {search_block} VALUES ('%d', '0', '1')";
+      }
+      $result = db_query($query, $node->nid);
+      break;
+    case 'update':
+      $query = "";
+      if ($node->search_block || $type_enabled) {
+        $query = "INSERT INTO {search_block} (nid, enabled, dirty) VALUES ('%d', '1', '1')
+          ON DUPLICATE KEY UPDATE enabled='1', dirty='1'";
+      }
+      else {
+        $query = "INSERT INTO {search_block} (nid, enabled, dirty) VALUES ('%d', '0', '1')
+          ON DUPLICATE KEY UPDATE enabled='0'";
+      }
+      $result = db_query($query, $node->nid);
+      break;
+    case 'delete':
+      $query = "DELETE FROM {search_block} WHERE nid=%d";
+      $result = db_query($query, $node->nid);
+      break;
+    case 'view':
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_update_index
+ *
+ * We might have a race condition here with other instances
+ * of module's hook_update_index, but I'm not sure and it's
+ * been working so far.
+ */
+function search_block_update_index() {
+  $query = "SELECT nid FROM {search_block} WHERE enabled='1' AND dirty='1'";
+  $result = db_query($query);
+  while ($nid = db_result($result)) {
+    watchdog('search_block', 'Dropping index for nid '. $nid);
+    search_index($nid, 'node', '');
+    $query = "UPDATE {search_block} SET dirty='0' WHERE nid=%d";
+    db_query($query, $nid);
+  }
+}
+
+
+/**
+ * Implementation of hook_cron
+ *
+ * As there is no way to implement a callback function from
+ * hook_form_alter, we keep a flag variable and check for changes.
+ * If the variable has changed, mark appropriate nodes as dirty
+ * to either be removed from the index or reindex.
+ *
+ * If cron times out, the dirty flags will be attempted to be reset
+ * on the next run as the flag is only cleared after success.
+ */
+function search_block_cron() {
+  $types = node_get_types();
+  foreach ($types as $type => $object) {
+    $enabled = variable_get('search_block_'. $type, FALSE);
+    $previous = variable_get('search_block_previous_'. $type, FALSE);
+    if ($previous < $enabled) {
+      watchdog('search_block', 'Enabling and setting dirty for '. $type);
+      $query = "SELECT DISTINCT nid FROM {node} WHERE type='%s'";
+      $result = db_query($query, $type);
+      $row = 0;
+      while ($nid = db_result($result)) {
+        $query = "INSERT INTO {search_block} (nid, enabled, dirty) VALUES ('%d', '1', '1')
+          ON DUPLICATE KEY UPDATE enabled='1', dirty='1'";
+        db_query($query, $nid);
+      }
+      variable_set('search_block_previous_'. $type, $enabled);
+    }
+    else if ($previous > $enabled) {
+      watchdog('search_block', 'Disabling and clearing dirty for '. $type);
+      $query = "SELECT DISTINCT nid FROM {node} WHERE type='%s'";
+      $result = db_query($query, $type);
+      $row = 0;
+      while ($nid = db_result($result)) {
+        $query = "INSERT INTO {search_block} (nid, enabled, dirty) VALUES ('%d', '0', '1')
+          ON DUPLICATE KEY UPDATE enabled=0, dirty=1";
+        db_query($query, $nid);
+      }
+      variable_set('search_block_previous_'. $type, $enabled);
+    }
+  }
+  
+  // If we've disabled search blocking for a content type or a node
+  // we may still need to reindex it
+  $query = "SELECT nid FROM {search_block} WHERE enabled=0 AND dirty=1";
+  $result = db_query($query);
+  
+  $row = 0;
+  while ($nid = db_result($result)) {
+    _search_block_reindex(node_load($nid));
+    $query = "UPDATE {search_block} SET dirty=0 WHERE nid=%d";
+    db_query($query, $nid);
+  }
+}
+
+/**
+ * Implementation of hook_search so we can keep tabs on index rebuilding.
+ */
+function search_block_search($op = 'search', $keys = null) {
+  switch ($op) {
+    case 'reset':
+      // We need to re-remove items from the index
+      $query = "UPDATE {search_block} SET dirty=1 WHERE enabled=1";
+      db_query($query);
+      break;
+  }
+}
+
+/**
+ * Reindex a node, adding it to the search index. As this is
+ * from node.module, keep note of any changes to this code
+ * from there and update it.
+ */
+function _search_block_reindex($node) {
+  // Build the node body.
+  $node->build_mode = NODE_BUILD_SEARCH_INDEX;
+  $node = node_build_content($node, FALSE, FALSE);
+  $node->body = drupal_render($node->content);
+
+  $text = '<h1>'. check_plain($node->title) .'</h1>'. $node->body;
+
+  // Fetch extra data normally not visible
+  $extra = node_invoke_nodeapi($node, 'update index');
+  foreach ($extra as $t) {
+    $text .= $t;
+  }
+
+  // Update index
+  search_index($node->nid, 'node', $text);
+}

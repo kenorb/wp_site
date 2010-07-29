@@ -1,0 +1,135 @@
+// $Id: CHANGELOG.txt,v 1.10 2009/01/27 12:26:35 Gurpartap Exp $
+
+Paging 6.x-1.0-beta3, 2008-01-27
+------------------------------
+#185032 by Gurpartap Singh: Paging block (shows a list of page names as links).
+by Gurpartap Singh: Fixed empty names populating method
+by Gurpartap Singh: Fixed page navigation block visibility.
+by Gurpartap Singh: Disable page names UI when automatic paging is enabled.
+by Gurpartap Singh: Remove paging filter settings in hook_uninstall().
+#266373 by sun: Add configurable position for pager above and/or below content or custom pager output in theme.
+by Gurpartap Singh: Added comments to the complete code for better understanding when revisiting.
+by Gurpartap Singh: Added CHANGELOG.txt with complete change log till date.
+by Gurpartap Singh: Added a new theme function to set select list for drop down pager theme function. This provides the ability to override it and set custom URLs(even clean urls).
+by Gurpartap Singh: Added limitations topic to README.txt
+by Gurpartap Singh: Markdown format for README.txt contents.
+by Gurpartap Singh: Created a JavaScript theme function for drop down pager, to allow overriding it's behavior.
+by Gurpartap Singh: Fixed array_fill method.
+#45153 by SiliconMind: Do not paginate book module's print pages.
+by Gurpartap Singh: Fixed error on 'add new comment' page displaying paginated node.
+#346329 by wwalc, Gurpartap Singh: E_NOTICE compatibility.
+#363396 by Gurpartap Singh: Paginate only for normal node rendering. Fixed several reported issues where other content fields went missing.
+by Gurpartap Singh: Move setting of default value in drop down pager, from JavaScript to theme function in module. Reduces the code to be loaded client side.
+by Gurpartap Singh: Remove first and last link from drop down pager. Include next and previous page's name along with next and previous links.
+#329923 by Gurpartap Singh: AJAX load the pages. Uses nedjo's code proposed for AJAX pagers in core.
+by Gurpartap Singh: Names can be specified anywhere in the body.
+by Gurpartap Singh: Better method for wrapping pager and body for AJAX compatibility.
+by Gurpartap Singh: Implement hook_content_extra_fields() to allow customized positioning of pager(s) using "Manage fields" under CCK.
+#362966 by Gurpartap Singh: Fixed automatic paging in middle of tag.
+
+
+Paging 6.x-1.0-beta2, 2008-11-08
+------------------------------
+#330057 by Gurpartap Singh: Page names interface bug + Drop down nav bug.
+by Gurpartap Singh: Fixed parameters for pager and the drop down theme function
+by john vandyk: Removed junk code.
+
+
+Paging 6.x-1.0-beta1, 2008-10-17
+------------------------------
+#284076 by john vandyk: Code refinements
+#91084 by Gurpartap Singh: Close to full page names support
+by Gurpartap Singh: New drop down list pager navigation.
+by Gurpartap Singh: Fixed the layout of drop down list
+by Gurpartap Singh: Fixed description for drop down pager.
+by Gurpartap Singh: New feature "Page names" along with a new administration UI.
+by Gurpartap Singh: Paging for Drupal 6.
+
+
+Paging 5.x-1.1, 2008-01-25
+------------------------------
+by Gurpartap Singh: Fixed critical bugs with automatic paging
+#126365 by Gurpartap Singh: Automatic Paging
+by Darren Oh: Used strpos instead of substr_count to increase speed.
+#133961 by Darren Oh: Paging interfered with search.
+by Darren Oh: Removed update index op from hook_nodeapi implementation (no longer needed).
+by Darren Oh: Changed $node->pages_count to $node->page_count (better grammatically).
+by Darren Oh: Added package tag to info file now that we're creating some associated modules.
+#118294 by Darren Oh: Better text, text formatting and code indentation.
+
+
+Paging 5.x-1.0, 2006-12-02
+------------------------------
+by Gurpartap Singh: Removed unnecessary css file: paging.css.
+by Gurpartap Singh: Temporary fix for book navigation links.
+by Gurpartap Singh: Settings form's fieldset label fixed.
+by Gurpartap Singh: Added Drupal 5 compatibility.
+
+
+Paging 4.7-1.x, 2006-04-02
+------------------------------
+#79130 by douggreen: New Paging Module that supports filters and CCK
+
+
+Paging 4.7-1.x, 2006-04-02
+------------------------------
+by chx: Simplified and fixed.
+
+
+Paging 4.6-1.x, 2006-04-02
+------------------------------
+by chx: Simplified and fixed.
+
+
+Paging 4.6-1.x, 2006-03-14
+------------------------------
+#49814 by merlinofchaos: HTML tags eaten.
+by merlinofchaos: Fix for comment pager collision.
+by merlinofchaos: Fix for comment pager collision (part 2)
+
+
+Paging 4.7-1.x, 2006-03-14
+------------------------------
+#51217 by merlinofchaos: comment pager problem.
+#49814 by merlinofchaos: HTML tags being eaten.
+
+
+Paging 4.7-1.x, 2006-02-19
+------------------------------
+#47324 by anders: Fix for filter format
+
+
+Paging 4.6-1.x, 2006-01-22
+------------------------------
+by merlinofchaos: Backported from 4.7
+
+
+Paging 4.7-1.x, 2006-01-19
+------------------------------
+#45153 by merlinofchaos: print.module problem
+
+
+Paging 4.7-1.x, 2006-01-10
+------------------------------
+by merlinofchaos: Replaced <!-- page --> with <!--pagebreak--> for TinyMCE compatibility
+
+
+Paging 4.7-1.x, 2006-01-04
+------------------------------
+by merlinofchaos: removed end ?> which is not necessary
+
+
+Paging 4.7-1.x, 2005-12-14
+------------------------------
+by merlinofchaos: Removed extra CR at end of module.
+
+
+Paging 4.7-1.x, 2005-12-13
+------------------------------
+by merlinofchaos: Rewrote paging module for 4.7. Now about 1/3 as long and uses Drupal's
+pager.
+
+
+Paging 4.6-1.x, 2005-12-01
+------------------------------
+by merlinofchaos: Committed Marco Scutari's paging module for general use.

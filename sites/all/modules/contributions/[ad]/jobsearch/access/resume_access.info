@@ -1,0 +1,12 @@
+name = Resume access
+description = Allows setting of permissions on resumes by role.
+dependencies[] = resume
+core=6.x
+
+
+; Information added by drupal.org packaging script on 2009-01-03
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "jobsearch"
+datestamp = "1230941311"
+

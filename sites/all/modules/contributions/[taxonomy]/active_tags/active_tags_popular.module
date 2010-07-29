@@ -1,0 +1,76 @@
+<?php
+// $Id: active_tags_popular.module,v 1.1.2.2 2008/09/18 08:13:04 darrenmuk Exp $
+
+/**
+ * @file
+ * Adds popular terms to Active Tags widget
+ */
+
+function active_tags_popular_init() {
+  if (arg(2) == 'edit' || arg(1) == 'add') {
+    $settings = array();
+    foreach (taxonomy_get_vocabularies() as $id => $values) {
+      if (variable_get('active_tags_popular_'. $id, 0) == 1) {
+        $settings[] = "#edit-taxonomy-tags-$id-wrapper";
+      } 
+    }
+    $callback = base_path() .'taxonomy/active-tags-popular';
+    drupal_add_js(array('active_tags_popular' => $settings, 'active_tags_popular_callback' => $callback), 'setting');
+    drupal_add_js(drupal_get_path('module', 'active_tags_popular') .'/active_tags_popular.js', 'module');
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function active_tags_popular_menu() {
+  $items['taxonomy/active-tags-popular'] = array(
+    'title' => 'Active Tags Popular',
+    'page callback' => 'active_tags_popular_callback',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+function active_tags_popular_callback($vid) {
+  $matches = array();
+  $result = db_query_range(db_rewrite_sql("SELECT t.tid, t.name FROM {term_data} t WHERE t.vid = %d GROUP BY t.name ORDER BY COUNT(t.name) DESC", 't', 'tid'), $vid, 0, variable_get('active_tags_popular_no_'. $vid, 10));
+  while ($tag = db_fetch_object($result)) {
+    $n = $tag->name;
+    // Commas and quotes in terms are special cases, so encode 'em.
+    if (strpos($tag->name, ',') !== FALSE || strpos($tag->name, '"') !== FALSE) {
+      $n = '"'. str_replace('"', '""', $tag->name) .'"';
+    }
+    $matches[$prefix . $n] = check_plain($tag->name);
+  }
+
+  drupal_json($matches);
+}
+
+function active_tags_popular_form_alter(&$form, $form_state, $form_id) { 
+  if ($form_id == 'taxonomy_form_vocabulary') {
+    $form['settings']['active_tags_popular'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Active Tags Helper - Popular'),
+      '#weight' => 11,
+      '#default_value' => (isset($form['vid'])) ? variable_get('active_tags_popular_'. $form['vid']['#value'], 0) : 0,
+      '#description' => t('Adds additional helpers to the active tags widget to assist in adding popular tags to posts'), 
+    );
+    $form['settings']['active_tags_popular_no'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Number of popular tags to show'),
+      '#weight' => 12,
+      '#size' => 20, 
+      '#default_value' => (isset($form['vid'])) ? variable_get('active_tags_popular_no_'. $form['vid']['#value'], 10) : 10,
+    );
+    $form['#submit'][] = 'active_tags_popular_form_vocabulary_submit';
+  } 
+}
+
+function active_tags_popular_form_vocabulary_submit($form, &$form_state) {
+  variable_set('active_tags_popular_'. $form_state['values']['vid'], $form_state['values']['active_tags_popular']);
+  variable_set('active_tags_popular_no_'. $form_state['values']['vid'], $form_state['values']['active_tags_popular_no']);
+  return TRUE;
+}

@@ -1,0 +1,116 @@
+<?php
+
+function ipaper_schema(){
+
+  $schema['ipaper'] = array(
+    'description' => t('The base table for nodes.'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('Node identifier.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'fid' => array(
+        'description' => t('File ID for uploaded docid.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'default' => 0),
+      'doc_id' => array(
+        'description' => t('Document ID returned by scribd.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'default' => 0),
+      'secret_password' => array(
+        'description' => t('Secret password for display of ipaper.'),
+        'type' => 'varchar',
+        'length' => 40,
+        'not null' => FALSE,
+        'default' => ''),
+      'access_key' => array(
+        'description' => t('Access key to embed ipaper.'),
+        'type' => 'varchar',
+        'length' => 40,
+        'not null' => FALSE,
+        'default' => ''),
+      'private' => array(
+        'description' => t('private or public hosting on scribd.'),
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => FALSE,
+        'default' => ''),
+      'license' => array(
+        'description' => t('Copyright setting.'),
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => FALSE,
+        'default' => ''), 
+      'full_text' => array(
+        'description' => t('Text of document for search index.'),
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => FALSE,
+        'default' => ''), 
+      'thumbnail' => array(
+        'description' => t('Path to thumbnail.'),
+        'type' => 'varchar',
+        'length' => 150,
+        'not null' => FALSE,
+        'default' => ''), 
+
+     ),
+    'indexes' => array(
+      ),
+    'unique keys' => array( ),
+    'primary key' => array('nid'),
+    );
+
+  return $schema;
+
+}
+
+/**
+ * Implementation of hook_install().
+ *
+ */
+function ipaper_install() {
+
+  drupal_install_schema('ipaper');
+
+  $weight = (int) db_result(db_query("SELECT weight FROM {system} WHERE name = 'upload'"));
+  db_query("UPDATE {system} SET weight = %d WHERE name = 'ipaper'", $weight + 1);
+
+}
+
+/**
+ * Implementation of hook_uninstall().
+ *
+ */
+function ipaper_uninstall() {
+
+  drupal_uninstall_schema('ipaper');
+
+  // Delete the variables.
+  variable_del('scribd_api_key');
+  variable_del('scribd_secret_key');
+  variable_del('ipaper_choose_private');
+  variable_del('ipaper_default_private');
+  variable_del('ipaper_choose_license');
+  variable_del('ipaper_default_license');
+  variable_del('ipaper_show_scribd_link');
+  variable_del('ipaper_log_requests');
+  variable_del('ipaper_quickswitch_code');
+  variable_del('ipaper_show_quickswitch');
+  variable_del('ipaper_show_full_text');
+  variable_del('ipaper_download_format');
+  variable_del('ipaper_extra_parameters');
+  variable_del('ipaper_thumbnail_size');
+
+  // Remove the node type.
+  node_type_delete('ipaper');
+  db_query("DELETE FROM {node} WHERE type='ipaper'");
+
+  drupal_set_message(t('The iPaper module was successfully uninstalled'));
+
+} 

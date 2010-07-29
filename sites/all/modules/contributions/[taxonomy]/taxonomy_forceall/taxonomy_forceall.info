@@ -1,0 +1,11 @@
+; $Id: taxonomy_forceall.info,v 1.1 2007/03/02 21:32:38 aymerick Exp $
+name = "Taxonomy Force all"
+description = "Force the 'all' parameter to taxonomy URLs."
+dependencies[] = taxonomy
+
+; Information added by drupal.org packaging script on 2007-04-13
+version = "5.x-1.1"
+project = "taxonomy_forceall"
+
+
+core = 6.x

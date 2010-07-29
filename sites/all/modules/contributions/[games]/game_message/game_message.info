@@ -1,0 +1,13 @@
+; $Id: game_message.info,v 1.1 2009/01/15 03:47:18 aaron Exp $
+name = Game Utilities: Message
+description = Provides an API for setting, storing, and displaying game messages.
+core = 6.x
+package = Game Utilities
+
+
+; Information added by drupal.org packaging script on 2009-01-18
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "game_message"
+datestamp = "1232237242"
+

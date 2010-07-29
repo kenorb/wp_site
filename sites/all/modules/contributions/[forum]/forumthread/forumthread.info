@@ -1,0 +1,12 @@
+; $Id: forumthread.info,v 1.2.2.2 2008/05/25 20:43:38 brauerranch Exp $
+name = Forum Thread
+description = Provides a simple threaded view of forums.
+dependencies[] = forum
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-08-05
+version = "6.x-1.1"
+core = "6.x"
+project = "forumthread"
+datestamp = "1217962227"
+

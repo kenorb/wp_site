@@ -1,0 +1,183 @@
+<?php
+// $Id: gallery_profile.module,v 1.2.2.3 2008/06/09 22:18:54 profix898 Exp $
+
+/**
+ * gallery_profile.module
+ */
+
+/**
+ * Implementation of hook_perm().
+ */
+function gallery_profile_perm() {
+  return array('access gallery profile');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function gallery_profile_menu() {
+  $items = array();
+  if (variable_get('gallery_valid', 0)) {
+    $items['admin/user/gallery/settings/general'] = array(
+      'title' => 'General',
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => 0
+    );
+    $items['admin/user/gallery/settings/profile'] = array(
+      'title' => 'User Profile',
+      'access callback' => 'gallery_admin_access',
+      'access arguments' => array(array('administer users', 'administer gallery settings')),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('_gallery_profile_settings'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 1
+    );
+  }
+  
+  return $items;
+}
+
+/**
+ * Implementation of hook_profile_alter().
+ */
+function gallery_profile_profile_alter(&$account) {
+  if (isset($account->content['gallery2']) && user_access('access gallery profile')) {
+    $profile = &$account->content['gallery2'];
+    // Set custom title
+    $profile['#title'] = variable_get('gallery_user_profile_title', 'Gallery2');
+    // Remove sync status message
+    if (variable_get('gallery_user_profile_hide_sync', 0)) {
+      unset($profile['user_sync']);
+    }
+    // Useralbum link/gallery
+    $profile_type = variable_get('gallery_user_profile_gallery', array('link'));
+    if (in_array('gallery', $profile_type) && gallery_user_useralbum($account->uid, FALSE)) {
+      $profile['useralbum_gallery'] = array(
+        '#type' => 'user_profile_item',
+        '#title' => in_array('link', $profile_type) ?
+          $profile['useralbum_link']['#value'] : t('Album: %username', array('%username' => $account->name)),
+        '#value' => _gallery_profile_useralbum($account->uid),
+        '#attributes' => array('class' => 'gallery_profile_useralbum')
+      );
+      unset($profile['useralbum_link']);
+    }
+    else if (!in_array('link', $profile_type)) {
+      unset($profile['useralbum_link']);
+    }
+    // Hide section (if no items are available)
+    if (count($profile) < 3) {
+      unset($fields['gallery2']);
+    }
+  }
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function gallery_profile_form_alter(&$form, $form_state, $form_id) {
+  if ($form_id == '_gallery_user_settings') {
+    unset($form['user']['gallery_user_profile_hide']);
+    $form['user']['sync']['#collapsible'] = FALSE;
+  }
+}
+
+/**
+ * Function _gallery_profile_settings().
+ */
+function _gallery_profile_settings() {
+  require_once(drupal_get_path('module', 'gallery') .'/gallery_block.inc');
+  require_once(drupal_get_path('module', 'gallery') .'/gallery_block_admin.inc');
+  
+  $form['profile'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('User Profile'),
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE
+  );
+  
+  $form['profile']['gallery_user_profile_hide'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Hide Gallery2 section in profiles'),
+    '#default_value' => variable_get('gallery_user_profile_hide', 0),
+    '#description' => t('Hide the Gallery2 section (i.e. Gallery2-Drupal Sync Status) on the user profile pages.'),
+  );
+  
+  $form['profile']['gallery_user_profile_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title of Gallery2 profile section'),
+    '#default_value' => variable_get('gallery_user_profile_title', 'Gallery2'),
+    '#size' => 40,
+    '#maxlength' => 255,
+    '#description' => t('Title of the Gallery2 section on profile pages.')
+  );
+  
+  $form['profile']['gallery_user_profile_hide_sync'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Hide sync status message'),
+    '#default_value' => variable_get('gallery_user_profile_hide_sync', 0),
+    '#description' => t('Hide \'Gallery2-Drupal Sync Status\' message in the profile.'),
+  );
+  
+  $profile_type = variable_get('gallery_user_profile_gallery', array('link'));
+  $form['profile']['gallery_user_profile_gallery'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Profile gallery mode'),
+    '#default_value' => $profile_type,
+    '#options' => array(
+      'link' => t('Show link to useralbum'),
+      'gallery' => t('Show (useralbum) gallery/images')
+    ),
+    '#description' => t('By default a link to the useralbum is shown. But you may also insert a gallery of
+                         random/recent images from the useralbum into the user profile.'),
+  );
+  
+  // Useralbum settings
+  if (in_array('gallery', $profile_type)) {
+    $form['profile']['useralbum'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Useralbum settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE
+    );
+    $element = 'gallery_user_profile_useralbum';
+    $form['profile']['useralbum'] += _gallery_block_admin_imageblock($element, t('profile useralbum'));
+    $form['#submit'][] = '_gallery_block_admin_imageblock_submit';
+  }
+  
+  $form = system_settings_form($form);
+  return $form;
+}
+
+/**
+ * Function _gallery_profile_useralbum().
+ */
+function _gallery_profile_useralbum($uid) {
+  $num_cols = variable_get('gallery_user_profile_useralbum_num_cols', 2);
+  $num_rows = variable_get('gallery_user_profile_useralbum_num_rows', 2);
+  $num_images = $num_cols * $num_rows;
+  
+  $param_blocks_array = array_filter(variable_get('gallery_user_profile_useralbum_block_block', array('randomImage')));
+  // Ensure $param_blocks_array contains $num_images elements (auto-append if necessary)
+  $count = count($param_blocks_array);
+  if (($num = $num_images - $count) > 0) {
+    $param_blocks_array += array_fill($count, $num, end($param_blocks_array));
+  }
+  $params['blocks'] = implode('|', $param_blocks_array);
+  $item_id = trim(variable_get('gallery_user_profile_useralbum_item_id', ''));
+  $params['itemId'] = empty($item_id) ? ('user:'. $uid) : $item_id;
+  $param_show_array = variable_get('gallery_user_profile_useralbum_block_show', array());
+  $params['show'] = empty($param_show_array) ? 'none' : implode('|', $param_show_array);
+  if (variable_get('gallery_user_profile_useralbum_size_method', GALLERY_GRID_SIZE_METHOD_DEFAULT) == 'maxsize') {
+    $params['maxSize'] = variable_get('gallery_user_profile_useralbum_size', GALLERY_GRID_SIZE_DEFAULT);
+  }
+  else {
+    $params['exactSize'] = variable_get('gallery_user_profile_useralbum_size', GALLERY_GRID_SIZE_DEFAULT);
+  }
+  $params['albumFrame'] =  variable_get('gallery_user_profile_useralbum_album_frame', 'none');
+  $params['itemFrame'] =  variable_get('gallery_user_profile_useralbum_item_frame', 'none');
+  $params['linkTarget'] =  variable_get('gallery_user_profile_useralbum_link_target', '');
+  $params['link'] = variable_get('gallery_user_profile_useralbum_link', '');
+  
+  $block = gallery_get_block($params, 'ImageBlock', array('num_cols' => $num_cols));
+  return isset($block['content']) ? $block['content'] : '';
+}

@@ -1,0 +1,170 @@
+# $Id: xmlsitemap_node.fr.po,v 1.1.2.3 2009/06/16 16:16:49 hass Exp $
+#
+# French translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  xmlsitemap.module,v 1.1.2.56 2009/03/18 21:22:29 kiam
+#  xmlsitemap_node.module,v 1.19.2.81 2009/03/23 14:00:46 kiam
+#  xmlsitemap_term.module,v 1.11.2.43 2009/03/19 13:19:50 kiam
+#  xmlsitemap_engines.module,v 1.5.2.19 2009/02/15 00:36:18 kiam
+#  xmlsitemap.install,v 1.1.2.30 2009/03/14 18:52:18 kiam
+#  xmlsitemap.info,v 1.1.2.2 2009/03/08 23:47:46 kiam
+#  xmlsitemap_engines.info,v 1.2.2.1 2009/03/08 23:47:46 kiam
+#  xmlsitemap_file.info,v 1.1.4.3 2008/11/28 19:11:58 kiam
+#  xmlsitemap_helper.info,v 1.1.2.1 2009/03/08 23:47:46 kiam
+#  xmlsitemap_menu.install,v 1.1.4.26 2009/03/11 16:01:08 kiam
+#  xmlsitemap_menu.info,v 1.1.4.3 2009/03/08 23:47:47 kiam
+#  xmlsitemap_node.info,v 1.2.2.1 2009/03/08 23:47:48 kiam
+#  xmlsitemap_term.info,v 1.2.2.1 2009/02/19 16:15:46 kiam
+#  xmlsitemap_user.info,v 1.2.2.1 2009/03/08 23:47:48 kiam
+#  xmlsitemap_file.module,v 1.1.4.35 2009/03/19 13:19:56 kiam
+#  xmlsitemap_helper.module,v 1.1.2.4 2009/03/18 21:04:15 kiam
+#  xmlsitemap_helper.install.inc,v 1.1.2.1 2009/03/08 23:47:47 kiam
+#  xmlsitemap_user.module,v 1.12.2.58 2009/03/19 13:19:42 kiam
+#  xmlsitemap_menu.module,v 1.1.4.29 2009/03/23 13:51:26 kiam
+#  xmlsitemap_node.install,v 1.9.2.46 2009/03/11 16:01:03 kiam
+#  xmlsitemap_user.install,v 1.6.2.43 2009/03/11 16:00:59 kiam
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: French Translation for xmlsitemap_node drupal6 module\n"
+"POT-Creation-Date: 2009-04-01 11:08+0200\n"
+"PO-Revision-Date: 2009-04-01 11:10+0100\n"
+"Last-Translator: Sylvain Moreau <sylvain.moreau@ows.fr>\n"
+"Language-Team: Sylvain Moreau, OWS <sylvain.moreau@ows.fr>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+"X-Poedit-Language: French\n"
+"X-Poedit-Country: FRANCE\n"
+
+#: xmlsitemap_node.module:68;98;119;249
+msgid "XML site map"
+msgstr "Plan du site XML"
+
+#: xmlsitemap_node.module:74;256
+msgid "User posts threshold"
+msgstr "Seuil de publications utilisateur"
+
+#: xmlsitemap_node.module:75;257
+msgid "The number of posts a user must author before his posts are added to the site map."
+msgstr "Le nombre de publications qu'un utilisateur doit créer avant que ses publications ne soient ajoutées au pln du site."
+
+#: xmlsitemap_node.module:75
+msgid "This is the default value used for the users for which the post threshold has not been set."
+msgstr "Ceci est la valeur par défaut pour les utilisateurs pour lesquels le seuil de publications n'a pas été défini."
+
+#: xmlsitemap_node.module:78;260
+msgid "1"
+msgstr "1"
+
+#: xmlsitemap_node.module:79;261
+msgid "5"
+msgstr "5"
+
+#: xmlsitemap_node.module:80;262
+msgid "10"
+msgstr "10"
+
+#: xmlsitemap_node.module:81;263
+msgid "20"
+msgstr "20"
+
+#: xmlsitemap_node.module:82;264
+msgid "50"
+msgstr "50"
+
+#: xmlsitemap_node.module:83;265
+msgid "100"
+msgstr "100"
+
+#: xmlsitemap_node.module:84;266
+msgid "200"
+msgstr "200"
+
+#: xmlsitemap_node.module:85;267
+msgid "500"
+msgstr "500"
+
+#: xmlsitemap_node.module:86;268
+msgid "Never add the posts"
+msgstr "Ne jamais ajouter les contenus"
+
+#: xmlsitemap_node.module:105
+msgid "Priority adjustment"
+msgstr "Ajustement de priorité"
+
+#: xmlsitemap_node.module:106
+msgid "This number will be added to the priority of this content type."
+msgstr "Ce nombre sera ajouté à la priorité de ce type de contenu."
+
+#: xmlsitemap_node.module:129
+msgid "Priority"
+msgstr "Priorité"
+
+#: xmlsitemap_node.module:130
+msgid "The default priority is %priority."
+msgstr "La priorité par défaut est %priority."
+
+#: xmlsitemap_node.module:150
+msgid "Add the selected posts to the XML site map"
+msgstr "Ajoute les contenus sélectionnés au plan du site XML"
+
+#: xmlsitemap_node.module:155
+msgid "Change the XML site map priority of the selected posts to default"
+msgstr "Modifier à la valeur par défaut la priorité dans le plan du site XML des publications selectionnées"
+
+#: xmlsitemap_node.module:160
+msgid "Remove the selected posts from the XML site map"
+msgstr "Supprime les publications sélectionnées du plan du site XML"
+
+#: xmlsitemap_node.module:292
+#: xmlsitemap_node.info:0
+msgid "XML Sitemap: Node"
+msgstr "XML Sitemap : Node"
+
+#: xmlsitemap_node.module:293
+msgid "<em>XML Sitemap: Node</em> adds nodes (content) to the site map. The default priority of a node is determined by a combination of its <a href=\"@content\">content type</a> priority, whether it appears on the front page of your site, and the number of comments it has received. You can override the default priority for individual nodes when you add or edit a node."
+msgstr "<em>XML Sitemap : Node</em> ajoute des noeuds (contenu) au plan du site.  La priorité par défaut d'un noeud est déterminée en fonction d'une combinaison de la priorité de son <a href=\"@content\">type de contenu</a>, le fait qu'il apparaisse sur la page d'accueil de votre site, et du nombre de commentaires qu'il a reçu. Vous pouvez remplacer la priorité par défaut pour chaue noeud, lors de son ajout ou de son édition."
+
+#: xmlsitemap_node.module:350
+msgid "Promotion adjustment"
+msgstr "Ajustement de promotion"
+
+#: xmlsitemap_node.module:351
+msgid "This number will be added to the priority of each post that is promoted to the front page. This setting doesn't apply for the nodes for which the priority is overriden."
+msgstr "Ce nombre sera ajouté à la priorité de chaque contenu promu en page d'accueil. Ce paramètre ne s'applique pas aux noeuds dont la priorité est remplacée."
+
+#: xmlsitemap_node.module:357
+msgid "Comment ratio weight - nodes"
+msgstr "Poids de ratio des commentaires - noeuds"
+
+#: xmlsitemap_node.module:358
+msgid "This number will be added to the priority of the post with the highest number of comments; for the other posts, the number is calculated proportionally to the number of comments. This doesn't apply if the maximum number of comments is one, nor for the nodes for which the priority is overriden."
+msgstr "Ce nombre sera ajouté à la priorité du contenu avec le plus grand nombre de commentaires; pour les autres contenus, le nombre est calculé proportionnellement au nombre de commentaires. Ce paramètre ne s'applique pas si le nombre maximal de commentaites est un, ni aux noeuds dont la priorité est remplacée."
+
+#: xmlsitemap_node.module:389
+msgid "Processing"
+msgstr "Exécution"
+
+#: xmlsitemap_node.module:391
+msgid "The update has encountered an error."
+msgstr "La mise à jour a échoué."
+
+#: xmlsitemap_node.module:0
+msgid "xmlsitemap_node"
+msgstr "xmlsitemap_node"
+
+#: xmlsitemap_node.install:470
+msgid "Updating %title"
+msgstr "Mise à jour de %title"
+
+#: xmlsitemap_node.info:0
+msgid "Adds nodes to the site map."
+msgstr "Ajoute les noeuds au plan du site."
+
+#: xmlsitemap_node.info:0
+msgid "XML Sitemap"
+msgstr "XML Sitemap"
+

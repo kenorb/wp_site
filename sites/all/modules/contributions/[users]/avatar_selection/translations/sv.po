@@ -1,0 +1,233 @@
+# $Id: sv.po,v 1.1.2.1 2008/04/06 22:55:28 snpower Exp $
+#
+# Swedish translation of Drupal (general)
+# Copyright 2007 Maria Tingvall <drupal@9manader.nu>
+# Generated from files:
+#  avatar_selection.module,v 1.1.2.20.2.5 2007/12/20 17:14:11 snpower
+#  avatar_selection.install,v 1.1.2.8.2.2 2007/12/19 12:33:22 snpower
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 5.x-2.3\n"
+"POT-Creation-Date: 2008-03-14 22:03+0100\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: Maria Tingvall <drupal@9manader.nu>\n"
+"Language-Team: Swedish <drupal@9manader.nu>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: avatar_selection.module:15;18
+msgid "Allows the user to pick an avatar from a list."
+msgstr "Tillåter användaren att välja en avatar från en lista."
+
+#: avatar_selection.module:20
+msgid "Upload images to display as a user avatar.  These images can be anything you like, but it is recommended that you maintain a uniform icon size for all of your avatars.  Maximum dimensions are 85x85 and the maximum size is 30 kB"
+msgstr "För över de bilder du vill använda som avatarer. Dessa bilder kan visa vad du vill, men det är att föredra att du behåller en enhetlig ikonstorlek för alla dina avatarer. Maxdimensioner är 85x85 och maxstorlek är 30 kB."
+
+#: avatar_selection.module:55 avatar_selection.install:70
+msgid "Avatar Selection"
+msgstr "Avatar Selection"
+
+#: avatar_selection.module:58
+msgid "Allows the user to upload and delete avatars."
+msgstr "Tillåter användaren att föra över och radera avatarer."
+
+#: avatar_selection.module:62
+msgid "Configure"
+msgstr "Inställningar"
+
+#: avatar_selection.module:63
+msgid "Allows the user to configure avatar settings."
+msgstr "Tillåter användaren att konfigurera inställningar för avatarer."
+
+#: avatar_selection.module:72;408;554;618
+msgid "Upload"
+msgstr "För över"
+
+#: avatar_selection.module:73
+msgid "Allows the user to upload avatars."
+msgstr "Tillåter användaren att föra över avatarer."
+
+#: avatar_selection.module:82
+msgid "Manage avatars"
+msgstr "Administrera avatarer"
+
+#: avatar_selection.module:83
+msgid "Allows the user to modify or delete an avatar from a list."
+msgstr "Tillåter användaren att ändra eller radera en avatar från en lista."
+
+#: avatar_selection.module:133;174
+msgid "Select an avatar"
+msgstr "Välj en avatar"
+
+#: avatar_selection.module:133
+msgid "Or simply select an icon"
+msgstr "eller välj en befintlig ikon."
+
+#: avatar_selection.module:169
+msgid "Picture"
+msgstr "Bild"
+
+#: avatar_selection.module:312
+msgid "Add another"
+msgstr "Lägg till fler"
+
+#: avatar_selection.module:326;378;420
+msgid "User Pictures option is disabled.  You will need to enable this option before you can use the Avatar Selection module.  You may configure this setting on the <a href=\"@url\">User settings</a> page."
+msgstr "Valet Användarbild är avstängt. Du måste aktivera detta val innan du kan använda modulen Avatar Selection. Du kan konfigurera inställningen på sidan för <a href=\"@url\">Användarinställningar.</a>"
+
+#: avatar_selection.module:331
+msgid "How many avatars per page"
+msgstr "Hur många avatarer per sida"
+
+#: avatar_selection.module:332
+msgid "The number of avatars to show per page."
+msgstr "Antal avatarer som visas på varje sida."
+
+#: avatar_selection.module:338
+msgid "Disable users uploading pictures to profile"
+msgstr "Stäng av möjligheten för användare att föra över bilder till profilen."
+
+#: avatar_selection.module:339
+msgid "Allow users to pick their avatar from the selection but prevent them from uploading new avatars when editing their account."
+msgstr "Tillåt användare att välja avatar från listan men hindra dem från att föra över egna bilder när de redigerar sitt konto."
+
+#: avatar_selection.module:343
+msgid "Force users to select an avatar image on user registration."
+msgstr "Tvinga användare att välja avatar vid medlemsregistrering."
+
+#: avatar_selection.module:344
+msgid "This only comes into effect on the user registration screen."
+msgstr "Detta har bara effekt på sidan för användarregistrering."
+
+#: avatar_selection.module:349
+msgid "Force users to select an avatar image when editing their account"
+msgstr "Tvinga användare att välja en avatar när de redigerar sitt konto."
+
+#: avatar_selection.module:350
+msgid "This only comes into effect when the user is editing their account details and image uploads are disabled."
+msgstr "Detta har bara effekt när användaren redigerar sitt konto och det inte är tillåtet att föra över egna bilder."
+
+#: avatar_selection.module:354
+msgid "Enable random default avatar image."
+msgstr "Aktivera slumpvis vald avatarbild."
+
+#: avatar_selection.module:355
+msgid "Automatically set a random avatar image to be used when the user doesn't set one for their account."
+msgstr "Väljer automatiskt slumpmässigt en avatar när användaren inte aktivt väljer bild till sitt konto."
+
+#: avatar_selection.module:359
+msgid "Enable distinctive avatars."
+msgstr "Aktivera distinkta avatarer"
+
+#: avatar_selection.module:360
+msgid "Only allow users to pick an avatar that isn't already in use by another user.  If there are no available avatars left, the default avatar image will be used."
+msgstr "Användare får bara välja en bild som inte redan används av någon annan. Om det inte finns några lediga avatarer kvar kommer standardbilden att väljas."
+
+#: avatar_selection.module:367;511;536;602;651
+msgid "Update"
+msgstr "Uppdatera"
+
+#: avatar_selection.module:384
+msgid "Upload image"
+msgstr "För över bild"
+
+#: avatar_selection.module:386
+msgid "A new avatar image.  Maximum dimensions are %dimensions and the maximum size is %size kB.  Images must have one of the following extensions (case sensitive): png, jpg, jpeg, gif, PNG, JPG, JPEG, GIF."
+msgstr "En ny avatarbild. Maxdimensioner är %dimensions och maxstorlek är %size kB. bilderna måste ha något av följande filnamnstillägg/extensions: png, jpg, jpeg, gif, PNG, JPG, JPEG, GIF."
+
+#: avatar_selection.module:390;489
+msgid "Permissions"
+msgstr "Tillgänglighet"
+
+#: avatar_selection.module:394;494
+msgid "User Roles"
+msgstr "Användarroller"
+
+#: avatar_selection.module:396;497
+msgid "Only the checked roles will be able to see this avatar icon; if no roles are checked, access will not be restricted."
+msgstr "Bara de valda användarrollerna kommer att kunna se denna avatarbild. Om inga roller är valda finns det inga restriktioner."
+
+#: avatar_selection.module:400;502
+msgid "Organic Groups"
+msgstr "Organic Groups"
+
+#: avatar_selection.module:402;505
+msgid "Only users in the checked organic groups will be able to see this avatar icon; if no groups are checked, access will not be restricted."
+msgstr "Bara användare i valda OG kommer att kunna se denna avatarbild. Om inga roller är valda finns det inga restriktioner."
+
+#: avatar_selection.module:427
+msgid "There are no images configured."
+msgstr "Inga bilder är konfigurerade"
+
+#: avatar_selection.module:450
+msgid "Select an avatar to edit"
+msgstr "Välj en bild att redigera"
+
+#: avatar_selection.module:458
+msgid "Edit"
+msgstr "Redigera"
+
+#: avatar_selection.module:516;569;660
+msgid "Delete"
+msgstr "Radera"
+
+#: avatar_selection.module:538
+msgid "Must be a number."
+msgstr "Måste vara en siffra."
+
+#: avatar_selection.module:571
+msgid "Please select images to delete."
+msgstr "Välj bilder att radera."
+
+#: avatar_selection.module:584
+msgid "The uploaded file was not an image."
+msgstr "Den överförda filen är inte en bild."
+
+#: avatar_selection.module:590
+msgid "The uploaded image is too large; the maximum file size is %size kB."
+msgstr "Den överförda bilden är för stor. Maxstorlek är %size kB."
+
+#: avatar_selection.module:593
+msgid "The uploaded image is too large; the maximum dimensions are %dimensions pixels."
+msgstr "Den överförda bilden är för stor. Maxdimensioner är %dimensions pixel."
+
+#: avatar_selection.module:610
+msgid "Configuration has been updated."
+msgstr "Inställningarna har uppdaterats."
+
+#: avatar_selection.module:633
+msgid "New image saved."
+msgstr "Ny bild sparad."
+
+#: avatar_selection.module:643
+msgid "Directory not writable: !dir"
+msgstr "Katalogen är inte skrivbar: !dir"
+
+#: avatar_selection.module:657
+msgid "Image updated."
+msgstr "Bilden uppdaterad."
+
+#: avatar_selection.module:671
+msgid "Image deleted."
+msgstr "Bilden raderad."
+
+#: avatar_selection.module:30
+msgid "administer avatar selection"
+msgstr "administrera avatar-galleri"
+
+#: avatar_selection.module:30
+msgid "access avatars"
+msgstr "åtkomst till avatarer"
+
+#: avatar_selection.module:0
+msgid "avatar_selection"
+msgstr "avatar_selection"
+
+#: avatar_selection.install:9
+msgid "User Pictures option is disabled.  You will need to enable this option before you can use the Avatar Selection module.  You may configure this setting at the <a href=\"@url\">User settings</a> page."
+msgstr "Valet Användarbilder är avstängt. Du måste aktivera detta alternativ innan du kan använda modulen Avatar Selection. Du kan konfigurera denna inställning genom att gå till <a href=\"@url\">Användarinställningar</a>."
+

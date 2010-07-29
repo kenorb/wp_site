@@ -1,0 +1,11 @@
+; $Id: job.info,v 1.3 2009/01/02 02:49:21 kbahey Exp $
+name = Job
+description = Allows recruiters to post jobs.
+core=6.x
+
+; Information added by drupal.org packaging script on 2009-01-03
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "jobsearch"
+datestamp = "1230941311"
+

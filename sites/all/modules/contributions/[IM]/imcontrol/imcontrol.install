@@ -1,0 +1,68 @@
+<?php
+// $Id$
+/**
+ * Install the imcontrol module with a new table
+ * @file
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function imcontrol_install() {
+  drupal_install_schema('imcontrol');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function imcontrol_uninstall() {
+  drupal_uninstall_schema('imcontrol');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function imcontrol_schema() {
+  $schema['imcontrol'] = array(
+    'description' => t('Store settings for Windows Live IM Control.'),
+    'fields' => array(
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('The {users}.uid who submitted the application.'),
+      ),
+      'pid' => array(
+        'type' => 'varchar',
+        'length' => 127,
+        'default' => '',
+        'description' => t('Unique presence ID.'),
+      ),
+      'attrib' => array(
+        'type' => 'varchar',
+        'length' => 127,
+        'default' => '',
+        'description' => t('Attributes of IM control.'),
+      ),
+      'extra' => array(
+        'type' => 'varchar',
+        'length' => 127,
+        'default' => '',
+        'description' => t('Settings for additional messengers.'),
+      ),
+      'status' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 1,
+        'size' => 'tiny',
+        'description' => t('Display status of the messenger. (0 = Not Shown, 1 = Shown)'),
+      ),
+    ),
+    'indexes' => array(
+      'pid' => array('pid'),
+    ),
+    'primary key' => array('uid'),
+  );
+  return $schema;
+}

@@ -1,0 +1,62 @@
+<?php
+
+//$Id: search_block.install,v 1.1.4.1.2.1 2008/06/30 17:50:57 deviantintegral Exp $
+
+/**
+ * Implementation of hook_schema
+ */
+function search_block_schema() {
+  $schema['search_block'] = array(
+    'description' => t('The table to track nodes that are excluded from the search index.'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('Node ID'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      'enabled' => array(
+        'type' => 'int',  // There is no BOOL type in $schema; use tinyint instead.
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0),
+      'dirty' => array(
+        'type' => 'int',  // There is no BOOL type in $schema; use tinyint instead.
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0),
+    ),
+    'primary key' => array('nid'),
+  );
+  
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install
+ *
+ */
+function search_block_install() {
+  $created = drupal_install_schema('search_block');
+  if ($created[0]['success']) {
+    drupal_set_message(t('Search Block module installed successfully.'));
+  }
+  else {
+    drupal_set_message(t('Table installation for the Search Block module was unsuccessful. The tables may need to be installed by hand. See the search_block.install file for the database schema. Alternatively, see search_block.install for Drupal 5.x for the complete SQL command for MySQL.'), 'error');
+  }
+}
+
+/**
+ * Implementation of hook_uninstall
+ */
+function search_block_uninstall() {
+  // Remove DB tables.
+  drupal_uninstall_schema('search_block');
+
+  // Delete variables.
+  $types = node_get_types();
+  foreach ($types as $type => $object) {
+    variable_del('search_block_'. $type);
+    variable_del('search_block_previous_.'. $type);
+  }
+}

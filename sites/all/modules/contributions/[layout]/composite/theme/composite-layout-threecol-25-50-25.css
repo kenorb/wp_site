@@ -1,0 +1,38 @@
+/* $Id: composite-layout-threecol-25-50-25.css,v 1.1 2008/10/14 01:03:56 bengtan Exp $ */
+
+.composite-threecol-25-50-25 .composite-row {
+  width: 100%;
+  clear: both;
+}
+
+.composite-threecol-25-50-25 .composite-column {
+  float: left; 
+}
+
+.composite-threecol-25-50-25 .composite-row-top .composite-zone-inner {
+  margin-bottom: 1em;
+}
+
+.composite-threecol-25-50-25 .composite-column-first, .composite-threecol-25-50-25 .composite-column-last {
+  width: 25%; 
+}
+
+.composite-threecol-25-50-25 .composite-column-middle {
+  width: 50%; 
+}
+
+* html .composite-threecol-25-50-25 .composite-column-middle {
+  width: 49.9%; 
+}
+
+.composite-threecol-25-50-25 .composite-column-first .composite-zone-inner {
+  margin: 0 .67em 1em 0;
+}
+
+.composite-threecol-25-50-25 .composite-column-middle .composite-zone-inner {
+  margin: 0 .33em 1em .33em;
+}
+
+.composite-threecol-25-50-25 .composite-column-last .composite-zone-inner {
+  margin: 0 0 1em .67em;
+}

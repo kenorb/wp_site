@@ -1,0 +1,102 @@
+<?php
+// $Id$
+/**
+ * @file
+ * Database Schema for admin_menu.module
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function admin_message_schema() {
+  $schema['admin_message'] = array(
+    'description' => t('TODO'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('TODO'),
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'keep_new' => array(
+        'description' => t('TODO'),
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'php_visibility' => array(
+        'description' => t('TODO'),
+        'type' => 'text',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('nid'),
+  );
+  $schema['admin_message_close'] = array(
+    'description' => t('TODO'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('TODO'),
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'uid' => array(
+        'description' => t('TODO'),
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('nid, uid'),
+  );
+  return $schema;
+}
+
+function admin_message_install() {
+
+  drupal_install_schema('admin_message');
+
+  
+  // Create default content type
+  $type = array(
+    'type' => 'admin_message',
+    'name' => t('Admin message'),
+    'module' => 'node',
+    'description' => t('Use admin messages to display messages, usually status messages or similar to logged in users.'),
+    'body_label' => t('Message'),
+    'custom' => TRUE,
+    'modified' => TRUE,
+    'locked' => FALSE,
+    );
+  $type = (object) _node_type_set_defaults($type);
+  $status = node_type_save($type);
+  // Set to published and sticky as default for content type.
+  variable_set('node_options_'. $type->type , array('status', 'sticky'));
+  // Disable comments for this content type.
+  variable_set('comment_'. $type->type, '0');
+
+  drupal_set_message(t('<em>Admin message</em> was installed. Enable the block "Admin messages" to display messages to users.'));
+
+  if ($status == SAVED_UPDATED) {
+    drupal_set_message(t('The content type %name has been updated.', array('%name' => $type->name)));
+  }
+  elseif ($status == SAVED_NEW) {
+    drupal_set_message(t('The content type %name has been added - use it to create messages.', array('%name' => $type->name)));
+  }  
+
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function admin_message_uninstall() {
+  drupal_uninstall_schema('admin_message');
+
+}

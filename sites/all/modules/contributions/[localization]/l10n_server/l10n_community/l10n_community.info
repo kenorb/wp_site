@@ -1,0 +1,14 @@
+; $Id: l10n_community.info,v 1.1.2.4.2.2 2008/10/23 20:43:36 goba Exp $
+name = "Localization community"
+description = A community interface for string translation
+dependencies[] = locale
+package = "Localization server"
+core = 6.x
+php = 5
+
+; Information added by drupal.org packaging script on 2008-12-31
+version = "6.x-1.0-alpha3"
+core = "6.x"
+project = "l10n_server"
+datestamp = "1230720329"
+

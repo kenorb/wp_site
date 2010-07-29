@@ -1,0 +1,11 @@
+; $Id: autoassignrole.info,v 1.3 2008/02/12 17:27:58 cyberswat Exp $
+name = "Auto Assign Role"
+description = "Designate a role to assign all new users to."
+
+
+; Information added by drupal.org packaging script on 2008-09-03
+version = "6.x-1.0-beta3"
+core = "6.x"
+project = "autoassignrole"
+datestamp = "1220484302"
+

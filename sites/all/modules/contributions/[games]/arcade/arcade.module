@@ -1,0 +1,306 @@
+<?php
+// $Id: arcade.module,v 1.1 2008/08/21 17:36:35 matt2000 Exp $ 
+
+/**
+ * @file Arcade
+ * Identify nodes as games and store Score info
+ * Internal version tracking: 0.5-beta
+ */
+
+
+
+//Many older pnFlashGames ignore the pn_script variable and post to index.php anyway. So we catch that and redirect here:
+if ($_POST['game_protocol'] || $_POST['module']=='pnFlashGames') {
+  include_once(drupal_get_path('module','arcade') ."/gameserver.php");
+  exit;
+}
+
+
+/**
+ * Implementation of hook_perm
+ */
+
+function arcade_perm() {
+  return array('view high scores');
+}
+
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function arcade_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
+  
+  if (!variable_get('is_game_'. $node->type, 0)) return; // we only work on nodes of types that might be games
+  
+  switch ($op) {
+
+    case 'load':
+      // The node is about to be loaded from the database. This hook can be used
+      // to load additional data at this time.
+
+      //get game data
+      $game_data = db_fetch_object(db_query("SELECT game_type, game_path FROM {arcade_games} WHERE nid = %d", $node->nid));
+      if (!empty($game_data)) {
+        $node->is_game = 1;
+        $node->game_type = $game_data->game_type;
+        $node->game_path = $game_data->game_path;
+        
+        if ($node->type == 'flashnode') {
+          $node->flashnode['orig_vars'] = $node->flashnode['flashvars'];
+          global $user;
+          $host = arcade_getDomain();
+          if (!empty($node->flashnode['flashvars'])) { $node->flashnode['flashvars'] .= "&"; }
+          $node->flashnode['flashvars'] .= "pn_gid=". $node->nid ."&pn_uname=". $user->name ."&pn_domain=". $host ."&pn_modvar=game_protocol"; //&pn_script=". base_path() . drupal_get_path('module','arcade') ."/gameserver.php";
+        }
+      }
+      break;
+
+
+    case 'insert':
+      // The node is being created (inserted in the database) or...
+    case 'update':
+      // The node is being updated.
+      
+      if (isset($node->flashnode['orig_vars'])) {
+        $node->flashnode['flashvars'] = $node->flashnode['orig_vars'];
+      }
+      
+      if (isset($node->is_game)) {
+      db_query("DELETE FROM {arcade_games} WHERE nid=%d", $node->nid);
+      }
+      if ($node->is_game > 0) {
+      db_query("INSERT INTO {arcade_games} (nid, game_type, game_path) VALUES (%d, %d, '%s')", $node->nid, $node->game_type, $node->game_path);
+      }
+      break;
+
+
+    case 'presave':
+      // The node passed validation and will soon be saved. Modules may use this
+      // to make changes to the node before it is saved to the database.
+      if ($node->is_game && $node->type == 'flashnode') {        
+        $node->flashnode['base'] = $node->game_path ? $node->game_path : base_path(); 
+      }
+      break;
+
+    case 'delete':
+      // The node is being deleted.
+      db_query("DELETE FROM {arcade_games} WHERE nid=%d", $node->nid);
+      db_query("DELETE FROM {arcade_data} WHERE nid=%d", $node->nid);
+      break;
+  }
+}
+
+/**
+ * Helper function to get domain to send to Flash element
+ */
+function arcade_getDomain() {
+    global $HTTP_SERVER_VARS;
+    if(!empty($HTTP_SERVER_VARS['HTTP_HOST'])){
+        $server = $HTTP_SERVER_VARS['HTTP_HOST'];
+    }else{
+        $server = $_SERVER['HTTP_HOST'];
+    }
+    $url = "http://".$server."/";
+    
+    // get host name from URL
+    preg_match("/^(http:\/\/)?([^\/]+)/i",
+    
+    $url, $matches);
+    $host = $matches[2];
+    
+    $host = str_replace("www.", "", $host);
+    return $host;
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function arcade_form_alter(&$form, $form_state, $form_id) {
+  if ($form_id == 'flashnode_node_form') {
+    $node = $form['#node'];
+    $form['flashnode']['advanced']['#description'] .= t(' IMPORTANT: If you intend to use this node as a pnFlashGame with Arcade module, these fields will be filled in for you. You must leave them blank.');
+    $form['flashnode']['advanced']['flashvars']['#default_value'] = $node->flashnode['orig_vars'];
+  }
+
+  // Content type settings form.
+  if ($form_id == 'node_type_form') {
+
+    $form['arcade'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Arcade settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $form['arcade']['is_game'] = array(
+      '#type' => 'radios',
+      '#title' => t('Game?'),
+      '#default_value' => variable_get('is_game_'. $form['#node_type']->type, 0),
+      '#options' => array(0 => t('No'), 1 => t('Yes')),
+      '#description' => t('Is this node type allowed to be a game?'),
+    );
+  }
+
+  // Node edit form.
+  if (isset($form['type'])) {
+    $type = $form['type']['#value'];
+    // If enabled adjust the form.
+    if ($form_id == $type .'_node_form' && variable_get('is_game_'. $type, 0)) {
+
+      $node = $form['#node'];
+      
+      $form['arcade'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Arcade Settings'),
+        '#collapsible' => TRUE,
+        '#collapsed' => empty($node->is_game),
+      );
+      $form['arcade']['is_game'] = array(
+        '#type' => 'radios',
+        '#title' => t('Game?'),
+        '#default_value' => $node->is_game,
+        '#options' => array(0 => t('No'), 1 => t('Yes')),
+        '#description' => t('Is this node a game? (If you change from YES to NO, path & type will be lost.)'),
+      );
+      $form['arcade']['game_path'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Path'),
+        '#default_value' => $node->game_path,
+        '#description' => t('Path to game files. This is probably not required, for example if this is a Flashnode and your game is provided through a single SWF file identified by Flashnode module.')
+      );
+      $form['arcade']['game_type'] = array(
+        '#type' => 'radios',
+        '#title' => t('Game Type'),
+        '#default_value' => empty($node->game_type) ? 1 : $node->game_type,
+        '#options' => array(1 => t('High Score Wins'), 2 => t('Low Score Wins'), 3 => t('Longest Time Wins'), 4 => t('Shortest Time Wins') ),
+        '#description' => t('How do we identify the Best scores for this game?'),
+      );
+
+    }
+  }
+}
+
+
+/**
+ * Implementation of hook_block().
+ */
+function arcade_block($op = 'list', $delta = 0, $edit = array()) {
+  // The $op parameter determines what piece of information is being requested.
+  switch ($op) {
+    case 'list':
+      // If $op is "list", we just need to return a list of block descriptions.
+      // This is used to provide a list of possible blocks to the administrator,
+      // end users will not see these descriptions.
+      $blocks[0] = array(
+        'info'       => t('Best Scores per Game'),
+        'status'     => TRUE,
+        'region'     => 'left',
+        'visibility' => 2,
+        'pages'      => '<?php $node = arg(0)==\'node\' ? node_load(arg(1)) : FALSE; if ($node->type==\'flashnode\' && user_access(\'view high scores\')) return TRUE; ?>',
+      );
+      // A block can provide default settings. In this case we'll enable the 
+      // block and make it visible only on the 'node/*' pages. 
+      $blocks[1] = array(
+        'info'       => t('My Best Scores'),
+        'status'     => TRUE,
+        'region'     => 'left',
+        'visibility' => 2,
+        'pages'      => '<?php global $user; if ($user->uid && user_access(\'view high scores\')) return TRUE; ?>',
+      );
+      $blocks[2] = array(
+        'info'       => t('Player\'s Best Scores'),
+        'status'     => TRUE,
+        'region'     => 'left',
+        'visibility' => 1,
+        'pages'      => 'user/*',
+      );
+
+
+      return $blocks;
+
+    case 'view': default:
+      // If $op is "view", then we need to generate the block for display
+      // purposes. The $delta parameter tells us which block is being requested.
+      switch ($delta) {
+        case 0:
+          // The subject is displayed at the top of the block. Note that it
+          // should be passed through t() for translation.
+          $node = arg(0)=='node' ? node_load(arg(1)) : FALSE;
+          $block['subject'] = t("Best Scores for {$node->title}");
+          // The content of the block is typically generated by calling a custom
+          // function.
+          $block['content'] = arcade_get_game_scores($node->nid);
+          break;
+        case 1:
+          global $user;
+          $block['subject'] = t('My Best Scores');
+          $block['content'] = arcade_get_player_scores($user->uid);
+          break;
+
+        case 2:
+	  $account = user_load(arg(1));
+          global $user;
+          $block['subject'] = t($account->name .'\'s Best Scores');
+          if ($user->uid != $account->uid) $block['content'] = arcade_get_player_scores(arg(1));
+          break;
+      }
+      return $block;
+  }
+}
+
+/**
+ * Displays High scores for game with game id $nid
+ */
+function arcade_get_game_scores($nid) {
+  //get scores from database
+  $result = db_query_range("SELECT uid, score FROM {arcade_data} WHERE nid=%d AND score IS NOT NULL", $nid, 0, 10);
+  
+  //construct an array of UserName => Score
+  $highscores = array();
+  while ($score = db_fetch_object($result)) {
+    $uname = db_result(db_query("SELECT name FROM {users} WHERE uid=%d", $score->uid));
+    $highscores["<a href='/users/$uname'>$uname</a>"] = $score->score;
+  }
+  
+  //sort the scores, based on the game type 
+  $game_type = db_result(db_query("SELECT game_type FROM {arcade_games} WHERE nid = %d", $nid));
+  if ($game_type==2 || $game_type==4) {
+    asort($highscores, SORT_NUMERIC);
+  } else {
+    arsort($highscores, SORT_NUMERIC);
+  }
+  
+  
+  //render the array as HTML
+  return theme_arcade_list_scores($highscores);
+}
+
+/**
+ * Displays High scores for player with user id $uid
+ */
+function arcade_get_player_scores($uid) {
+  //get scores from database
+  $result = db_query_range("SELECT nid, score FROM {arcade_data} WHERE uid=%d AND score IS NOT NULL ORDER BY score DESC", $uid, 0, 10);
+  
+  //construct an array of GameName => Score
+  $highscores = array();
+  while ($score = db_fetch_object($result)) {
+    $game = node_load($score->nid);
+    $highscores["<a href='/node/{$score->nid}'>{$game->title}</a>"] = $score->score;
+  }
+  
+  //render the array as HTML  
+  return theme_arcade_list_scores($highscores);
+}
+
+/**
+ * Render HTML display of a score list array in the form of Name => Score
+ */
+function theme_arcade_list_scores($scores) {
+  $output = "<ul>";
+  foreach ($scores AS $name => $value) {
+    $output .= "<li> $name - $value</li>";
+  }
+  $output .= "</ul>";
+  
+  return $output;
+}

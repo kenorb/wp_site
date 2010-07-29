@@ -1,0 +1,21 @@
+; $Id: invaders.info,v 1.2 2008/11/28 10:12:06 skinhat Exp $
+
+name = "Invaders"
+description = "Space Invaders game for drupal"
+version = "$Name: DRUPAL-6--1-2 $"
+core = 6.x
+
+; Information added by drupal.org packaging script on 2007-03-04
+version = "6.x-1.0"
+project = "invaders"
+
+
+
+
+; Information added by drupal.org packaging script on 2009-01-25
+version = "6.x-1.2"
+core = "6.x"
+project = "invaders"
+datestamp = "1232845516"
+package = "Games"
+

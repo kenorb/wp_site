@@ -1,0 +1,12 @@
+Installation
+------
+
+1. Extract and copy the contents of smileys package to the Drupal "sites/all/modules" directory.
+
+2. Go to the administration section, into "Adminster > Site building > Modules" and enable the Smileys module.
+
+3. Go to the "Smileys" page in "Administer > Site configuration > Smileys" and add your own smileys either manually or by importing packs(see README.txt). 
+
+4. Go to "Administer > Site configuration > Input formats" and enable Smileys filtering for your preferred Input formats (e.g. Filtered HTML).
+
+5. Go to "Administer > Site configuration > Smileys > Settings(Tab)" and enable Smileys for nodes and comments for particular node types.

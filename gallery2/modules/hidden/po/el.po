@@ -1,0 +1,86 @@
+# $Id: el.po 17594 2008-05-07 17:02:06Z mindless $
+#
+# Gallery - a web based photo album viewer and editor
+# Copyright (C) 2000-2008 Bharat Mediratta
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA  02110-1301, USA.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Gallery: Hidden Items 1.0.9\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2006-03-15 18:22+0100\n"
+"PO-Revision-Date: 2007-03-24 23:07+0200\n"
+"Last-Translator: Anthi Andreou <tp_s@hotmail.com>\n"
+"Language-Team: Greek <gallery-devel@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Greek\n"
+"X-Poedit-Country: GREECE\n"
+
+msgid "Hide Album"
+msgstr "Απόκρυψη Άλμπουμ"
+
+msgid "Hide Photo"
+msgstr "Απόκρυψη Φωτογραφίας"
+
+msgid "Hide Movie"
+msgstr "Απόκρυψη Ταινίας"
+
+#, c-format
+msgid "Hide %s"
+msgstr "Απόκρυψη %s"
+
+msgid "Hidden Items"
+msgstr "Κρυφά Αρχεία"
+
+msgid "Hide items/albums from guests until directly accessed with the right URL"
+msgstr ""
+"Απόκρυψη αρχείων/άλμπουμ από επισκέπτες έως ότου τα επισκεφθούν απευθείας με την σωστή "
+"διεύθυνση(URL)"
+
+msgid "Display"
+msgstr "Προβολή"
+
+msgid "Hide"
+msgstr "Απόκρυψη"
+
+msgid "Update permissions"
+msgstr "Ενημέρωση Δικαιωμάτων"
+
+msgid ""
+"Hidden items are not visible to guest users until the page for the item is accessed directly."
+msgstr ""
+"Τα κρυφά αρχεία δεν είναι ορατά στους επισκέπτες μέχρι η πρόσβαση στην σελίδα του αρχείου να "
+"γίνει απευθείας."
+
+msgid "Contents of hidden albums are restricted until the URL for the album is visited."
+msgstr ""
+"Τα περιεχόμενα ενός κρυφού άλμπουμ είναι απαγορευμένα μέχρι που να γίνει επίσκεψη στην "
+"διεύθυνση(URL) του άλμπουμ "
+
+msgid ""
+"Note that guests need permission to view resizes and/or original items, as visiting the "
+"direct URL grants only simple view permission; access to resizes/originals is still "
+"controlled by item permissions."
+msgstr ""
+"Σημειώστε ότι οι επισκέπτες χρειάζονται άδεια για να δουν φωτογραφίες αρχικού και/ή "
+"αλλαγμένου μεγέθους, αφού κατά την επίσκεψη τους στην απευθείας διεύθυνση έχουν άδεια για "
+"απλή προβολή.  Πρόσβαση στις φωτογραφίες Αρχικού/Αλλαγμένου Μεγέθους ελέγχεται από τα "
+"δικαιώματα αρχείων."
+
+msgid "Hidden"
+msgstr "Κρυφό"

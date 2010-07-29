@@ -1,0 +1,594 @@
+<?php
+// $Id: signature_forum.module,v 1.1.2.11.4.12 2008/11/18 20:53:47 liammcdermott Exp $
+
+/**
+ * @file
+ * Tweaks signatures in ways inspired by other traditional forum software:
+ *
+ * - When a user changes their signature, all their posts will be updated.
+ * - Signatures are automatically added to posts, instead of being inserted
+ *   into the post text.
+ * - The administrator can choose the input filter for signatures, allowing
+ *   BBCode or HTML to be used.
+ * - Signatures are longer than the the Drupal default (to match other forum
+ *   software).
+ * - Conditional signatures, these are hidden (or rel=nofollow'd) if a post is
+ *   under a particular length.
+ * - Show signature only once per conversation (also works with threading).
+ */
+
+/**
+ * Do not display a signature when the content is under a certain length.
+ */
+define('MIN_CONTENT_ACTION_DO_NOT_DISPLAY', 0);
+
+/**
+ * Run the signature through an additional filter if the content is under a certain length.
+ * Good for adding rel=nofollow to all links.
+ */
+define('MIN_CONTENT_ACTION_ADDITIONAL_FILTER', 1);
+
+/**
+ * Show a signature in all user posts.
+ */
+define('SHOW_ONCE_OPTIONS_ALWAYS', 0);
+
+/**
+ * Show a user's signature only once per conversation.
+ */
+define('SHOW_ONCE_OPTIONS_ONCE', 1);
+
+/**
+ * Implementation of hook_help().
+ */
+function signature_forum_help($path, $arg) {
+  switch ($path) {
+    case "admin/modules#description":
+      return t("Tweaks signatures in ways inspired by other traditional forum software. Allows much longer signatures than the Drupal default; also users may be allowed to use different formats like BBCode (with the BBCode module downloadable from drupal.org) or HTML in their signatures.");
+  };
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function signature_forum_perm() {
+  return array('administer Signatures for Forums');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function signature_forum_menu() {
+  $items['admin/settings/signature_forum'] = array(
+    'title' => 'Signatures for Forums',
+    'description' => "Manages users' signatures.",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('signature_forum_admin_settings'),
+    'access arguments' => array('administer Signatures for Forums'),
+  );
+  return $items;
+}
+
+/**
+ * Admin settings form.
+ *
+ * TODO: Move admin form to existing signature form under admin/user/settings.
+ */
+function signature_forum_admin_settings() {
+  $settings = variable_get('signature_forum_settings', signature_forum_defaults());
+
+  // Check to ensure the admin has enabled signatures in admin/user/settings.
+  if (!variable_get('user_signatures', FALSE)) {
+    drupal_set_message(t('Note: signatures are switched off, enable them under <a href="@settings-page">Administer -> User management -> User settings</a>', array('@settings-page' => url('admin/user/settings'))));
+  }
+
+  $form['signature'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Show signatures with nodes and comments for'),
+  );
+  foreach (node_get_types('names') as $type => $name) {
+    $form['signature']['signature_forum_show_for_'. $type] = array(
+      '#type' => 'checkbox',
+      '#title' => $name,
+      '#return_value' => 1,
+      '#default_value' => (isset($settings['signature_forum_show_for_'. $type]) ? $settings['signature_forum_show_for_'. $type] : FALSE),
+    );
+  }
+
+  $form['template'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Template for signatures'),
+    '#default_value' => $settings['signature_forum_template'],
+    '#description' => t("%s will be replaced with the user's signature."),
+  );
+  $form['filter'] = filter_form($settings['signature_forum_format'], NULL, array('filter'));
+
+  $form['content_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Minimum content length'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['content_settings']['min_content_length'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Minimum content length'),
+    '#size' => 3,
+    '#maxlength' => 10,
+    '#default_value' => $settings['signature_forum_min_content_length'],
+    '#description' => t('The minimum number of characters in the content a signature is being attached to. 0 means no limit.'),
+  );
+  $form['content_settings']['min_content_length_action'] = array(
+    '#type' => 'radios',
+    '#title' => t('Minimum content action'),
+    '#default_value' => $settings['signature_forum_min_content_length_action'],
+    '#options' => array(
+      MIN_CONTENT_ACTION_DO_NOT_DISPLAY => t('Do not display signature'),
+      MIN_CONTENT_ACTION_ADDITIONAL_FILTER => t('Run through an additional filter'),
+    ),
+    '#description' => t('What to do if the content is under the minimum length. Set the filter below.'),
+  );
+  $form['content_settings']['min_content_length_filter'] = filter_form($settings['signature_forum_min_content_length_filter'], NULL, array('min_content_length_filter'));
+  $form['content_settings']['min_content_length_filter']['#title'] = t('Minimum content additional filter format (if enabled)');
+  // If admin has opted to run signature through additional filter when content too short,
+  // expand the additional filter selection fieldset.
+  if ($settings['signature_forum_min_content_length_action'] == MIN_CONTENT_ACTION_ADDITIONAL_FILTER) {
+    $form['content_settings']['min_content_length_filter']['#collapsed'] = FALSE;
+  }
+  $roles = user_roles(TRUE);
+  $form['content_settings']['roles'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Exempt roles'),
+    '#default_value' => (isset($settings['signature_forum_roles']) ? $settings['signature_forum_roles'] : array()),
+    '#options' => $roles,
+    '#description' => t('Members of these roles will be exempt from content length settings.')
+  );
+
+  $form['show_once'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Per-conversation signatures'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['show_once']['show_once_options'] = array(
+    '#type' => 'radios',
+    '#title' => t("Show a user's signature"),
+    '#default_value' => $settings['signature_forum_show_once_options'],
+    '#options' => array(
+      SHOW_ONCE_OPTIONS_ALWAYS => t('Always'),
+      SHOW_ONCE_OPTIONS_ONCE   => t('Once per conversation'),
+    ),
+  );
+  $form['show_once']['show_once_roles'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Exempt roles'),
+    '#default_value' => (isset($settings['signature_forum_show_once_roles']) ? $settings['signature_forum_show_once_roles'] : array()),
+    '#options' => $roles,
+    '#description' => t('Members of these roles will have their signatures shown in every post.')
+  );
+
+  $form['signature_other'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Other options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['signature_other']['line_limit'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Line limit'),
+    '#size' => 3,
+    '#maxlength' => 10,
+    '#default_value' => $settings['signature_forum_line_limit'],
+    '#description' => t('The maximum number of lines allowed in a signature. 0 means no limit. Note: existing signatures that are too long will not be changed.'),
+  );
+  $form['signature_other']['delete_signatures'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Delete embedded signatures'),
+    '#description' => t('Deletes signatures that are embedded in existing comments (warning: cannot be undone!).'),
+    '#default_value' => FALSE,
+  );
+  $form['signature_other']['auto_insert'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Automatically add signatures to content'),
+    '#description' => t('If this is switched on signatures will automatically be added to content. Themers may wish to switch this off, so the signature may be positioned in the templates manually.'),
+    '#default_value' => $settings['signature_forum_auto_insert'],
+  );
+
+  $form = system_settings_form($form);
+  unset($form['#submit']);
+  $form['#submit'][] = 'signature_forum_admin_settings_submit';
+  return $form;
+}
+
+/**
+ * Default signature settings.
+ */
+function signature_forum_defaults() {
+  return array(
+    'signature_forum_template' => "__________________\n<p>%s</p>",
+    'signature_forum_format' => FILTER_FORMAT_DEFAULT,
+    'signature_forum_line_limit' => 0,
+    'signature_forum_min_content_length' => 0,
+    'signature_forum_min_content_length_action' => MIN_CONTENT_ACTION_DO_NOT_DISPLAY,
+    'signature_forum_min_content_length_filter' => FILTER_FORMAT_DEFAULT,
+    'signature_forum_show_once_options' => SHOW_ONCE_OPTIONS_ALWAYS,
+    'signature_forum_auto_insert' => TRUE,
+  );
+}
+
+/**
+ * Admin settings form submit.
+ */
+function signature_forum_admin_settings_submit($form, &$form_state) {
+  // If the user hit the 'Reset to defaults button' we do that then return
+  if ($form_state['clicked_button']['#value'] == 'Reset to defaults') {
+    variable_set('signature_forum_settings', signature_forum_defaults());
+    drupal_set_message(t('The configuration options have been reset to their default values.'));
+    return;
+  }
+
+  $settings = array();
+  foreach ($form_state['values'] as $form_value_key => $form_value_value) {
+    if (drupal_substr($form_value_key, 0, drupal_strlen('signature_forum_show_for_')) == 'signature_forum_show_for_') {
+      $settings[$form_value_key] = $form_value_value;
+    }
+  }
+  if ($form_state['values']['delete_signatures']) {
+    switch ($GLOBALS['db_type']) {
+      case 'mysql':
+      case 'mysqli':
+        db_query("UPDATE {comments} c INNER JOIN {users_signature} u ON c.uid=u.uid
+          SET c.comment=left(c.comment, length(c.comment) - length(u.signature))
+          WHERE right(c.comment, length(u.signature)) LIKE u.signature;");
+        break;
+      case 'pgsql':
+        db_query("UPDATE {comments} SET comment=substring({comments}.comment from 1 for length({comments}.comment)-length({users_signature}.signature))
+          FROM {users_signature}
+          WHERE {comments}.comment LIKE '%' || {users_signature}.signature");
+        break;
+    }
+    cache_clear_all(NULL, 'cache_page');
+    cache_clear_all(NULL, 'cache_filter');
+    drupal_set_message(t('Signatures in comments deleted.'));
+  }
+  $settings['signature_forum_template'] = $form_state['values']['template'];
+  $settings['signature_forum_format'] = $form_state['values']['filter'];
+  $settings['signature_forum_line_limit'] = $form_state['values']['line_limit'];
+  $settings['signature_forum_min_content_length'] = $form_state['values']['min_content_length'];
+  $settings['signature_forum_min_content_length_action'] = $form_state['values']['min_content_length_action'];
+  $settings['signature_forum_min_content_length_filter'] = $form_state['values']['min_content_length_filter'];
+  $settings['signature_forum_roles'] = $form_state['values']['roles'];
+  $settings['signature_forum_show_once_options'] = $form_state['values']['show_once_options'];
+  $settings['signature_forum_show_once_roles'] = $form_state['values']['show_once_roles'];
+  $settings['signature_forum_auto_insert'] = $form_state['values']['auto_insert'];
+  variable_set('signature_forum_settings', $settings);
+  drupal_set_message(t('The configuration options have been saved.'));
+}
+
+/**
+ * Implementation of hook_user().
+ */
+function signature_forum_user($op, &$edit, &$account, $category = NULL) {
+  // Re-route the user signature to this module's signature table.
+  switch ($op) {
+    case 'submit':
+      // Check if the signature is set in the form
+      // (#276349 - Signature deleted when editing profile).
+      if (!isset($edit['signature'])) {
+        break;
+      }
+      // If the user has a signature set update it, otherwise create a new entry.
+      if (db_result(db_query("SELECT uid FROM {users_signature} WHERE uid = %d", $account->uid)) != FALSE) {
+        db_query("UPDATE {users_signature} SET signature='%s' WHERE uid = %d", array($edit['signature'], $account->uid));
+      }
+      else {
+        db_query("INSERT INTO {users_signature} (uid, signature) VALUES (%d, '%s')", array($account->uid, $edit['signature']));
+      }
+      unset($edit['signature']);
+      break;
+    case 'load':
+      $signature = db_result(db_query("SELECT signature FROM {users_signature} WHERE uid = %d", $account->uid));
+      // Bug #190446 OG puts $account->signature into comments
+      $account->signature_forum = $signature;
+      break;
+    case 'validate':
+      $settings = variable_get('signature_forum_settings', signature_forum_defaults());
+      // If the signature contains too many lines
+      if ($settings['signature_forum_line_limit'] > 0 &&
+        substr_count($edit['signature'], "\n") > $settings['signature_forum_line_limit']) {
+
+        form_set_error('signature', t('Maximum number of !max_lines lines allowed in signature exceeded.', array('!max_lines' => $settings['signature_forum_line_limit'])));
+      }
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function signature_forum_form_alter(&$form, &$form_state, $form_id) {
+  $settings = variable_get('signature_forum_settings', signature_forum_defaults());
+  // if signatures are disabled for all content types, hide signature field in user profile settings
+  if ($form_id == 'user_profile_form' && variable_get('user_signatures', FALSE)) {
+    $enabled = FALSE;
+    foreach (node_get_types('names') as $type => $name) {
+      if ($settings['signature_forum_show_for_'. $type] == 1) {
+        $enabled = TRUE;
+        break;
+      }
+    }
+    if (!$enabled) {
+      unset($form['signature_settings']);
+    }
+    else {
+      $account = $form['_account']['#value'];
+      $form['signature_settings']['signature']['#default_value'] = $account->signature_forum;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function signature_forum_nodeapi(&$node, $op, $teaser, $page) {
+  if (!$teaser && $op == 'view') {
+    $settings = variable_get('signature_forum_settings', signature_forum_defaults());
+    if ($settings['signature_forum_auto_insert']) {
+      $node->content['body']['#value'] .= signature_forum_get_signature($node);
+    }
+  }
+}
+
+/**
+ * Implementation of hook_comment().
+ */
+function signature_forum_comment(&$comment, $op) {
+  if ($op == 'view') {
+    $settings = variable_get('signature_forum_settings', signature_forum_defaults());
+    if ($settings['signature_forum_auto_insert']) {
+      $comment->comment .= signature_forum_get_signature($comment);
+    }
+  }
+}
+
+/**
+ * Find if uid is in exception lists.
+ *
+ * @param $uid
+ *   User ID.
+ * @param $op
+ *   Which exception list, this may be:
+ *     - "min_length".
+ *     - "show_once".
+ * @return
+ *   TRUE if uid is in exception list. FALSE otherwise.
+ */
+function signature_forum_user_exception($uid = 0, $op) {
+  static $cache = array();
+  $settings = variable_get('signature_forum_settings', signature_forum_defaults());
+  if (!isset($cache[$uid]) || !is_array($cache[$uid])) {
+    $result = db_query("SELECT r.rid AS rid FROM {role} r INNER JOIN {users_roles} ur ON ur.rid = r.rid WHERE ur.uid = %d", $uid);
+    $cache[$uid] = array();
+    while ($role = db_fetch_object($result)) {
+      $cache[$uid][$role->rid] = $role->rid;
+    }
+    if ($uid > 0) {
+      $cache[$uid][DRUPAL_AUTHENTICATED_RID] = DRUPAL_AUTHENTICATED_RID;
+    }
+  }
+  foreach ($cache[$uid] as $rid) {
+    switch ($op) {
+      case 'min_length':
+        if ($settings['signature_forum_roles'][$rid] == $rid) {
+          return TRUE;
+        }
+        break;
+      case 'show_once':
+        if ($settings['signature_forum_show_once_roles'][$rid] == $rid) {
+          return TRUE;
+        }
+        break;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Retrieve signature for a given user.
+ *
+ * @param &$a1
+ *   Object that is either a node or comment.
+ * @return
+ *   Signature of the user who posted the content passed in &$a1.
+ */
+function signature_forum_get_signature($a1) {
+  static $node_type;
+  static $cache = array();
+  $settings = variable_get('signature_forum_settings', signature_forum_defaults());
+
+  // If signatures are disabled.
+  if (!variable_get('user_signatures', FALSE)) {
+    return;
+  }
+
+  // Get the node type, if it's not already set.
+  if (!isset($node_type)) {
+    if (!isset($a1->type)) {
+      // This is a comment, so we need to get the node type from the DB.
+      // We add the type to our comment object so it can be passed to _comment_get_display_setting().
+      $a1->type = db_result(db_query("SELECT type FROM {node} WHERE nid = %d", $a1->nid));
+    }
+    $node_type = $a1->type;
+  }
+  // If signatures are not shown for this node type.
+  if (!$settings['signature_forum_show_for_'. $node_type]) {
+    return;
+  }
+
+  // Get length of comment.
+  if (isset($a1->cid) || !isset($a1->revision_timestamp)) {
+    $content_length = drupal_strlen(strip_tags($a1->comment));
+  }
+  // Else get the length of node.
+  else {
+    $content_length = drupal_strlen(strip_tags($a1->content['body']['#value']));
+  }
+
+  // Content minimum length not set, is longer than minimum or the user has a role that is an exception.
+  if ($content_length >= $settings['signature_forum_min_content_length'] || signature_forum_user_exception($a1->uid, 'min_length')) {
+    $load_signature = TRUE;
+  }
+  // Content is under minimum length and signature is set to not display.
+  elseif ($settings['signature_forum_min_content_length_action'] == MIN_CONTENT_ACTION_DO_NOT_DISPLAY) {
+    // We still call the theme with a blank string, a themer may still wish to
+    // output something to keep their theme consistent.
+    return theme('signature_forum', '');
+  }
+
+  if (isset($cache[$a1->uid])) {
+    // If the signature is in the cache it has been displayed before.
+    if ($settings['signature_forum_show_once_options'] == SHOW_ONCE_OPTIONS_ALWAYS || signature_forum_user_exception($a1->uid, 'show_once')) {
+      // Make implicit copy of signature so original, in cache, is preserved.
+      $signature = (string) $cache[$a1->uid];
+      $load_signature = FALSE;
+    }
+    // If we are only showing the signature once and the user is not exempt.
+    else {
+      $signature = '';
+      $load_signature = FALSE;
+    }
+  }
+  // Signature not cached yet.
+  else {
+    // We're not on the first page, or we're viewing a single comment, i.e. is_numeric(arg(2)).
+    if (isset($_GET['page']) || is_numeric(arg(2))) {
+      // If the signature is set to always show, the user is exempt from show once rules
+      // or this is not a comment (ergo it is the node and must be the first post).
+      if ($settings['signature_forum_show_once_options'] == SHOW_ONCE_OPTIONS_ALWAYS ||
+        !isset($a1->cid) ||
+        signature_forum_user_exception($a1->uid, 'show_once')) {
+
+        $load_signature = TRUE;
+      }
+      else {
+        // _comment_get_display_setting() requires a node object, we fake one for it.
+        if (!isset($a1->type)) {
+          $fake_node = new stdClass();
+          $fake_node->type = db_result(db_query("SELECT type from {node} WHERE nid = %d", $a1->nid));
+        }
+        else {
+          // If $a1 is a node (not a comment) make an implicit copy.
+          $fake_node = (object) $a1;
+        }
+        // We cache these values to avoid extra DB queries.
+        static $mode;
+        static $order;
+        if (is_null($mode) || is_null($order)) {
+          $mode = _comment_get_display_setting('mode', $fake_node);
+          $order = _comment_get_display_setting('sort', $fake_node);
+        }
+        unset($fake_node);
+        // If only a single comment is being displayed the comment object does not
+        // contain the thread field.
+        if (!isset($a1->thread)) {
+          $a1->thread = db_result(db_query("SELECT thread FROM {comments} WHERE cid = %d", $a1->cid));
+        }
+
+        // If there's a result from this query it means the signature has appeared
+        // previously in the topic.
+        $sql = "SELECT cid FROM {comments} WHERE nid = %d AND uid = %d AND status = %d";
+        $query_args = array($a1->nid, $a1->uid, COMMENT_PUBLISHED);
+        // We need to ensure any posts displayed earlier are greater than the minimum length.
+        if ($settings['signature_forum_min_content_length'] > 0 &&
+          !signature_forum_user_exception($a1->uid, 'min_length')) {
+
+          $sql .= " AND LENGTH(comment) > %d";
+          $query_args[] = $settings['signature_forum_min_content_length'];
+        }
+        if ($order == COMMENT_ORDER_NEWEST_FIRST) {
+          if ($mode == COMMENT_MODE_FLAT_COLLAPSED || $mode == COMMENT_MODE_FLAT_EXPANDED) {
+            $sql .= " AND cid > %d
+              ORDER BY cid DESC";
+            $query_args[] = $a1->cid;
+          }
+          else {
+            $sql .= " AND thread > '%s'
+              ORDER BY thread DESC";
+            $query_args[] = $a1->thread;
+          }
+        }
+        elseif ($order == COMMENT_ORDER_OLDEST_FIRST) {
+          if ($mode == COMMENT_MODE_FLAT_COLLAPSED || $mode == COMMENT_MODE_FLAT_EXPANDED) {
+            $sql .= " AND cid < %d
+              ORDER BY cid";
+            $query_args[] = $a1->cid;
+          }
+          else {
+            $sql .= " AND SUBSTRING(thread, 1, (LENGTH(thread) - 1)) < SUBSTRING('%s', 1, (LENGTH('%s') - 1))
+              ORDER BY SUBSTRING(thread, 1, (LENGTH(thread) - 1))";
+            $query_args[] = $a1->thread;
+            $query_args[] = $a1->thread;
+          }
+        }
+        // If there is a result then this is not the first post in this topic
+        // by this user.
+        if (!db_result(db_query_range($sql, $query_args, 0, 1))) {
+          $load_signature = TRUE;
+        }
+        else {
+          $signature = '';
+          // We add a blank entry to the cache so the above query doesn't need to
+          // be run for subsequent posts by this user.
+          $cache[$a1->uid] = '';
+          $load_signature = FALSE;
+        }
+
+        // Note: we do not need to check the node as it would already be in the
+        // $cache. The node is always shown first, regardless of comment order.
+      }
+    }
+    // The signature is not cached yet and we're on the first page
+    // meaning it cannot have been displayed previously.
+    else {
+      $load_signature = TRUE;
+    }
+  }
+
+  // Load the signature and add it to the cache.
+  if ($load_signature == TRUE) {
+    $signature = db_result(db_query("SELECT signature FROM {users_signature} WHERE uid = %d", $a1->uid));
+    $cache[$a1->uid] = (string) $signature;
+  }
+
+  // Prevent the signature from being put through input filters if it's empty.
+  if ($signature == '') {
+    return theme('signature_forum', $signature);
+  }
+
+  // We tell check_markup to not check user permissions as the filter is set by
+  // the administrator.
+  $signature = check_markup($signature, $settings['signature_forum_format'], FALSE);
+  // If the content is under the minimum length, the user is not exempt and
+  // the signature is set to be run through an extra filter (this can be the only option
+  // as other cases have already been handled above: there is no need to add a
+  // $settings['signature_forum_show_once_options'] check in here!).
+  if ($content_length < $settings['signature_forum_min_content_length'] && !signature_forum_user_exception($a1->uid, 'min_length')) {
+    $signature = check_markup($signature, $settings['signature_forum_min_content_length_filter'], FALSE);
+  }
+  $signature = sprintf($settings['signature_forum_template'], trim($signature));
+
+  return theme('signature_forum', $signature);
+}
+
+/**
+ * Implementation of hook_theme().
+ *
+ * @ingroup themeable
+ */
+function signature_forum_theme() {
+  return array(
+    'signature_forum' => array(
+      'arguments' => array('signature' => NULL),
+      'template'  => 'signature',
+    ),
+  );
+}

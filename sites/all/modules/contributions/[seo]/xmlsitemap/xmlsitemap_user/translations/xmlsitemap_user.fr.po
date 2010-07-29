@@ -1,0 +1,126 @@
+# $Id: xmlsitemap_user.fr.po,v 1.1.2.3 2009/06/16 16:16:49 hass Exp $
+#
+# French translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  xmlsitemap.module,v 1.1.2.56 2009/03/18 21:22:29 kiam
+#  xmlsitemap_node.module,v 1.19.2.81 2009/03/23 14:00:46 kiam
+#  xmlsitemap_term.module,v 1.11.2.43 2009/03/19 13:19:50 kiam
+#  xmlsitemap_engines.module,v 1.5.2.19 2009/02/15 00:36:18 kiam
+#  xmlsitemap.install,v 1.1.2.30 2009/03/14 18:52:18 kiam
+#  xmlsitemap.info,v 1.1.2.2 2009/03/08 23:47:46 kiam
+#  xmlsitemap_engines.info,v 1.2.2.1 2009/03/08 23:47:46 kiam
+#  xmlsitemap_file.info,v 1.1.4.3 2008/11/28 19:11:58 kiam
+#  xmlsitemap_helper.info,v 1.1.2.1 2009/03/08 23:47:46 kiam
+#  xmlsitemap_menu.install,v 1.1.4.26 2009/03/11 16:01:08 kiam
+#  xmlsitemap_menu.info,v 1.1.4.3 2009/03/08 23:47:47 kiam
+#  xmlsitemap_node.info,v 1.2.2.1 2009/03/08 23:47:48 kiam
+#  xmlsitemap_term.info,v 1.2.2.1 2009/02/19 16:15:46 kiam
+#  xmlsitemap_user.info,v 1.2.2.1 2009/03/08 23:47:48 kiam
+#  xmlsitemap_file.module,v 1.1.4.35 2009/03/19 13:19:56 kiam
+#  xmlsitemap_helper.module,v 1.1.2.4 2009/03/18 21:04:15 kiam
+#  xmlsitemap_helper.install.inc,v 1.1.2.1 2009/03/08 23:47:47 kiam
+#  xmlsitemap_user.module,v 1.12.2.58 2009/03/19 13:19:42 kiam
+#  xmlsitemap_menu.module,v 1.1.4.29 2009/03/23 13:51:26 kiam
+#  xmlsitemap_node.install,v 1.9.2.46 2009/03/11 16:01:03 kiam
+#  xmlsitemap_user.install,v 1.6.2.43 2009/03/11 16:00:59 kiam
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: French Translation for xmlsitemap_user drupal6 module\n"
+"POT-Creation-Date: 2009-04-01 11:08+0200\n"
+"PO-Revision-Date: 2009-04-01 11:13+0100\n"
+"Last-Translator: Sylvain Moreau <sylvain.moreau@ows.fr>\n"
+"Language-Team: Sylvain Moreau, OWS <sylvain.moreau@ows.fr>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+"X-Poedit-Language: French\n"
+"X-Poedit-Country: FRANCE\n"
+
+#: xmlsitemap_user.module:27;54
+msgid "XML site map"
+msgstr "Plan du site XML"
+
+#: xmlsitemap_user.module:34
+msgid "Default user priority"
+msgstr "Priorité utilisateur par défaut"
+
+#: xmlsitemap_user.module:35
+msgid "The default priority for users who have only the authenticated user role."
+msgstr "La priorité par défaut pour les utilisateurs qui possèdent le rôle utilisateur authentifié."
+
+#: xmlsitemap_user.module:60
+msgid "Default priority"
+msgstr "Priorité par défaut"
+
+#: xmlsitemap_user.module:61
+msgid "The priority of all a user's roles will be added together to set the user's default priority. If all role priorities are left at default, the user's default priority will be %priority."
+msgstr "Les priorités de tous les rôles de l'utilisateur seront additionnées pour définir la priorité par défaut de l'utilisateur. Si toutes les priorités des rôles sont laissées à la valeur par défaut, la priorité par défaut de l'utilisateur sera %priority."
+
+#: xmlsitemap_user.module:105
+msgid "User priority"
+msgstr "Priorité utilisateur"
+
+#: xmlsitemap_user.module:106
+msgid "The default priority is %priority."
+msgstr "La priorité par défaut est %priority."
+
+#: xmlsitemap_user.module:156
+msgid "Add the selected users to the XML site map"
+msgstr "Ajoute les utilisateurs sélectionnés au plan du site XML"
+
+#: xmlsitemap_user.module:161
+msgid "Change the XML site map priority of the selected users to default"
+msgstr "Modifier à la valeur par défaut la priorité dans le plan du site XML des utilisateurs sélectionnés"
+
+#: xmlsitemap_user.module:166
+msgid "Remove the selected users from the XML site map"
+msgstr "Supprimer les utilisateurs sélectionnés du plan du site XML"
+
+#: xmlsitemap_user.module:178
+#: xmlsitemap_user.info:0
+msgid "XML Sitemap: User"
+msgstr "XML Sitemap : User"
+
+#: xmlsitemap_user.module:179
+msgid "The module adds user profiles to the site map. The <em>anonymous user</em> role must have permission to access user profiles on the <a href=\"@access\">access control page</a>. You can change the default user priority on the <a href=\"@user_settings\">user settings</a> page. The <a href=\"@user\">user role priority</a> will override the default user priority. You can override both the default priority and the role priority when you add or edit a user."
+msgstr "Le module ajoute les profils utilisateur au plan du site. Le rôle <em>utilisateur anonyme</em> doit posséder la permission  d'accès aux profils utilisateurs sur la <a href=\"@access\">page de contrôle d'accès</a>. Vous pouvez modifier la priorité par défaut des utilisateurs sur la page des <a href=\"@user_settings\">paramètres utilisateurs</a>. La <a href=\"@user\">prirorité du rôle utilisateur</a> remplacera la valeur par défaut de la priorité utilisateur. Vous pouvez remplacer à la fois la priorité par défaut et la priorité du rôle lors de l'ajout ou de l'édition d'un utilisateur."
+
+#: xmlsitemap_user.module:239
+msgid "Comment ratio weight - users"
+msgstr "Poids du ratio commentaires - utilisateurs"
+
+#: xmlsitemap_user.module:240
+msgid "This number will be added to the priority of the user who authored the highest number of comments; for the other users, the number is calculated proportionally to the number of authored comments. This doesn't apply if the maximum number of comments is one, nor for the users for which the priority is overriden."
+msgstr "Ce nombre sera ajouté à la priorité de l'utilisateur ayant crée le plus grand nombre de commentaires; pour les autres utilisateurs, le nombre est calculé proportionnellement au nombre de commentaires publiés. Ceci ne s'applique pas dans le cas où le nombre maximum de commentaires est un, ni pour les utilisateurs dont la priorité est remplacée."
+
+#: xmlsitemap_user.module:279
+msgid "Processing"
+msgstr "Exécution"
+
+#: xmlsitemap_user.module:281
+msgid "The update has encountered an error."
+msgstr "La mise à jour a échoué."
+
+#: xmlsitemap_user.module:0
+msgid "xmlsitemap_user"
+msgstr "xmlsitemap_user"
+
+#: xmlsitemap_user.install:84;267;275;295
+msgid "The priority assigned to the role."
+msgstr "La priorité assignée au rôle."
+
+#: xmlsitemap_user.install:468
+msgid "Updating %name"
+msgstr "Mise à jour de %name"
+
+#: xmlsitemap_user.info:0
+msgid "Adds user profiles to the site map."
+msgstr "Ajoute les profils utilisateurs au plan du site."
+
+#: xmlsitemap_user.info:0
+msgid "XML Sitemap"
+msgstr "XML Sitemap"
+

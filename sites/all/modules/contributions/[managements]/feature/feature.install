@@ -1,0 +1,31 @@
+<?php
+// $Id: feature.install,v 1.1 2006/12/13 17:30:31 kbahey Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function feature_install() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      db_query("CREATE TABLE {feature} (
+        fid         INT(10)      NOT NULL auto_increment,
+        name        VARCHAR(255) NOT NULL default '',
+        details     VARCHAR(255) NOT NULL default '',
+        image       VARCHAR(255) NOT NULL default '',
+        category    TINYINT(2)   NOT NULL default '0',
+        description TEXT,
+        PRIMARY KEY (fid)
+      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function feature_uninstall() {
+  db_query('DROP TABLE {feature}');
+}
+

@@ -1,0 +1,327 @@
+<?php
+// $Id: rotor.module,v 1.2.2.18.2.4 2008/12/21 14:40:53 mrfelton Exp $
+
+/**
+ * @file
+ * A rotor banner consists in a set of images that will be changing.
+ * This module is made using jquery.
+ *
+ * @author Tom Kirkpatrick (mrfelton), www.kirkdesigns.co.uk
+ */
+
+// CONSTANTS
+define('ROTOR_GROUP_TABS', 0);
+define('ROTOR_DONT_GROUP_TABS', 1);
+
+/**
+ * Implementation of hook_info().
+ */
+function rotor_node_info() {
+  return array(
+    'rotor_item' => array(
+      'name' => t('Rotor item'),
+      'module' => 'rotor',
+      'description' => t("A node to be presented in the rotor block."),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function rotor_perm() {
+  return array('administer rotor');
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function rotor_access($op, $node, $account) {
+  return user_access('administer rotor', $account);
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function rotor_help($section) {
+  switch ($section) {
+    case 'node/add/rotor-item':
+      $text = '<p>'
+      . t('A Rotor item is a banner that will appear in the rotor block for advertising'
+      .' or display important information or images.'
+      .' The Rotor item will have a tab text that can be configured to be shown or not'
+      .' in the administration page for the rotor.'
+      .' The item will show the image if this one is chosen otherwise will show the'
+      .' content.') .'</p>';
+      if (user_access('administer rotor')) {
+        $text .= t('One Rotor block is provided by default and can be configured through'
+        .' the Views interface <a href="@link">here</a>. You may create as many additional'
+        .' blocks as you like through the Views interface.'
+        , array('@link' => url('admin/build/views/edit/rotor')));
+      }
+      return $text;
+    case 'admin/settings/rotor':
+      return t('');
+  }
+}
+
+/**
+ * Node form hook
+ */
+function rotor_form($node, &$param) {
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Tab Text'),
+    '#required' => TRUE,
+    '#default_value' => $node->title,
+    '#weight' => -5,
+    '#description' => t('The text that will be shown in the tab for this item.'),
+  );
+  $image = $node->rotor_image
+        ? theme('rotor_image', $node)
+        : '';
+  $form['rotor_image'] = array(
+    '#type' => 'file',
+    '#title' => t('Attach an image'),
+    '#default_value' => $node->rotor_image,
+    '#prefix' => $image,
+    '#weight' => -4,
+    '#description' => t('The image that will be shown in the rotor content.'.
+        ' If an image is uploaded only the image will be shown, otherwise only the content.'),
+  );
+  $form['alt_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Image Alt text'),
+    '#default_value' => $node->alt_text,
+    '#weight' => -3,
+    '#description' => t('That alt text for the image. This will also be displayed when the mouse is vovered over the image.'),
+  );
+  $form['link'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Link'),
+    '#attributes' => array('class' => 'rotor-link'),
+    '#weight' => -2,
+  );
+  $target_options = array(
+    'default' => t('Default (no target attribute)'),
+    '_top' => t('Open link in window root (_top)'),
+    '_blank' => t('Open link in new window (_blank)'),
+  );
+  $form['link']['url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Link URL'),
+    '#default_value' => $node->url,
+    '#description' => t('The link that will be actived for this item. Example: http://www.drupal.org, node/3'),
+  );  
+  $form['link']['link_target'] = array(
+    '#type' => 'select',
+    '#title' => t('Link target'),
+    '#options' => $target_options,
+    '#default_value' => $node->link_target,
+    '#description' => t('The target of the link'),
+  );
+  $form['body_filter']['body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Content'),
+    '#default_value' => $node->body,
+    '#rows' => 10,
+    '#weight' => -3,
+    '#description' => t('The content that will be shown in case no image is uploaded.'),
+  );
+  $form['body_filter']['filter'] = filter_form($node->format);
+  // Change the enctype of the form to handle the upload file.
+  $form['#attributes']['enctype'] = 'multipart/form-data';
+  $form['#submit'] = array('rotor_submit');
+  return $form;
+}
+
+/**
+ * Node form submit function.
+ * We handle the image submition.
+ */
+function rotor_submit(&$node, &$form_state) {
+  $upload_dir = file_directory_path();
+  if (!empty($_FILES['files']['name']['rotor_image'])) {
+    if (file_check_directory($upload_dir, FILE_CREATE_DIRECTORY)) {
+      $file_saved = file_save_upload('rotor_image', array(), file_directory_path(), FILE_EXISTS_RENAME);
+      if (!$file_saved) {
+        drupal_set_message(t("The uploaded file %filename was unable to be saved. The destination directory may not be writable.", array('%filename' => $file_saved['filename'])), "error");
+        watchdog('rotor', 'Imaged not saved: '. $file_saved->file_path);
+      }
+      else {
+        file_set_status($file_saved, FILE_STATUS_PERMANENT);
+        $form_state['values']['rotor_image'] = $file_saved->filepath;
+        watchdog('rotor', 'Imaged saved: '. $file_saved->file_path);
+      }
+    }
+    else {
+      drupal_set_message(t("The uploaded file was unable to be saved. The destination directory does not exist."), "error");
+    }
+  }
+  // Remove the target attribute if not selected.
+  if (!$form_state['values']['link_target']  || $form_state['values']['link_target'] == "default") {
+    unset($form_state['values']['link_target']);
+  }
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function rotor_insert($node) {
+  db_query(
+    "INSERT INTO {rotor_item} (nid, file_path, alt_text, url, link_target) VALUES (%d, '%s', '%s', '%s', '%s')"
+    , $node->nid, $node->rotor_image, $node->alt_text, $node->url, $node->link_target
+  );
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function rotor_update($node) {
+  db_query(
+    "UPDATE {rotor_item} SET file_path = '%s', alt_text = '%s', url = '%s', link_target = '%s'  WHERE nid = %d"
+    , $node->rotor_image, $node->alt_text, $node->url, $node->link_target, $node->nid
+  );
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function rotor_delete($node) {
+  db_query(
+    "DELETE FROM {rotor_item} WHERE nid = %d"
+    , $node->nid
+  );
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function rotor_load($node) {
+  $additions = db_fetch_object(db_query(
+    'SELECT file_path AS rotor_image, alt_text, url, link_target FROM {rotor_item} WHERE nid = %d',
+    $node->nid));
+  return $additions;
+}
+
+
+/**
+ * Implmentation of hook_views_api().
+ */
+ function rotor_views_api() {
+  return array(
+   'api' => 2,
+   'path' => drupal_get_path('module', 'rotor') .'/views',
+  );
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function rotor_theme() {
+  $functions = array(
+    'rotor_tabs' => array('arguments' => array('items' => array())),
+    'rotor_block' => array('arguments' => array('items' => array())),
+    'rotor_items' => array('arguments' => array('items' => array())),
+    'rotor_item' => array('arguments' => array('item' => NULL)),
+    'rotor_admin_list' => array('arguments' => array('list' => array())),
+    'rotor_image' => array('arguments' => array('rotor_image' => NULL)),
+    'views_view_rotor' => array('arguments' => array('element')),
+  );
+  return $functions;
+}
+
+/**
+ * Theme for each Rotor item.
+ *
+ * @param node $item The rotor_item node to theme.
+ */
+function theme_rotor_item($item) {
+  if ($item->rotor_image) {
+    $output .= $item->url
+      ?l(theme('rotor_image', $item), $item->url, array('html' => TRUE, 'attributes' => array('target' => $item->link_target)))
+      : theme('rotor_image', $item);
+  }
+  else {
+    $output .= check_markup($item->body, $item->format, FALSE);
+  }
+  return $output;
+}
+
+/**
+ * This is a theme function to act as a wrapper for the image either case
+ * that we are using imagecache or not.
+ *
+ * @param string $rotor_image The path for the image to be themed
+ * @return string The image themed
+ */
+function theme_rotor_image($rotor_item) {
+  $presset_id = variable_get('rotor_imagecache_preset', 0);
+  if (module_exists('imagecache') && $presset_id > 0) {
+    $pressets = rotor_get_imagecache_presets();
+    $presset = $pressets[$presset_id];
+    return theme('imagecache', $presset, $rotor_item->rotor_image);
+  }
+  return theme('image', file_create_url($rotor_item->rotor_image), $rotor_item->alt_text, $rotor_item->title, NULL, FALSE);
+}
+
+function rotor_get_imagecache_presets($reset = FALSE) {
+  $presets_full = imagecache_presets($reset);
+  $presets = array();
+  foreach ($presets_full as $preset_id => $preset) {
+    $presets[$preset_id] = $preset['presetname'];
+  }
+  return $presets;
+}
+
+/**
+ * Add required js and css as appropriate.
+ */
+function _rotor_doheader() {
+  static $rotor_initialized = FALSE;
+  if ($rotor_initialized) {
+    return;
+  }
+  $rotor_path = drupal_get_path('module', 'rotor');
+  drupal_add_css($rotor_path .'/rotor.css');
+  drupal_add_js($rotor_path .'/rotor.js');
+  jquery_plugin_add('cycle');
+  $rotor_initialized = TRUE;
+}
+
+/**
+ * Return available effect for the Rotor Banner.
+ *
+ * @return
+ *   An associative array containing the available effect for the Rotor Banner.
+ */
+function _rotor_get_effects() {
+  $effects = array(
+    'blindX' => t('BlindX'),
+    'blindY' => t('BlindY'),
+    'blindZ' => t('BlindZ'),
+    'cover' => t('Cover'),
+    'curtainX' => t('CurtainX'),
+    'curtainY' => t('CurtainY'),
+    'fade' => t('Fade'),
+    'fadeZoom' => t('FadeZoom'),
+    'growX' => t('GrowX'),
+    'growY' => t('GrowY'),
+    'scrollUp' => t('Scroll Up'),
+    'scrollDown' => t('Scroll Down'),
+    'scrollLeft' => t('Scroll Left'),
+    'scrollRight' => t('Scroll Right'),
+    'scrollHorz' => t('Scroll Horz'),
+    'scrollVert' => t('Scroll Vert'),
+    'slideX' => t('Slide X'),
+    'slideY' => t('Slide Y'),
+    'turnUp' => t('Turn Up'),
+    'turnDown' => t('Turn Down'),
+    'turnLeft' => t('Turn Left'),
+    'turnRight' => t('Turn Right'),
+    'uncover' => t('Uncover'),
+    'wipe' => t('Wipe'),
+    'zoom' => t('Zoom'),
+  );
+  return $effects;
+}

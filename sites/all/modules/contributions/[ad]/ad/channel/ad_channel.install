@@ -1,0 +1,109 @@
+<?php
+// $Id: ad_channel.install,v 1.1.4.6 2009/04/15 17:19:51 jeremy Exp $
+
+/**
+ *
+ * Ad channel database schema.
+ * Copyright (c) 2008-2009 Jeremy Andrews <jeremy@tag1consulting.com>.
+ */
+
+/**
+ * Create the ad_channel schema.
+ */
+function ad_channel_install() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+    default:
+      // TODO: PostgreSQL support.  Patches welcome.
+      /* The ad_channel table stores channel definitions and rules.
+       */
+      db_query("CREATE TABLE {ad_channel} (
+        chid INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+        name VARCHAR(64) NOT NULL DEFAULT '',
+        description LONGTEXT NULL,
+        conid INT(11) UNSIGNED NOT NULL DEFAULT '0',
+        weight TINYINT(4) SIGNED NOT NULL DEFAULT '0',
+        display TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
+        no_channel_weight INT(3) NOT NULL DEFAULT '0',
+        urls TEXT NULL,
+        groups TEXT NULL,
+        PRIMARY KEY  (chid),
+        KEY  (name)
+      );");
+      /* The ad_channel_container table stores channel container definitions.
+       */
+      db_query("CREATE TABLE {ad_channel_container} (
+        conid INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+        name VARCHAR(64) NOT NULL DEFAULT '',
+        description LONGTEXT NULL,
+        weight TINYINT(4) SIGNED NOT NULL DEFAULT '0',
+        PRIMARY KEY  (conid)
+      );");
+      /* The ad_channel_node table stores per node channel information.
+       */
+      db_query("CREATE TABLE {ad_channel_node} (
+        chid INT(11) UNSIGNED NOT NULL DEFAULT '0',
+        nid INT(11) UNSIGNED NOT NULL DEFAULT '0',
+        PRIMARY KEY  (chid, nid),
+        KEY (nid, chid)
+      );");
+      /* The ad_channel_node table stores per node channel information.
+       */
+      db_query("CREATE TABLE {ad_priority} (
+        aid INT(11) UNSIGNED NOT NULL DEFAULT '0',
+        priority TINYINT UNSIGNED NOT NULL DEFAULT '0',
+        PRIMARY KEY  (aid, priority)
+      );");
+  }
+}
+
+/**
+ * Completely uninstall the ad channel module.
+ */
+function ad_channel_uninstall() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+    default:
+      // TODO: PostgreSQL support.  Patches welcome.
+      db_query('DROP TABLE {ad_channel}');
+      db_query('DROP TABLE {ad_channel_container}');
+      db_query('DROP TABLE {ad_channel_node}');
+  }
+}
+
+/**
+ * Populate the ad_priority table.
+ */
+function ad_channel_update_6001() {
+  $ret = array();
+
+  $result = db_query('SELECT a.aid, p.priority FROM {ads} a LEFT JOIN {ad_priority} p ON a.aid = p.aid');
+  while ($ad = db_fetch_object($result)) {
+    if (!isset($ad->priority)) {
+      $ret[] = update_sql("INSERT INTO {ad_priority} (aid, priority) VALUES ($ad->aid, 0)");
+    }
+  }
+
+  return $ret;
+}
+
+/**
+ * Rebuild the menu so that channels and containers can be deleted.
+ */
+function ad_channel_update_6002() {
+  cache_clear_all();
+  menu_rebuild();
+  return array();
+}
+
+/**
+ * Introduce no_channel_weight.
+ */
+function ad_channel_update_6003() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {ad_channel} ADD no_channel_weight INT(3) NOT NULL DEFAULT '0'");
+  return $ret;
+}
+

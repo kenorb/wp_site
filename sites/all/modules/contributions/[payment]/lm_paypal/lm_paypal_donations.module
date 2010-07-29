@@ -1,0 +1,438 @@
+<?php
+
+// $Id: lm_paypal_donations.module,v 1.27.4.10.2.8 2009/01/19 22:12:03 pounard Exp $
+
+/**
+ * @file
+ *
+ * PayPal donations interface.
+ *
+ * This is a Drupal module to dynamically generate PayPal buttons and processes
+ * incoming PayPal IPN messages.
+ */
+
+define('LM_PAYPAL_DONATIONS', 'LM_PayPal_Donat');
+
+// Don't change these here! Use the admin interface at admin/settings/lm_paypal
+define('LM_PAYPAL_DONATIONS_THANKS_DEFAULT', '/lm_paypal/donations_thanks');
+
+/**
+ * Implementation of hook_help().
+ */
+function lm_paypal_donations_help($path, $arg) {
+  global $_lm_paypal_welcome;  // Welcome message
+  global $base_url;
+
+  $admin = l('LM PayPal Admin', 'admin/settings/lm_paypal/settings');
+  $access = l('administer permissions', 'admin/user/permissions');
+
+  $help = l('LM PayPal Help', 'admin/help/lm_paypal');
+  $help_dons = l('LM PayPal Donations Help', 'admin/help/lm_paypal_donations');
+  $view_dons = l(t('PayPal Donations'), 'lm_paypal/donations');
+
+  switch ($path) {
+    case 'admin/help#lm_paypal_donations': // admin/help/lm_paypal_donations
+      $output = $_lm_paypal_welcome;
+
+      $output .= '<p>'. t('If you are not already familar with PayPal please go to their <a href="http://www.paypal.com">website</a> and read up.') .'</p>';
+
+      $output .= '<p><b>'. t('Special Note') .':</b>';
+      $output .= '<ul>';
+      $output .= '<li><b>'. t('This module requires the module lm_paypal to be installed, enabled and configured.') .'</b></li>';
+      $output .= '</ul>';
+
+      $output .= '<p>'. t('If you are new to this module you need to:');
+      $output .= '<ul>';
+      $output .= '<li>'. t("First make sure you have configured the main !admin and read !help.", array("!admin" => $admin, "!help" => $help)) .'</li>';
+      $output .= '</ul>';
+      $output .= '</p>';
+      $output .= '<p>'. t("Ensure the right roles (usually everyone, so <b>anonymous</b> and <b>authenticated</b>!) can see the donation buttons by enabling this in !access under <b>lm_paypal_module</b> 'access lm_paypal_donate'. You can allow roles to view everyones donations using 'view lm_paypal_all_donations'.", array("!access" => $access)) .'</p>';
+
+      $output .= '<h2>'. t('Creating Donation Buttons') .'</h2>';
+      $output .= '<p>'. t('Donations buttons are displayed with php like the following which display the three types of donation:') .'</p>';
+
+      $output .= '<pre>'. t('
+&lt;?php
+if (function_exists(\'lm_paypal_donate\')) {
+  // 10 = amount, \'USD\' is the currency followed by a description
+  print \'We would really like a $10 donation \' .
+    lm_paypal_donate(10, \'USD\', \'donation to example.com\') .\'&lt;br&gt;\';
+  // The amount is a one element array so an text input with the one value as
+  //  default
+  print \'Write your own amount to give, we suggest $5\' .
+    lm_paypal_donate(array(5), \'USD\', \'donation to example.com\') . \'&lt;br&gt;\';
+  // The amount is a multi element array so a select will be used. Note if one
+  //   of the elements is itself an array that will be the default selection
+  // The final two parameters are an alternative button (here we use the default)
+  //   and a replacement label before the amount
+  print \'We would really like a $10, or more, donation \' .
+    lm_paypal_donate(array(5,array(10),15), \'USD\', \'donation to example.com\', \'\', \'Donation\') .\'&lt;br&gt;\';
+}
+?&gt;
+        ') .'</pre>';
+      $output .= '<p>'. t('It is best to check that the lm_paypal_donate function exists before using it just in case the module has been disabled.') .'</p>';
+      $output .= '<p>'. t('If the button is clicked by a logged in user when the payment arrives the amount will be associated with them. Otherwise an attempt will be made to match the payers email with user emails.') .'</p>';
+
+      $output .= '<h2>'. t('Viewing Donations') .'</h2>';
+      $output .= '<p>'. t("To view all the donations that have arrived use !view_dons.", array("!view_dons" => $view_dons)) .'</p>';
+
+      return $output;
+
+    // This is the brief description of the module displayed on the modules page
+    case 'admin/modules#description':
+    // New to Drupal 5 (because the page has moved)
+    case 'admin/settings/modules#description':
+      return t('Provides PayPal donation buttons (requires lm_paypal).');
+
+    // This is the brief description of the module displayed on the help page
+    case 'admin/help#lm_paypal_donations':
+      $output = '<p>'. t('The lm_paypal_donations module. ') .'</p>';
+      return $output;
+
+    // This appears at the start of the module admin page before the options
+    case 'admin/settings/lm_paypal_donations':
+    // This appears at the start of the admin page before the options
+    case 'admin/settings/lm_paypal/donations':
+    // New to Drupal 5 - settings has moved
+    case 'admin/settings/lm_paypal/donations_settings':
+      $output = $_lm_paypal_welcome;
+
+      $output .= '<p>'. t("For detailed help please read !help_dons", array("!help_dons" => $help_dons)) .'</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function lm_paypal_donations_perm() {
+  return array('access lm_paypal_donate', 'view lm_paypal_all_donations');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function lm_paypal_donations_menu() {
+  $items = array();
+
+  // LM PayPal Donations Settings
+  $items['admin/settings/lm_paypal/donations'] = array(
+    'title' => 'Donations',
+    'description' => 'PayPal donations interface configuration.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('lm_paypal_donations_settings_form'),
+    'access arguments' => array('administer lm_paypal'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 11,
+  );
+  // Tab 2.1 this is just to keep consistency with other modules
+  $items['admin/settings/lm_paypal/donations/settings'] = array(
+    'title' => 'Settings',
+    'access arguments' => array('administer lm_paypal'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 11,
+  );
+
+  // admin - print all donations - TODO: move to /admin? fix links to it
+  $items['lm_paypal/donations'] = array(
+    'title' => 'PayPal Donations',
+    'page callback' => 'lm_paypal_all_donations',
+    'access arguments' => array('view lm_paypal_all_donations'),
+    'description' => 'PayPal view All Donations',
+  );
+
+  // By default we tell Paypal to redirect users here after donating
+  $items['lm_paypal/donations_thanks'] = array(
+    'title' => 'LM PayPal Donation Thanks',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'lm_paypal_donations_thanks',
+    'access arguments' => array('access lm_paypal_donate'),
+  );
+
+  return $items;
+}
+
+/**
+ * Settings form.
+ */
+function lm_paypal_donations_settings_form() {
+  $form ['lm_paypal_donations_thanks'] = array(
+    '#type' => 'textfield',
+    '#title' => t('LM PayPal donation thanks page'),
+    '#default_value' => variable_get('lm_paypal_donations_thanks', LM_PAYPAL_DONATIONS_THANKS_DEFAULT),
+    '#maxlength' => 100,
+    '#required' => TRUE,
+    '#description' => t('The page the user is sent to by paypal after a donation. The default is %link but you might want to point it at a page you have created yourself.', array('%link' => LM_PAYPAL_DONATIONS_THANKS_DEFAULT)),
+  );
+  return system_settings_form($form);
+}
+
+
+
+
+
+
+/**
+ * Implementation of hook_lm_paypal_ipn_TXNTYPE.
+ * Process a subscr IPN message.
+ */
+function lm_paypal_donations_lm_paypal_ipn_donate($ipn) {
+  // error_log("Called lm_paypal_donations_lm_paypal_ipn_donate($ipn->txn_id)");
+  _lm_paypal_process_in_donate($ipn); // Call legacy handler
+  return TRUE;
+}
+
+
+
+
+
+/**
+ * Process a newly arrived donation IPN message
+ *
+ * @param $ipn
+ *   The IPN message
+ * @link
+ *   html link to the the IPN to display in watchdog reports
+ * @uid
+ *   The uid of the user associated with this IPN, zero if the user is unknown
+ * @other
+ *   The extra integer passed with the uid
+ * @item_number
+ *   The PayPal item_number
+ */
+function _lm_paypal_process_in_donate($ipn, $link, $uid, $other, $item_number) {
+  if (lm_paypal_debug()) {
+    watchdog(LM_PAYPAL_DONATIONS, 'in donate');
+  }
+
+  $wr = drupal_write_record(
+    'lm_paypal_donations',
+    array_merge((array)$ipn, array('uid' => $uid, 'datepaid' => time()))
+  );
+
+  if ($wr == FALSE) {
+    watchdog(LM_PAYPAL_DONATIONS, t('Failed to add to donations (uid %uid)', array('%uid' => $uid)), WATCHDOG_ERROR);
+  }
+}
+
+/**
+ * Display a dynamically generated PayPal donate button.
+ *
+ * @param $amount
+ *   Required.
+ *     If a number it is the amount of the donation. User not asked.
+ *     If a single element array then a text input will appear with
+ *       this as the default value for the amount.
+ *     If a multi element array then a select will appear with the given
+ *       values. If one of the values is itself an array that will be the
+ *       default.
+ * @param string $ccc
+ *   A PayPal 3 letter currency code for the donation (e.g: USD).
+ * @param string $name = NULL
+ *   The name of the donation, displayed on PayPal donate form
+ * @param string $button_url = NULL
+ *   The url of button to click on to make the donation
+ * @param string $amount_label = NULL
+ *   Label to put before the amount if asking the user
+ * @param string $return_path = NULL
+ *   If non empty it is the url the user is returned to after the transaction
+ * @return
+ *   The html string representing the button.
+ */
+
+function lm_paypal_donate($amount, $ccc = NULL, $name = NULL, $button_url = NULL, $amount_label = NULL, $return_url = NULL) {
+  global $user;
+
+  if (!user_access('access lm_paypal_donate')) {
+    return t('Access to PayPal donation buttons denied');
+  }
+
+  $options = array();
+  if (! $ccc) {
+    $ccc = lm_paypal_api_get_currency_default();
+  }
+  if ($name) {
+    $options['item_name'] = check_plain($name);
+  }
+  if ($button_url) {
+    // TODO: hu
+  }
+  if ($amount_label) {
+    $options['text'] = check_plain($amount_label);
+  }
+  if ($ret_url) {
+    $options['return_path'] = $ret_url;
+  }
+
+  return drupal_get_form('lm_paypal_api_payment_form', $amount, $options);
+}
+
+/**
+ * Returns the default page that users are sent to by PayPal after donating.
+ *
+ * @return
+ *   A string containing the page contents.
+ */
+function lm_paypal_donations_thanks() {
+  // TODO: make user configurable and/or themeable
+  return t('<h2>Thank you!</h2><p>If the system is not too busy then your donation will arrive shortly. At worse it will only take a few hours.</p><p>Once again, thanks!</p>');
+}
+
+/**
+ * Implementation of hook_user().
+ */
+function lm_paypal_donations_user($op, &$edit, &$account, $category = NULL) {
+  global $user;
+  $uid = isset($account->uid) ? $account->uid : 0;
+  // In the "my account" view area show all donations
+  if ($op == 'view' && (user_access('administer lm_paypal') || $user->uid == $account->uid)) {
+    $account->content['lm_paypal_donations'] = array(
+      '#type' => 'user_profile_category',
+      '#title' => t('Paypal Donations'),
+      '#weight' => 7,
+    );
+    $account->content['lm_paypal_donations']['donations'] = array(
+      '#type' => 'user_profile_item',
+      '#title' => t('Donations:'),
+      '#value' => lm_paypal_donations($uid, $per_page = 10),
+    );
+  }
+}
+
+/**
+ * View all donations
+ */
+function lm_paypal_all_donations() {
+  return lm_paypal_donations(0);
+}
+
+/**
+ * View donations from one user
+ */
+function lm_paypal_my_donations($uid) {
+  return lm_paypal_donations($uid);
+}
+
+/**
+ * View donations
+ *
+ * @param
+ *   if a uid is passed then just print out details of that donation
+ */
+function lm_paypal_donations($uid, $per_page = 50) {
+  global $user;
+
+  if ($uid == NULL || !is_numeric($uid) || intval($uid) != $uid) {
+    $uid = 0;
+  }
+
+  if (!($user->uid == $uid || user_access('view lm_paypal_all_donations'))) {
+    return t('<em>You do not have permission to view donations</em>');
+    /*
+    drupal_access_denied();
+    return '';
+    */
+  }
+
+  $header = array(
+    array('data' => t('User'), 'field' => 'u.name'),
+    array('data' => t('Item Name'), 'field' => 'd.item_name'),
+    array('data' => t('Date Paid'), 'field' => 'd.datepaid', 'sort' => 'desc'),
+    array('data' => t('Amount'), 'field' => 'd.mc_gross'),
+    array('data' => t('Currency'), 'field' => 'd.mc_currency'),
+  );
+
+  $sql = "SELECT u.name, d.item_name, d.uid, d.datepaid, d.mc_gross, d.mc_currency FROM {lm_paypal_donations} d INNER JOIN {users} u ON d.uid = u.uid";
+
+  $tablesort = tablesort_sql($header);
+
+  // If not sorting by datepaid then make that the 2nd field to sort on
+  if (strpos($tablesort, 'datepaid') === FALSE) {
+    $tablesort .= ', datepaid DESC';
+  }
+
+  // FIXME: figure out what would be good to filter on
+  // $status = $_SESSION['lm_paypal_dons_filter'];
+  $status = 'all';
+  if ($status != 'all') {
+    if ($uid != 0) {
+      $sql .=  " WHERE d.uid = $uid AND s.status = '%s'";
+    }
+    else {
+      $sql .=  " WHERE s.status = '%s'";
+    }
+    $result = pager_query($sql . $tablesort, $per_page, 0, NULL, $status);
+  }
+  else {
+    if ($uid != 0) {
+      $sql .=  " WHERE d.uid = $uid";
+    }
+    $result = pager_query($sql . $tablesort, $per_page);
+  }
+
+  $rows = array();
+  while ($don = db_fetch_object($result)) {
+    $rows[] = array('data' =>
+      array(
+        l($don->name, "user/$don->uid"),
+        check_plain($don->item_name),
+        format_date($don->datepaid, 'small'),
+        check_plain($don->mc_gross),
+        check_plain($don->mc_currency),
+      ),
+    );
+  }
+  if (empty($rows)) {
+    $rows[] = array(array('data' => t('No donations found.'), 'colspan' => 3));
+  }
+
+  return theme('table', $header, $rows) . theme('pager', NULL, $per_page, 0);
+}
+
+
+/**
+ * Implementation of hook_block.
+ * Only used for testing - really should be in a mock module or something.
+ */
+/*
+ function lm_paypal_donations_block($op = 'list', $delta = 0, $edit = array()) {
+  switch ($op) {
+
+    case 'list':
+      $blocks[0] = array(
+        'info' => t('Mymodule block #1 shows ...'),
+        'weight' => 0,
+        'status' => 1,
+        'region' => 'left',
+      );
+      return $blocks;
+
+    case 'view':
+      $content = '';
+
+      {
+        // 10 = amount, 'USD' is the currency followed by a description
+        $content .= 'We would really like a $10 donation ' .
+          lm_paypal_donate(10, 'USD', 'donation to example.com') .'<br>';
+
+        // The amount is a one element array so an text input with the one value as
+        //  default
+        $content .= 'Write your own amount to give, we suggest $5' .
+          lm_paypal_donate(array(5), 'USD', 'donation to example.com') . '<br>';
+
+        // The amount is a multi element array so a select will be used. Note if one
+        //   of the elements is itself an array that will be the default selection
+        // The final two parameters are an alternative button (here we use the default)
+        //   and a replacement label before the amount
+        $content .= 'We would really like a $10, or more, donation ' .
+          lm_paypal_donate(array(5,array(10),15), 'USD', 'donation to example.com', '', 'Donation') .'<br>';
+      }
+
+      $block = array(
+        'subject' => t('Dummy LM Paypal Donations Block'),
+        'content' => $content,
+      );
+      return $block;
+  }
+}
+*/

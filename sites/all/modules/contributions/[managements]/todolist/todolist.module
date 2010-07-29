@@ -1,0 +1,371 @@
+<?php
+// $Id: todolist.module,v 1.9.2.1 2009/01/10 08:55:04 marvil07 Exp $
+
+/**
+ * @file
+ * Implements a node type for todolists
+ */
+
+/**
+ * Implementation of hook_node_info().
+ */
+function todolist_node_info() {
+  return array(
+    'todolist' => array(
+      'name' => t('Todolist'),
+      'module' => 'todolist',
+      'description' => t('Create a new todolist.'),
+    )
+  );
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function todolist_perm() {
+  return array('create todolist', 'edit own todolist', 'create tasks', 'complete tasks', 'uncomplete tasks', 'reorder tasks', 'delete tasks', 'edit own tasks', 'edit tasks');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function todolist_menu() {
+  $items = array();
+
+  $items['todolist/create_task'] = array(
+    'page callback' => 'todolist_create_task',
+    'access arguments' => array('create tasks'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['todolist/edit_task'] = array(
+    'page callback' => 'todolist_edit_task',
+    'access arguments' => array('edit tasks'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['todolist/toggle_task'] = array(
+    'page callback' => 'todolist_toggle_task',
+    //'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  $items['todolist/reorder_task'] = array(
+    'page callback' => 'todolist_reorder_task',
+    'access arguments' => array('reorder tasks'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['todolist/delete_task'] = array(
+    'page callback' => 'todolist_delete_task',
+    'access arguments' => array('delete tasks'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function todolist_access($op, $node, $account) {
+
+  if ($op == 'create') {
+    return user_access('create todolist');
+  }
+
+  if ($op == 'update' || $op == 'delete') {
+    if (user_access('edit own todolist') && ($account->uid == $node->uid)) {
+      return TRUE;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function todolist_form(&$node) {
+  return array(
+    'title' => array(
+      '#type' => 'textfield',
+      '#title' => t('Title'),
+      '#required' => TRUE,
+      '#default_value' => $node->title,
+      '#weight' => -4,
+    ),
+    'body' => array(
+      '#type' => 'textarea',
+      '#title' => t('Description'),
+      '#required' => FALSE,
+      '#default_value' => $node->body,
+    ),
+  );
+}
+
+/**
+ * Add todolist JavaScript library to the current page.
+ */
+function todolist_add_js() {
+  static $done;
+  if (!isset($done)) {
+    drupal_add_js(drupal_get_path('module', 'todolist') .'/todolist.js');
+    $done = TRUE;
+  }
+}
+
+/**
+ * Add todolist JavaScript library to the current page.
+ */
+function todolist_add_css() {
+  static $done;
+  if (!isset($done)) {
+    drupal_add_js(drupal_get_path('module', 'todolist') .'/todolist.js');
+    $done = TRUE;
+  }
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function todolist_view(&$node, $teaser = FALSE, $page = FALSE) {
+  if ($page) {
+    //jquery_interface_add();
+    todolist_add_js();
+    drupal_add_css(drupal_get_path('module', 'todolist') .'/todolist.css', 'module');
+
+    $node->content['todolist'] = array('#value' => theme('todolist', $node));
+  }
+
+  return node_prepare($node, $teaser);
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function todolist_theme() {
+  return array(
+    'todolist' => array(
+      'arguments' => array('node'),
+    ),
+    'todolist_task' => array(
+      'arguments' => array('task'),
+    ),
+  );
+}
+
+/**
+ * Generate a Todolist.
+ */
+function theme_todolist(&$node) {
+  $results = db_query("SELECT tid, status, task FROM {todolist_task} WHERE nid = %d ORDER BY status, sort;", $node->nid);
+  while ($task = db_fetch_object($results)) {
+    $tasks[($task->status? 'complete' : 'incomplete')][] = theme('todolist_task', $task);
+  }
+  $output .= theme('item_list', $tasks['incomplete'], NULL, 'ul', array('id' => 'todolist-'. $node->nid, 'class' => 'todolist incomplete'));
+  $output .= drupal_get_form('todolist_add_task_form', $node);
+  $output .= theme('item_list', $tasks['complete'], NULL, 'ul', array('class' => 'todolist complete'));
+
+  return $output;
+}
+
+/**
+ * Generate a Todolist Task.
+ */
+function theme_todolist_task(&$task) {
+  return array(
+    'data' => '<input type="checkbox" name="task-'. $task->tid .'"'. ($task->status? 'checked' : '') .' /> '. ($task->status? '<a href="javascript:void(0)" title="Delete this task" class="delete" onclick="return TodoList.delete_task(\'task-'. $task->tid .'\')">Delete</a> <span>'. date('M d', $task->status) .'</span> ' : '') . $task->task,
+    'class' => 'task',
+    'id' => 'task-'. $task->tid,
+  );
+}
+
+/**
+ * Generate an Add Task form.
+ *
+ * @return Array $form
+ *   Forms API form array.
+ */
+function todolist_add_task_form(&$node) {
+  return array(
+    '#action' => url('todolist/create_task'),
+    array(
+      '#type' => 'fieldset',
+      '#title' => t('Add new task'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      'task' => array(
+        '#type' => 'textfield',
+        '#title' => t('Task'),
+        '#default_value' => '',
+        '#maxlength' => 255,
+        '#required' => TRUE,
+      ),
+      'submit' => array(
+        '#type' => 'submit',
+        '#value' => t('Add this task'),
+      ),
+      'nid' => array(
+        '#type' => 'hidden',
+        '#value' => $node->nid,
+      ),
+    ),
+  );
+}
+
+/**
+ * Generate an Edit Task form.
+ *
+ * @return Array $form
+ *   Forms API form array.
+ */
+function todolist_edit_task_form(&$task) {
+  return array(
+    '#action' => url('todolist/edit_task'),
+    array(
+      'task' => array(
+        '#type' => 'textarea',
+        '#default_value' => $task->task,
+        '#required' => TRUE,
+      ),
+      'submit' => array(
+        '#type' => 'submit',
+        '#value' => t('Save this task'),
+      ),
+      'tid' => array(
+        '#type' => 'hidden',
+        '#value' => $task->tid,
+      ),
+    ),
+  );
+}
+
+/**
+ * Notify the browser of a bad request.
+ *
+ * The request could not be understood by the server due to malformed syntax.
+ * The client SHOULD NOT repeat the request without modifications.
+ */
+function todolist_bad_request() {
+  drupal_set_header('Status:400 Bad Request');
+  exit;
+}
+
+/**
+ * Output JavaScript Content-Type headers.
+ */
+function todolist_ok_js() {
+  drupal_set_header('Status:200 OK');
+  drupal_set_header('Content-Type:text/javascript');
+}
+
+/**
+ * Escape single-quotes in a string.
+ *
+ * @param String $txt
+ *   A string to be used in JavaScript.
+ * @return String
+ *   An escaped string.
+ */
+function _todolist_js_safe($txt) {
+  $txt = str_replace("'", "\'", $txt);
+  $txt = preg_replace('/[\r\n]+/', '', $txt);
+  return $txt;
+}
+
+/**
+ * MENU_CALLBACK function for /todolist/create_task.
+ */
+function todolist_create_task() {
+  if (user_access('create tasks'))
+  if (isset($_REQUEST['nid']) && isset($_REQUEST['sort']) && isset($_REQUEST['task'])) {
+    db_query("INSERT INTO {todolist_task} SET nid = %d, `sort` = %d, task = '%s';", $_REQUEST['nid'], $_REQUEST['sort'], $_REQUEST['task']);
+    $id = 'task-'. db_result(db_query("SELECT tid FROM {todolist_task} ORDER BY tid DESC LIMIT 1;"));
+    todolist_ok_js(); ?>
+TodoList.add_incomplete_list();
+$('.todolist.incomplete').append('<li class="task" id="<?php print $id ?>"><input type="checkbox" name="<?php print $id ?>" /><?php print _todolist_js_safe($_POST['task']) ?></li>');
+$('#<?php print $id ?>').each(TodoList.add_nub).each(TodoList.bind_task).Highlight(1000, '#ff0');
+$('.todolist.incomplete').SortableAddItem($('#<?php print $id ?>').get(0));
+    <?php exit;
+  }
+  else todolist_bad_request();
+}
+
+/**
+ * MENU_CALLBACK function for /todolist/toggle_task.
+ */
+function todolist_toggle_task() {
+  if (isset($_REQUEST['id']) && isset($_REQUEST['sort']) && isset($_REQUEST['checked'])) {
+    $completed = time();
+    db_query("UPDATE {todolist_task} SET status = %d, `sort` = %d WHERE tid = %d", $_REQUEST['checked']? $completed : 0, $_REQUEST['sort'], substr($_REQUEST['id'], 5));
+    todolist_ok_js();
+    if ($_REQUEST['checked'] && user_access('complete tasks')): ?>
+$('#<?php print $_REQUEST['id'] ?> input[@type=checkbox]').after('<a href="javascript:void(0)" title="Delete this task" class="delete" onclick="return TodoList.delete_task(\'<?php print $_REQUEST['id'] ?>\')">Delete</a> <span><?php print date('M d', $completed) ?></span> ');
+if (!$('.todolist.complete').length) $('<ul class="todolist complete"></ul>').insertAfter('#todolist-add-task-form');
+$('#<?php print $_REQUEST['id'] ?>').prependTo('.todolist.complete').each(TodoList.unbind_nub).Highlight(1000, '#ff0');
+    <?php elseif (user_access('uncomplete tasks')): ?>
+$('#<?php print $_REQUEST['id'] ?> > a.delete').remove();
+$('#<?php print $_REQUEST['id'] ?> span').remove();
+TodoList.add_incomplete_list();
+$('#<?php print $_REQUEST['id'] ?>').appendTo('.todolist.incomplete').each(TodoList.bind_nub).Highlight(1000, '#ff0');
+    <?php endif;
+    exit;
+  }
+  else todolist_bad_request();
+}
+
+/**
+ * MENU_CALLBACK function for /todolist/delete_task.
+ */
+function todolist_delete_task() {
+  if (user_access('delete tasks'))
+  if (isset($_REQUEST['id'])) {
+    db_query("DELETE FROM {todolist_task} WHERE tid = %d", substr($_REQUEST['id'], 5));
+    todolist_ok_js(); ?>
+$('#<?php print $_REQUEST['id'] ?>').remove();
+    <?php exit;
+  }
+  else todolist_bad_request();
+}
+
+/**
+ * MENU_CALLBACK function for /todolist/reorder_task.
+ */
+function todolist_reorder_task() {
+  if (user_access('reorder tasks'))
+  foreach ($_REQUEST as $k => $tasks) {
+    if (substr($k, 0, 9) == 'todolist-') {
+      foreach ($tasks as $order => $task) {
+        $sql .= 'WHEN '. substr($task, 5) .' THEN '. $order .' ';
+      }
+    }
+  }
+  if ($sql) {
+    db_query("UPDATE {todolist_task} SET `sort` = CASE tid ". $sql ." END;");
+    todolist_ok_js();
+    exit;
+  }
+  else todolist_bad_request();
+}
+
+/**
+ * MENU_CALLBACK function for /todolist/edit_task.
+ */
+function todolist_edit_task() {
+  if (isset($_REQUEST['tid']) && isset($_REQUEST['task'])) {
+    db_query("UPDATE {todolist_task} SET task = '%s' WHERE tid = %d", $_REQUEST['task'], $_REQUEST['tid']);
+    $task = db_fetch_object(db_query("SELECT tid, status, task FROM {todolist_task} WHERE tid = %d", $_REQUEST['tid']));
+    $field = theme('todolist_task', $task);
+    todolist_ok_js(); ?>
+$('#task-<?php print $_REQUEST['tid'] ?>').unbind('mouseover').unbind('mouseout').find('form').remove();
+$('#task-<?php print $_REQUEST['tid'] ?>').html('<?php print _todolist_js_safe($field['data']) ?>').each(TodoList.bind_nub).Highlight(1000, '#ff0');
+$('.todolist.incomplete').SortableAddItem($('#task-<?php print $_REQUEST['tid'] ?>').get(0));
+    <?php exit;
+  }
+  else if (isset($_REQUEST['id'])) {
+    $task = db_fetch_object(db_query("SELECT tid, task FROM {todolist_task} WHERE tid = %d", substr($_REQUEST['id'], 5)));
+    $html = drupal_get_form('todolist_edit_task_form', $task);
+    todolist_ok_js(); ?>
+$('#<?php print $_REQUEST['id'] ?>').DraggableDestroy();
+$('#<?php print $_REQUEST['id'] ?>').unbind('mouseover').unbind('mouseout').text('').find('input').remove();
+$('#<?php print $_REQUEST['id'] ?>').append('<?php print _todolist_js_safe($html) ?>');
+$('#<?php print $_REQUEST['id'] ?> form').submit(TodoList.edit_task).find('textarea').focus();
+    <?php exit;
+  }
+  else todolist_bad_request();
+}

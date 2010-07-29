@@ -1,0 +1,47 @@
+<?php
+/**
+ * Implementation of hook_install().
+ */
+function uauto_install() {
+  drupal_install_schema('uauto');
+}
+/**
+ * Implementation of hook_schema().
+ */
+function uauto_schema() {
+  $schema['uauto'] = array(
+    'description' => t('Table that caches the search results for uauto on demand.'),
+    'fields' => array(
+      'text' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => t('User entered Text'),
+      ),
+      'dest' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => t('Mapped url'),
+      ),
+      'description' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+        'description' => t('Description / Options to identify the placement'),
+      ),
+    ),
+    'primary key' => array('text'),
+  );
+  
+  return $schema;
+}
+/**
+ * Implementation of hook_uninstall().
+ */
+function uauto_uninstall() {
+  drupal_uninstall_schema('uauto');
+  db_query("DELETE FROM {variable} WHERE name LIKE 'uauto_%'"); 
+  cache_clear_all('variables', 'cache');
+}

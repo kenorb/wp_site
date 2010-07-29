@@ -1,0 +1,13 @@
+The following lists email applications have been tested and appear to be compatible with HTML Mail.
+If you use a email application which is not listed here maybe you could assist in testing this module with your software.
+
+Application:
+* Thunderbird 1.5
+*
+
+Webmail:
+* Yahoo Mail
+*
+
+Not compatible:
+*

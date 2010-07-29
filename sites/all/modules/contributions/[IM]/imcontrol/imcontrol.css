@@ -1,0 +1,71 @@
+/* $Id$ */
+
+/*
+ * Style to format the user embedded messenger
+ */
+
+  /* Main content div */
+  #imcontrol
+  {
+    padding:5px 0 0 0;
+  }
+  
+  #imcontrol_clear
+  {
+    clear:left;
+  }
+  
+  /* Embed messenger frame */
+  #imcontrol_frame
+  {
+    width:75%;
+	height:400px;
+	float:left;
+    border: solid 1px #CCCCCC;
+  }
+  
+  /* Main div of additional messengers */
+  #imcontrol_extra
+  {
+    width:24%;
+	float:left;
+	text-align:center;
+  }
+  
+  /* Format for buttons with embedded messenger */
+  #imcontrol_extra #imcontrol_yahoo, #imcontrol_extra #imcontrol_qq, #imcontrol_extra #imcontrol_skype
+  {
+    padding:5px 0 0 0;
+  }
+  
+  #imcontrol_extra #imcontrol_skype
+  {
+    padding-bottom:10px;
+  }
+  
+  /* Different format for buttons without embed */
+  #imcontrol_extras #imcontrol_yahoo, #imcontrol_extras #imcontrol_qq
+  {
+    float:left;
+	padding:0 10px 0 0;
+  }
+  
+  /* Center the Skype button */
+  #imcontrol_extras #imcontrol_skype
+  {
+    margin-top:5px;
+	float: right;
+  }
+  
+  /* Center the Yahoo button */
+  #imcontrol_extras #imcontrol_yahoo
+  {
+    margin-top:2px;
+  }
+  
+  /* Windows Live button */
+  #imcontrol_button
+  {
+    float:left;
+	padding:0 10px 0 0;
+  }

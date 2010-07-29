@@ -1,0 +1,14 @@
+;$Id: ulink.info,v 1.2 2008/03/08 10:26:36 garthee Exp $ 
+name = ulink
+description = A skeleton module Provides API for universal filtering and target oriented rendering. 
+package = "Input filters" 
+requirements[] = filter
+project = "uLink"
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-03-08
+version = "6.x-1.1"
+core = "6.x"
+project = "ulink6"
+datestamp = "1204973110"
+

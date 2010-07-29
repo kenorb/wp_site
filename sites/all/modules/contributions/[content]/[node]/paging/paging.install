@@ -1,0 +1,40 @@
+<?php
+// $Id: paging.install,v 1.4 2009/01/17 21:23:15 Gurpartap Exp $
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function paging_uninstall() {
+  // Delete all variables starting with "paging" in their name.
+  db_query("DELETE FROM {variable} WHERE name LIKE 'paging%'");
+  db_query("DELETE FROM {filters} WHERE module = 'paging'");
+}
+
+/**
+ * Implementation of hook_update_N().
+ */
+function paging_update_1() {
+  $ret = array();
+  if (module_exists('search')) {
+    module_invoke('node', 'search', 'reset');
+    module_invoke('node', 'update_index');
+    node_update_shutdown();
+    $status = module_invoke('node', 'search', 'status');
+    $percentage = ((int)min(100, 100 * ($status['total'] - $status['remaining']) / max(1, $status['total']))) . '%';
+    $ret[] = array('success' => TRUE, 'query' => t('!percentage of the site has been indexed.', array('!percentage' => $percentage)));
+  }
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ */
+function paging_update_2() {
+  if (db_result(db_query("
+    SELECT 1 FROM {system}
+    WHERE type = 'module' AND name = 'paging_gsitemap' AND (status = 1 OR schema_version >= 0)
+  "))) {
+    drupal_install_modules(array('paging_xmlsitemap'));
+  }
+  return array();
+}

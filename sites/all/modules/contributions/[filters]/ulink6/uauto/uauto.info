@@ -1,0 +1,15 @@
+;$Id: uauto.info,v 1.1 2008/03/08 10:38:15 garthee Exp $
+name = uauto
+description = Allows auto-completion of links.
+package = "Input filters"
+project = "ulink-addons"
+requirements[] = ulink
+core = 6.x
+
+
+; Information added by drupal.org packaging script on 2008-03-08
+version = "6.x-1.1"
+core = "6.x"
+project = "ulink6"
+datestamp = "1204973110"
+

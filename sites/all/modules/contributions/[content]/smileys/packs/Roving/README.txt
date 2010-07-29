@@ -1,0 +1,1 @@
+Please don't rip the Roving smileys and use them without this module. Couzin Hub <http://drupal.org/user/133581/contact> spent quite some time creating those little buggers for dedicated use with the smileys module for Drupal.

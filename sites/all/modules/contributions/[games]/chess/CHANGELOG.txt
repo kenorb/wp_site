@@ -1,0 +1,38 @@
+
+* by MGN: Added new Drupal 6 branch of chess module
+
+The database is not updating the 'chess_info' table... not sure why... ARGH! Must be because of the addition of the new variables for check and checkmate... try not updating those perhaps?
+
+0.09
+* Changed the row numbers to be right... that was a stupid mistake!
+
+0.08
+
+* Changed the default directory where chess pieces are found
+* Included the chess pieces in the download, and placed them in the default directory
+* Added a second block option, that displays (in notation form) the previous moves
+* Added a new setting (at /admin/settings/chess) to configure the number of previous moves to display
+* Moves can be undone
+	* When moves are undone, 'check' and 'checkmate' are always unset.
+	* If there are no moves to undo (i.e. no moves have been made), then the undo button is not shown.
+
+0.07
+
+* Current players now the default values when editing a chess node
+* Added ability to change the dimensions of the chess pieces, go to /admin/settings/chess
+* Altered the layout of the move entry form
+* Updated uninstall to remove new variables for width and height of chess pieces
+* Changed the weight of the some form elements
+
+NEW in 0.06:
+
+* Added uninstaller
+* No longer required CCK module at all
+* Custom node type created
+* No longer need to select the chess nodetype to display the board.
+* Players in a game can now be changed
+* changed weight for the move form
+
+KNOWN ISSUES in Version 0.06:
+
+* When editing a chess node, the default values for the players is not the current players

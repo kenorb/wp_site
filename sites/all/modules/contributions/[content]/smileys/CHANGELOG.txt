@@ -1,0 +1,69 @@
+CVS REVISION: $Id: CHANGELOG.txt,v 1.3.2.8 2009/01/05 08:50:25 Gurpartap Exp $
+
+05 January 2008
+----------------------------
+- Refined admin UI by
+  - Removing weight fields when tables are draggable.
+  - Moving operations fields into a compact nub on the left to the smiley.
+- Added the ability to change field names, and hence the ability to create new fields.
+- Popup now displays the name and acronyms associated of a smiley being hovered.
+- Smileys are now not inserted in <code> and <pre> tags.
+- Improved the installation and readme instructions.
+- Improved support for PostgreSQL database installations.
+
+08 December 2008
+----------------------------
+- Added jQuery UI(with jquery_ui module support) and the dialog plugin support for Smileys dialog window.
+- Added optional resizable and draggable jQuery UI plugins.
+- Added configuration for setting dialog window's width and height.
+- Added better end-user interface in dialog window.
+- Moved JS and CSS files into scripts folder.
+
+03 December 2008
+----------------------------
+- Added support for Adium emoticons <http://www.adiumxtras.com/index.php?a=cats&cat_id=2> in Smileys Import module.
+- New Smileys package: "Roving" by Hubert Florin (Previous Example package might stay in D6 releases for legacy reasons).
+- New visibility state: Invisible i.e. The smiley doesn't appear in select box, nor in popup, but still renders well.
+
+08 June 2008
+----------------------------
+- Added customizable categories for smileys. Package name is the category for imported smileys.
+- Added weight to smileys, to sort them as desired.
+- Implemented drag and drop for weighing and categorizing of smileys.
+
+07 April 2008
+----------------------------
+- Updated for Drupal 6.x.
+
+24 January 2008
+----------------------------
+- Added tinyMCE, FCKeditor support.
+- Added promote Smiley option, to promote it to select box, and optionally view all in the popup widget.
+- Added option to expand Smiley select box by default.
+- Added setting to enable Smileys select box for particular nodes types.
+
+23 April 2007
+----------------------------
+- Inline popup widget with clickable smileys.
+
+16 November 2006
+----------------------------
+- Include new smileys import module, more usability features added to original module.
+- Clickable smileys to insert acronyms into textareas.
+
+11 August 2004
+----------------------------
+- Updated for new filter system.
+
+23 January 2002
+----------------------------
+- Added acronyms in the form of ":word:" in the example setup.
+- Added a dynamic block that shows on submission pages as a quick reference.
+
+23 December 2001
+----------------------------
+- Added smileys with noses (hyphens) in the example setup.
+
+20 December 2001
+----------------------------
+- Initial release

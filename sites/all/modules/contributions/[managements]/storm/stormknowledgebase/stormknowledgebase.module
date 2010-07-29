@@ -1,0 +1,251 @@
+<?php
+// $Id: stormknowledgebase.module,v 1.3.4.13 2009/01/06 15:16:22 robertogerola Exp $
+
+/**
+ * @file
+ */
+
+function stormknowledgebase_help($path, $arg) {
+  $o = '';
+
+  switch ($path) {
+    case "admin/help#stormknowledgebase":
+      $o = '<p>'. storm_t("Provides knowledgebase support for Storm", 'knowledgebase') .'</p>';
+      break;
+  }
+
+  return $o;
+}
+
+function stormknowledgebase_perm() {
+  return array(
+                'Storm knowledgebase: access',
+                'Storm knowledgebase: add',
+                'Storm knowledgebase: delete all',
+                'Storm knowledgebase: delete own',
+                'Storm knowledgebase: edit all',
+                'Storm knowledgebase: edit own',
+                'Storm knowledgebase: view all',
+                'Storm knowledgebase: view own',
+  );
+}
+
+function stormknowledgebase_access($op, $node, $account=NULL) {
+  if (empty($account)) {
+    global $user;
+    $account = $user;
+  }
+
+  if ($op == 'create') {
+    return user_access('Storm knowledgebase: add');
+  }
+
+  if (is_numeric($node)) $node = node_load($node);
+
+  if ($op == 'delete') {
+    if (user_access('Storm knowledgebase: delete all')) {
+      return TRUE;
+    }
+    else if (user_access('Storm knowledgebase: delete own') && ($account->uid == $node->uid)) {
+      return TRUE;
+    }
+  }
+
+  if ($op == 'update') {
+    if (user_access('Storm knowledgebase: edit all')) {
+      return TRUE;
+    }
+    else if (user_access('Storm knowledgebase: edit own') && ($account->uid == $node->uid)) {
+      return TRUE;
+    }
+  }
+
+  if ($op == 'view') {
+    if (user_access('Storm knowledgebase: view all')) {
+      return TRUE;
+    }
+    else if (user_access('Storm knowledgebase: view own') && ($account->uid == $node->uid)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+function stormknowledgebase_access_sql($sql, $where = array()) {
+  if (user_access('Storm knowledgebase: view all')) {
+    $where[] = "'storm_access'='storm_access'";
+    return storm_rewrite_sql($sql, $where);
+  }
+
+  global $user;
+
+  $cond = '';
+  if (user_access('Storm knowledgebase: view own')) {
+    $cond .= 'n.uid='. $user->uid;
+  }
+  if (empty($cond)) $cond = '0=1';
+  $where[] = $cond;
+
+  $where[] = "'storm_access'='storm_access'";
+  return storm_rewrite_sql($sql, $where);
+}
+
+function stormknowledgebase_storm_rewrite_where_sql($query, $primary_table, $account) {
+  static $conds = array();
+
+  if ($conds[$account->uid]) {
+    return $conds[$account->uid];
+  }
+
+  if (preg_match("/'storm_access'='storm_access'/", $query)) {
+    $cond = '';
+  }
+  else {
+    if (user_access('Storm knowledgebase: view all', $account)) {
+      return '';
+    }
+
+    $cond = '';
+    if (user_access('Storm knowledgebase: view own', $account)) {
+      $cond .= " ${primary_table}.uid=". $account->uid;
+    }
+    if ($cond) {
+      $cond = " WHEN 'stormknowledgebase' THEN IF($cond,1,0) ";
+    }
+    else {
+      $cond = " WHEN 'stormknowledgebase' THEN 0 ";
+    }
+  }
+
+  $conds[$account->uid] = $cond;
+  return $cond;
+}
+
+function stormknowledgebase_menu() {
+  $items = array();
+
+  $items['storm/knowledgebase'] = array(
+            'title' => storm_t('Knowledge base', 'knowledgebase'),
+            'description' => storm_t('Storm Knowledge base', 'knowledgebase'),
+            'page callback' => 'stormknowledgebase_list',
+            'access arguments' => array('Storm knowledgebase: access'),
+            'type' => MENU_NORMAL_ITEM,
+            'file' => 'stormknowledgebase.admin.inc',
+  );
+
+  return $items;
+}
+
+function stormknowledgebase_theme() {
+  return array(
+    'stormknowledgebase_view' => array(
+      'file'      => 'stormknowledgebase.theme.inc',
+      'arguments' => array('node', 'teaser', 'page'),
+    ),
+    'stormknowledgebase_list' => array(
+      'file'      => 'stormknowledgebase.theme.inc',
+      'arguments' => array('header', 'knowledgebase'),
+    ),
+  );
+}
+
+function stormknowledgebase_node_info() {
+  return array(
+    'stormknowledgebase' => array(
+      'name' => storm_t('Knowledge base', 'knowledgebase'),
+      'module' => 'stormknowledgebase',
+      'description' => storm_t("A knowledge base for Storm.", 'knowledgebase'),
+      'has_body' => true,
+    )
+  );
+}
+
+function stormknowledgebase_form(&$node) {
+  $breadcrumb = array();
+  $breadcrumb[] = l(t('Storm'), 'storm');
+  $breadcrumb[] = l(t('Knowledge base'), 'storm/knowledgebase');
+  drupal_set_breadcrumb($breadcrumb);
+
+  $type = node_get_types('type', $node);
+
+  $form['#attributes']['class'] = 'stormcomponent_node_form';
+
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => check_plain($type->title_label),
+    '#required' => TRUE,
+    '#default_value' => $node->title,
+    '#weight' => -49,
+  );
+
+  if ($type->has_body) {
+    $form['body_filter']['#weight'] = -48;
+    $form['body_filter']['body'] = array(
+      '#type' => 'textarea',
+      '#title' => check_plain($type->body_label),
+      '#default_value' => $node->body,
+      '#rows' => 20,
+      '#required' => ($type->min_word_count > 0));
+    $form['body_filter']['format'] = filter_form($node->format);
+  }
+
+  $form['topic'] = array(
+    '#weight' => -47,
+    '#type' => 'select',
+    '#title' => storm_t('Topic', 'knowledgebase'),
+    '#default_value' => $node->topic,
+    '#options' => 
+k,
+  );
+
+  return $form;
+}
+
+function stormknowledgebase_view($node, $teaser = FALSE, $page = FALSE) {
+  $breadcrumb = array();
+  $breadcrumb[] = l(t('Storm'), 'storm');
+  $breadcrumb[] = l(t('Knowledge base'), 'storm/knowledgebase');
+  drupal_set_breadcrumb($breadcrumb);
+
+  return theme('stormknowledgebase_view', $node, $teaser, $page);
+}
+
+function stormknowledgebase_insert($node) {
+  db_query("INSERT INTO {stormknowledgebase}
+          (vid, nid, topic)
+          VALUES
+          (%d, %d, '%s')",
+          $node->vid, $node->nid, $node->topic);
+}
+
+function stormknowledgebase_update($node) {
+  // if this is a new node or we're adding a new revision,
+  if ($node->revision) {
+    stormknowledgebase_insert($node);
+  }
+  else {
+    db_query("UPDATE {stormknowledgebase} SET
+        topic='%s' WHERE vid = %d",
+        $node->topic, $node->vid);
+  }
+}
+
+function stormknowledgebase_nodeapi(&$node, $op, $teaser, $page) {
+  switch ($op) {
+    case 'delete revision':
+      // Notice that we're matching a single revision based on the node's vid.
+      db_query('DELETE FROM {stormknowledgebase} WHERE vid = %d', $node->vid);
+      break;
+  }
+}
+
+function stormknowledgebase_delete($node) {
+  // Notice that we're matching all revision, by using the node's nid.
+  db_query('DELETE FROM {stormknowledgebase} WHERE nid = %d', $node->nid);
+}
+
+function stormknowledgebase_load($node) {
+  $additions = db_fetch_object(db_query('SELECT * FROM {stormknowledgebase} WHERE vid = %d', $node->vid));
+  return $additions;
+}
+

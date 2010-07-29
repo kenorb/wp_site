@@ -1,0 +1,17 @@
+6.x-2.x-dev
+
+* WIP add simpletest for LM Paypal
+
+* split lm_paypal.module into admin and ipn include files to reduce the amount
+  of code being loaded on every page request.
+
+* update IPN table definition to match format coming from the IPN simulator
+
+* WIP change admin settings to tabs, rather than nested menus
+
+* remove lots of dynamic SQL generation in favor of drupal_write_record()
+
+* remove custom HTTP code in favor of drupal_http_request()
+
+* WIP remove grotty packing of UID into 16 bits in IPN->custom
+

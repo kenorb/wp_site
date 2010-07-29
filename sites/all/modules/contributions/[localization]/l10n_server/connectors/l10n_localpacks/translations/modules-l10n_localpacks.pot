@@ -1,0 +1,101 @@
+# $Id: modules-l10n_localpacks.pot,v 1.1.2.1 2008/10/14 22:18:07 goba Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  l10n_localpacks.module,v 1.1.2.9 2008/01/17 01:40:33 goba
+#  l10n_localpacks.info,v 1.1.2.1 2007/10/03 22:25:35 goba
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-02-01 20:55+0100\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: l10n_localpacks.module:19
+msgid "The local package connector for localization community looks at a local directory and handles packages you upload there, making them available for localization on the web interface. Set up the properties of that directory here. The <a href=\"@scan_link\">Scan tab</a> allows you to initiate a manual scan on files in the directory, but it is advised to set up cron to check for new packages periodically."
+msgstr ""
+
+#: l10n_localpacks.module:30
+msgid "Local package connector"
+msgstr ""
+
+#: l10n_localpacks.module:32
+msgid "Configure where does the server look for files locally."
+msgstr ""
+
+#: l10n_localpacks.module:38
+msgid "Configure"
+msgstr ""
+
+#: l10n_localpacks.module:43
+msgid "Scan"
+msgstr ""
+
+#: l10n_localpacks.module:77
+msgid "Local packages directory"
+msgstr ""
+
+#: l10n_localpacks.module:78
+msgid "The directory on the local file system to be scanned for packages. Either relative to the Drupal site root or an absolute path on your file system. Drupal should have read access to the files and directories found there. Projects are identified based on subdirectory names or the first part of filenames if put directly in the root directory. Releases are identified based on the second part of package filenames. Examples: Drupal/drupal-6.0.tar.gz is from project \"Drupal\" in version 6.0, while og-5.x-2.0-alpha1 is project \"og\" in version 5.x-2.0-alpha1."
+msgstr ""
+
+#: l10n_localpacks.module:84
+msgid "Number of projects to scan at once"
+msgstr ""
+
+#: l10n_localpacks.module:85
+msgid "The number of projects to scan on a manual or cron run. Scanning is synchronous, so you need to wait for Drupal to extract and parse the tarball content."
+msgstr ""
+
+#: l10n_localpacks.module:91
+msgid "Scan new projects on every cron run"
+msgstr ""
+
+#: l10n_localpacks.module:94
+msgid "It is advised to set up a regular cron run to parse new package files, instead of hitting the Scan tab manually."
+msgstr ""
+
+#: l10n_localpacks.module:97
+msgid "Assign drupal.org home links to packages"
+msgstr ""
+
+#: l10n_localpacks.module:100
+msgid "Assigns http://drupal.org/project/<em>project</em> type home links to projects. These home links are used to guide users to the home pages of the projects. The setting only affects newly parsed packages."
+msgstr ""
+
+#: l10n_localpacks.module:151
+msgid "File name should have project codename and version number included separated with hyphen, such as drupal-5.2.tar.gz."
+msgstr ""
+
+#: l10n_localpacks.module:168
+msgid "@release was already parsed, no need to scan again."
+msgstr ""
+
+#: l10n_localpacks.module:57
+msgid "administer localization community for local packages"
+msgstr ""
+
+#: l10n_localpacks.module:0
+msgid "l10n_localpacks"
+msgstr ""
+
+#: l10n_localpacks.info:0
+msgid "Localization community for local packages"
+msgstr ""
+
+#: l10n_localpacks.info:0
+msgid "Extracts translateable strings from local package files."
+msgstr ""
+
+#: l10n_localpacks.info:0
+msgid "Localization server"
+msgstr ""
+

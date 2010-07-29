@@ -1,0 +1,12 @@
+; $Id: glossary.info,v 1.1.2.2.2.2 2008/06/10 22:20:06 nancyw Exp $
+name = Glossary
+description = Maintain a glossary on your site.
+dependencies[] = taxonomy
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-01-20
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "glossary"
+datestamp = "1232453293"
+

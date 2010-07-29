@@ -1,0 +1,66 @@
+<p>
+<h2>Gallery 2 </h2>
+<p>[<a href="http://gallery.menalto.com/downloads" title="http://gallery.menalto.com/downloads" target="_blank">Download</a>] Gallery2 and <a href="http://codex.gallery2.org/Gallery2:How_do_I_Install_Gallery2" title="Gallery2:How do I Install Gallery2" target="_blank">install</a> it according to documentation. Make sure to get the 'full' package  because 'minimal' and 'typical' do not contain the required  'ImageBlock' (and 'ImageFrame') plugins. Gallery2 should be installed  *inside* (or below) your Drupal root directory so that it's accessible  by the same website. If you want/need to install Gallery2 somewhere  else (e.g. at the same level as your Drupal codebase), you should  create a symlink to G2 from inside your Drupal folder, e.g. </p>
+<pre>cd /var/www/drupaldir<br />ln -s /path/to/gallery2  </pre>
+<p><strong>Warning - Do not place your Gallery2 codebase at &quot;/drupaldir/gallery&quot;.</strong> We usually recommend that you place G2 (or the symlink) in  &quot;/drupaldir/gallery2&quot;, but you can place it anywhere you like except in  &quot;/drupaldir/gallery&quot; because this conflicts with the Drupal gallery  module path as Drupal assumes that <em>http://www.drupalsite.com/gallery</em> refers to the Drupal module (and not to the G2 codebase). </p>
+<p><em>FYI: In principle you can even place G2 outside the Drupal  root directory and it should still work. The reason why we highly  recommend you to keep G2 inside the Drupal dir is a limitation of the  Drupal API and some advanced features that require this configuration.  The drupal_add_js/css() functions do not support external paths. But  without these functions we cant preserve a certain order of js/css  includes in the resulting page. This is important for certain purposes,  i.e. lightbox integration, jquery usage, ...</em> </p>
+<p>If you want/need a Gallery2 multisite setup, we recommend that  you place the individual sites at &quot;/drupaldir/sites/yoursite/gallery2&quot;. </p>
+<p>Make sure you have the &quot;Image Block&quot; plugin (<a href="http://codex.gallery2.org/Gallery2:Modules:imageblock" title="Gallery2:Modules:imageblock" target="_blank">Gallery2:Modules:imageblock</a>)  installed and enabled in G2 before proceeding with the embedded setup.  You should also configure &quot;URL Rewrite&quot; in your standalone Gallery2 and  set the &quot;Rules&quot; to </p>
+<pre>Show Item: &quot;gallery/v/%path%&quot;  </pre>
+<p>Please read the <a href="http://codex.gallery2.org/Integration:Drupal:Installation:URL_Rewrite" title="Integration:Drupal:Installation:URL Rewrite" target="_blank">URL Rewrite</a> tutorial for more information. </p>
+<p>If you plan to create a multilingual site (e.g. using the i18n module in Drupal), do NOT prefix the paths with &quot;%language%&quot;.</p>
+<h2> Drupal </h2>
+<p><strong>Log out of your standalone Gallery2 to avoid session issues during embedded setup.</strong> </p>
+<p>Get the latest gallery module package from drupal.org (<a href="http://drupal.org/project/gallery" title="http://drupal.org/project/gallery" target="_blank">[1]</a>). Unpack the archive into your &quot;/modules&quot; (or &quot;/sites/all/modules&quot; or &quot;/sites/yoursite/modules&quot;) directory. <em>Unless explicitly stated the most recent version of gallery module  for your Drupal core release always works with the latest version of  Gallery2.</em> </p>
+<p>Enable the gallery module (and optionally the other modules from  the package) at Administer &gt; Site building &gt; Modules  (admin/build/modules). To setup the embedded gallery you still need to  specify some details of your G2 installation. Start the installation  wizard provided by the gallery module by navigating to Administer &gt;  Site configuration &gt; Gallery settings (admin/settings/gallery). <em>You can always return to the &quot;Install&quot; tab  (admin/settings/gallery/install) later to get a configuration and  status report of your embedded G2 and its plugins.</em> </p>
+<p>The install wizard should be quite intuitive to walk through.  Please read the help text provided for the individual steps carefully  as it already contains all instructions you need to know.</p>
+<h4> Step 1: PHP Memory Test </h4>
+<p>Usually there is nothing to do in this step. It's just to ensure  that a minimum of 24 MB of php memory is available on your server.  Depending on your actual configuration (mainly the number of Drupal  modules and G2 plugins enabled) you might even need more memory to run  Gallery2 embedded.</p>
+<h4> Step 2: Gallery2 location settings </h4>
+<p>The Gallery2 location is the most wanted piece of information  required to successfully embed G2 in Drupal. For most users the &quot;Auto  Configuration&quot; should work, but for certain host configurations you  might require to switch to &quot;Manual Configuration&quot; to complete this  step. </p>
+<p>Lets assume the following directory layout for single-site G2 </p>
+<pre>WebPath to Drupal:       &quot;/drupal5/&quot;
+ServerPath to Drupal:    &quot;/var/www/drupal5/&quot;
+ServerPath to Gallery2:  &quot;/var/www/drupal5/gallery2/&quot;  </pre>
+<p>and especially for multi-site </p>
+<pre>ServerPath to Gallery2: &quot;/var/www/drupal5/sites/yoursite/gallery2/&quot;
+(ServerPath to Gallery codebase = ServerPath of single-site G2)  </pre>
+<p>If your domain points directly to your Drupal install, you may omit  &quot;/drupal5/&quot; in the sample URLs (but not in the filesystem paths). All  examples in the next section refer to the above configuration.</p>
+<h5> Auto Configuration </h5>
+<p>By default the install wizard tries to derive the filesystem path from the &quot;Gallery2 URL or URI&quot; you enter here. For example: </p>
+<pre>single-site: &quot;/drupal5/gallery2/&quot;
+multi-site:  &quot;/drupal5/sites/yoursite/gallery2/&quot;  </pre>
+<p>(or the respective full URLs to Gallery2, e.g. <em>http://www.example.com/drupal5/gallery2/</em> or <em>http://www.example.com/gallery2/</em> if your domain points directly to Drupal) </p>
+<p>In case you are confident that your path is correct and the  module still fails to detect Gallery2, make sure the G2 folder is not  protected by your server management system (i.e. cPanel, Plesk, VHCS2,  ...).  If for some reason auto-detection fails completely, simply switch to  &quot;Manual Configuration&quot; instead.</p>
+<h5> Manual Configuration </h5>
+<p>The &quot;Manual Configuration&quot; mode lets you enter all values manually  (and does not rely on the auto-detect mechanism). The &quot;Gallery2 URL or  URI&quot; value should be the same as above, &quot;Gallery2 filesystem path&quot;  refers to the absolute location of G2 in your server's filesystem  (including the base path to your webroot). </p>
+<p>Single-site: </p>
+<pre>Gallery2 URL or URI:       &quot;/drupal5/gallery2/&quot;
+Gallery2 filesystem path:  &quot;/var/www/drupal5/gallery2/&quot;
+Embed URI:                 &quot;/drupal5/index.php?q=gallery&quot;  </pre>
+<p>or multi-site: </p>
+<pre>Gallery2 URL or URI:       &quot;/drupal5/sites/yoursite/gallery2/&quot;
+Gallery2 filesystem path:  &quot;/var/www/drupal5/sites/yoursite/gallery2/&quot;
+Embed URI:                 &quot;/drupal5/index.php?q=gallery&quot;  </pre>
+<p>If you plan to use the i18n module for multilingual sites, make sure  the language prefix is NOT included in the &quot;Embed URI&quot; value.</p>
+<h4> Step 3: Drupal Modules / Gallery2 Plugins </h4>
+<p>Some Gallery2 plugins are required for embedded operation and some  are better uninstalled to avoid conflicts with Drupal. This step is to  notify you of these recommended/missing or unneeded Gallery2 plugins  and optional Drupal modules you can install to extend functionality.</p>
+<h4> Step 4: Clean URL / URL Rewrite </h4>
+<p>This step requires the &quot;URL Rewrite&quot; plugin enabled and configured  in standalone Gallery2. Usually the wizard is able to auto-detect the  path to the .htaccess file of your <strong>Drupal</strong> installation.  Otherwise you have to specify it here. Thats needed because G2 will add  its own rewrite rules to resolve short urls in Drupal. You may also  decide to skip this step in case you dont want/need short URLs for your  embedded gallery. </p>
+<p>Please read the <a href="http://codex.gallery2.org/Integration:Drupal:Installation:URL_Rewrite" title="Integration:Drupal:Installation:URL Rewrite" target="_blank">URL Rewrite</a> tutorial for more information.</p>
+<h4> Step 5: Initial User Synchronization </h4>
+<p>It is essential for the embedded Gallery to work correctly that your  Drupal users/groups are sync correctly with their Gallery2  counterparts. Missing user/group mappings will cause severe issues in  embedded operation. For that reason it is highly recommended that you  synchronize all users/groups during installation. </p>
+<p>However if you have a large number of users in Gallery2 already  and you want to import them into Drupal, you might skip this step and  use the &quot;Advanced Sync&quot; (admin/user/gallery/advanced) options instead.</p>
+<h2> Post-Install tasks </h2>
+<p>At this point your gallery is ready for embedded operation. You may  now continue with the customization of your embedded gallery by  configuring various options of gallery module (see <a href="http://codex.gallery2.org/Integration:Drupal:Configuration" title="Integration:Drupal:Configuration" target="_blank">Configuration</a>). </p>
+<p>Most users want to enable at least the &quot;Gallery Navigation&quot;  block and/or the &quot;Gallery Image/Grid&quot; block. You can do so in the  Drupal &quot;Blocks&quot; administration at Administer &gt; Site building &gt;  Blocks (admin/build/block).</p>
+<h4> Access control </h4>
+<p>Also make sure that you grant your users access to the embedded  gallery. Browse to Administer &gt; User management &gt; Access control  and configure permissions for </p>
+<ul>
+  <li> access gallery </li>
+  <li> access standalone g2image </li>
+  <li> administer gallery settings </li>
+</ul>
+<p><br />
+  <strong>Thanks for reading this tutorial. We hope it helped to find your way  around the gallery module and its installation. Suggestions for  improving this document are always welcome.</strong> </p>
+</p>

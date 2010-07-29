@@ -1,0 +1,179 @@
+<?php
+// $Id: avatar_selection.install,v 1.1.2.9.2.11 2008/08/06 11:20:06 snpower Exp $
+
+/**
+ * @file
+ * The Avatar Selection module install file.
+ */
+
+/**
+ * Implementation of hook_schema().
+ *
+ * Generate the 'avatar_selection' sql table structure.
+ *
+ * @return $schema
+ *   The sql table structure.
+ */
+function avatar_selection_schema() {
+  $schema['avatar_selection'] = array(
+    'description' => t('List of available avatars and their names.'),
+    'fields' => array(
+      'aid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE, 'description' => t('Avatar identifier.')),
+      'avatar' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'description' => t('Avatar image filename.')),
+      'name' => array('type' => 'varchar', 'length' => 255, 'description' => t('Avatar name.')),
+      'weight' => array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'description' => t('Avatar weight.')),
+    ),
+    'primary key' => array('aid'),
+    'unique keys' => array('avatar' => array('avatar')),
+  );
+  $schema['avatar_selection_roles'] = array(
+    'fields' => array(
+      'aid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'description' => t('Avatar identifier.')),
+      'rid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'description' => t('Role identifier.')),
+    ),
+  );
+  $schema['avatar_selection_og'] = array(
+    'fields' => array(
+      'aid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'description' => t('Avatar identifier.')),
+      'ogid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'description' => t('Organic group identifier.')),
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ *
+ * Write table structure to the SQL database.
+ * If the 'user_picture' option is set to off, a warning will be printed.
+ */
+function avatar_selection_install() {
+  if (!variable_get('user_pictures', 0)) {
+    drupal_set_message(t('User Pictures option is disabled.  You will need to enable this option before you can use the Avatar Selection module.  You may configure this setting at the <a href="@url">User settings</a> page.', array('@url' => url('admin/user/settings'))));
+  }
+
+  drupal_install_schema('avatar_selection');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ *
+ * Remove all the variables, files and sql tables used by the module.
+ */
+function avatar_selection_uninstall() {
+  // Delete the variables we created.
+  variable_del('avatar_selection_disable_user_upload');
+  variable_del('avatar_selection_force_user_avatar_reg');
+  variable_del('avatar_selection_force_user_avatar');
+  variable_del('avatar_selection_avatar_per_page');
+  variable_del('avatar_selection_set_random_default');
+  variable_del('avatar_selection_distinctive_avatars');
+
+  // Delete the images.
+  $dir = file_create_path('avatar_selection') .'/';
+  $listings = file_scan_directory($dir, '.*\.(gif|GIF|Gif|jpg|JPG|Jpg|jpeg|JPEG|Jpeg|png|PNG|Png)', array('.', '..', 'CVS'), 0, FALSE);
+  if ($listings) {
+    foreach ($listings as $listing) {
+      file_delete($dir . $listing->basename);
+    }
+  }
+
+  // Drop the avatar_selection table.
+  drupal_uninstall_schema('avatar_selection');
+
+  // Clear the cache tables.
+  cache_clear_all(null, 'cache');
+  cache_clear_all(null, 'cache_filter');
+  cache_clear_all(null, 'cache_menu');
+  cache_clear_all(null, 'cache_page');
+}
+
+/**
+ * Adds to the current table structure another two columns, 'weight' and 'name'.
+ *
+ * Should have been created with avatar_selection_update_600x() naming
+ * convention, but too late now.
+ *
+ * @return
+ *    Array to which query results will be added.
+ */
+function avatar_selection_update_1() {
+  $ret = array();
+
+  db_add_field($ret, 'avatar_selection', 'weight', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
+  db_add_field($ret, 'avatar_selection', 'name', array('type' => 'varchar', 'length' => 255));
+  return $ret;
+}
+
+/**
+ * Updates the avatar entry so it's just a filename, rather than a path +
+ * filename.
+ *
+ * @return
+ *    Array to which query results will be added.
+ */
+function avatar_selection_update_6002() {
+  $ret = array();
+
+  $result = db_query("SELECT avatar FROM {avatar_selection}");
+  while ($avatar_info = db_fetch_object($result)) {
+    $avatar = $avatar_info->avatar;
+    $path_info = pathinfo($avatar);
+    $ret[] = update_sql("UPDATE {avatar_selection} SET avatar = '". $path_info['basename'] ."' WHERE avatar = '". $avatar ."'");
+  }
+
+  return $ret;
+}
+
+function avatar_selection_update_6003() {
+  $ret = array();
+
+  $schema['avatar_selection_roles'] = array(
+    'fields' => array(
+      'aid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'description' => t('Avatar identifier.')),
+      'rid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'description' => t('Role identifier.')),
+    ),
+  );
+  $schema['avatar_selection_og'] = array(
+    'fields' => array(
+      'aid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'description' => t('Avatar identifier.')),
+      'ogid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'description' => t('Organic group identifier.')),
+    ),
+  );
+
+  db_create_table($ret, 'avatar_selection_roles', $schema['avatar_selection_roles']);
+  db_create_table($ret, 'avatar_selection_og', $schema['avatar_selection_og']);
+
+  db_drop_primary_key($ret, 'avatar_selection');
+  db_drop_unique_key($ret, 'avatar_selection', 'avatar');
+  db_add_field($ret, 'avatar_selection', 'aid', array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE), array('primary key' => array('aid')));
+  db_add_unique_key($ret, 'avatar_selection', 'avatar', array('avatar'));
+
+  $result = db_query("SELECT aid, access, og_access FROM {avatar_selection}");
+  while ($avatar = db_fetch_object($result)) {
+    $avs_access = preg_split('/\s*,\s*/', $avatar->access);
+    $og_access = preg_split('/\s*,\s*/', $avatar->og_access);
+
+    if (count($avs_access) > 0) {
+      foreach ($avs_access as $access) {
+        if (!empty($access)) {
+          $ret[] = update_sql("INSERT INTO {avatar_selection_roles} (aid, rid) VALUES(". $avatar->aid .", ". $access .")");
+        }
+      }
+    }
+
+    if (count($og_access) > 0) {
+      foreach ($og_access as $access) {
+        if (!empty($access)) {
+          $ret[] = update_sql("INSERT INTO {avatar_selection_og} (aid, ogid) VALUES(". $avatar->aid .", ". $access .")");
+        }
+      }
+    }
+  }
+
+  db_drop_field($ret, 'avatar_selection', 'access');
+  db_drop_field($ret, 'avatar_selection', 'og_access');
+
+  return $ret;
+}

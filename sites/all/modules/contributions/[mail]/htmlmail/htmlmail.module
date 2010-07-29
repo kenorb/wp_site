@@ -1,0 +1,288 @@
+<?php
+// $Id: htmlmail.module,v 1.9.2.2 2008/11/04 07:22:11 chrisherberte Exp $
+
+/**
+ * @file
+ * This is the HTML Mail module to allow system email to send in HTML format.
+ */
+
+function htmlmail_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case "admin/help#htmlmail":
+      $output = '<p>'.  t('This is the HTML Mail module to allow system email to send in HTML format.') .'</p>';
+      break;
+  }
+  return $output;
+}
+
+function htmlmail_mail_alter(&$message) {
+  $message['headers'] = array(
+    'Content-Type' => 'text/html; charset=UTF-8;',
+  );
+
+  // as of d6 body may be array
+  $message['body'] = is_array($message['body']) ? implode("\n\n", $message['body']) : $message['body'];
+  
+  // The paragraph an break stuff
+  if (variable_get('htmlmail_autop', '1') == 1) {
+    $message['body'] = _htmlmail_autop($message['body']);
+  }
+  // Insert the preformatted HTML so the end user only needs to enter what goes between the <body> tags.
+  // this of course can be overridden in the admin settings for this module.
+  if (variable_get('htmlmail_preformat', '1') == 1) {
+    $message['body'] = "<html>\n" . 
+                       "<head>\n" .
+                       "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n" . 
+                       "</head>\n" .
+                       "<body>\n". $message['body'] ."</body>\n" . 
+                       "</html>\n";
+  }
+
+  if (variable_get('htmlmail_urlfilter', '1') == 1) {
+    $message['body'] = _htmlmail_url($message['body']);
+  }
+}
+
+function htmlmail_menu() {
+  $items = array();
+
+  $items['admin/settings/htmlmail'] = array(
+    'title' => 'HTML Mail',
+    'description' => 'Configure HTML Mail',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('htmlmail_settings'),
+    'description' => 'Configure HTML Mail administration options',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+   );
+
+   $items['admin/settings/htmlmail/settings'] = array(
+      'title' => 'Settings',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('htmlmail_settings'),
+      'access arguments' => array('access administration pages'),
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => '-1'
+   );
+
+   $items['admin/settings/htmlmail/test'] = array(
+     'title' => 'Test mail',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('htmlmail_admin_test_form'),
+     'type' => MENU_LOCAL_TASK,
+     'access arguments' => array('access administration pages'),
+   );
+  return $items;
+}
+
+function htmlmail_settings() {
+  $form = array();
+  $form['htmlmail_settings']['htmlmail_testaddr'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Address for test emails'),
+    '#default_value' => variable_get('htmlmail_testaddr', variable_get('site_mail', '')),
+    '#size' => 40,
+    '#maxlength' => 128,
+    '#description' => t('Enter the email address for test emails, defaults to site email. '. l("Send test email", "admin/settings/htmlmail/test")),
+  );
+
+  $form['htmlmail_settings']['htmlmail_autop'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Line break converter'),
+    '#default_value' => variable_get('htmlmail_autop', '1'),
+    '#description' => t('Converts line breaks into HTML (i.e. &lt;br&gt; and &lt;p&gt; tags, ala filter.module).'),
+  );
+
+  $form['htmlmail_settings']['htmlmail_preformat'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Preformat HTML code'),
+    '#default_value' => variable_get('htmlmail_preformat', '1'),
+    '#description' => t('Automagically inserts the &lt;HTML&gt; &lt;HEAD&gt; &lt;BODY&gt; tags, untick if you want control over this. You should check this if using a WYSIWYG editor.'),
+  );
+
+  $form['htmlmail_settings']['htmlmail_urlfilter'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('URL Filter'),
+    '#default_value' => variable_get('htmlmail_urlfilter', '1'),
+    '#description' => t('Automatically converts text web addresses (URLs, e-mail addresses, ftp links, etc.) into hyperlinks.'),
+  );
+  return system_settings_form($form);
+}
+
+function htmlmail_admin_test_form($form_values = NULL) {
+  $form['test_subject'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Subject'),
+    '#size' => 40,
+    '#default_value' => variable_get('htmlmail_test_subject', ''),
+    '#maxlength' => 128,
+  );
+  $form['test_body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Body'),
+    '#rows' => 20,
+    '#default_value' => variable_get('htmlmail_test_body', ''),
+    '#description' => t('Formatted in HTML.'),
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+  return $form;
+}
+
+function htmlmail_mail($key, &$message, $params) {
+  switch($key) {
+  case 'htmlmail_test':
+    $message['subject'] = $params['subject'];
+    $message['body'] = $params['body'];
+    break;
+  }
+}
+
+function htmlmail_admin_test_form_submit($form, &$form_state) {
+  if ($form_state['values']['test_subject']) {
+    variable_set('htmlmail_test_subject', $form_state['values']['test_subject']);
+  }
+  if ($form_state['values']['test_body']) {
+    variable_set('htmlmail_test_body', $form_state['values']['test_body']);
+  }
+  
+  $message['id'] = 'htmlmail_test';
+  $message['to'] = variable_get('htmlmail_testaddr', variable_get('site_mail', ''));
+  $message['subject'] = $form_state['values']['test_subject'];
+  $message['body'] = $form_state['values']['test_body'];
+
+  $to = variable_get('htmlmail_testaddr', variable_get('site_mail', ''));
+  $params = array(
+    'body' => $form_state['values']['test_body'],
+    'subject' => $form_state['values']['test_subject']
+  );
+  if (drupal_mail('htmlmail', 'htmlmail_test', $to, language_default(), $params, $to)) {
+    drupal_set_message('HTML Mail test message sent.');
+  }
+
+  else {
+    drupal_set_message('drupal_mail failed');
+  }
+}
+
+/**
+ * URL filter. Automatically converts text web addresses (URLs, e-mail addresses,
+ * ftp links, etc.) into hyperlinks.
+ */
+function _htmlmail_url($text) {
+  // Pass length to regexp callback
+  _htmlmail_url_trim(NULL, 72);
+
+  $text   = ' '. $text .' ';
+
+  // Match absolute URLs.
+  $text = preg_replace_callback("`(<p>|<li>|<br\s*/?>|[ \n\r\t\(])((http://|https://|ftp://|mailto:|smb://|afp://|file://|gopher://|news://|ssl://|sslv2://|sslv3://|tls://|tcp://|udp://)([a-zA-Z0-9@:%_+*~#?&=.,/;-]*[a-zA-Z0-9@:%_+*~#&=/;-]))([.,?!]*?)(?=(</p>|</li>|<br\s*/?>|[ \n\r\t\)]))`i", '_htmlmail_url_parse_full_links', $text);
+
+  // Match e-mail addresses.
+  $text = preg_replace("`(<p>|<li>|<br\s*/?>|[ \n\r\t\(])([A-Za-z0-9._-]+@[A-Za-z0-9._+-]+\.[A-Za-z]{2,4})([.,?!]*?)(?=(</p>|</li>|<br\s*/?>|[ \n\r\t\)]))`i", '\1<a href="mailto:\2">\2</a>\3', $text);
+
+  // Match www domains/addresses.
+  $text = preg_replace_callback("`(<p>|<li>|[ \n\r\t\(])(www\.[a-zA-Z0-9@:%_+*~#?&=.,/;-]*[a-zA-Z0-9@:%_+~#\&=/;-])([.,?!]*?)(?=(</p>|</li>|<br\s*/?>|[ \n\r\t\)]))`i", '_htmlmail_url_parse_partial_links', $text);
+  $text = substr($text, 1, -1);
+
+  return $text;
+}
+
+/**
+ * Make links out of absolute URLs.
+ */
+function _htmlmail_url_parse_full_links($match) {
+  $match[2] = decode_entities($match[2]);
+  $caption = check_plain(_htmlmail_url_trim($match[2]));
+  $match[2] = check_url($match[2]);
+  return $match[1] .'<a href="'. $match[2] .'" title="'. $match[2] .'">'. $caption .'</a>'. $match[5];
+}
+
+/**
+ * Make links out of domain names starting with "www."
+ */
+function _htmlmail_url_parse_partial_links($match) {
+  $match[2] = decode_entities($match[2]);
+  $caption = check_plain(_htmlmail_url_trim($match[2]));
+  $match[2] = check_plain($match[2]);
+  return $match[1] .'<a href="http://'. $match[2] .'" title="'. $match[2] .'">'. $caption .'</a>'. $match[3];
+}
+
+/**
+ * Shortens long URLs to http://www.example.com/long/url...
+ */
+function _htmlmail_url_trim($text, $length = NULL) {
+  static $_length;
+  if ($length !== NULL) {
+    $_length = $length;
+  }
+
+  if (strlen($text) > $_length) {
+    $text = substr($text, 0, $_length) .'...';
+  }
+
+  return $text;
+}
+
+
+/**
+ * Convert line breaks into <p> and <br> in an intelligent fashion.
+ * Based on: http://photomatt.net/scripts/autop
+ */
+function _htmlmail_autop($text) {
+  // All block level tags
+  $block = '(?:table|thead|tfoot|caption|colgroup|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|select|form|blockquote|address|p|h[1-6])';
+
+  // Split at <pre>, <script>, <style> and </pre>, </script>, </style> tags.
+  // We don't apply any processing to the contents of these tags to avoid messing
+  // up code. We look for matched pairs and allow basic nesting. For example:
+  // "processed <pre> ignored <script> ignored </script> ignored </pre> processed"
+  $chunks = preg_split('@(</?(?:pre|script|style)[^>]*>)@i', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+  // Note: PHP ensures the array consists of alternating delimiters and literals
+  // and begins and ends with a literal (inserting NULL as required).
+  $ignore = FALSE;
+  $ignoretag = '';
+  $output = '';
+  foreach ($chunks as $i => $chunk) {
+    if ($i % 2) {
+      // Opening or closing tag?
+      $open = ($chunk[1] != '/');
+      list($tag) = split('[ >]', substr($chunk, 2 - $open), 2);
+      if (!$ignore) {
+        if ($open) {
+          $ignore = TRUE;
+          $ignoretag = $tag;
+        }
+      }
+      // Only allow a matching tag to close it.
+      else if (!$open && $ignoretag == $tag) {
+        $ignore = FALSE;
+        $ignoretag = '';
+      }
+    }
+    else if (!$ignore) {
+      $chunk = preg_replace('|\n*$|', '', $chunk) ."\n\n"; // just to make things a little easier, pad the end
+      $chunk = preg_replace('|<br />\s*<br />|', "\n\n", $chunk);
+      $chunk = preg_replace('!(<'. $block .'[^>]*>)!', "\n$1", $chunk); // Space things out a little
+      $chunk = preg_replace('!(</'. $block .'>)!', "$1\n\n", $chunk); // Space things out a little
+      $chunk = preg_replace("/\n\n+/", "\n\n", $chunk); // take care of duplicates
+      $chunk = preg_replace('/\n?(.+?)(?:\n\s*\n|\z)/s', "<p>$1</p>\n", $chunk); // make paragraphs, including one at the end
+      $chunk = preg_replace('|<p>\s*?</p>\n|', '', $chunk); // under certain strange conditions it could create a P of entirely whitespace
+      $chunk = preg_replace("|<p>(<li.+?)</p>|", "$1", $chunk); // problem with nested lists
+      $chunk = preg_replace('|<p><blockquote([^>]*)>|i', "<blockquote$1><p>", $chunk);
+      $chunk = str_replace('</blockquote></p>', '</p></blockquote>', $chunk);
+      $chunk = preg_replace('!<p>\s*(</?'. $block .'[^>]*>)!', "$1", $chunk);
+      $chunk = preg_replace('!(</?'. $block .'[^>]*>)\s*</p>!', "$1", $chunk);
+      $chunk = preg_replace('|(?<!<br />)\s*\n|', "<br />\n", $chunk); // make line breaks
+      $chunk = preg_replace('!(</?'. $block .'[^>]*>)\s*<br />!', "$1", $chunk);
+      $chunk = preg_replace('!<br />(\s*</?(?:p|li|div|th|pre|td|ul|ol)>)!', '$1', $chunk);
+      $chunk = preg_replace('/&([^#])(?![A-Za-z0-9]{1,8};)/', '&amp;$1', $chunk);
+    }
+    $output .= $chunk;
+  }
+  return $output;
+}
+

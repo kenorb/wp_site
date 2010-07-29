@@ -1,0 +1,313 @@
+<?php
+// $Id: gallery_menu.module,v 1.3.2.14 2009/01/10 11:20:02 profix898 Exp $
+
+/**
+ * gallery_menu.module
+ */
+ 
+/**
+ * Class G2DrupalMenuEventListener {}.
+ */
+class G2DrupalMenuEventListener /* extends GalleryEventListener */ {
+    function handleEvent($event) {
+        $entity = $event->getEntity();
+        if ($entity->entityType == 'GalleryAlbumItem') {
+          gallery_menu_build_links();
+        }
+                
+        return array(null, null);
+    }
+}
+
+/**
+ * Implementation of hook_gallery_init_alter().
+ */
+function gallery_menu_gallery_init_alter($params, $context) {
+  if (!$context['fullInit'] || !$context['ready']['half']) {
+    // We want to update the menu links everytime a G2 album changes
+    $params['eventListeners'][] = array(
+      'class' => 'G2DrupalMenuEventListener',
+      'path' => drupal_get_path('module', 'gallery_menu') .'/gallery_menu.module',
+      'events' => array('GalleryEntity::save', 'GalleryEntity::delete')
+    );
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function gallery_menu_menu() {
+  $items = array();
+  $useralbum_exists = (gallery_single_plugin_status('useralbum') == GALLERY_PLUGIN_ENABLED);
+  if (variable_get('gallery_valid', 0) && $useralbum_exists) {
+    $items['useralbum'] = array(
+      'title' => 'My Album',
+      'description' => 'Go to your Gallery2 useralbum.',
+      'access callback' => 'gallery_menu_useralbum_access',
+      'page callback' => 'gallery_menu_useralbum',
+      'type' => MENU_SUGGESTED_ITEM
+    );
+  }
+  
+  return $items;
+}
+
+/**
+ * Function gallery_menu_useralbum_access().
+ */
+function gallery_menu_useralbum_access() {
+  require_once(drupal_get_path('module', 'gallery') .'/gallery_user.inc');
+  return (user_access('access gallery') && gallery_user_useralbum());
+}
+
+/**
+ * Function gallery_menu_useralbum().
+ */
+function gallery_menu_useralbum() {
+  require_once(drupal_get_path('module', 'gallery') .'/gallery_user.inc');
+  $url = gallery_user_useralbum();
+  drupal_goto($url);
+}
+
+/**
+ * Implementation of hook_menu_alter().
+ */
+function gallery_menu_menu_alter(&$callbacks) {
+  // If url rewrite is disabled the Drupal path for albums does not match
+  // the true G2 url, so we point to a special page callback to handle this
+  if (_gallery_init(TRUE)) {
+    $url_generator =& $GLOBALS['gallery']->getUrlGenerator();
+    if (!isset($url_generator->_shortUrls)) {
+      for ($i=1; $i<=MENU_MAX_PARTS; $i++) {
+        $path = variable_get('gallery_base', 'gallery') .'/'. implode('/', array_fill(0, $i, '%gallery'));
+        if (isset($callbacks[$path])) {
+          $callbacks[$path]['page callback'] = 'gallery_menu_album';
+          $callbacks[$path]['page arguments'] = array($i);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Function gallery_menu_album().
+ */
+function gallery_menu_album($id) {
+  // Redirect to true album url (from the Drupal menu path)
+  $url = gallery_generate_url(array('itemId' => $id), FALSE);
+  drupal_goto($url);
+}
+
+/**
+ * Implementation of hook_gallery_page_alter().
+ */
+function gallery_menu_gallery_page_alter(&$result) {
+  // Generate the path to set the active menu item
+  if (isset($result['themeData']['item'])) {
+    $gallery_base = variable_get('gallery_base', 'gallery');
+    switch ($result['themeData']['item']['entityType']) {
+      case 'GalleryAlbumItem':
+        $id = $result['themeData']['item']['id'];
+        break;
+      case 'GalleryDynamicAlbum':
+        $id = $result['themeData']['pageUrl']['albumId'];
+        break;
+      default:
+        $id = $result['themeData']['item']['parentId'];
+    }
+    if (!empty($id)) {
+      $url_generator =& $GLOBALS['gallery']->getUrlGenerator();
+      if (isset($url_generator->_shortUrls)) {
+        $path = _gallery_menu_album_path($id);
+      }
+      else {
+        list($ret, $parents) = GalleryCoreApi::fetchParentSequence($id);
+        if ($ret) {
+          gallery_error(t('Error fetching item parents'), $ret);
+        }
+        else {
+          array_shift($parents);
+          $path = $gallery_base .'/'. (count($parents) ? implode('/', $parents) .'/' : '') . $id;
+        }
+      }
+    }
+    list($ret, $root) = GalleryCoreApi::getDefaultAlbumId();
+    if ($ret) {
+      gallery_error(t('Error calling getDefaultAlbumId()'), $ret);
+    }
+    menu_set_active_item(($id == $root) ? $gallery_base : $path);
+  }
+}
+
+/**
+ * Function gallery_menu_build_links().
+ * (check for existing items and insert/update/delete as suitable) 
+ */
+function gallery_menu_build_links($rebuild = FALSE) {
+  // Derive array of link items from G2 album tree
+  $items = array();
+  $depth = variable_get('gallery_menu_depth', 3);
+  $default_mlid = db_result(db_query('SELECT mlid FROM {menu_links} WHERE link_path = \'gallery\''));
+  $menu_parent = variable_get('gallery_menu_parent', 'navigation:'. $default_mlid);
+  $tree = gallery_album_tree(NULL, $depth ? $depth : NULL);
+  _gallery_menu_traverse($tree, $items);
+  
+  // Fetch all menu links currently present in Drupal
+  $olditems = array();
+  $result = db_query("SELECT link_path FROM {menu_links} WHERE module = '%s' AND link_path LIKE '%s'", 'gallery_menu', variable_get('gallery_base', 'gallery') .'/%');
+  while ($item = db_fetch_object($result)) {
+    if ($rebuild) {
+      menu_link_delete(NULL, $item->link_path);
+    }
+    else {
+      $olditems[$item->link_path] = $item->link_path;
+    }
+  }
+  
+  // Insert/update/delete link items
+  foreach ($items as $item) {
+    if (in_array($item['link_path'], $olditems)) {
+      // Update existing item
+      menu_link_maintain('gallery_menu', 'update', $item['link_path'], $item['link_title']);
+      unset($olditems[$item['link_path']]);
+    }
+    else {
+      // Add new item
+      list($item['menu_name'], $item['plid']) = explode(':', $menu_parent);
+      if (count(explode('/', $item['link_path'])) > 2) {
+        unset($item['plid']);
+      }
+      menu_link_save($item);
+    }
+  }
+  // Remove obsolete items
+  foreach ($olditems as $link_path) {
+    menu_link_delete(NULL, $link_path);
+  }
+}
+
+/**
+ * Function _gallery_menu_traverse().
+ */
+function _gallery_menu_traverse($tree, &$items) {
+  static $parents = array();
+  foreach (array_keys($tree) as $id) {
+    if (variable_get('gallery_menu_show_'. $id, 1)) {
+      // Check for URL Rewrite being enabled
+      $url_generator =& $GLOBALS['gallery']->getUrlGenerator();
+      if (isset($url_generator->_shortUrls)) {
+        $path = _gallery_menu_album_path($id);
+      }
+      else {
+        $path = variable_get('gallery_base', 'gallery') .'/'. (count($parents) ? implode('/', $parents) .'/' : '') . $id;
+      }
+      $album = gallery_item_details($id);
+      $item = array(
+        'link_title' => empty($album['title']) ? t('Album @id', array('@id' => $id)) : $album['title'],
+        'link_path' => $path,
+        'module' => 'gallery_menu'
+      );
+      $items[] = $item;
+      if (count($tree[$id])) {
+        array_push($parents, $id);
+        _gallery_menu_traverse($tree[$id], $items);
+        array_pop($parents);
+      }
+    }
+  }
+}
+
+/**
+ * Function _gallery_menu_album_path().
+ */
+function _gallery_menu_album_path($id) {
+  global $language;
+  
+  $path = urldecode(gallery_generate_url(array('itemId' => $id), FALSE, FALSE));
+  // Strip off the base path ... and additional parameters (e.g. session id, etc.)
+  $path = substr($path, strlen(base_path()));
+  if (($pos = strrpos($path, '/')) !== FALSE) {
+    $path = substr($path, 0, $pos + 1);
+  }
+  
+  // Remove the language-prefix
+  if (function_exists('language_url_rewrite') && variable_get('language_count', 1) > 1) {
+    $args = explode('/', $path);
+    $prefix = array_shift($args);
+    if (!empty($language->prefix) && $language->prefix == $prefix) {
+      $path = implode('/', $args);
+    }
+  }
+  
+  return rtrim($path, '/');
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function gallery_menu_form_alter(&$form, $form_state, $form_id) {
+  if ($form_id == '_gallery_settings_general' && _gallery_init(TRUE)) {
+    // Add menu settings to the general settings form
+    array_splice($form, 3, 0, _gallery_menu_settings());    
+    $form['#submit'][] = '_gallery_menu_settings_submit';
+  }
+}
+
+/**
+ * Function _gallery_menu_settings().
+ */
+function _gallery_menu_settings() {
+  require_once(drupal_get_path('module', 'gallery') .'/gallery_settings.inc');
+  // Gallery menu settings
+  $form['menu'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Gallery menu settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE
+  );
+  // Get a menu tree and remove all gallery items
+  $options = menu_parent_options(menu_get_menus(), array('mlid' => 0));
+  $result = db_query('SELECT menu_name, mlid FROM {menu_links} WHERE link_path LIKE \'gallery/%\'');
+  while ($item = db_fetch_object($result)) {
+    unset($options[$item->menu_name .':'. $item->mlid]);
+  }
+  //
+  $default_mlid = db_result(db_query('SELECT mlid FROM {menu_links} WHERE link_path = \'gallery\''));
+  $form['menu']['gallery_menu_parent'] = array(
+    '#type' => 'select',
+    '#title' => t('Parent item'),
+    '#default_value' => variable_get('gallery_menu_parent', 'navigation:'. $default_mlid),
+    '#options' => $options,
+    '#description' => t('The maximum depth for an item and all its children is fixed at !maxdepth. Some menu
+                         items may not be available as parents if selecting them would exceed this limit.',
+                         array('!maxdepth' => MENU_MAX_DEPTH)),
+    '#attributes' => array('class' => 'menu-title-select'),
+  );
+  $form['menu']['gallery_menu_depth'] = array(
+    '#type' => 'select',
+    '#title' => t('Depth of Gallery albums'),
+    '#default_value' => variable_get('gallery_menu_depth', 3),
+    '#options' => _gallery_range_array(1, MENU_MAX_PARTS),
+    '#description' => 'Depth of album hierarchy to include.'
+  );
+  $form['menu']['rebuild_btn'] = array(
+    '#type' => 'submit',
+    '#value' => t('Rebuild menu'),
+    '#rebuild_menu' => TRUE
+  );
+  
+  return $form;
+}
+
+/**
+ * Function _gallery_menu_settings_submit().
+ */
+function _gallery_menu_settings_submit($form, &$form_state) {
+  // Rebuild album links (router items first, then the actual menu links)
+  menu_rebuild();
+  $rebuild = isset($form_state['clicked_button']['#rebuild_menu']);
+  gallery_menu_build_links($rebuild);
+  if ($rebuild) {
+    drupal_set_message(t('Gallery link items have been rebuild.'));
+  }
+}

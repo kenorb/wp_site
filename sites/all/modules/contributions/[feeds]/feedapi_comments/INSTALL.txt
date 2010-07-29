@@ -1,0 +1,28 @@
+; $Id: INSTALL.txt,v 1.2 2008/10/28 21:58:48 alexb Exp $
+
+FeedAPI Comments
+----------------
+
+Requirements:
+ * FeedAPI (http://drupal.org/project/feedapi)
+ * PHP5 (SimpleXML)
+ * Drupal 6
+
+Package content:
+
+ - Parser Comments module for scraping comments from sites directly.
+
+ - FeedAPI Comments for generating Drupal comments from feed items.
+   You can alternatively use FeedAPI's node processor which allows you to
+   create nodes from remote comments.
+
+Installation:
+ - Create a new content-type and enable FeedAPI, enable and configure 
+   comment parser, enable and configure comment processor or alternatively
+   the node processor. 
+   
+Usage:
+ - Supply the URL of the post with comments. For example:
+   http://www.vimeo.com/469881
+ - Refresh the feed node and it will be commented with the comments from
+   the source site (if you use the FeedAPI Comments processor).

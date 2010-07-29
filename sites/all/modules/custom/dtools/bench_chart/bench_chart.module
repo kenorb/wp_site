@@ -1,0 +1,182 @@
+<?php
+/*
+	version: $Id: bench_chart.module,v 1.1.2.5 2009/06/18 14:39:22 kenorb Exp $
+	author: kenorb@gmail.com
+*/
+$bench_chart_timer = timer_start('bench_chart');
+bench_chart_my_hook(array('(load)', 'start'));
+
+//module_load_include('inc', 'bench_chart', 'bench_chart');
+
+function bench_chart_get_hooks() {
+    return array(
+	'init', 'access', 'actions_delete', 'action_info', 'action_info_alter', 'block', 'comment', 'db_rewrite_sql', 'delete', 
+
+	'elements', 'file_download', 'filter', 'filter_tips', 'flush_caches', 'footer', 'form', 'forms', 'form_alter',
+	'help', 'hook_info', 'insert', 'link', 'link_alter', 'locale', 'mail', 'mail_alter', 'menu_alter',
+	'menu_link_alter', 'nodeapi', 'node_access_records', 'node_info', 'node_operations', 'node_type', 'ping', 'prepare', 'profile_alter', 'requirements',
+	'schema_alter', 'search', 'search_preprocess', 'system_info_alter', 'taxonomy', 'term_path', 'theme_registry_alter', 'translated_menu_link_alter', 'disable', 'update', 
+	'update_index', 'update_status_alter', 'user', 'user_operations', 'validate', 'view', 'watchdog', 'xmlrpc', 'content_extra_fields', 'content_build_modes', 'views_default_views',
+	'flag_definitions', 'node_grants',
+        /* node hooks */
+        'load', 
+    );
+	//'schema',
+	//'install',
+	//'uninstall',
+	//'enable',
+	//'cron',
+	// 'exit',   // TODO
+	// 'theme',  // TODO
+}
+
+function bench_chart_gen_hooks($fname = 'bench_chart', $type = 'end') { // generate function hooks
+    $hooks = bench_chart_get_hooks();
+    foreach ($hooks as $hook) {
+        if (!function_exists("${fname}_${hook}")) {
+            $code = "function ${fname}_${hook}() { return bench_chart_my_hook(array('$hook', '$type')); }";
+            eval($code);
+        }
+    }
+}
+
+/**
+ * Implementation of hook_boot(). Runs even for cached pages.
+ */
+function bench_chart_boot() {
+  global $drupal_path;
+  $drupal_path = getcwd();
+  bench_chart_my_hook(array('boot','start'));
+  register_shutdown_function('bench_chart_shutdown');
+  bench_chart_gen_hooks('bench_chart', 'start'); // generate function hooks
+} 
+
+/**
+ * Implementation of hook_perm().
+ */
+function bench_chart_perm() {
+    bench_chart_my_hook(array('perm','start'));
+    return array('access hook stats');
+}
+
+ /**
+ * Implementation of hook_menu
+ *
+ */
+function bench_chart_menu() {
+    bench_chart_my_hook(array('menu','start'));
+    $items['admin/reports/charts/hook_stat'] = array(
+	'access arguments'  => array('access site reports'),
+	'file'              => 'bench_chart_charts.inc',
+	'page callback'     => 'bench_chart_charts',
+	'title'             => 'Hooks',
+	'type'              => MENU_LOCAL_TASK
+    );
+    $items['admin/settings/hook_chart'] = array(
+	'access arguments'  => array('access site reports'),
+	'file'              => 'bench_chart_conf.inc',
+	'page callback'     => 'bench_chart_conf',
+	'title'             => 'Hook Chart',
+	'type'              => MENU_LOCAL_TASK
+    );
+    return $items;
+}
+
+/**
+ * Callback of register_shutdown_function()
+ */
+function bench_chart_shutdown() {
+    /* fix Drupal path during shutdown */
+    if (!file_exists('./includes/bootstrap.inc')) {
+        global $drupal_path;
+        !empty($drupal_path) ? chdir($drupal_path) : NULL; // change dir to Drupal path
+    }
+
+    bench_chart_my_hook(array('(exit)', 'end'));
+    bench_chart_save_to_db();
+    timer_stop('bench_chart');
+}
+
+function bench_chart_save_to_db() {
+    global $hooks_run;
+
+    $menu = (function_exists('menu_get_item') && function_exists('arg') && !defined('MAINTENANCE_MODE')) ? menu_get_item() : NULL; // get alias to the current menu (if menu is already loaded)
+    $path = !empty($menu['path']) ? $menu['path'] : $_GET['q']; // set alias, if doesn't exist, get path directly
+    $totaltime = (float)0;
+    foreach ($hooks_run as $hook_name => $hook) { // for each executed hook
+	$calc_time = (float)0;
+	$count = 0;
+	if (isset($hook['start']) && is_array($hook['start'])) {
+	    foreach ($hook['start'] as $key => $time) { // for each calculated time
+		$count++;
+		if (isset($hook['end'])) {
+		    $calc_time += ($hook['end'][$key] - $hook['start'][$key]);
+		    $lasttime = $hook['end'][$key];
+		}
+	    }
+	    $totaltime += $calc_time;
+	    db_query("REPLACE INTO {bench_chart} (hook, count, time, totaltime, path) VALUES ('%s', '%d', '%f', '%f', '%s')", $hook_name, $count, $calc_time, $totaltime, $path);
+            if ($calc_time>2000) { // TODO: Move to the settings
+                bench_chart_run_hook($hook_name);
+            }
+	}
+    }
+    //$time_rest = ($totaltime - ($lasttime - $hooks_run['(before boot)']['start'][0]));
+    //db_query("INSERT INTO {bench_chart} (hook, count, time, totaltime, path) VALUES ('%s', '%s', '%s', '%s', '%s')", '(other)', 1, $time_rest, $totaltime, $path);
+}
+
+/**
+ * Implementation of each hook
+ *
+ */
+function bench_chart_my_hook() {
+    $args = func_get_args(); // get function arguments
+    $hook = $args[0]; // get first parameter
+    list($hook, $type) = array($args[0][0], $args[0][1]); // explode our first function argument
+    unset($args[0]); 
+    global $hooks_run, $bench_chart_run;
+ // prepare globals
+    if ($type == 'start' && $bench_chart_run) { // if hook already run, don't start another one (recurency not supported)...
+        return; // ...just do exit
+    } else {
+        $bench_chart_run = FALSE;
+    }
+    $timer = timer_read('bench_chart');
+    $hooks_run[$hook][$type][] = (float)$timer;
+    $hooks_run[$hook]['#args'][] = $args;
+    switch ($hook) {
+	case 'exit':
+	    $hooks_run['(exit)']['start'][] = (float)$timer;
+	break;
+    }
+}
+
+
+/**
+ * Implementation of each hook
+ *
+ */
+function bench_chart_run_hook() {
+    global $bench_chart_run; // prepare global variables
+    $args = func_get_args(); // get function arguments
+    $hook = $args[0]; // get and set first parameter
+    unset($args[0]); // and remove it from argument list
+    $hook_timer = array(); // reset hook timer
+    $menu = menu_get_item(); // get alias to the current menu
+    $path = !empty($menu['path']) ? $menu['path'] : $_GET['q']; // set alias, if doesn't exist, get path directly
+    timer_start("hook_$hook"); // start timer
+    foreach (module_implements($hook) as $module) {
+        $function = $module .'_'. $hook;
+        if (function_exists($function)) {
+            timer_start("hook_${module}_$hook"); // start timer
+            $result = call_user_func_array($function, $args);
+            $hook_timer_stop = timer_stop("hook_${module}_$hook"); // end timer
+            $hook_timer[$module] = $hook_timer_stop['time']; // calculate the time of executed hook
+            $hook_total_time[$module] = timer_read("hook_$hook"); // end timer
+        }
+    }
+    foreach($hook_timer as $module => $time) {
+        db_query("REPLACE INTO {bench_chart} (hook, count, time, totaltime, path) VALUES ('%s', '%d', '%f', '%f', '%s')", "${module}_$hook", 0, $time, $hook_total_time[$module], $path);
+    }
+}
+

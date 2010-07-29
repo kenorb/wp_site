@@ -1,0 +1,201 @@
+<?php
+// $Id: finder_wizard.install,v 1.2.2.3 2008/11/08 05:37:05 danielb Exp $
+
+/**
+ * @file
+ * Filter Wizard module install file.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function finder_wizard_schema() {
+  $schema['finder_wizard'] = array(
+    'description' => t('The base table for filter wizards, each row is a filter wizard.'),
+    'fields' => array(
+      'fwid' => array(
+        'description' => t('The primary identifier for a filter wizard.'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'title' => array(
+        'description' => t('The title of this filter wizard.'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'description' => array(
+        'description' => t('The description of this filter wizard.'),
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'path' => array(
+        'description' => t('The path to the filter wizard.'),
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'none_above' => array(
+        'description' => t('Whether to include a none of the above options or not.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+      ),
+      'none_above_path' => array(
+        'description' => t('The path to the none of the above page.'),
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'error_msg' => array(
+        'description' => t('The default error message of the filter wizard.'),
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'early_exit' => array(
+        'description' => t('Whether to exit wizard upon finding one node.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+      ),
+      'results_page' => array(
+        'description' => t('Whether to force the display of a results page.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+      ),
+    ),
+    'primary key' => array('fwid'),
+  );
+  $schema['finder_wizard_types'] = array(
+    'description' => t('The table that associates allowed node types with each filter wizard.'),
+    'fields' => array(
+      'fwid' => array(
+        'description' => t('The primary identifier for a filter wizard.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'description' => t('A node type to allow for this filter wizard.'),
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('fwid', 'type'),
+  );
+  $schema['finder_wizard_steps'] = array(
+    'description' => t('The table for filter wizard steps, each row is a filter wizard step.'),
+    'fields' => array(
+      'fwsid' => array(
+        'description' => t('The primary identifier for a filter wizard step.'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'fwid' => array(
+        'description' => t('The primary identifier for a filter wizard.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'weight' => array(
+        'description' => t('The ordering of this step.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+      ),
+      'question' => array(
+        'description' => t('The question to ask on this step of the filter wizard.'),
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'response' => array(
+        'description' => t('The response to give on the next step of the filter wizard.'),
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'field_handler' => array(
+        'description' => t('The include file that will handle the field.'),
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'field_name' => array(
+        'description' => t('The name of the field.'),
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'element' => array(
+        'description' => t('The type of element to present as this field.'),
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'none_above' => array(
+        'description' => t('Whether to include a none of the above options or not.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+      ),
+      'none_above_path' => array(
+        'description' => t('The path to the none of the above page.'),
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'error_msg' => array(
+        'description' => t('The default error message of this step of the filter wizard.'),
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('fwsid'),
+  );
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function finder_wizard_install() {
+  drupal_install_schema('finder_wizard');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function finder_wizard_uninstall() {
+  drupal_uninstall_schema('finder_wizard');
+}

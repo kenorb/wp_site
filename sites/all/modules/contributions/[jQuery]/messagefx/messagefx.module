@@ -1,0 +1,249 @@
+<?php
+// $Id$
+
+/**
+ * Implementation of hook_menu()
+ */
+function messagefx_menu() {
+  $items = array();
+  $items['admin/settings/messagefx'] = array(
+    'title' => 'Message Effects',
+    'description' => 'Change the effects applied to Drupal messages.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('messagefx_settings'),
+    'access arguments' => array('administer site configuration'),
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_init()
+ */
+function messagefx_init() {
+
+  if (drupal_get_messages(NULL, FALSE)) {
+
+    switch (variable_get('status_effect', 'Pulsate')) {
+      case 'Pulsate' :
+        jquery_ui_add(array('effects.pulsate'));
+        $js = "\$('.status').effect('pulsate', {times:". variable_get('status_times', 5) ."}, ". variable_get('status_length', 200) .");";
+        break;
+      case 'Shake' :
+        jquery_ui_add(array('effects.shake'));
+        $js = "\$('.status').effect('shake', {times:". variable_get('status_times', 5) ."}, ". variable_get('status_length', 200) .");";
+        break;
+      case 'Bounce' :
+        jquery_ui_add(array('effects.bounce'));
+        $js = "\$('.status').effect('bounce', {times:". variable_get('status_times', 5) ."}, ". variable_get('status_length', 400) .");";
+        break;
+      case 'FadeIn' :
+        $js = "\$('.status').hide().fadeIn(". variable_get('status_length', 400) .");";
+        break;
+      case 'Highlight' :
+        jquery_ui_add(array('effects.highlight'));
+        $js = "\$('.status').effect('highlight', {color:'". variable_get('status_colorpicker_textfield', '#FF3') ."'}, ". variable_get('status_length', 500) .");";
+        break;
+      case 'Growl' :
+        drupal_add_js(drupal_get_path('module', 'messagefx') . '/jquery.jgrowl.js', 'module', 'footer');
+        drupal_add_css(drupal_get_path('module', 'messagefx') . '/jquery.jgrowl.css', 'module', 'screen');
+        drupal_add_css(drupal_get_path('module', 'messagefx') . '/messagefx.css', 'module', 'screen');
+        $js .= "if(\$('.status').html() != null){\$.jGrowl.defaults.position = '" . variable_get('status_growl_position', 'top-right') . "'; \$.jGrowl(\$('.status').html(), {header: '" . variable_get('status_growl_header', 'Status Message') . "', sticky: " . variable_get('status_growl_sticky', true) . ", life: " . variable_get('status_length', 3000) . "});\$('div.jGrowl div.jGrowl-notification, div.jGrowl div.jGrowl-closer').css({background: '". variable_get('status_colorpicker_textfield', '#000') ."'}).fadeTo(0, 0.85);}";
+        break;
+    }
+    switch (variable_get('error_effect', 'Pulsate')) {
+      case 'Pulsate' :
+        jquery_ui_add(array('effects.pulsate'));
+        $js .= "\$('.error').effect('pulsate', {times:". variable_get('error_times', 5) ."}, ". variable_get('error_length', 200) .");";
+        break;
+      case 'Shake' :
+        jquery_ui_add(array('effects.shake'));
+        $js .= "\$('.error').effect('shake', {times:". variable_get('error_times', 5) ."}, ". variable_get('error_length', 200) .");";
+        break;
+      case 'Bounce' :
+        jquery_ui_add(array('effects.bounce'));
+        $js .= "\$('.error').effect('bounce', {times:". variable_get('error_times', 5) ."}, ". variable_get('error_length', 400) .");";
+        break;
+      case 'FadeIn' :
+        $js = "\$('.error').hide().fadeIn(". variable_get('error_length', 400) .");";
+        break;
+      case 'Highlight' :
+        jquery_ui_add(array('effects.highlight'));
+        $js .= "\$('.error').effect('highlight', {color:'". variable_get('error_colorpicker_textfield', '#F00') ."'}, ". variable_get('error_length', 500) .");";
+        break;
+      case 'Growl' :
+        drupal_add_js(drupal_get_path('module', 'messagefx') . '/jquery.jgrowl.js', 'module', 'footer');
+        drupal_add_css(drupal_get_path('module', 'messagefx') . '/jquery.jgrowl.css', 'module', 'screen');
+        drupal_add_css(drupal_get_path('module', 'messagefx') . '/messagefx.css', 'module', 'screen');
+        $js .= "if(\$('.error').html() != null){\$.jGrowl.defaults.position = '" . variable_get('error_growl_position', 'top-right') . "';\$.jGrowl(\$('.error').html(), {header: '" . variable_get('error_growl_header', 'Error Message') . "', sticky: " . variable_get('error_growl_sticky', true) . ", life: " . variable_get('error_length', 3000) . "});\$('div.jGrowl div.jGrowl-notification, div.jGrowl div.jGrowl-closer').css({background: '". variable_get('error_colorpicker_textfield', '#F00') ."'});}";
+        break;
+    }
+    if ($js) {
+      $js = '$(function(){'. $js .'});';
+      drupal_add_js($js, 'inline', 'footer');
+    }
+  }
+}
+
+/**
+ * Settings form
+ */
+function messagefx_settings() {
+  $form['status_fx'] = array('#type' => 'fieldset', '#title' => t('Status Effects'), '#collapsible' => TRUE, '#collapsed' => FALSE,);
+  $fx_options = variable_get('spajax_fx_options', array('' => 'none', 'Pulsate' => 'Pulsate', 'Shake' => 'Shake', 'Bounce' => 'Bounce', 'FadeIn' => 'Fade In', 'Highlight' => 'Highlight', 'Growl' => 'Growl'));
+  $growl_position_options = variable_get('position_options', array('top-left' => 'Top Left', 'top-right' => 'Top Right', 'bottom-left' => 'Bottom Left', 'bottom-right' => 'Bottom Right', 'center' => 'Center'));
+  $form['status_fx']['status_effect'] = array(
+    '#type' => 'select',
+    '#title' => t('Status Message Effect'), 
+    '#default_value' => variable_get('status_effect', 'Pulsate'), 
+    '#options' => $fx_options,
+    '#description' => t('Effect added to Drupal status messages'), 
+  );
+  $form['status_fx']['stat_adv'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Timing'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['status_fx']['stat_adv']['status_length'] = array(
+    '#type' => 'textfield',
+    //'#size' => 5,
+    '#title' => t('Length of each'), 
+    '#default_value' => variable_get('status_length', 500), 
+    '#description' => t('In milliseconds -- Length of each iteration of the effect.'), 
+  );
+  $form['status_fx']['stat_adv']['status_times'] = array(
+    '#type' => 'textfield',
+    //'#size' => 5,
+    '#title' => t('Number of times'), 
+    '#default_value' => variable_get('status_times', 5), 
+    '#description' => t('Number of times to apply the effect.'), 
+  );
+  $form['status_fx']['stat_color'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Color'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['status_fx']['stat_color']['status_colorpicker'] = array(
+    '#type' => 'colorpicker',
+    '#title' => t('Status highlight color picker'),
+    '#description' => t('Click in this textfield to start picking your color'), 
+  );
+  $form['status_fx']['stat_color']['status_colorpicker_textfield'] = array(
+    '#type' => 'colorpicker_textfield',
+    '#title' => t('Status highlight color hex code'),
+    '#default_value' => variable_get('status_colorpicker_textfield', '#FF3'),
+    '#colorpicker' => 'status_colorpicker',
+  );
+  $form['status_fx']['status_growl'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Growl Options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['status_fx']['status_growl']['status_growl_position'] = array(
+    '#type' => 'select',
+    '#title' => t('Position'), 
+    '#default_value' => variable_get('status_growl_position', 'top-right'), 
+    '#options' => $growl_position_options,
+    '#description' => t('Position of the status messages'), 
+  );
+  $form['status_fx']['status_growl']['status_growl_header'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Header Text'), 
+    '#maxlength' => 80,
+    '#default_value' => variable_get('status_growl_header', 'Status Message'), 
+    '#description' => t('Header text for status messages'), 
+  );
+  $form['status_fx']['status_growl']['status_growl_sticky'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Sticky'), 
+    '#default_value' => variable_get('status_growl_sticky', true),
+    '#description' => t('Sticky messages remain on screen until closed'), 
+  );
+  
+  $form['error_fx'] = array('#type' => 'fieldset', '#title' => t('Error Effects'), '#collapsible' => TRUE, '#collapsed' => FALSE,);
+  $form['error_fx']['error_effect'] = array( 
+    '#type' => 'select', 
+    '#title' => t('Error Message Effect'), 
+    '#default_value' => variable_get('error_effect', 'Pulsate'), 
+    '#options' => $fx_options,
+    '#description' => t('Effect added to Drupal error messages'), 
+  );
+  $form['error_fx']['error_adv'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Timing'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['error_fx']['error_adv']['error_length'] = array(
+    '#type' => 'textfield',
+    //'#size' => 5,
+    '#title' => t('Length of each'), 
+    '#default_value' => variable_get('error_length', 500), 
+    '#description' => t('In milliseconds -- Length of each iteration of the effect.'), 
+  );
+  $form['error_fx']['error_adv']['error_times'] = array(
+    '#type' => 'textfield',
+    //'#size' => 5,
+    '#title' => t('Number of times'), 
+    '#default_value' => variable_get('error_times', 5), 
+    '#description' => t('Number of times to apply the effect.'), 
+  );
+  $form['error_fx']['error_color'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Color'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['error_fx']['error_color']['error_colorpicker'] = array(
+    '#type' => 'colorpicker',
+    '#title' => t('Error highlight color picker'),
+    '#description' => t('Click in this textfield to start picking your color'), 
+  );
+  $form['error_fx']['error_color']['error_colorpicker_textfield'] = array(
+    '#type' => 'colorpicker_textfield',
+    '#title' => t('Error highlight color hex code'),
+    '#default_value' => variable_get('error_colorpicker_textfield', '#F00'),
+    '#colorpicker' => 'error_colorpicker',
+  );
+  $form['error_fx']['error_growl'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Growl Options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['error_fx']['error_growl']['error_growl_position'] = array(
+    '#type' => 'select',
+    '#title' => t('Position'), 
+    '#default_value' => variable_get('error_growl_position', 'top-right'), 
+    '#options' => $growl_position_options,
+    '#description' => t('Position of the error messages'), 
+  );
+  $form['error_fx']['error_growl']['error_growl_header'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Header Text'), 
+    '#maxlength' => 80,
+    '#default_value' => variable_get('error_growl_header', 'Error Message'), 
+    '#description' => t('Header text for error messages'), 
+  );
+  $form['error_fx']['error_growl']['error_growl_sticky'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Sticky'), 
+    '#default_value' => variable_get('error_growl_sticky', true),
+    '#description' => t('Sticky messages remain on screen until closed'), 
+  );
+  
+  return system_settings_form($form);
+}
+
+/**
+ * Validation function for settings form
+ */
+function messagefx_settings_validate($form, &$form_state) {
+  foreach(array('status_length', 'status_times', 'error_length', 'error_times') as $field) {
+    if (!is_numeric($form_state['values'][$field])) {
+      form_set_error($field, t('All values need to be numbers.'));
+    }
+  }
+}

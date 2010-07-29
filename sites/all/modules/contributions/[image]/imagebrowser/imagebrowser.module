@@ -1,0 +1,661 @@
+<?php
+// $Id: imagebrowser.module,v 1.3.2.9 2008/12/03 22:18:50 starnox Exp $
+
+/**
+ * @file
+ * Image Browser main module file.
+ */
+
+
+/** ========================================
+ * GENERAL FUNCTIONS
+ */
+
+
+/**
+ * Some useful help!
+ */
+function imagebrowser_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case "admin/help#imagebrowser":
+      $output = '<p>'. t("The simple yet beautiful image browser/manager for Drupal and FCKEditor.") .'</p>';
+      break;
+  }
+  return $output;
+}
+
+/**
+ * Permissions.
+ */
+function imagebrowser_perm() {
+  $perms = array('view images', 'browse own images', 'browse all images', 'upload images', 'administer imagebrowser');
+
+  //Add Image Presets
+  foreach (image_get_sizes() as $key => $size) {
+    $perms[] = 'insert Image preset: '. $size['label'];
+  }
+
+  //Add ImageCache Presets
+  if (module_exists('imagecache')) {
+    foreach (imagecache_presets() as $preset) {
+      $perms[] = 'insert ImageCache preset: '. $preset['presetname'];
+    }
+  }
+
+  return $perms;
+}
+
+/**
+ * Menu structure.
+ */
+function imagebrowser_menu() {
+  $items = array();
+  //AJAX upload
+  $items['imagebrowser/upload/js'] = array(
+    'page callback' => '_imagebrowser_upload_js',
+    'access arguments' => array('upload images'),
+    'type' => MENU_CALLBACK,
+  );
+  //The browser
+  $items['imagebrowser/view/browser'] = array(
+    'title' => 'Image Browser',
+    'page callback' => 'imagebrowser_browser',
+    'access arguments' => array('browse own images'),
+    'type' => MENU_CALLBACK,
+  );
+  //AHAH load images
+  $items['imagebrowser/load/images'] = array(
+    'title' => 'Images',
+    'page callback' => 'imagebrowser_browser_images',
+    'access arguments' => array('browse own images'),
+    'type' => MENU_CALLBACK,
+  );
+  //AHAH load insert window
+  $items['imagebrowser/load/imagedetails'] = array(
+    'title' => 'Insert',
+    'page callback' => 'imagebrowser_insert',
+    'access arguments' => array('browse own images'),
+    'type' => MENU_CALLBACK,
+  );
+  //AHAH load edit window
+  $items['imagebrowser/edit'] = array(
+    'title' => 'Edit',
+    'page callback' => 'imagebrowser_edit',
+    'access arguments' => array('browse own images'),
+    'type' => MENU_CALLBACK,
+  );
+  //View 'ImageCache' file
+  $items['imagebrowser/view/imagecache'] = array(
+    'title' => 'View ImageCache File',
+    'page callback' => 'imagebrowser_view_imagecache',
+    'access arguments' => array('view images'),
+    'type' => MENU_CALLBACK,
+  );
+  //View 'Image' file
+  $items['imagebrowser/view/image'] = array(
+    'title' => 'View Image File',
+    'page callback' => 'imagebrowser_view_image',
+    'access arguments' => array('view images'),
+    'type' => MENU_CALLBACK,
+  );
+  //AHAH load mesages
+  $items['imagebrowser/load/messages'] = array(
+    'title' => 'Messages',
+    'page callback' => 'imagebrowser_messages',
+    'access arguments' => array('browse own images'),
+    'type' => MENU_CALLBACK,
+  );
+  //Admin settings
+  $items['admin/settings/imagebrowser'] = array(
+    'title' => 'Image Browser',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('imagebrowser_settings'),
+    'access arguments' => array('administer imagebrowser')
+  );
+  //iFrame edit image node
+  $items['imagebrowser/edit/node'] = array(
+    'title' => 'Edit Image Node',
+    'page callback' => 'imagebrowser_edit_node',
+    'access arguments' => array('browse own images'),
+    'type' => MENU_CALLBACK,
+  );
+  //AHAH delete image node
+  $items['imagebrowser/delete'] = array(
+    'title' => 'Delete',
+    'page callback' => 'imagebrowser_delete',
+    'access arguments' => array('browse own images'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+
+/** ========================================
+ * UPLOAD FUNCTIONS
+ */
+
+
+/**
+ * Creates an upload form via FormAPI.
+ */
+function imagebrowser_upload() {
+  $form['#attributes'] = array('enctype' => 'multipart/form-data');
+  $form['#cache'] = TRUE;
+  $form['wrapper'] = array(
+    '#prefix' => '<div id="attach-wrapper">',
+    '#suffix' => '</div>',
+  );
+  $form['wrapper']['new']['upload'] = array(
+    '#type' => 'file',
+    '#title' => t('Quick Upload'),
+    '#size' => 30,
+  );
+  $form['wrapper']['new']['attach'] = array(
+    '#type' => 'submit',
+    '#value' => t('Upload'),
+    '#name' => 'attach',
+    '#ahah' => array(
+      'path' => 'imagebrowser/upload/js',
+      'wrapper' => 'attach-wrapper',
+      'progress' => array('type' => 'throbber'),
+    ),
+    '#submit' => array('node_form_submit_build_node'),
+  );
+  return $form;
+}
+
+/**
+ * Validation for the upload form.
+ */
+function imagebrowser_upload_validate($form_id, &$form_values) {
+  // @todo validate mimetypes
+}
+
+/**
+ * Use 'Image' module to create an image node and update derivatives.
+ */
+function imagebrowser_upload_submit($form_id, $form_values) {
+  $file = file_save_upload('upload'); //Save temp file
+  if (filesize($file->filepath) > (variable_get('image_max_upload_size', 800)*1024)) {
+    drupal_set_message(t('Image larger than acceptable limit.'), 'error');
+    return FALSE;
+  }
+  $node = image_create_node_from($file->filepath, NULL, '', NULL); //Create Image node
+  $node = node_load($node->nid); //We need to reload the node for some reason (bug with image_create_node_from?)
+  if ($node == FALSE) {
+    drupal_set_message(t('Image failed to upload. Please try again.'), 'error');
+  }
+  else {
+    image_update($node); //Update the derivatives
+    drupal_set_message(t('New image uploaded successfully.'));
+  }
+}
+
+/**
+ * AJAX for processing image uploads on the fly.
+ */
+function _imagebrowser_upload_js() {
+  $cached_form_state = array();
+  $files = array();
+
+  // Load the form from the Form API cache.
+  if (!($cached_form = form_get_cache($_POST['form_build_id'], $cached_form_state))) {
+    form_set_error('form_token', t('Validation error, please try again. If this error persists, please contact the site administrator.'));
+    $output = theme('status_messages');
+    print drupal_to_js(array('status' => TRUE, 'data' => $output));
+    exit();
+  }
+
+  $form_state = array('values' => $_POST);
+
+  imagebrowser_upload_submit($cached_form, $form_state);
+
+  $form = imagebrowser_upload();
+
+  unset($cached_form['wrapper']['new']);
+  $cached_form['wrapper'] = array_merge($cached_form['wrapper'], $form);
+
+  form_set_cache($_POST['form_build_id'], $cached_form, $cached_form_state);
+
+  // Render the form for output.
+  $form += array(
+    '#post' => $_POST,
+    '#programmed' => FALSE,
+    '#tree' => FALSE,
+    '#parents' => array(),
+  );
+  drupal_alter('form', $form, array(), 'upload_js');
+  $form_state = array('submitted' => FALSE);
+  $form = form_builder('upload_js', $form, $form_state);
+  $output = drupal_render($form) .'<script type="text/javascript" src="'. drupal_get_path('module', 'imagebrowser') .'/js/refresh.js"></script>';
+
+  // We send the updated file attachments form.
+  // Don't call drupal_json(). ahah.js uses an iframe and
+  // the header output by drupal_json() causes problems in some browsers.
+  print drupal_to_js(array('status' => TRUE, 'data' => $output));
+  exit;
+}
+
+
+/** ========================================
+ * BROWSE FUNCTIONS
+ */
+
+
+/**
+ * The image browser powered by Views.
+ */
+function imagebrowser_browser() {
+  //Set CSS
+  drupal_add_css(drupal_get_path('theme', 'garland') .'/style.css');
+  drupal_add_css(drupal_get_path('module', 'imagebrowser') .'/theme/imagebrowser.css');
+
+  $css = drupal_get_css();
+
+  //Get upload form
+  if (user_access('upload images') && user_access('create images')) {
+    $upload = drupal_get_form('imagebrowser_upload');
+  }
+  else {
+    $upload = NULL;
+  }
+
+  //Set javascript
+  drupal_add_js(drupal_get_path('module', 'views') .'/js/base.js');
+  drupal_add_js(drupal_get_path('module', 'imagebrowser') .'/js/ib_ajax_view.js');
+  drupal_add_js(drupal_get_path('module', 'imagebrowser') .'/js/imagebrowser.js');
+  drupal_add_js('misc/autocomplete.js');
+  drupal_add_js('var ibpath = "'. url('imagebrowser/load/messages') .'";', 'inline');
+
+  //Get view javascript settings
+  $args = array();
+
+  $view = views_get_view('ib_browser');
+
+  if (user_access('browse all images')) {
+    $args[] = 'all';
+  }
+  else if (user_access('browse own images')) {
+    global $user;
+    $args[] = $user->name;
+  }
+  $view = views_get_view('ib_browser');
+  $view->set_display('default');
+  $settings = array(
+    'views' => array(
+      'ajax_path' => url('views/ajax'),
+      'ajaxViews' => array(
+        array(
+          'view_name' => $view->name,
+          'view_display_id' => $view->current_display,
+          'view_args' => implode('/', $args),
+          'view_path' => $_GET['q'],
+          'view_dom_id' => 1,
+          'pager_element' => $view->pager['element'],
+        ),
+      ),
+    ),
+  );
+  drupal_add_js($settings, 'setting');
+
+  $javascript = drupal_get_js();
+
+  //Theme the bad boy
+  print theme('imagebrowser_window', $upload, $css, $javascript);
+  exit();
+}
+
+/**
+ * Implementation of hook_views_api().
+ */
+function imagebrowser_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'imagebrowser') .'/includes',
+  );
+}
+
+/**
+ * AJAH messages fetching.
+ */
+function imagebrowser_messages() {
+  $output = theme('status_messages');
+  if ($output != "") {
+    print '<h3>'. date("l - H:i:s") .'</h3>'. $output;
+  }
+  exit();
+}
+
+
+/** ========================================
+ * INSERT FUNCTIONS
+ */
+
+
+/**
+ * Returns image details and insert options for requested node.
+ */
+function imagebrowser_insert($nid = 0) {
+  $node = node_load($nid);
+  $user = user_load($node->uid);
+  $image = imageapi_image_open($node->images['_original']);
+
+  //Get Image presets
+  $header = array(
+    array(
+      'data' => t('Image Preset'),
+      'class' => 'name'),
+    array(
+      'data' => t('Actions'),
+      'class' => 'actions')
+    );
+  $rows = array();
+  foreach (image_get_sizes() as $key => $size) {
+    if ((($key == '_original' && user_access('view original images')) || $key != '_original') && user_access('insert Image preset: '. $size['label'])) {
+      $row = array();
+      $row[] = _strip_text($size['label'], 25);
+      //Change filepath depending on settings
+      if (variable_get('imagebrowser_insert_type', 'dynamic') == 'dynamic' || variable_get('file_downloads', 1) == 2) {
+        $filepath = url('imagebrowser/view/image/'. $nid .'/'. drupal_strtolower($key));
+      }
+      else {
+        $filepath = base_path() . $node->images[$key];
+      }
+      //Change output depending on editor
+      $row[] = _imagebrowser_editors($filepath, $node->title);
+      $rows[] = $row;
+    }
+  }
+  $presets = theme('table', $header, $rows);
+
+  //Get ImageCache presets
+  if (module_exists('imagecache')) {
+    $header = array(
+      array(
+        'data' => t('ImageCache Preset'),
+        'class' => 'name'),
+      array(
+        'data' => t('Actions'),
+        'class' => 'actions')
+      );
+    $rows = array();
+    foreach (imagecache_presets() as $preset) {
+      if (user_access('view imagecache '. $preset['presetname']) && user_access('insert ImageCache preset: '. $preset['presetname'])) {
+        $row = array();
+        $row[] = t(_strip_text($preset['presetname'], 25));
+        //Change filepath depending on settings
+        if (variable_get('imagebrowser_insert_type', 'dynamic') == 'dynamic' || variable_get('file_downloads', 1) == 2) {
+          $filepath = url('imagebrowser/view/imagecache/'. $nid .'/'. $preset['presetname']);
+        }
+        else {
+          $filepath = base_path() . imagecache_create_path($preset['presetname'], $node->images['_original']);
+        }
+        //Change output depending on editor
+        $row[] = _imagebrowser_editors($filepath, $node->title);
+        $rows[] = $row;
+      }
+    }
+    $presets .= theme('table', $header, $rows);
+  }
+
+  //Theme it!
+  print theme('imagebrowser_insert', $presets, $node, $image, $user);
+  exit();
+}
+
+/**
+ * This function will help us support more editors in the future if needed.
+ */
+function _imagebrowser_editors($filepath, $alt) {
+  switch (variable_get('imagebrowser_editor', 'fckeditor')) {
+    case 'fckeditor':
+      return '<a href="javascript:SelectFile(\''. $filepath .'\',\'\',\'\',\''. $alt .'\');">Insert</a>';
+      break;
+    case 'tinymce':
+      //Do Nothing
+      break;
+    case 'bueditor':
+      //Do Nothing
+      break;
+  }
+}
+
+/**
+ * This function will strip down a string
+ */
+function _strip_text($text, $len) {
+  $bits = str_split($text, $len);
+  if (count($bits) > 1) {
+    return $bits[0] .'...';
+  }
+  else {
+    return $text;
+  }
+}
+
+/** ========================================
+ * VIEW FUNCTIONS
+ */
+
+
+/**
+ * Fetches an 'ImageCache' file, allows "shorthand" image urls such of the form:
+ * imagebrowser/view/imagecache/$nid/$preset
+ * (e.g. imagebrowser/view/imagecache/25/thumbnail)
+ */
+function imagebrowser_view_imagecache($nid = 0, $size = NULL) {
+  if (!user_access('view imagecache '. $size) || !module_exists('imagecache')) {
+    return drupal_access_denied();
+  }
+
+  //Check preset is valid
+  $presets = imagecache_presets();
+  foreach ($presets as $preset) {
+    if ($preset['presetname'] == $size) {
+      $namespace = $size;
+    }
+  }
+  if (!isset($namespace)) {
+    return drupal_not_found();
+  }
+
+  //Check node is valid
+  if (isset($nid)) {
+    $node = node_load(array('type' => 'image', 'nid' => $nid));
+    if ($node) {
+      if (!node_access('view', $node)) {
+        return drupal_access_denied();
+      }
+      if (isset($node->images['_original'])) {
+        $file = $node->images['_original'];
+        //print imagecache_create_path($namespace, $file);
+        _imagecache_cache($namespace, $file);
+        exit;
+      }
+    }
+  }
+  return drupal_not_found();
+}
+
+/**
+ * Fetches an 'Image' file, allows "shorthand" image urls such of the form:
+ * imagebrowser/view/image/$nid/$preset
+ * (e.g. imagebrowser/view/image/25/thumbnail)
+ */
+function imagebrowser_view_image($nid = 0, $size = NULL) {
+  if ($size == '_original' && !user_access('view original images')) {
+    return drupal_access_denied();
+  }
+  image_fetch($nid, $size);
+}
+
+
+/** ========================================
+ * ADMIN FUNCTIONS
+ */
+
+
+/**
+ * Image Browser's admin settings.
+ */
+function imagebrowser_settings() {
+  if (user_access('administer imagebrowser')) {
+    if (variable_get('file_downloads', 1) == 2) {
+      $options = array('dynamic' => t('Dynamic (updates with changes to image node)'));
+    }
+    else {
+      $options = array('dynamic' => t('Dynamic (updates with changes to image node)'), 'static' => t('Static (faster as files are served by Apache and not Drupal)'));
+    }
+    $form['imagebrowser_insert_type'] = array(
+      '#type' => 'radios',
+      '#title' => t('Insert type'),
+      '#default_value' => variable_get('imagebrowser_insert_type', 'dynamic'),
+      '#options' => $options,
+      '#description' => t('Changes made will not effect images already inserted into nodes. Static only available if file system is public.'),
+    );
+    return system_settings_form($form);
+  }
+}
+
+
+/** ========================================
+ * THEME FUNCTIONS
+ */
+
+
+/**
+ * Sets theme preprocessor functions for Image Browser.
+ */
+function imagebrowser_theme() {
+  $path = drupal_get_path('module', 'imagebrowser') .'/theme';
+  return array(
+    'imagebrowser_window' => array(
+      'template' => 'window',
+      'arguments' => array(
+        'upload' => NULL,
+        'css' => NULL,
+        'javascript' => NULL,
+      ),
+      'path' => $path,
+    ),
+    'imagebrowser_insert' => array(
+      'template' => 'window_insert',
+      'arguments' => array(
+        'presets' => NULL,
+        'node' => NULL,
+        'image' => NULL,
+        'user' => NULL,
+      ),
+      'path' => $path,
+    ),
+    'imagebrowser_edit' => array(
+      'template' => 'window_edit',
+      'arguments' => array(
+        'nid' => NULL,
+      ),
+      'path' => $path,
+    ),
+  );
+}
+
+/**
+ * Setup variables for the Image Browser window.
+ *
+ * @param array $vars
+ */
+function template_preprocess_imagebrowser_window(&$vars) {
+  $args = array();
+
+  $view = views_get_view('ib_browser');
+
+  if (user_access('browse all images')) {
+    $args[] = 'all';
+  }
+  else if (user_access('browse own images')) {
+    global $user;
+    $args[] = $user->name;
+  }
+
+  $view_output = $view->execute_display('default', $args);
+
+  $vars['browser'] = $view_output;
+}
+
+/**
+ * Setup variables for the insert window.
+ *
+ * @param array $vars
+ */
+function template_preprocess_imagebrowser_insert(&$vars) {
+  $node = $vars['node'];
+  $image = $vars['image'];
+  $user = $vars['user'];
+
+  $vars['title'] = _strip_text(check_plain($node->title), 18);
+  $vars['image_url'] = url('image/view/'. $node->nid .'/thumbnail');
+  $vars['image_width'] = check_plain($image->info['width']);
+  $vars['image_height'] = check_plain($image->info['height']);
+  $vars['image_mime_type'] = check_plain($image->info['mime_type']);
+  $vars['username'] = check_plain($user->name);
+  $vars['edit_link'] = url('imagebrowser/edit/'. $node->nid);
+  $vars['delete_link'] = url('imagebrowser/delete/'. $node->nid);
+}
+
+/**
+ * Setup variables for the edit window.
+ *
+ * @param array $vars
+ */
+function template_preprocess_imagebrowser_edit(&$vars) {
+  $vars['iframe_url'] = url('imagebrowser/edit/node/'. $vars['nid']);
+}
+
+function imagebrowser_edit($nid = 0) {
+  print theme('imagebrowser_edit', $nid);
+}
+
+function imagebrowser_edit_node($nid = 0) {
+  //Set CSS
+  drupal_add_css(drupal_get_path('theme', 'garland') .'/style.css');
+  drupal_add_css(drupal_get_path('module', 'imagebrowser') .'/theme/edit.css');
+  print drupal_get_css();
+
+  $node = node_load($nid);
+  module_load_include('inc', 'node', 'node.pages');
+  print theme('status_messages').drupal_get_form('image_node_form', $node).drupal_get_js();
+exit();
+}
+
+function imagebrowser_delete($nid = 0) {
+  node_delete($nid);
+  exit();
+}
+
+/**
+ * Implementation of hook_form_alter().
+ * 
+ * Reroute submit button callback to our own handler to be able to redirect
+ * the user after saving the node.
+ *
+ * @see img_assist_node_form_submit()
+ */
+function imagebrowser_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'image_node_form' && arg(0) == 'imagebrowser') {
+    $form['buttons']['submit']['#submit'] = array('imagebrowser_form_submit');
+    unset($form['buttons']['delete']);
+  }
+}
+
+/**
+ * Submit callback for image_node_form.
+ */
+function imagebrowser_form_submit($form, &$form_state) {
+  // Execute regular node submit handler.
+  node_form_submit($form, $form_state);
+
+  if ($form_state['nid']) {
+    // Send to different url.
+    $form_state['redirect'] = 'imagebrowser/edit/node/'. $form_state['nid'];
+  }
+}

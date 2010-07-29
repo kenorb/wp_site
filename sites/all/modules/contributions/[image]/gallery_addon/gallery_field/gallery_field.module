@@ -1,0 +1,408 @@
+<?php
+// $Id: gallery_field.module,v 1.2 2008/06/09 22:20:03 profix898 Exp $
+
+/**
+ * Implementation of hook_theme().
+ */
+function gallery_field_theme() {
+  return array(
+    'gallery_field_textfield' => array(
+      'arguments' => array('element' => NULL)
+    ),
+    'gallery_field_formatter_default' => array(
+      'arguments' => array('element' => NULL)
+    ),
+    'gallery_field_formatter_inline' => array(
+      'arguments' => array('element' => NULL)
+    ),
+    'gallery_field_formatter_title' => array(
+      'arguments' => array('element' => NULL)
+    )
+  );
+}
+
+/**
+ * Implementation of hook_field_info().
+ */
+function gallery_field_field_info() {
+  $field_info = array(
+    'gallery_field' => array(
+      'label' => 'Gallery2 item(s)',
+      'description' => 'Store the item id of a Gallery2 entity as an integer value.',
+      'callbacks' => array(
+        'tables' => CONTENT_CALLBACK_DEFAULT,
+        'arguments' => CONTENT_CALLBACK_DEFAULT
+      )
+    )
+  );
+  // Support for GalleryContent (TODO)
+  /*if (module_exists('gallery_content')) {
+    $feld_info['gallery_field']['callbacks'] = array(
+      'tables' => CONTENT_CALLBACK_CUSTOM,
+      'arguments' => CONTENT_CALLBACK_CUSTOM
+    );
+  }*/
+  
+  return $field_info;
+}
+
+/**
+ * Implementation of hook_field_settings().
+ */
+function gallery_field_field_settings($op, $field) {
+  switch ($op) {
+    case 'form':
+      require_once(drupal_get_path('module', 'gallery') .'/gallery_settings.inc');
+      require_once(drupal_get_path('module', 'gallery') .'/gallery_block.inc');
+      _gallery_block_options($type_map, $param_map);
+      //
+      $form = array();
+      $form['entity_types'] = array(
+        '#type' => 'select',
+        '#title' => t('Allowed entity types'),
+        '#default_value' => isset($field['entity_types']) ? $field['entity_types'] : array('GalleryPhotoItem'),
+        '#options' => array(
+          'GalleryPhotoItem' => t('Gallery2 Photos'),
+          'GalleryAlbumItem' => t('Gallery2 Albums')
+        ),
+        '#multiple' => TRUE,
+        '#description' => t('Select which entity types should be allowed to reference with this field.')
+      );
+      // Thumbnail settings
+      $form['thumbnail'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Thumbnail settings'),
+        '#description' => t('Settings for the \'Thumbnail\' field formatter'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE
+      );
+      $form['thumbnail']['thumbnail_maxcols'] = array(
+        '#type' => 'select',
+        '#title' => t('Max. number of columns'),
+        '#default_value' => isset($field['thumbnail_maxcols']) ? $field['thumbnail_maxcols'] : 1,
+        '#options' => _gallery_range_array(1, 10),
+        '#description' => t('Select the maximum number of columns for multiple values to
+                             be arranged in a grid layout.'),
+      );
+      $form['thumbnail']['thumbnail_size_method'] = array(
+        '#type' => 'select',
+        '#title' => t('Thumbnail image size method'),
+        '#default_value' => isset($field['thumbnail_size_method']) ? $field['thumbnail_size_method'] : GALLERY_IMAGEBLOCK_SIZE_METHOD_DEFAULT,
+        '#options' => array(
+          'maxsize' => t('Max Size'),
+          'exactsize' => t('Exact Size'),
+        ),
+        '#description' => t('\'Max Size\' gives faster image downloading, but the image size
+                             may be smaller than the size defined below. <br />\'Exact Size\' may be slower
+                             (as a larger image is downloaded and then scaled by the browser) but the image
+                             will be guaranteed to be the size defined below.'),
+      );
+      $form['thumbnail']['thumbnail_size'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Thumbnail size'),
+        '#default_value' => isset($field['thumbnail_size']) ? $field['thumbnail_size'] : 150,
+        '#required' => FALSE,
+        '#description' => t('Default image size for \'Thumbnail\' field formatter.')
+      );
+      $form['thumbnail']['thumbnail_show'] = array(
+        '#type' => 'checkboxes',
+        '#title' => t('Image data'),
+        '#default_value' => isset($field['thumbnail_show']) ? $field['thumbnail_show'] : array('title', 'heading'),
+        '#options' => $param_map,
+        '#description' => t('Choose the item metadata you would like to display.'),
+      );
+      // Inline settings
+      $form['inline'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Inline settings'),
+        '#description' => t('Settings for the \'Inline\' field formatter'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE
+      );
+      $form['inline']['inline_size_method'] = array(
+        '#type' => 'select',
+        '#title' => t('Inline image size method'),
+        '#default_value' => isset($field['inline_size_method']) ? $field['inline_size_method'] : GALLERY_IMAGEBLOCK_SIZE_METHOD_DEFAULT,
+        '#options' => array(
+          'maxsize' => t('Max Size'),
+          'exactsize' => t('Exact Size'),
+        ),
+        '#description' => t('\'Max Size\' gives faster image downloading, but the image size
+                             may be smaller than the size defined below. <br />\'Exact Size\' may be slower
+                             (as a larger image is downloaded and then scaled by the browser) but the image
+                             will be guaranteed to be the size defined below.'),
+      );
+      $form['inline']['inline_size'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Inline image size'),
+        '#default_value' => isset($field['inline_size']) ? $field['inline_size'] : 600,
+        '#required' => FALSE,
+        '#description' => t('Default image size for \'Inline\' field formatter.')
+      );
+      return $form;
+    case 'validate':
+      if (!is_numeric($field['thumbnail_size']) || $field['thumbnail_size'] < 1) {
+        form_set_error('thumbnail_size', t('Image size must be a number greater zero.'));
+      }
+      if (!is_numeric($field['inline_size']) || $field['inline_size'] < 1) {
+        form_set_error('inline_size', t('Image size must be a number greater zero.'));
+      }
+      break;
+    case 'save':
+      return array('entity_types', 'thumbnail_maxcols', 'thumbnail_size_method', 'thumbnail_size',
+                   'thumbnail_show', 'inline_size_method', 'inline_size');
+    case 'database columns':
+      $columns['g2id'] = array('type' => 'int', 'unsigned' => TRUE, 'not null' => FALSE, 'sortable' => TRUE);
+      return $columns;
+  }
+}
+
+/**
+ * Implementation of hook_field().
+ */
+function gallery_field_field($op, &$node, $field, &$items, $teaser, $page) {
+  switch ($op) {
+    case 'validate':
+      foreach ($items as $delta => $item) {
+        if (!gallery_field_content_is_empty($item, $field)) {
+          $error_field = $field['field_name'] .']['. $delta .'][g2id';
+          if (!gallery_field_validate_item($item, $field['entity_types'])) {
+            form_set_error($error_field, t('Title or ID does not reference a valid (or allowed) Gallery2 item.'));
+          }
+        }
+      }
+      break;
+    case 'sanitize':
+      foreach ($items as $delta => $item) {
+        if (!gallery_field_content_is_empty($item, $field)) {
+          $items[$delta]['g2id'] = intval($item['g2id']);
+          $details = gallery_item_details($item['g2id']);
+          if (isset($details['title'])) {
+            $items[$delta]['title'] = check_plain($details['title']);
+          }
+        }
+      }
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_content_is_empty().
+ */
+function gallery_field_content_is_empty($item, $field = NULL) {
+  if (empty($item['g2id']) || intval($item['g2id']) < 1) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Implementation of hook_field_formatter_info().
+ */
+function gallery_field_field_formatter_info() {
+  return array(
+    'default' => array(
+      'label' => 'Thumbnail',
+      'field types' => array('gallery_field'),
+      'multiple values' => CONTENT_HANDLE_CORE
+    ),
+    'inline' => array(
+      'label' => 'Inline Display',
+      'field types' => array('gallery_field'),
+      'multiple values' => CONTENT_HANDLE_CORE
+    ),
+    'title' => array(
+      'label' => 'Item Title',
+      'field types' => array('gallery_field'),
+      'multiple values' => CONTENT_HANDLE_CORE
+    )
+  );
+}
+
+/**
+ * Theme function for the 'thumbnail' (default) field formatter.
+ */
+function theme_gallery_field_formatter_default($element) {
+  if (!gallery_field_content_is_empty($element['#item'])) {
+    $field = content_fields($element['#field_name'], $element['#type_name']);
+    $params['itemId'] = $element['#item']['g2id'];
+    $params['blocks'] = 'specificItem';
+    $field['thumbnail_show'] = array_filter($field['thumbnail_show']);
+    $params['show'] = empty($field['thumbnail_show']) ? 'none' : implode('|', $field['thumbnail_show']);
+    if ($field['thumbnail_size_method'] == 'maxsize') {
+      $params['maxSize'] = $field['thumbnail_size'];
+    }
+    else {
+      $params['exactSize'] = $field['thumbnail_size'];
+    }
+    $extra = ($field['thumbnail_maxcols'] > 1) ? array('num_cols' => $field['thumbnail_maxcols']) : array();
+    $block = gallery_get_block($params, 'ImageBlock', $extra);
+  }
+  
+  return isset($block['content']) ? $block['content'] : FALSE;
+}
+
+/**
+ * Theme function for the 'inline' field formatter.
+ */
+function theme_gallery_field_formatter_inline($element) {
+  if (!gallery_field_content_is_empty($element['#item'])) {
+    $field = content_fields($element['#field_name'], $element['#type_name']);
+    $params['itemId'] = $element['#item']['g2id'];
+    $params['blocks'] = 'specificItem';
+    $params['show'] = 'none';
+    $params['link'] = 'none';
+    if ($field['inline_size_method'] == 'maxsize') {
+      $params['maxSize'] = $field['inline_size'];
+    }
+    else {
+      $params['exactSize'] = $field['inline_size'];
+    }
+    $block = gallery_get_block($params, 'ImageBlock', array());
+  }
+  
+  return isset($block['content']) ? $block['content'] : FALSE;
+}
+
+/**
+ * Theme function for the 'title' field formatter.
+ */
+function theme_gallery_field_formatter_title($element) {
+  $url = gallery_generate_url(array('itemId' => $element['#item']['g2id']));
+  $url = str_replace('&amp;', '&', rawurldecode($url));
+  $output = l($element['#item']['title'], $url);
+  
+  return $output;
+}
+
+/**
+ * Implementation of hook_widget_info().
+ */
+function gallery_field_widget_info() {
+  return array(
+    'gallery_field_textfield' => array(
+      'label' => t('Text Field'),
+      'field types' => array('gallery_field'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+      'callbacks' => array(
+        'default value' => CONTENT_CALLBACK_DEFAULT
+      )
+    )
+  );
+}
+
+/**
+ * Implementation of FAPI hook_elements().
+ */
+function gallery_field_elements() {
+  return array(
+    'gallery_field_textfield' => array(
+      '#input' => TRUE,
+      '#columns' => array('g2id'),
+      '#delta' => 0,
+      '#process' => array('gallery_field_textfield_process')
+    )
+  );
+}
+
+/**
+ * Implementation of hook_widget().
+ */
+function gallery_field_widget(&$form, &$form_state, $field, $items, $delta = 0) {
+  return array(
+    '#type' => $field['widget']['type'],
+    '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
+    '#suffix' => '', // TODO: add title and/or G2Image/Upload links
+  );
+}
+
+/**
+ * Implementation of hook_widget_settings().
+ */
+function gallery_field_widget_settings($op, $widget) {
+  switch ($op) {
+    case 'form':
+      // TODO: - checkbox: allow upload
+      // upload handling should be handled in the widget code and
+      // not on the field level - evaluate different solutions
+      // TODO: - expose formatter options to user (i.e. image size)
+      return array();
+    case 'validate':
+      break;
+    case 'save':
+      return array();
+  }
+}
+
+/**
+ * Process the FAPI element.
+ */
+function gallery_field_textfield_process($element, $edit, $form_state, $form) {
+  $field = $form['#field_info'][$element['#field_name']];
+  $field_key = $element['#columns'][0];
+  $element[$field_key] = array(
+    '#type' => 'textfield',
+    '#title' => t($field['widget']['label']),
+    '#description' => t($field['widget']['description']),
+    '#required' => $element['#required'],
+    '#default_value' => isset($element['#value'][$field_key]) ? $element['#value'][$field_key] : NULL,
+    '#element_validate' => array('gallery_field_textfield_validate')
+  );
+  
+  return $element;
+}
+
+/**
+ * Validate an Gallery2 textfield element.
+ */
+function gallery_field_textfield_validate($element, &$form_state) {
+  // Ignore empty items
+  if (!empty($element['#value'])) {
+    // Resolve item title to item id
+    $value = gallery_field_title2id($element['#value']);
+    if (!is_numeric($value)) {
+      form_set_error(implode('][', $element['#parents']), t('Gallery2 item title does not exist.'));
+    }
+    else {
+      form_set_value($element, $value, $form_state);
+    }
+  }
+  
+  return $element;
+}
+
+/**
+ * FAPI theme for an individual text elements.
+ */
+function theme_gallery_field_textfield($element) {
+  return $element['#children'];
+}
+
+/**
+ * Function gallery_field_title2id().
+ */
+function gallery_field_title2id($title) {
+  $query = 'SELECT [GalleryItem::id] FROM [GalleryItem] WHERE [GalleryItem::title] = ?';
+  if (($results = gallery_db_query($query, array($title))) && !empty($results[0])) {
+    return $results[0];
+  }
+  
+  return $title;
+}
+
+/**
+ * Function gallery_field_validate_item().
+ */
+function gallery_field_validate_item($id, $types = array('GalleryPhotoItem')) {
+  // Item id must be an integer
+  if (!intval($id)) {
+    return FALSE;
+  }
+  // Validate item id exists and is of allowed entity type
+  $query = 'SELECT [GalleryEntity::entityType] FROM [GalleryEntity] WHERE [GalleryEntity::id] = ?';
+  if (!($results = gallery_db_query($query, array($id))) || !in_array($results[0], $types)) {
+    return FALSE;
+  }
+  
+  return TRUE;
+}

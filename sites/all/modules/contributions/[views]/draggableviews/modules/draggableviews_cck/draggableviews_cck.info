@@ -1,0 +1,12 @@
+; $Id: draggableviews_cck.info,v 1.1 2009/01/08 22:43:25 sevi Exp $
+name = Draggableviews CCK Implementation
+description = Provides CCK-support for order fields
+dependencies[] = draggableviews
+dependencies[] = content
+core = 6.x
+; Information added by drupal.org packaging script on 2009-01-12
+version = "6.x-3.x-dev"
+core = "6.x"
+project = "draggableviews"
+datestamp = "1231718690"
+

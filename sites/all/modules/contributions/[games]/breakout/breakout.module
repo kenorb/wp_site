@@ -1,0 +1,316 @@
+<?php
+
+// $Id: breakout.module,v 1.5 2009/01/25 01:27:41 skinhat Exp $
+
+/*
+ * Drupal Module: Breakout
+ *
+ * @author: Glenn Linde <www.skinhat.com/contact>
+ */
+
+function breakout_menu() {
+  $items = array();
+
+
+    $items['admin/settings/breakout'] = array(
+      'title' => t('Breakout Configuration'),
+      'description' => t('Configure the game.'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('breakout_admin_settings'),
+      'access arguments' => array('administer site configuration'),	  
+      'type' => MENU_NORMAL_ITEM,// optional
+    );
+
+    $items['breakout/win'] = array(
+      'title' => '',
+      'page callback' => 'breakout_win',
+      'access callback' => TRUE,
+      'type' => MENU_CALLBACK,
+	  'access' => TRUE
+    );
+  return $items;
+}
+
+/**
+* Display help and module information
+* @param section which section of the site we're displaying help
+* @return help text for section
+*/
+function breakout_help($path,$arg) {
+
+  $output = '';
+
+  switch ($path) {
+    case "admin/modules#description":
+      $output = t("Displays links to nodes created on this date");
+      break;
+  }
+
+  return $output;
+} // function breakout_help
+
+
+function breakout_strip($val) 
+{
+	return str_replace("'","",$val);
+}
+
+/**
+/* Generate HTML for the breakout block
+* @param op the operation from the URL
+* @param delta offset
+* @returns block HTML
+*/
+function breakout_block($op='list', $delta=0) {
+  if ($op == "list") {
+    $block[0]["info"] = t('Breakout');
+    return $block;
+  } else if ($op == 'view') {
+    $block['subject'] = 'Breakout';
+	drupal_add_js(drupal_get_path('module', 'breakout') .'/breakout.js');
+
+
+    $content='   <style type="text/css" media="handheld,screen">
+
+
+img#breakout_ball {
+	margin: -2px 0 0 -2px;
+	display: none;
+	top:0px;
+	left:0px;
+}
+
+
+div#breakout_msg {
+	display: block;
+	text-align: center;
+}
+
+div#breakout_info {
+   	height: 13px;
+ 
+	overflow: visible;
+}
+div#breakout_info p {
+   	width:33%;
+   	float: left;
+	itext-align: center;
+   	margin: 0;
+   	padding: 0;
+}
+
+
+div#breakout_info p#scorecont {
+	width: 33%;
+}
+
+div#breakout_bonuses {
+	top: 0;
+	left: 0;
+}
+
+div#breakout_bonuses div {
+	font-size: 6px;
+	text-align: center;
+	overflow: visible;
+	margin: 0;
+}
+ </style>
+';
+
+    if (variable_get('breakout_background', '/'.drupal_get_path('module', 'breakout').'/img/drupal.jpg'))
+		$img='<img id="breakout_background_image"   hspace="0" vspace="0"/>';
+	else
+		$img="";
+
+    $content.=' <div style="position:relative; cursor:crosshair;"	> 
+		'.$img.'     
+		 <div id="breakout_blocks"  style="position:absolute; outline-color:invert; border: 1px #fff outset; margin-left:-1px; padding-bottom:'.(variable_get('breakout_paddle_height', 5)*variable_get('breakout_scale', 0.75)).'px"></div>
+		 <img id="breakout_paddle" src="'.variable_get('breakout_image_path', '/'.drupal_get_path('module', 'breakout').'/img/').'paddle.png" style="position:absolute"/>
+		 <div id="breakout_bonuses"></div>						
+         <img id="breakout_ball" src="'.variable_get('breakout_image_path', '/'.drupal_get_path('module', 'breakout').'/img/').'ball.png" style="position:absolute" />
+	   	 <div id="breakout_info" style="position:absolute">
+          <p>Level: <span id="breakout_level">1</span></p>
+          <p id="scorecont">Score:<span id="breakout_score">0</span></p>
+          <p>Lives: <span id="breakout_lives">'.variable_get('breakout_lives', 3).'</span></p>
+         </div><!--breakout_info-->
+         <div id="breakout_msg">'.variable_get('breakout_start_message', 'Click New Game to begin').'</div>
+		';
+
+    $content.='<script language=\'javascript\' > ';
+    if (variable_get('breakout_bestscore', '')!='')
+      $content.='breakout_bestscore='.breakout_strip(variable_get('breakout_bestscore', '')).'; ';
+    $content.=  'breakout_start_message=\''.breakout_strip(variable_get('breakout_start_message', 'Click New Game to begin')).'\'; ';
+    $content.=  'breakout_gameover_message=\''.breakout_strip(variable_get('breakout_gameover_message', 'Game over.')).'\'; ';
+    $content.=  'breakout_miss_message=\''.breakout_strip(variable_get('breakout_miss_message', 'Missed. Click to continue')).'\'; ';		
+    $content.=  'breakout_gamespeed=\''.breakout_strip(variable_get('breakout_gamespeed', 8)).'\'; ';
+    $content.=  'breakout_paddle_width=\''.breakout_strip(variable_get('breakout_paddle_width', 50)).'\'; ';
+    $content.=  'breakout_paddle_height=\''.breakout_strip(variable_get('breakout_paddle_height', 5)).'\'; ';
+	$content.=  'breakout_image_path=\''.breakout_strip(variable_get('breakout_image_path', '/'.drupal_get_path('module', 'breakout').'/img/')).'\'; ';		
+    $content.=  'breakout_scale='.breakout_strip(variable_get('breakout_scale', 0.75)).'; ';		
+    $content.=  'breakout_lives='.breakout_strip(variable_get('breakout_lives', 3)).'; ';	
+	$content.=  'breakout_background=\''.breakout_strip(variable_get('breakout_background', '/'.drupal_get_path('module', 'breakout').'/img/drupal.jpg')).'\'; ';	
+    $content.=  'breakout_background_transparency=\''.breakout_strip(variable_get('breakout_background_transparency', 0.2)).'\'; ';	
+	
+	$content.=  'breakout_init(); ';
+    $content.=  '</script>';
+    $content.=  '</div><br/><br/><br/>';
+     $content.='<input type="button" value="New game" onClick="blur(); breakout_reset(); breakout_start()" />';
+    $content.='&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    $content.='<span align=\'right\' style=\'font-size:0.6em\'><a href=\'http://www.skinhat.com/drupal\'>Skinhat</a></span>';
+
+ 
+
+    $content.='<form id=\'breakout_winform\' method=\'POST\' action=\'/breakout/win\' > ';
+    $content.='<input type=\'hidden\' id=\'breakout_win_message\' name=\'breakout_win_message\'/>';
+    $content.='<input type=\'hidden\' id=\'breakout_ticker\' name=\'breakout_ticker\'/>';
+    $content.='<input type=\'hidden\' id=\'breakout_win\'/>';
+    $content.='</form>';
+    if (variable_get('breakout_bestscore', -1)>0)
+      $content.='Best: '.variable_get('breakout_bestscore', -1).' by <b>'.variable_get('breakout_bestuser', 'anon').'</b>';
+
+    $block['content'] = $content;
+    return $block;
+  }
+
+} // end breakout_block
+
+/**
+ * Implementation of hook_settings()
+ */
+function breakout_admin_settings() {
+  $form = array();
+  $form['breakout_start_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Start Message'),
+    '#default_value' => variable_get('breakout_start_message', 'Click New Game to begin'),
+    '#description' => t('When a player first starts what is the message?'), 
+    '#required' => TRUE,
+  );
+
+  $form['breakout_gameover_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Message when game over'),
+    '#default_value' => variable_get('breakout_gameover_message', 'Game over'),
+    '#description' => t('Message when the game is over.'), 
+    '#required' => TRUE,
+  );  
+
+  $form['breakout_miss_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Message when player misses the ball'),
+    '#default_value' => variable_get('breakout_miss_message', 'Missed. Click to continue.'),
+    '#description' => t('When the player misses the ball whats the message?'), 
+    '#required' => TRUE,
+  ); 
+
+  $form['breakout_scale'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Scale of breakout'),
+    '#default_value' => variable_get('breakout_scale', 0.75),
+    '#description' => t('Scale factor of breakout - 1=normal size 0.5=half size 2= 2 x bigger')
+  ); 
+
+  $form['breakout_gamespeed'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Initial game speed'),
+    '#default_value' => variable_get('breakout_gamespeed', 8),
+    '#description' => t('Initial game speed - 0 is slowest, 8 average, 16 faster'), 
+    '#required' => TRUE,
+  );  
+   
+
+  $form['breakout_background'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Background Image'),
+    '#default_value' => variable_get('breakout_background', '/'.drupal_get_path('module', 'breakout').'/img/drupal.jpg'),
+    '#description' => t('URL of image to use as background. Leave blank if no image.')
+  );
+    
+  $form['breakout_background_transparency'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Transparency of background image'),
+    '#default_value' => variable_get('breakout_background_transparency', 0.2),
+    '#description' => t('Transparency of background on page. 1 is no transparency. 0 is completely transparent.'), 
+    '#required' => TRUE,
+  );  
+	
+    
+  $form['breakout_image_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Path for invader images'),
+    '#default_value' => variable_get('breakout_image_path', '/'.drupal_get_path('module', 'breakout').'/img/'),
+    '#description' => t('Path for paddle images. Must be of filenames paddle.png (paddle), ball.png (ball), normalblock.png (easier block), toughblock.png (tougher block), 100pt.png (get 100 points when catch), 200pt.png (200 points), widerpad.png (wider paddle when catch), shorterpad.png (shorter paddle when catch), badcol.pn (get -100 points if catch)')
+  );
+  
+  $form['breakout_lives'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of player lives'),
+    '#default_value' => variable_get('breakout_lives', 3),
+    '#description' => t('Number of lives'), 
+    '#required' => TRUE,
+  );    
+ 
+  $form['breakout_paddle_width'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Paddle width'),
+    '#default_value' => variable_get('breakout_paddle_width', 50),
+    '#description' => t('Paddle width in pixels. Is scaled by scale.'), 
+    '#required' => TRUE,
+  );   
+
+  $form['breakout_paddle_height'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Paddle height'),
+    '#default_value' => variable_get('breakout_paddle_height', 5),
+    '#description' => t('Paddle height in pixels. Is scaled by scale.'), 
+    '#required' => TRUE,
+  ); 
+  
+  $form['breakout_bestscore'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Best score'),
+    '#default_value' => variable_get('breakout_bestscore', ''),
+    '#description' => t('Set the best game score. Set to blank to reset.')
+  );
+
+  $form['breakout_bestuser'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User with best score'),
+    '#default_value' => variable_get('breakout_bestuser', ''),
+    '#description' => t('Set the user who got the best score')
+  );
+
+  return system_settings_form($form);
+}
+
+
+function breakout_win()
+{      
+  global $user;
+  $ticker=$_POST['breakout_ticker'];
+  $output='';
+  if ($ticker)
+  {
+    if ($user->name)
+    {
+      $message=$_POST['breakout_message'];
+ 
+      if ($message)
+        $output=$message.'<br/>';
+      $output.='Congratulations '.$user->name.' on getting a score of '.$ticker.'.';
+      variable_set('breakout_bestscore',$ticker);
+      variable_set('breakout_bestuser',$user->name);
+    }
+    else
+      $output='Congratulations. You got the best score. If you were logged in your score would have been recorded!';
+
+  }
+    return  $output;
+  //return theme('table', $output);
+
+}
+
+
+
+?>

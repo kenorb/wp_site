@@ -1,0 +1,32 @@
+/* $Id: avatar_selection.css,v 1.1.2.3.4.1 2007/11/30 12:24:53 snpower Exp $ */
+div.user_avatar_select div.form-item {
+  text-align: center;
+  float: none;
+  display: inline;
+  width: 85px;
+}
+
+div.user_avatar_select label.option img {
+  /* margin: 3px;*/
+  padding: 5px;
+  /*border: 4px #E1E1E1 solid;*/
+}
+
+div.user_avatar_select label.option img.avatar_hover {
+  border: 4px #7BFF57 solid;
+  padding: 1px;
+  cursor: pointer;
+}
+
+body div.user_avatar_select label.option img.avatar_select {
+  border: 4px #FF0000 solid;
+  padding: 1px;
+}
+
+div.avatar_selection_pager_nav {
+  text-align: center;
+}
+
+div.avatar_selection_pager_nav a {
+  padding: 0 5px 0 5px;
+}

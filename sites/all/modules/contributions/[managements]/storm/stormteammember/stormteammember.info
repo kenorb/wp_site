@@ -1,0 +1,18 @@
+; $Id: stormteammember.info,v 1.1.2.1 2008/12/15 13:23:53 robertogerola Exp $
+name = Storm Team member
+description = "SpeedTech Organizer and Resource Manager - Team member"
+dependencies[] = storm 
+dependencies[] = stormattribute
+dependencies[] = stormorganization
+dependencies[] = stormproject
+dependencies[] = stormtask
+dependencies[] = stormticket
+package = Storm
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-01-07
+version = "6.x-1.20"
+core = "6.x"
+project = "storm"
+datestamp = "1231318237"
+

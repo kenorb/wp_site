@@ -1,0 +1,514 @@
+<?php
+// $Id: watchlist.module,v 1.4.6.5 2008/10/30 20:45:19 btmash Exp $
+
+/**
+ * @file
+ * Main module which implements core hooks for filter and/or send calls to the abuse module when questionable content is created.
+ */
+
+define('CONFIGURE_WATCHLIST_SETTINGS', 'configure watchlist settings');
+define('WATCHLIST_PREMODERATE_CONTENT_TYPE', 'watchlist_premoderate_content_type_');
+define('WATCHLIST_MODERATE_CONTENT_TYPE', 'watchlist_moderate_content_type_');
+
+function watchlist_perm() {
+  return array(CONFIGURE_WATCHLIST_SETTINGS);
+}
+
+function watchlist_menu() {
+  $items = array();
+  $items['admin/settings/watchlist'] = array(
+    'title' => 'Watchlist settings',
+    'description' => 'Set the watchlist words, types of content to act on, pre-moderation',
+    'page callback' => 'watchlist_admin_settings',
+    'access arguments' => array(CONFIGURE_WATCHLIST_SETTINGS),
+  );
+  $items['admin/settings/watchlist/js/test'] = array(
+    'title' => 'Test watchlist settings',
+    'description' => 'Test the regular expressions set in the watchlist by testing words and sentences',
+    'page callback' => 'watchlist_js_test_settings_form',
+    'access arguments' => array(CONFIGURE_WATCHLIST_SETTINGS),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function watchlist_filter($op, $delta = 0, $format = -1, $text = '') {
+  switch ($op) {
+    case 'list':
+      return array(0 => t('Bad words filter'));
+    case 'description':
+      return t('Replaces bad words in the string with a user specified safe text');
+    case 'prepare':
+      return $text;
+    case 'process':
+      $words = variable_get("watchlist_banned_words", '');
+      $badwords = _watchlist_generate_list($words);
+      $replacement = variable_get("watchlist_banned_words_replacement", '');
+
+      $output = $text;
+      $output = _watchlist_filter_phone($output);
+      $output = _watchlist_filter_email($output);
+      if (sizeof($words) > 0) {
+        $output =  preg_replace($badwords, $replacement, $output);
+      }
+      return $output;
+    default:
+      return $text;
+  }
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function watchlist_form_alter(&$form, $form_state, $form_id) {
+  if ('node_type_form' == $form_id) {
+    $type = $form['#node_type']->type;
+    $form['abuse_settings']['watchlist_settings'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Watchlist Settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    );
+    $form['abuse_settings']['watchlist_settings'][WATCHLIST_MODERATE_CONTENT_TYPE . $type] = array(
+      '#title' => t("Do you wish to have @type nodes moderated?", array('@type' => $form['#node_type']->name)),
+      '#description' => t("Moderated content automatically flags any content that may be questionable.  If content is found to contain any of words (or match regular expressions) found from the watchlist or banned list, the node is placed into a pending or hidden pile, respectively.  In the case of the latter, it is hidden to other users so the moderator can decide what should be done."),
+      '#type' => 'checkbox',
+      '#return_value' => 1,
+      '#default_value' => variable_get(WATCHLIST_MODERATE_CONTENT_TYPE . $type, 0),
+    );
+    $form['abuse_settings']['watchlist_settings'][WATCHLIST_PREMODERATE_CONTENT_TYPE . $type] = array(
+      '#title' => t("Do you wish to have @type nodes pre-moderated?", array('@type' => $form['#node_type']->name)),
+      '#description' => t("PRE-Moderated content is automatically hidden on the site and placed into an appropriate bin depending on how good or bad the content may be.  It is then up to the moderator to allow or remove the node from being displayed on the site."),
+      '#type' => 'checkbox',
+      '#return_value' => 1,
+      '#default_value' => variable_get(WATCHLIST_PREMODERATE_CONTENT_TYPE . $type, 0),
+    );
+    $form['#submit'][] = 'watchlist_node_type_form_submit';
+  }
+}
+
+/**
+ * Implementation of form_submit().
+ */
+function watchlist_node_type_form_submit($form, &$form_state) {
+  $type = $form_state['values']['type'];
+  $moderation_value = !empty($form_state['values'][WATCHLIST_MODERATE_CONTENT_TYPE . $type]) ? 1 : 0;
+  $premoderation_value = !empty($form_state['values'][WATCHLIST_PREMODERATE_CONTENT_TYPE . $type]) ? 1 : 0;
+  variable_set(WATCHLIST_MODERATE_CONTENT_TYPE . $type, $moderation_value);
+  variable_set(WATCHLIST_PREMODERATE_CONTENT_TYPE . $type, $premoderation_value);
+}
+    
+function _watchlist_filter_phone($text) {
+  return preg_replace('/[\(]?[0-9]{0,3}[\)\ \.\-]*[0-9]{3}[\-\.\ ]*[0-9]{4}/', '555-5555', $text);
+}
+
+function _watchlist_filter_email($text) {
+  $user = '[a-zA-Z0-9_\-\.\+\^!#\$%&*+\/\=\?\`\|\{\}~\']+';
+  $domain = '(?:(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.?)+';
+  $ipv4 = '[0-9]{1,3}(\.[0-9]{1,3}){3}';
+  $ipv6 = '[0-9a-fA-F]{1,4}(\:[0-9a-fA-F]{1,4}){7}';
+
+  return preg_replace("/$user@($domain|(\[($ipv4|$ipv6)\]))/", 'xxxxx@xxxxx.com', $text);
+}
+
+function watchlist_admin_settings() {
+  $content = '';
+  $content .= drupal_get_form('watchlist_test_settings_form');
+  $content .= drupal_get_form('watchlist_admin_settings_form');
+  return $content;
+}
+
+function watchlist_admin_settings_form(&$form_state) {
+  $form = array();
+  $form['watchlist_watch'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Watchlist word settings'),
+    '#description' => t('These words fall in a grey area of being good or bad.  Content found with these words will be flagged into the pending pile (and into a hidden pile if premoderation is allowed on the content type)'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['watchlist_watch']['watchlist_words'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Watch list'),
+    '#cols' => 70,
+    '#rows' => 10,
+    '#default_value' => trim(variable_get("watchlist_words", '')), 
+    '#description' => t('The watch list, one per line.  Do not use empty line breaks.')
+  );
+  $form['watchlist_banned'] = array(
+    '#title' => t('Filtered/banned word settings'),
+    '#description' => t('These words will enable content to be automatically flagged on the site and, if allowed back on site, filters the banned words'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['watchlist_banned']['watchlist_banned_words'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Filtered/banned word list'),
+    '#cols' => 70,
+    '#rows' => 10,
+    '#default_value' => trim(variable_get("watchlist_banned_words", '')), 
+    '#description' => t('The banned word list, one per line.  Do not use empty line breaks.')
+  );
+  $form['watchlist_banned']["watchlist_banned_words_replacement"] = array(
+    '#title' => t('Replacement string'),
+    '#type' => 'textfield',
+    '#size' => 40,
+    '#maxlength' => 40,
+    '#default_value' => variable_get("watchlist_banned_words_replacement", '****'),
+    '#description' => t('String to replace banned words with'),
+  );
+  
+  // Configure which content types can be flagged
+  $form['moderated'] = array(
+    '#title' => t('Enable moderation from the watchlist and banned list for these content types'),
+    '#description' => t('Content gets flagged into a pending pile '.
+      '(users can still view item) if a match is found in the watchlist.  '.
+      'Content gets flagged into hidden pile (hidden from users) if a match '. 
+      'is from from the bannedlist.  Users will only be validated against banned words.'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  foreach (node_get_types() as $type => $name) {
+    $form['moderated'][WATCHLIST_MODERATE_CONTENT_TYPE . $type] = array(
+      '#title' => $name->type,
+      '#type' => 'checkbox',
+      '#return_value' => 1,
+      '#default_value' => variable_get(WATCHLIST_MODERATE_CONTENT_TYPE . $type, 0),
+    );
+  }
+  $form['moderated'][WATCHLIST_MODERATE_CONTENT_TYPE .'comment'] = array(
+    '#title' => t('comment'),
+    '#type' => 'checkbox',
+    '#return_value' => 1,
+    '#default_value' => variable_get(WATCHLIST_MODERATE_CONTENT_TYPE .'comment', 0),
+  );
+  $form['moderated'][WATCHLIST_MODERATE_CONTENT_TYPE .'users'] = array(
+    '#title' => t('users'),
+    '#type' => 'checkbox',
+    '#description' => t('Validate the username is not part of a bad list of words'),
+    '#return_value' => 1,
+    '#default_value' => variable_get(WATCHLIST_MODERATE_CONTENT_TYPE .'users', 0),
+  );
+  
+  // Configure which content types are up for pre-moderation - This overrides the moderation from above
+  $form['premoderated'] = array(
+    '#title' => t('Enable pre-moderation from the watchlist and banned list for these content types'),
+    '#description' => t('Content gets flagged regardless of abuse module setting.'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  foreach (node_get_types() as $type => $name) {
+    $form['premoderated'][WATCHLIST_PREMODERATE_CONTENT_TYPE . $type] = array(
+      '#title' => $name->type,
+      '#type' => 'checkbox',
+      '#return_value' => 1,
+      '#default_value' => variable_get(WATCHLIST_PREMODERATE_CONTENT_TYPE . $type, 0),
+    );
+  }
+  $form['premoderated'][WATCHLIST_PREMODERATE_CONTENT_TYPE .'comment'] = array(
+    '#title' => t('comment'),
+    '#type' => 'checkbox',
+    '#return_value' => 1,
+    '#default_value' => variable_get(WATCHLIST_PREMODERATE_CONTENT_TYPE .'comment', 0),
+  );
+  return system_settings_form($form);
+}
+
+function watchlist_admin_settings_form_validate($form, &$form_state) {
+  $values = $form_state['values'];
+  _watchlist_admin_settings_validate_empty_line($values['watchlist_banned_words'], 'watchlist_banned_words');
+  _watchlist_admin_settings_validate_empty_line($values['watchlist_words'], 'watchlist_words');
+}
+
+function _watchlist_admin_settings_validate_empty_line($list, $type) {
+  if (empty($list)) {
+    return;
+  }
+  $words = str_replace(array("\r\n", "\r"), "\n", $list);
+  $wordlist = explode("\n", $words);
+  foreach ($wordlist as $num => $word) {
+    $trimmed_word = trim($word);
+    if (empty($trimmed_word)) {
+      form_set_error($type, t("Please remove all empty line breaks from the %list list", array('%list' => str_replace('_', ' ', $type))));
+      return;
+    }
+  }
+}
+
+function watchlist_test_settings_form($form_state) {
+  $form = array();
+  $form['#cache'] = TRUE;
+  $form['testarea'] = array(
+    '#type' => 'item',
+    '#value' => '<!-- -->',
+    '#prefix' => "<div id='watchlist-test-settings-container'>",
+    '#suffix' => '</div>',
+  );
+  $form['test'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Test out watchlist word settings'),
+    '#description' => t('Test the validity of the watch word list and banned word list.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['test']['text'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Test Box'),
+    '#cols' => 70,
+    '#rows' => 10,
+    '#default_value' => $form_state['values']['text'], 
+    '#description' => t('The text you wish to test.'),
+    '#required' => TRUE,
+  );
+  
+  $form['test']['op'] = array(
+    '#type' => 'submit',
+    '#value' => t('test'),
+    '#ahah' => array(
+      'path' => 'admin/settings/watchlist/js/test',
+      'wrapper' => 'watchlist-test-settings-container',
+      'method' => 'replace',
+      'effect' => 'fade'
+    ),
+    
+  );
+  
+  return $form;
+}
+
+function watchlist_test_settings_form_submit($form, &$form_state) {
+  $values = $form_state['values'];
+  $op = $form_state['clicked_button']['#value'];
+  if (t('test') === $op) {
+    $matches = watchlist_checklist($values['text']);
+    $content = '<em>Your Text:</em> '. check_plain($values['text']) ."<br />\n";
+    $content .= '<em>Filtered text:</em> '. watchlist_filter('process', 0, -1, $values['text']) ."<br />\n";
+    $content .= '<em>Matches against regular watchlist:</em> '. ((empty($matches['watchlist'])) ? 'none' : implode(', ', $matches['watchlist'])) ."<br />\n";
+    $content .= '<em>Matches against banned list:</em> '. ((empty($matches['bannedlist'])) ? 'none' : implode(', ', $matches['bannedlist'])) ."<br />\n";
+    if ($values['ahah'] === TRUE) {
+      return $content;
+    }
+    drupal_set_message($content, 'error');
+  }
+}
+
+function watchlist_js_test_settings_form() {
+  // Submit the form here
+  $cache = cache_get('form_'. $_POST['form_build_id'], 'cache_form');
+  $form = $cache->data;
+  $form_state = array('values' => $_POST);
+  $form_state['values']['ahah'] = TRUE;
+  $form_state['clicked_button']['#value'] = $form_state['values']['op'];
+  $content = watchlist_test_settings_form_submit($form, $form_state);
+  print drupal_to_js(array('status' => FALSE, 'data' => $content));  
+}
+
+/**
+ * Implementation of hook_nodeapi
+ * 
+ * Check the lists and if the content will be allowed, added to pending bin, or hidden from the site
+ */
+function watchlist_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($op) {
+    case 'update':
+    case 'insert':
+      $text = $node->title .' '. urldecode($node->body) .' '. watchlist_invoke_extra_text($node);
+      $matches = watchlist_checklist($text);
+      //Perform the evaluation
+      watchlist_evaluate($node, $node->nid, $node->type, $matches);
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_comment
+ * 
+ * Check the lists and if the content will be allowed, added to pending bin, or hidden from the site
+ */
+
+function watchlist_comment(&$comment, $op) {
+  switch ($op) {
+    case 'update':
+    case 'insert':
+      $text = $comment['subject'] .' '. $comment['comment'];
+      $matches = watchlist_checklist($text);
+      //Perform the evaluation
+      watchlist_evaluate($comment, $comment['cid'], 'comment', $matches);
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_user
+ * 
+ * Check that a bad name is not used from either the watch or banned lists
+ */
+function watchlist_user($op, &$edit, &$account, $category = NULL) {
+  if (variable_get(WATCHLIST_MODERATE_CONTENT_TYPE .'users', 0)) {
+    switch ($op) {
+      case 'validate':
+        $watch_list_match = watchlist_checklist($edit['name']);
+        if (sizeof($watch_list_match['watchlist']) > 0 || sizeof($watch_list_match['bannedlist']) > 0) {
+          form_set_error('name', t('Inappropriate name !name requested.', array('!name' => theme('placeholder', $edit['name']))));
+        }
+        break;
+    }
+  }
+}
+
+/**
+ * Invokes all functions that provide extra text to process for a particular 
+ * node (watchlist would not know what extra text should otherwise be processed)
+ */
+function watchlist_invoke_extra_text($node) {
+  $text = '';
+  foreach (module_implements('watchlist_extra_text') as $name) {
+    $text .= module_invoke($name, 'watchlist_extra_text', $node) .' ';
+  }
+  return trim($text);
+}
+
+/**
+ * Evaluated the item based on what the matches have brought
+ */
+function watchlist_evaluate($object, $oid, $type, $matches) {
+  $generic_type = ($type === 'comment' || $type === 'user') ? $type : 'node';
+  // Check if the content is to be pre-moderated
+  if (0 !== variable_get(WATCHLIST_PREMODERATE_CONTENT_TYPE . $type, 0)) {
+    $banlist_matches = array_unique($matches['bannedlist'] + $matches['watchlist']);
+    if (!empty($banlist_matches)) {
+      _watchlist_report_generated($object, $generic_type, $oid, $matches, TRUE, TRUE);
+    }
+    else {
+      _watchlist_report_generated($object, $generic_type, $oid, $matches, TRUE, FALSE);
+    }
+    
+  }
+  // Check if the content is to be moderated for banned words by the watchlist
+  elseif (0 !== variable_get(WATCHLIST_MODERATE_CONTENT_TYPE . $type, 0)) {
+    $watchlist_matches = $matches['watchlist'];
+    $banlist_matches = $matches['bannedlist'];
+    if (!empty($banlist_matches)) {
+      _watchlist_report_generated($object, $generic_type, $oid, $matches, FALSE, TRUE);
+    }
+    else if (!empty($watchlist_matches)) {
+      _watchlist_report_generated($object, $generic_type, $oid, $matches, FALSE, FALSE);
+    }
+  }
+}
+
+/**
+ * Evaluate the text using both the banned and regular filter
+ */
+function watchlist_checklist($text) {
+  $matchlist = array('watchlist' => array(), 'bannedlist' => array());
+  static $watchlist, $bannedlist;
+  $watch_wordlist = variable_get("watchlist_words", '');
+  $banned_wordlist = variable_get("watchlist_banned_words", '');
+  if (!isset($watchlist)) {
+    $watchlist = _watchlist_generate_list($watch_wordlist);
+  }
+  if (!isset($bannedlist)) {
+    $bannedlist = _watchlist_generate_list($banned_wordlist);
+  }
+  // Do some stuff past this stage
+  $matchlist['watchlist'] = _watchlist_checklist($text, $watchlist);
+  // This is a special case - currently used on the zt site.
+  if (strpos($text, '$!*#') !== FALSE) {
+    $matchlist['watchlist'][] = '$!*#';
+  }
+  $matchlist['bannedlist'] = _watchlist_checklist($text, $bannedlist);
+  return $matchlist;
+}
+
+
+/**
+ * Generate a list of words that can be used by preg_replace
+ *
+ * @param array $wordlist array of words
+ * assumption: wordlist has already been trimmed from front and back
+ */
+function _watchlist_generate_list($wordlist) {
+  $check_set = array();
+  $words = str_replace(array("\r\n", "\r"), "\n", trim($wordlist));
+  $words = explode("\n", $words);
+  for ($i = 0; $i < count($words); $i++) {
+    $trimmed_word = trim($words[$i]);
+    if (!empty($trimmed_word)) {
+      $check_set[] = '/'. $trimmed_word .'/i';
+    }
+  }
+  return $check_set;
+}
+
+/**
+ * Check the list of words against a list
+ */
+function _watchlist_checklist($text, $wordlist) {
+  if (!empty($wordlist)) {
+    $matches = array();
+    foreach ($wordlist as $word) {
+      $match = array();
+      if (preg_match($word, $text, $match)) {
+        $matches[] = $match[0];
+      }
+    }
+    return array_unique($matches);
+  }
+  return array();
+}
+
+/**
+ * Generate a report to add to the abuse system.
+ */
+function _watchlist_report_generated($object, $type = NULL, $oid = NULL, $matches = array(), $premoderated = TRUE, $hidden = FALSE) {
+  $found = array_unique($matches['watchlist'] + $matches['bannedlist']);
+  
+  if (!empty($type) && !empty($oid)) {
+    $admin = array('uid' => 0, 
+                   'name' => t('Watchlist'),
+                   'mail' => variable_get('site_mail', 'auto_admin@watchlist_generator.com'),
+                   'reason' => 5,
+                   'body' => implode(', ', $found)
+                  );
+    // Alter status of the content if it is supposed to be premoderated or hidden (value sent by evaluation)
+    if ($premoderated || $hidden) {
+      switch ($type) {
+        case 'user':
+          db_query("UPDATE {users} SET status=0 WHERE uid=%d", $oid);
+          break;
+        case 'comment':
+          db_query("UPDATE {comments} SET status=1 WHERE cid=%d", $oid);
+          break;
+        case 'node':
+          db_query("UPDATE {node} SET status=0 WHERE nid=%d", $oid);
+          break;
+      }
+    }
+    
+    if ($hidden && $premoderated) {
+      _abuse_set_status($type, $oid, ABUSE_HIDDEN);
+    }
+    elseif ($hidden && !$premoderated) {
+      _abuse_disable($type, $oid);
+    }
+    else {
+      _abuse_set_status($type, $oid, ABUSE_PENDING);
+    }
+    if (sizeof($matches['watchlist']) <= 0 && sizeof($matches['bannedlist']) <= 0) {
+      $admin['body'] = t("No watched or banned words found.");
+    }
+    
+    if (db_result(db_query("SELECT COUNT(*) FROM {abuse} WHERE type='%s' AND oid=%d AND uid=%d", $type, $oid, $admin['uid'])) == 0) {
+      db_query("INSERT INTO {abuse} (type, oid, created, body, reason, uid, name, mail) VALUES ('%s', %d, %d, '%s', '%s', %d, '%s', '%s')",
+                $type, $oid,  time(), $admin['body'], $admin['reason'], $admin['uid'], $admin['name'], $admin['mail']);
+    } 
+    else {
+      db_query("UPDATE {abuse} SET body='%s', created=%d, valid=0 WHERE type='%s' AND oid=%d AND uid=%d AND name='%s' AND mail='%s'", 
+                $admin['body'], time(), $type, $oid, $admin['uid'], $admin['name'], $admin['mail']);
+    }
+  }
+}

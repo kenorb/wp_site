@@ -1,0 +1,43 @@
+$Id: CHANGELOG.txt,v 1.1.2.12 2009/01/18 05:17:03 michellec Exp $
+
+------------------------ D6 BRANCH ------------------------------------------------------
+
+January 17, 2009
+----------------
+NOISSUE by Michelle: New feature: Author Pane as a block on node/user/blog pages.
+NOISSUE by Michelle: Added option to select what node types to display block on.
+
+January 16, 2009
+----------------
+NOISSUE by Michelle: Removed caching of inc files to avoid problems when integration modules are added / removed.
+
+January 12, 2009
+----------------
+#348897 by Michelle: Fixed lack of title text on user online/offline image.
+
+January 7, 2009
+---------------
+#355737 by Michelle: Removed user stats integration as it's already in the user stats module. Reported by Jason Ruyle.
+
+January 4, 2009
+---------------
+NOISSUE by Michelle: Minor fixes to UR integration, added OG groups back to the template.
+#349194 by mr.andrey: Added location integration (untested).
+NOISSUE by Michelle: Added a README.txt.
+NOISSUE by Michelle: Updated CSS to match changes to template structure.
+
+January 3, 2009
+---------------
+NOISSUE by Michelle: Pulled author pane content type out of APK and into here.
+NOISSUE by Michelle: Added configuration to panels content type to put in image directory and template file so the APK ones could be used.
+NOISSUE by Michelle: Updated template to match the APK version except for the user name.
+
+December 27, 2008
+-----------------
+VARIOUS by Michelle: Committed integration code for og, user badges, user relationships, and user titles.
+NOISSUE by Michelle: Updated author pane template.
+
+December 21, 2008
+-----------------
+Initial dev release.
+

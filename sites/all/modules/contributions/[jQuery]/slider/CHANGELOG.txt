@@ -1,0 +1,13 @@
+// $Id: CHANGELOG.txt,v 1.1.2.1 2008/12/16 15:37:35 marktheunissen Exp $
+
+Slider 1.2, 2008-12-16
+----------------------
+- bug fix [#321622] - only count the number of nodes once.
+- bug fix [#333836] - active title should change when using the left/right buttons.
+- bug fix [#327849] - slider should work correctly when node is set as front page.
+- feature request [#342965] - tab titles have individual classes on their li elements
+- change [#347731] - the slider doesn't strip out all content from the node, only the field_slider_content.
+
+Slider 1.1, 2008-10-15
+----------------------
+- Initial release

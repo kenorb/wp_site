@@ -1,0 +1,21 @@
+$Id: INSTALL.txt,v 1.1.2.1.2.1 2008/12/21 14:40:53 mrfelton Exp $
+
+INSTALLATION:
+------------
+
+1). Install all prerequite modules:
+   - jquery_plugin
+   - views
+   
+2) Copy the rotor directory and all its contents to your modules directory.
+   
+3) Enable module on the Administer > Site Building > Modules
+
+4) Grant permission to use this module:
+   http://example.comadmin/admin/user/permissions#module-rotor
+
+6) Create Rotor items at Content canagement > Create content > Rotor item
+
+7) Place the Rotor block at Site Building -> Blocks
+
+7) Configure the Rotor block at Site Building -> Views

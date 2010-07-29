@@ -1,0 +1,11 @@
+; $Id: htmlmail.info,v 1.1.2.2 2008/11/04 07:22:11 chrisherberte Exp $
+name = HTML Mail
+description = "Enable HTML in system emails."
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-01-07
+version = "6.x-1.0"
+core = "6.x"
+project = "htmlmail"
+datestamp = "1231287317"
+

@@ -1,0 +1,12 @@
+; $Id: tabs.info,v 1.1 2008/03/26 23:05:50 nedjo Exp $
+name = Tabs
+description = A helper module for creating tabbed pages.
+package = User Interface
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-09-06
+version = "6.x-1.0"
+core = "6.x"
+project = "tabs"
+datestamp = "1220673919"
+

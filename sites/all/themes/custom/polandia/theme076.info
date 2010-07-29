@@ -1,0 +1,21 @@
+; $Id: theme076.info,v 1.4 Nessy Exp $
+name = theme076
+description = this template is made by template-help.com.
+version = 6.3
+core = 6.x
+engine = phptemplate
+
+version = "6.3"
+project = "drupal"
+datestamp = "1202913006"
+
+php = DRUPAL_MINIMUM_PHP
+
+regions[header] = Header
+regions[left] = Left sidebar
+regions[right] = Right sidebar
+regions[content_banner] = Content Banner
+regions[content_header] = Content Header
+regions[content] = content
+regions[footer] = Footer
+regions[custom] = Custom

@@ -1,0 +1,38 @@
+Abuse Module:
+
+Permissions: There are now 3 permissions - administer abuse reports,
+flag content, and direct flag content.  Administer abuse reports allows
+a user to see which nodes have been flagged and allows them to either
+remove from the site or allow back into the system.  Flag content allows
+a user to flag content.  Direct flag allows a user to flag a content and
+set the content as 'hidden'.  In essence, it is a person who has been
+trusted to flag genuinely bad content to be removed without requiring
+multiple users to flag the content before the system hides it.
+
+Node status:
+The abuse system holds 4 primary status: Allow, Pending, Hidden, and
+Remove.  Items that were flagged into the system but allowed back are
+given an allow status (the module allows to keep a log on items that had
+been entered).  Pending items are items that were flagged and require
+reviewing (and are still viewable on the site).  Hidden items are items
+that were flagged multiple times and as such are hidden from other users
+until a user with administer abuse reports permissions checks it out. And 
+removed items are items reviewed by a user with administer abuse reports and
+deemed it necessary to remove from the site.
+
+About flagging a node:
+This system has changed.  Users must now provide a reason why the
+content was flagged.  Moreover, they must provide their name and email
+address (if they are anonymous; registered users have this logged) so
+the administrator/moderator would have an idea on who wrote it.
+
+The abuse section has the 3 primary sections (Pending, Hidden, Removed)
+available as tabs to browse between the different sections.
+
+Other features:
+Flag comments
+Warn user on content by sending email
+Automatically flag content based on a regular expression wordlist (SEE watchlist module)
+
+MAJOR TODO:
+Figure out paging

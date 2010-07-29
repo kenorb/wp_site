@@ -1,0 +1,58 @@
+<?php
+/*
+	version: $Id$
+	author: kenorb@gmail.com
+*/
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function string2module_form_alter($form, $form_state, $form_id) {
+    global $active_forms2;
+    $active_forms2[$form_id] = array( 'form' => $form, 'form_state' => $form_state );
+}
+
+/**
+ * Implementation of hook_footer().
+ */
+function string2module_footer() {
+    $text = 'add/child';
+    if ($form = string2module_find_form_id($text)) {
+	string2module_find_form_alter($text, $form);
+    }
+}
+
+function string2module_find_form_id($text) {
+    global $active_forms2;
+    $res = FALSE;
+    if (is_array($active_forms2)) {
+	foreach ($active_forms2 as $form_id => $form) {
+	    $form_content = drupal_get_form($form_id);
+	    if (strpos($form_content, $text)!==FALSE) {
+		$res = array('form_id' => $form_id, 'form' => $form['form'], 'form_state' => $form['form_state']);
+		break;
+	    }
+
+	}
+    }
+    return $res;
+}
+
+function string2module_find_form_alter($text, $form_arr, $hook = 'form_alter') {
+    $form = $form_arr['form'];
+    $form_id = $form_arr['form_id'];
+    $form_state = $form_arr['form_state'];
+    $args = array($form, $form_state, $form_id);
+    foreach (module_implements($hook) as $module) {
+	$function = $module .'_'. $hook;
+	$result = call_user_func_array($function, $args);
+	if (isset($result) && is_array($result)) {
+	  $return = array_merge_recursive($return, $result);
+	} else if (isset($result)) {
+	  $return[] = $result;
+	}
+    }
+//var_dump($return); exit;
+    return $res;
+}
+

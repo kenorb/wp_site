@@ -1,0 +1,12 @@
+; $Id: smileys_import.info,v 1.2.2.2 2008/04/06 19:24:01 Gurpartap Exp $
+name = Smileys Import
+description = "Import Smiley packages."
+dependencies[] = smileys
+package = Smileys
+core = 6.x
+; Information added by drupal.org packaging script on 2009-01-05
+version = "6.x-1.0-alpha5"
+core = "6.x"
+project = "smileys"
+datestamp = "1231146942"
+

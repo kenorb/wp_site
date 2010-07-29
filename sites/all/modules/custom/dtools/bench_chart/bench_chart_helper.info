@@ -1,0 +1,7 @@
+; $Id: bench_chart_helper.info,v 1.1 2009/03/27 12:49:42 kenorb Exp $
+name = "Bench Chart Helper"
+description = "Needed by Bench Chart module"
+package = "Development"
+core = 6.x
+version = "6.x-1.x-dev" 
+

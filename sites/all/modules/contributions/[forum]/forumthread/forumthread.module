@@ -1,0 +1,391 @@
+<?php
+// $Id: forumthread.module,v 1.5.2.6 2008/08/05 17:36:08 brauerranch Exp $
+
+/**
+ * @file
+ * Enables an alternate view of the standard Drupal forums with Forum Topics
+ *
+ * The forumthread module provides a list view of forum modes
+ * showing the title of the node and the subject of all replies
+ * in a single threaded view.
+ */
+
+/**
+ * Register our theme functions
+ */
+function forumthread_theme() {
+  return array(
+    'forumthread' => array('file' => 'forumthread.module'),
+    'forumthread_page' => array('file' => 'forumthread.module'),
+    'forumthread_display' => array('file' => 'forumthread.module'),
+    'forumthread_topic_list' => array('file' => 'forumthread.module'),
+  );
+}
+
+function forumthread_menu() {
+  $items = array();
+  $items['admin/content/forumthread'] = array(
+    'title' => 'Forum Thread',
+    'description' => t('Configuration options for displaying forums in threaded views.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('forumthread_admin_settings'),
+    'access arguments' => array('administer forums'),
+    'file' => 'forumthread.module',
+  );
+  return $items;
+}
+
+function forumthread_menu_alter(&$callbacks) {
+  $callbacks['forum']['page callback'] = 'forumthread_page';
+}
+
+
+/**
+ * Admin Settings
+ */
+function forumthread_admin_settings() {
+  $form = array();
+  $form['forumthread_use_jquery'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use jQuery folding of comments on forum nodes'),
+    '#default_value' => variable_get('forumthread_use_jquery', '0'),
+    '#description' => t('Use jQuery to fold the comments on the actual forum thread pages.'),
+  );
+  $form['forumthread_selector'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Comment Title CSS Selector'),
+    '#default_value' => variable_get('forumthread_selector', 'div.comment-title'),
+    '#description' => t('The CSS selector for the title of comments. This must be a sibling of the other elements of each comment.'),
+  );
+  $form['forumthread_skipone'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Skip first title selector'),
+    '#default_value' => variable_get('forumthread_skipone', '0'),
+    '#description' => t('Skip the first title selector (as set above) when collapsing comments. While unusual this will be necessary if the node title has the same selector as the comment titles in your theme.'),
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Menu callback; prints a forum listing.
+ * This is an only slightly modified version of forum_page basically to call
+ * our own rendering functions.
+ */
+function forumthread_page($tid = 0) {
+  drupal_add_css(drupal_get_path('module', 'forum') .'/forum.css');
+  $forum_per_page = variable_get('forum_per_page', 25);
+  $sortby = variable_get('forum_order', 1);
+
+  $forums = forum_get_forums($tid);
+  $parents = taxonomy_get_parents_all($tid);
+  if ($tid && !in_array($tid, variable_get('forum_containers', array()))) {
+    $topics = forum_get_topics($tid, $sortby, $forum_per_page);
+  }
+
+  return theme('forumthread_display', $forums, $topics, $parents, $tid, $sortby, $forum_per_page);
+}
+
+/**
+ * Return a structured object of the comments for a specific node.
+ *
+ * @param $nid
+ *   The node id for the node that comments are being loaded for
+ * @param $cid
+ *   The comment id of a specific comment.
+ * @return
+ *   Returns a structured object with the node and threaded comments.
+ */
+function get_node_comments($nid, $cid = 0) {
+  //make sure user has rights to access comments or we don't return any
+  if (user_access('access comments')) {
+  // Pre-process variables.
+  $node = node_load($nid);
+  $mode = _comment_get_display_setting('mode', $node);
+  $order = _comment_get_display_setting('sort', $node);
+  $comments_per_page = _comment_get_display_setting('comments_per_page', $node);
+
+  if ($cid) {
+    // Single comment view.
+    $query = 'SELECT c.cid, c.pid, c.nid, c.subject, c.comment, c.format, c.timestamp, c.name,
+      c.mail, c.homepage, u.uid, u.name AS registered_name, u.picture, u.data, c.score, c.users,
+      c.status FROM {comments} c INNER JOIN {users} u ON c.uid = u.uid WHERE c.cid = %d';
+    $query_args = array($cid);
+    if (!user_access('administer comments')) {
+      $query .= ' AND c.status = %d';
+      $query_args[] = COMMENT_PUBLISHED;
+    }
+    $result = db_query($query, $query_args);
+    if ($comment = db_fetch_object($result)) {
+      $comment->name = $comment->uid ? $comment->registered_name : $comment->name;
+      $links = module_invoke_all('link', 'comment', $comment, 1);
+      foreach (module_implements('link_alter') as $module) {
+        $function = $module .'_link_alter';
+        $function($node, $links);
+      }
+      $output .= theme('comment_view', $comment, $links);
+    }
+  }
+  else {
+    // Multiple comment view
+    $query_count = 'SELECT COUNT(*) FROM {comments} WHERE nid = %d';
+    $query = 'SELECT c.cid as cid, c.pid, c.nid, c.subject, c.comment, c.format, c.timestamp, c.name, c.mail, c.homepage,
+      u.uid, u.name AS registered_name, u.picture, u.data, c.thread, c.status FROM {comments} c INNER JOIN
+      {users} u ON c.uid = u.uid WHERE c.nid = %d';
+    $query_args = array($nid);
+    if (!user_access('administer comments')) {
+      $query .= ' AND c.status = %d';
+      $query_count .= ' AND status = %d';
+      $query_args[] = COMMENT_PUBLISHED;
+    }
+    if ($order == COMMENT_ORDER_NEWEST_FIRST) {
+      if ($mode == COMMENT_MODE_FLAT_COLLAPSED || $mode == COMMENT_MODE_FLAT_EXPANDED) {
+        $query .= ' ORDER BY c.cid DESC';
+      }
+      else {
+        $query .= ' ORDER BY c.thread DESC';
+      }
+    }
+    else if ($order == COMMENT_ORDER_OLDEST_FIRST) {
+      if ($mode == COMMENT_MODE_FLAT_COLLAPSED || $mode == COMMENT_MODE_FLAT_EXPANDED) {
+        $query .= ' ORDER BY c.cid';
+      }
+      else {
+        /*
+        * See comment above. Analysis learns that this doesn't cost
+        * too much. It scales much much better than having the whole
+        * comment structure.
+        */
+        $query .= ' ORDER BY SUBSTRING(c.thread, 1, (LENGTH(c.thread) - 1))';
+      }
+    }
+  }
+  $result = db_query($query, $nid);
+  }
+
+  while ($commentt = db_fetch_object($result)) {
+    $comment = drupal_unpack($commentt);
+    $comment->name = $comment->uid ? $comment->registered_name : $comment->name;
+    $comment->depth = count(explode('.', $comment->thread)) - 1;
+    $comment_thread[] = $comment;
+  }
+  return $comment_thread;
+}
+
+/**
+ * forumthread_render returns an HTML formatted threaded forum
+ *
+ * theme_forumthread takes a structured $forum with topics and comments and outputs themed html
+ */
+function theme_forumthread($topics) {
+  foreach ($topics as $topic) {
+    $output .= '<ul class="thread"><li class="topic">'. l($topic->title, 'node/'. $topic->nid);
+    $output .= ' <span class="author"> - '. l($topic->name, 'user/'. $topic->uid) .'</span>';
+    $output .= '<span class="postdate">, '. format_date($topic->timestamp) .'</span></li>';
+    $divs = 0;
+    $last_depth = 0;
+    if ($topic->comment_array) {
+      foreach ($topic->comment_array as $comment) {
+        $comment->depth++;
+        if ($comment->depth > $last_depth) {
+          $divs++;
+          $output .= '<ul class="indented">';
+          $last_depth++;
+        }
+        else {
+          while ($comment->depth < $last_depth) {
+            $divs--;
+            $output .= '</ul>';
+            $last_depth--;
+          }
+        }
+        if (module_exists('comment_page')) {
+          $output .= '<li class=\"response\">'. l($comment->subject, 'comment/'. $comment->cid) .' - ';
+        }
+        else {
+          $output .= '<li class="response">'. l($comment->subject, 'node/'. $comment->nid, array('fragment' => 'comment-'. $comment->cid)) .' - ';
+        }
+        if ($comment->name) {
+          $output .= ' <span class="author">'. l($comment->name, 'user/'. $comment->uid) .', </span>';
+        }
+          $output .= '<span class="postdate"> '. format_date($comment->timestamp) .'</span></li>';
+      }
+    }
+    //using -1 adds one extra close ul tag for the topic that opened the topic.
+    for ($i = -1; $i < $divs; $i++) {
+      $output .= '</ul>';
+    }
+  }
+  return $output;
+}
+
+function fourmthread_comment($arg1, $op) {
+  switch ($op) {
+    case 'list':
+      break;
+    default:
+  }
+}
+
+/**
+ * Implementation of hook_block().
+ *
+ * Generates a block containing a threaded list of the currently active forum topics and the
+ * most recently added forum topics.
+ */
+function forumthread_block($op = 'list', $delta = 0, $edit = array()) {
+  switch ($op) {
+    case 'list':
+      $blocks[0]['info'] = t('Active threaded forum topics');
+      $blocks[1]['info'] = t('New threaded forum topics');
+      return $blocks;
+
+    case 'configure':
+      $form['forumthread_block_num_'. $delta] = array('#type' => 'select', '#title' => t('Number of topics'), '#default_value' => variable_get('forumthread_block_num_'. $delta, '5'), '#options' => drupal_map_assoc(array(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)));
+      return $form;
+
+    case 'save':
+      variable_set('forumthread_block_num_'. $delta, $edit['forumthread_block_num_'. $delta]);
+      break;
+
+    case 'view':
+      if (user_access('access content')) {
+        drupal_add_css(drupal_get_path('module', 'forumthread') .'/forumthread.css');
+
+        switch ($delta) {
+          case 0:
+            $title = t('Active forum topics');
+            $sql = db_rewrite_sql("SELECT n.nid FROM {node} n INNER JOIN {node_comment_statistics} l ON n.nid = l.nid WHERE n.status = 1 AND n.type = 'forum' ORDER BY l.last_comment_timestamp DESC");
+            break;
+          case 1:
+            $title = t('New forum topics');
+            $sql = db_rewrite_sql("SELECT n.nid FROM {node} n WHERE n.type = 'forum' AND n.status = 1 ORDER BY n.nid DESC");
+            break;
+        }
+        $result = db_query_range($sql, 0, variable_get('forumthread_block_num_0', '5'));
+        while ($fid = db_fetch_object($result)) {
+          $topics[] = forumthread_topic($fid->nid);
+        }
+        if ($topics) {
+          $content = theme('forumthread_topic_list', NULL, $topics, $sortby, $forum_per_page);
+        }
+
+        if ($content) {
+          $content .= '<div class="more-link">'. l(t('more'), 'forum', array('title' => t('Read the latest forum topics.'))) .'</div>';
+        }
+        $block['subject'] = $title;
+        $block['content'] = $content;
+        return $block;
+      }
+  }
+}
+
+/**
+ * Themes a page displaying a threaded forum
+ */
+function theme_forumthread_display($forums, $topics, $parents, $tid, $sortby, $forum_per_page) {
+  global $user;
+  // forum list, topics list, topic browser and 'add new topic' link
+
+  $vocabulary = taxonomy_vocabulary_load(variable_get('forum_nav_vocabulary', ''));
+  $title = $vocabulary->name;
+
+  // Breadcrumb navigation:
+  $breadcrumb = array();
+  $breadcrumb[] = l(t('Home'), NULL);
+  if ($tid) {
+    $breadcrumb[] = l(t($title), 'forum');
+  }
+
+  if ($parents) {
+    $parents = array_reverse($parents);
+    foreach ($parents as $parent) {
+      if ($parent->tid == $tid) {
+        $title = $parent->name;
+      }
+      else {
+        $breadcrumb[] = l(t($parent->name), 'forum/'. $p->tid);
+      }
+    }
+  }
+  drupal_set_title(check_plain($title));
+  drupal_set_breadcrumb($breadcrumb);
+
+  if (count($forums) || count($parents)) {
+    $output  = '<div id="forum">';
+    $output .= '<ul>';
+
+    if (user_access('create forum topics')) {
+      $output .= '<li>'. l(t('Post new forum topic.'), "node/add/forum/$tid") .'</li>';
+    }
+    else if ($user->uid) {
+      $output .= '<li>'. t('You are not allowed to post a new forum topic.') .'</li>';
+    }
+    else {
+      $output .= '<li>'. t('<a href="@login">Login</a> to post a new forum topic.', array('@login' => url('user/login', array('query'=>drupal_get_destination())))) .'</li>';
+    }
+    $output .= '</ul>';
+    $output .= theme('forum_list', $forums, $parents, $tid);
+
+    if ($tid && !in_array($tid, variable_get('forum_containers', array()))) {
+      $output .= theme('forumthread_topic_list', $tid, $topics, $sortby, $forum_per_page);
+      drupal_add_feed(url('taxonomy/term/'. $tid .'/0/feed'), 'RSS - '. $title);
+    }
+    $output .= '</div>';
+  }
+  else {
+    drupal_set_title(t('No forums defined'));
+    $output = '';
+  }
+
+  return $output;
+}
+
+
+function theme_forumthread_topic_list($tid, $topics, $sortby, $forum_per_page) {
+  drupal_add_css(drupal_get_path('module', 'forumthread') .'/forumthread.css');
+
+  global $forum_topic_list_header;
+  $rows = array();
+  if ($topics) {
+    foreach ($topics as $topic) {
+      if ($topic->num_comments) {
+        $topic->comment_array = get_node_comments($topic->nid);
+      }
+      $topic_thread[] = $topic;
+    }
+    if (count($topic_thread) > 0) {
+      $output = theme('forumthread', $topic_thread);
+    }
+  }
+  $output .= theme('pager', NULL, $forum_per_page, 0);
+
+  return $output;
+}
+function forumthread_topic($nid) {
+  $sql = db_rewrite_sql("SELECT n.nid, n.title, n.uid, n.changed, u.name, s.comment_count from {node} n INNER JOIN {users} u on n.uid = u.uid INNER JOIN {node_comment_statistics} s on n.nid = s.nid WHERE n.nid = %d");
+  $result = db_query($sql, $nid);
+  $topic = db_fetch_object($result);
+  if ($topic->comment_count) {
+    $topic->comment_array = get_node_comments($topic->nid);
+  }
+  $topic->timestamp = $topic->changed;
+  return $topic;
+}
+
+function forumthread_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($node->type) {
+    case 'forum':
+      if ($op == 'view' && variable_get('forumthread_use_jquery', 0)) {
+        $selector = variable_get('forumthread_selector', 'div.comment-title');
+        drupal_add_js("$(document).ready(function(){ $('". $selector ."').addClass('forumthreadtitle'); });$(document).ready(function(){ $('.forumthread').hide(); });", 'inline');
+
+        if (variable_get('forumthread_skipone', FALSE)) {
+          drupal_add_js(drupal_get_path('module', 'forumthread') .'/forumthread_skipone.js', 'module', 'footer');
+        }
+        else {
+          drupal_add_js(drupal_get_path('module', 'forumthread') .'/forumthread.js', 'module', 'footer');
+        }
+      }
+  }
+}

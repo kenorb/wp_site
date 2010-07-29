@@ -1,0 +1,39 @@
+<?php
+// $Id: gallery_menu.install,v 1.1.2.2 2008/06/14 19:59:14 profix898 Exp $
+
+/**
+ * gallery_menu.module : gallery_menu.install
+ * Install/Uninstall functions
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function gallery_menu_install() {
+}
+
+/**
+ * Implementation of hook_update_N().
+ */
+function gallery_menu_update_6000() {
+  $ret = array();
+  // Remove all 'gallery_menu_*' variables except 'gallery_menu_depth'
+  $depth = variable_get('gallery_menu_depth', 3);
+  $ret[] = update_sql("DELETE FROM {variable} WHERE name LIKE 'gallery_menu_%'");
+  variable_set('gallery_menu_depth', $depth);
+  
+  return $ret;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function gallery_menu_uninstall() {
+  // Remove all link items
+  $result = db_query("SELECT link_path FROM {menu_links} WHERE module = '%s' AND link_path LIKE '%s'", 'gallery_menu', variable_get('gallery_base', 'gallery') .'/%');
+  while ($item = db_fetch_object($result)) {
+    menu_link_delete(NULL, $item->link_path);
+  }
+  //
+  db_query("DELETE FROM {variable} WHERE name LIKE '%s'", 'gallery_menu_%');
+}

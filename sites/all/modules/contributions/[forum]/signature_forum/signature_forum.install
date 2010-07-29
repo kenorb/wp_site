@@ -1,0 +1,63 @@
+<?php
+// $Id: signature_forum.install,v 1.1.2.5.4.3 2008/11/18 19:49:33 liammcdermott Exp $
+
+/**
+ * @file
+ * Installs, updates and uninstalls signature_forum module.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function signature_forum_schema() {
+  $schema['users_signature'] = array(
+    'fields' => array(
+      'uid'       => array(
+        'description' => 'The {users}.uid this signature belongs to.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0),
+      'signature' => array(
+        'description' => 'The signature text.',
+        'type' => 'text',
+        'not null' => FALSE,
+        'default' => NULL),
+    ),
+    'primary key' => array('uid'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function signature_forum_install() {
+  drupal_install_schema('signature_forum');
+  db_query("INSERT INTO {users_signature} (uid, signature)
+    SELECT uid, signature
+    FROM {users}
+    WHERE signature<>''");
+  db_query("UPDATE {users} SET signature=''");
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function signature_forum_uninstall() {
+  // Copy the signatures back to Drupal core
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      db_query("UPDATE {users}, {users_signature}
+        SET {users}.signature={users_signature}.signature
+        WHERE {users}.uid={users_signature}.uid");
+      break;
+    case 'pgsql':
+      db_query("UPDATE {users} SET signature={users_signature}.signature FROM {users_signature}
+        WHERE {users}.uid={users_signature}.uid");
+      break;
+  }
+  drupal_uninstall_schema('signature_forum');
+  variable_del('signature_forum_settings');
+}

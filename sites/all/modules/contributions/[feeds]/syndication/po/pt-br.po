@@ -1,0 +1,104 @@
+# LANGUAGE translation of Drupal (syndication.module)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from file: syndication.module,v 1.38.2.1 2005/04/15 18:56:48 weitzman
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: pt-br-syndication-module\n"
+"POT-Creation-Date: 2005-07-06 14:44+0200\n"
+"PO-Revision-Date: 2005-08-29 00:43-0300\n"
+"Last-Translator: Reinaldo de Souza 'JuniorZ' <juniorz@gmail.com>\n"
+"Language-Team: DLT <juniorz@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-Language: Port\n"
+"X-Poedit-Country: BRAZIL\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: syndication.module:11
+#: ;0
+msgid "syndication"
+msgstr "syndication"
+
+#: syndication.module:26
+msgid "Syndicate"
+msgstr "Sindicar"
+
+#: syndication.module:28
+msgid "more"
+msgstr "mais"
+
+#: syndication.module:28
+msgid "Review all XML feeds exported by %sn"
+msgstr "Rever todos os feeds XML exportados por %sn"
+
+#: syndication.module:39
+msgid "Syndicate: Blogs"
+msgstr "Sindicar: Blogs"
+
+#: syndication.module:42
+msgid "Syndicate: Directory"
+msgstr "Sindicar: Diretório"
+
+#: syndication.module:50
+msgid "Syndicate: %s"
+msgstr "Sindicar: %s"
+
+#: syndication.module:63
+msgid "%s's RSS feed"
+msgstr "Feed RSS de %s"
+
+#: syndication.module:64
+msgid "%s's blog"
+msgstr "Blog de %s"
+
+#: syndication.module:65
+msgid "%s's profile"
+msgstr "Perfil de %s"
+
+#: syndication.module:69
+msgid "Search Results"
+msgstr "Resultados da busca"
+
+#: syndication.module:72
+msgid "Username not found."
+msgstr "Usuário não encontrado"
+
+#: syndication.module:75
+msgid "all users"
+msgstr "todos os usuários"
+
+#: syndication.module:76
+msgid "At <i>%sn</i>, %all and each user, have an RSS feed for their blog."
+msgstr "Em <i>%sn</i>, %all e cada usuário, possui um feed RSS para seu blog."
+
+#: syndication.module:80
+msgid "%s's feed"
+msgstr "Feed de %s"
+
+#: syndication.module:82
+msgid "Recent Blog Authors"
+msgstr "Autores de Blog recentes"
+
+#: syndication.module:84
+msgid "Enter a username to view her blog feed, and other details."
+msgstr "Informe um usuário para visualizar o feed de seu blog, e outros detalhes."
+
+#: syndication.module:85
+msgid "Search"
+msgstr "Pesquisar"
+
+#: syndication.module:91
+msgid "this OPML file"
+msgstr "esse arquivo OPML"
+
+#: syndication.module:92
+msgid "In addition to displaying RSS feeds, <i>%sn</i> offers %link which lists all RSS feeds that are collected here."
+msgstr "Além de exibir feeds RSS, <i>%sn</i> oferece %link que lista todos os feeds RSS que são coletados a partir daqui."
+
+#: syndication.module:104
+msgid "Adds a Syndication block, links to more feeds"
+msgstr "Adiciona um bloco de links de Sindicância, para mais feeds"
+

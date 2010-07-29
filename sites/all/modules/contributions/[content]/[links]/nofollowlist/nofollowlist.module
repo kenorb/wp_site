@@ -1,0 +1,150 @@
+<?php
+// $Id: nofollowlist.module,v 1.4 2008/03/05 21:19:30 greggles Exp $
+
+/**
+ * Implementation of hook_menu()
+ */
+function nofollowlist_menu() {
+  $items['admin/settings/nofollowlist'] = array(
+    'title' => 'Nofollowlist',
+    'description' => 'Add sites to the nofollowlist and determine whether links to those sites are followable or not.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nofollowlist_settings_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer nofollowlist'),
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function nofollowlist_perm() {
+  return array('administer nofollowlist');
+}
+
+/**
+ * Builds the form for administrators to add sites to the black/white lists.
+ */
+function nofollowlist_settings_form() {
+  $form['nofollowlist_option'] = array(
+    '#type' => 'radios',
+    '#title' => t('Hosts list option'),
+    '#description' => t('If you choose the whitelist option, be sure to add your own site to the list!'),
+    '#options' => array(
+      'black' => t('Blacklist: Add rel="nofollow" to links leading to the listed hosts.'),
+      'white' => t('Whitelist: Add rel="nofollow" to all links <b>except</b> the listed hosts.'),
+    ),
+    '#default_value' => variable_get('nofollowlist_option', 'black'),
+  );
+
+  $form['nofollowlist_hosts'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Nofollowlist hosts'),
+    '#description' => t('Add one host per line. Ex: en.wikipedia.org'),
+    '#default_value' => variable_get('nofollowlist_hosts', 'en.wikipedia.org'),
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Enter description here...
+ *
+ * @param string $section
+ *   A Drupal path
+ * @return string
+ *   The help text
+ */
+function nofollowlist_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#nofollowlist':
+      $output = '<p>'. t('This module implements a simple filter to add the nofollow tag to sites that are on your blacklist or to all sites except those on your whitelist.') .'</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implementation of hook_filter_tips()
+ *
+ * @param int $delta
+ *   Used when a module defines more than one filter
+ * @param unknown_type $format
+ * @param boolean $long
+ *   Determines whether the long or the short tip version is displayed
+ * @return string
+ *   The tip to be displayed
+ */
+function nofollowlist_filter_tips($delta, $format, $long = false) {
+  $output .= '<p>'. t('Links to specified hosts will have a rel="nofollow" added to them.') ."</p>\n";
+  return $output;
+}
+
+/**
+ * Implementation of hook_filter. Defines a filter, "Nofollow list filter",
+ * that can be used in conjunction with the built in HTML filter to 
+ * automatically add the rel="nofollow" to links to certain sites 
+ *
+ * @param string $op
+ * @param int $delta
+ * @param int $format
+ * @param string $text
+ *   The text to be filtered
+ * @return string
+ */
+function nofollowlist_filter($op, $delta = 0, $format = -1, $text = '') {
+  switch ($op) {
+    case 'list':
+      return array(0 => t('Nofollow list filter'));
+
+    case 'description':
+      return t('Links to specified hosts will have a rel="nofollow" added to them.');
+
+    case "process":
+     $text = preg_replace_callback('!<a.*?href="([^"]+)".*?>!', 'nofollowlist_replace', $text);
+     return $text;
+
+    default:
+      return $text;
+  }
+}
+
+/**
+ * Inserts a nofollow class if the domain passed in is in the blacklist.
+ *
+ * @param string $input
+ * @return boolean
+ *   true if all the hosts are on the whitelist, false if any host is not.
+ */
+function nofollowlist_replace($match) {
+  $url = parse_url($match[1]);
+  $list = preg_split('/\s+/', variable_get('nofollowlist_hosts', 'en.wikipedia.org'));
+
+  // Default in case it doesn't get changed.
+  $link = $match[0];
+
+  // Matches if the list is set as a blacklist and the host is in the list or if
+  // the list is set as a whitelist and the host is not found in the list.
+  if ((variable_get('nofollowlist_option', 'black') == 'black' &&
+       in_array($url['host'], $list)) ||
+      (variable_get('nofollowlist_option', 'black') == 'white' &&
+       !in_array($url['host'], $list))) {
+    if (strpos($match[0], 'nofollow') === FALSE) {
+
+      // Only add the nofollow if it doesn't already exist.
+      if (strpos($match[0], 'rel="') === FALSE) {
+        // It is faster to use PHP's string functions then complex regexes
+        // In this case we strip off the last > in the <a> and then append our class and close the tag
+        $link = substr($match[0], 0, -1);
+        $link .= ' rel="nofollow">';
+      }
+      else {
+        // Append outgoing class if this <a> already has a class.
+        $link = preg_replace('!rel="([^"]+)"!', 'rel="${1} nofollow"', $match[0]);
+      }
+    }
+  }
+
+  return $link;
+}

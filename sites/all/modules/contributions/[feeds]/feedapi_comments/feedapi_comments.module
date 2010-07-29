@@ -1,0 +1,185 @@
+<?php
+// $Id: feedapi_comments.module,v 1.2 2008/12/01 16:17:03 alexb Exp $
+
+/**
+ * @file
+ *   Stores comments from other sites as a Drupal-style comments under the feed node.
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function feedapi_comments_help($path, $arg) {
+  switch ($path) {
+    case 'admin/modules#description':
+      return t('Provide a comment parser for FeedAPI-compatible modules. Only PHP5-compatible.');
+    case 'feedapi/full_name':
+      return t('FeedAPI Comments');
+  }
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function feedapi_comments_nodeapi(&$node, $op, $arg = 0) {
+  switch ($op) {
+    case 'delete':
+      db_query('DELETE fc FROM {feedapi_comments} fc LEFT JOIN {comments} c ON c.cid = fc.cid WHERE c.cid IS NULL');
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function feedapi_comments_theme() {
+  return array(
+    'feedapi_comments_comment' => array(
+      'arguments' => array('comment' => NULL, 'author_picture' => NULL),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_feedapi_item().
+ */
+function feedapi_comments_feedapi_item($op) {
+    switch ($op) {
+    case 'type':
+      return array("comment feed");
+    default:
+      if (function_exists('_feedapi_comments_'. $op)) {
+        $args = array_slice(func_get_args(), 1);
+        return call_user_func_array('_feedapi_comments_'. $op, $args);
+      }
+  }
+}
+
+/**
+ * Implementation of hook_feedapi_settings_form().
+ */
+function feedapi_comments_feedapi_settings_form($type) {
+  $form = array();
+  switch ($type) {
+    case 'processors':
+      $form['input_format'] = filter_form();
+      break;
+  }
+  return $form;
+}
+
+/**
+ * Theming function for building a comment's body.
+ * Note: image in comment will only be visible if filter settings on comments allow it.
+ */
+function theme_feedapi_comments_comment($comment, $author_picture) {
+  if (empty($author_picture)) {
+    $picture = '';
+  }
+  else {
+    $picture = theme('image', $author_picture, '', '', array('class' => 'comment-author-picture'), FALSE);
+  }
+  return $picture . $comment;
+}
+
+/**
+ * Save the news item as an aggregator item
+ */
+function _feedapi_comments_save($feed_item, $feed_nid, $settings = array()) {
+  // Prepare comment array for saving
+  $edit = array();
+  $edit['nid'] = $feed_nid;
+  // Later maybe need to fill for parent-child relationship between scraped comments.
+  $edit['pid'] = 0;
+  $edit['subject'] = $feed_item->title;
+  $edit['comment'] = theme('feedapi_comments_comment', $feed_item->description, $feed_item->options->original_author->picture);
+  $edit['format'] = $settings['input_format'];
+  $edit['timestamp'] = $feed_item->options->timestamp;
+  $edit['name'] = $feed_item->options->original_author->name;
+  $cid = comment_save($edit);
+  if ($cid !== FALSE) {
+    db_query("INSERT INTO {feedapi_comments} VALUES (%d, '%s')", $cid, $feed_item->options->guid);
+    return $feed_item;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Update news items data
+ */
+function _feedapi_comments_update($feed_item, $feed_nid, $settings = array()) {
+  // No update here for comments. No sane guid is present.
+}
+
+/**
+ * Delete item
+ */
+function _feedapi_comments_delete($feed_item, $feed_nid, $settings = array()) {
+  if (isset($feed_item->cid)) {
+    module_load_include('inc', 'comment', 'comment.admin');
+    $form_state = array(
+      '#comment' => $feed_item,
+      'op' => t('Delete'),
+    );
+    drupal_execute('comment_confirm_delete', $form_state, $feed_item);
+    drupal_execute('comment_confirm_delete', $form_state, $feed_item);
+    db_query("DELETE FROM {feedapi_comments} WHERE cid = %d", $feed_item->cid);
+  }
+}
+
+/**
+ * Load item data into the $feed_item object
+ */
+function _feedapi_comments_load($feed_item, $feed_nid, $settings = array()) {
+  $item = db_fetch_array(db_query("SELECT * FROM {comments} WHERE cid = %d", $feed_item->cid));
+  $feed_item->cid = $item['cid'];
+  $feed_item->feed_nid = $feed_nid;
+  $feed_item->arrived = 0; // no arrived time
+  $feed_item->options->timestamp = $item['timestamp'];
+  $feed_item->description = $item['comment'];
+  $feed_item->title = $item['title'];
+  return $feed_item;
+}
+
+/**
+ * Return all items related to a feed
+ */
+function _feedapi_comments_fetch($feed, $settings = array()) {
+  $result = db_query("SELECT cid, nid, guid FROM {comments} NATURAL JOIN {feedapi_comments} WHERE nid = %d", $feed->nid);
+  $items = array();
+  while ($item = db_fetch_object($result)) {
+    $items[] = $item;
+  }
+  return $items;
+}
+
+/**
+ * Is this feed item created?
+ */
+function _feedapi_comments_unique($feed_item, $feed_nid, $settings = array()) {
+  $entry = FALSE;
+  if ($feed_item->options->guid) {
+    $entry = db_fetch_object(db_query("SELECT cid FROM {feedapi_comments} NATURAL JOIN {node} WHERE nid = %d AND guid = '%s'", $feed_nid, $feed_item->options->guid));
+  }
+  return is_object($entry) ? FALSE : TRUE;
+}
+
+/**
+ * Check for expired items, pass them to the item_expire function
+ */
+function _feedapi_comments_expire($feed, $settings) {
+  $count = 0;
+  if ($settings['items_delete'] > FEEDAPI_NEVER_DELETE_OLD) {
+    $timexpire = time() - $settings['items_delete'];
+    // @ TODO Review this query conditions
+    $result = db_query("SELECT * FROM {comments} WHERE nid = %d AND timestamp > 0 AND timestamp < %d", $feed->nid, $timexpire);
+    while ($item = db_fetch_object($result)) {
+      // We callback feedapi for deleting
+      feedapi_expire_item($feed, $item);
+      $count++;
+    }
+  }
+  return $count;
+}

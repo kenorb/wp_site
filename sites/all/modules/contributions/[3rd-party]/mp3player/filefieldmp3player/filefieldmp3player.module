@@ -1,0 +1,45 @@
+<?php
+// $Id: filefieldmp3player.module,v 1.1.2.4 2009/01/10 15:46:56 starnox Exp $
+
+/**
+* Implementation of hook_field_formatter_info().
+*/
+function filefieldmp3player_field_formatter_info() {
+  return array(
+    'mp3player' => array(
+      'label' => t('As MP3 Player (Flash)'),
+      'field types' => array('filefield'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function filefieldmp3player_theme() {
+  return array(
+    'filefieldmp3player_formatter_mp3player' => array(
+      'arguments' => array('element' => NULL),
+    ),
+  );
+}
+
+/**
+ * Formatter theme function for file fields presented as a Flash MP3 Player.
+ */
+function theme_filefieldmp3player_formatter_mp3player($element) {
+  $item = $element['#item'];
+
+  if (!empty($item['filepath'])) {
+    if($item['filemime'] == 'audio/mpeg' || $item['filemime'] == 'audio/x-mpeg' || $item['filemime'] == 'audio/mp3' || $item['filemime'] == 'audio/x-mp3' || $item['filemime'] == 'audio/mpeg3' || $item['filemime'] == 'audio/x-mpeg3' || $item['filemime'] == 'audio/mpg' || $item['filemime'] == 'audio/x-mpg' || $item['filemime'] == 'audio/mpegaudi') {
+      //MP3 files get special treatment.
+
+      return theme('mp3player', base_path().$item['filepath'], NULL, NULL);
+    }
+    else {
+      // Fall back to filefield's default behavior.
+      return theme('filefield_formatter_default', $element);
+    }
+  }
+}

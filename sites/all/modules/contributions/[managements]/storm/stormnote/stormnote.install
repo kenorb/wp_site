@@ -1,0 +1,34 @@
+<?php
+// $Id: stormnote.install,v 1.1 2008/05/18 08:28:51 robertogerola Exp $
+
+/**
+ * @file
+ */
+
+function stormnote_install() {
+  drupal_install_schema('stormnote');
+}
+
+function stormnote_uninstall() {
+  drupal_uninstall_schema('stormnote');
+}
+
+function stormnote_schema() {
+  $schema['stormnote'] = array(
+    'fields'                => array(
+      'vid'                 => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'nid'                 => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'organization_nid'    => array('type' => 'int'),
+      'organization_title'  => array('type' => 'varchar', 'length' => 128),
+      'project_nid'         => array('type' => 'int'),
+      'project_title'       => array('type' => 'varchar', 'length' => 128),
+      'task_nid'            => array('type' => 'int'),
+      'task_title'          => array('type' => 'varchar', 'length' => 128),
+      'task_stepno'         => array('type' => 'varchar', 'length' => 50),
+    ),
+    'primary key' => array('vid', 'nid'),
+  );
+
+  return $schema;
+}
+

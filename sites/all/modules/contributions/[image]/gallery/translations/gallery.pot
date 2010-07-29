@@ -1,0 +1,2132 @@
+# $Id: gallery.pot,v 1.1.2.2 2008/06/10 15:53:03 profix898 Exp $
+#
+# LANGUAGE translation of Gallery package
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  gallery_base.inc,v 1.8.2.14 2008/06/09 10:34:28 profix898
+#  gallery_block_admin.inc,v 1.1.2.7 2008/06/09 22:18:16 profix898
+#  gallery_g2image_settings.inc,v 1.1.2.2 2008/06/10 14:58:13 profix898
+#  gallery_block.inc,v 1.8.2.11 2008/06/09 22:18:16 profix898
+#  gallery_settings.inc,v 1.12.2.9 2008/06/10 08:59:34 profix898
+#  gallery_search.inc,v 1.4.2.3 2008/02/18 23:07:15 profix898
+#  gallery.module,v 1.28.2.15 2008/06/10 15:46:19 profix898
+#  gallery.info,v 1.4.2.2 2007/11/27 18:10:32 profix898
+#  gallery_filter.inc,v 1.5.2.4 2008/02/18 23:07:15 profix898
+#  gallery_groups.inc,v 1.3.2.2 2007/11/27 18:10:32 profix898
+#  gallery_user.inc,v 1.11.2.3 2008/02/10 20:02:11 profix898
+#  gallery_help.inc,v 1.6.2.6 2008/06/10 15:46:19 profix898
+#  gallery_install.inc,v 1.3.2.8 2008/02/26 00:17:10 profix898
+#  gallery_user_admin.inc,v 1.3.2.3 2008/02/11 01:11:12 profix898
+#  gallery_report.inc,v 1.3.2.5 2008/06/08 23:10:13 profix898
+#  gallery_g2image.info,v 1.1.2.1 2008/06/10 12:56:35 profix898
+#  gallery_menu.info,v 1.3.2.4 2008/02/27 22:51:09 profix898
+#  gallery_profile.info,v 1.2.2.1 2007/11/27 18:10:32 profix898
+#  gallery_profile.module,v 1.2.2.3 2008/06/09 22:18:54 profix898
+#  gallery_menu.module,v 1.3.2.7 2008/02/27 22:51:09 profix898
+#  gallery_g2image.module,v 1.1.2.2 2008/06/10 14:58:13 profix898
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-06-10 17:52+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: gallery_base.inc:66
+msgid "Unable to initialize embedded Gallery. You need to <a href=\"@link\"> configure your embedded Gallery</a>."
+msgstr ""
+
+#: gallery_base.inc:109
+msgid "Init parameters"
+msgstr ""
+
+#: gallery_base.inc:124
+msgid "Embedding API version is incompatible."
+msgstr ""
+
+#: gallery_base.inc:139
+msgid "Initialization seemed successful, but classes 'GalleryEmbed'\r\n                       and/or 'GalleryCoreApi' are still not available."
+msgstr ""
+
+#: gallery_base.inc:161
+msgid "Failed to register event listeners."
+msgstr ""
+
+#: gallery_base.inc:215
+msgid "Error handling request (invalid request)<br />or the requested Gallery URL does not exist."
+msgstr ""
+
+#: gallery_base.inc:234
+msgid "G2 Debug Buffer"
+msgstr ""
+
+#: gallery_base.inc:268
+msgid "Error retrieving theme list"
+msgstr ""
+
+#: gallery_base.inc:279
+msgid "Error getting theme (:themeid) details"
+msgstr ""
+
+#: gallery_base.inc:296;301;305 gallery_block_admin.inc:225 gallery_g2image/gallery_g2image_settings.inc:147
+msgid "None"
+msgstr ""
+
+#: gallery_base.inc:348
+msgid "Error: UrlGenerator not available"
+msgstr ""
+
+#: gallery_base.inc:382
+msgid "Error fetching album tree"
+msgstr ""
+
+#: gallery_base.inc:400
+msgid "Error fetching item details (entityId: :id)"
+msgstr ""
+
+#: gallery_base.inc:434
+msgid "Error calling hasItemPermission()"
+msgstr ""
+
+#: gallery_base.inc:504
+msgid "Head [Meta]"
+msgstr ""
+
+#: gallery_base.inc:526
+msgid "Head [CSS]"
+msgstr ""
+
+#: gallery_base.inc:546
+msgid "Head [Javascript]"
+msgstr ""
+
+#: gallery_base.inc:573
+msgid "Context cache"
+msgstr ""
+
+#: gallery_base.inc:609
+msgid "Error retrieving available blocks list"
+msgstr ""
+
+#: gallery_base.inc:683
+msgid "Error in function ':func()' (:file::line):<br />"
+msgstr ""
+
+#: gallery_base.inc:711
+msgid "Embedded Gallery2 is not available or requested Gallery URL does not exist."
+msgstr ""
+
+#: gallery_base.inc:738
+msgid "Gallery Debug"
+msgstr ""
+
+#: gallery_base.inc:765
+msgid "Unable to get Gallery2 module status."
+msgstr ""
+
+#: gallery_base.inc:849
+msgid "Gallery2 API version"
+msgstr ""
+
+#: gallery_block.inc:22
+msgid "Gallery Block @id"
+msgstr ""
+
+#: gallery_block.inc:23;33
+msgid "Gallery Navigation"
+msgstr ""
+
+#: gallery_block.inc:103
+msgid "Heading"
+msgstr ""
+
+#: gallery_block.inc:104 gallery_settings.inc:610
+msgid "Title"
+msgstr ""
+
+#: gallery_block.inc:105
+msgid "Date"
+msgstr ""
+
+#: gallery_block.inc:106
+msgid "View Count"
+msgstr ""
+
+#: gallery_block.inc:107
+msgid "Item owner"
+msgstr ""
+
+#: gallery_block.inc:192
+msgid "Block parameters"
+msgstr ""
+
+#: gallery_block.inc:196
+msgid "Error trying to get block."
+msgstr ""
+
+#: gallery_block.inc:205 gallery_search.inc:14 gallery.module:106 gallery.info:0
+msgid "Gallery"
+msgstr ""
+
+#: gallery_block_admin.inc:17;67
+msgid "Block cache"
+msgstr ""
+
+#: gallery_block_admin.inc:20;50
+msgid "Cache disabled"
+msgstr ""
+
+#: gallery_block_admin.inc:21;51
+msgid "Cache per user and page"
+msgstr ""
+
+#: gallery_block_admin.inc:22;52
+msgid "Cache per role and page"
+msgstr ""
+
+#: gallery_block_admin.inc:24
+msgid "Configure cache settings for this block. It's usually safe to set this to 'Cache per user and page'."
+msgstr ""
+
+#: gallery_block_admin.inc:43
+msgid "Block Identifier [Block @id]"
+msgstr ""
+
+#: gallery_block_admin.inc:47
+msgid "A short identifier to distinguish blocks of the same type. (Blocks are numbered by default)"
+msgstr ""
+
+#: gallery_block_admin.inc:53
+msgid "Cache per user"
+msgstr ""
+
+#: gallery_block_admin.inc:54
+msgid "Cache per role"
+msgstr ""
+
+#: gallery_block_admin.inc:55
+msgid "Cache globally (use carefully)"
+msgstr ""
+
+#: gallery_block_admin.inc:80
+msgid "Block type"
+msgstr ""
+
+#: gallery_block_admin.inc:83
+msgid "Select the Gallery2 block to be displayed in this Drupal block. In previous versions only\r\n                         'ImageBlock' was available, but now you can embed any Gallery2 block in Drupal."
+msgstr ""
+
+#: gallery_block_admin.inc:91
+msgid "@block settings"
+msgstr ""
+
+#: gallery_block_admin.inc:102
+msgid "Save and Edit"
+msgstr ""
+
+#: gallery_block_admin.inc:115
+msgid "Configure cache settings for this block. Unless random images are used you can safely keep this to\r\n                'Cache per user and page'. If you dont have per-user permissions configured in your gallery you\r\n                can improve performance by setting to 'Cache per role and page'."
+msgstr ""
+
+#: gallery_block_admin.inc:175
+msgid "The @title requires the Gallery2 Image Block plugin (!imageblock_status) and optionally\r\n                             the Gallery2 Image Frame plugin (!imageframe_status)."
+msgstr ""
+
+#: gallery_block_admin.inc:183
+msgid " However the Image Block plugin is unavailable."
+msgstr ""
+
+#: gallery_block_admin.inc:196
+msgid "Number of columns"
+msgstr ""
+
+#: gallery_block_admin.inc:199
+msgid "Select the number of columns in the grid."
+msgstr ""
+
+#: gallery_block_admin.inc:204
+msgid "Number of rows"
+msgstr ""
+
+#: gallery_block_admin.inc:207
+msgid "Select the number of rows in the grid."
+msgstr ""
+
+#: gallery_block_admin.inc:213
+msgid "Image types"
+msgstr ""
+
+#: gallery_block_admin.inc:217
+msgid "Pick the type of images you would like to see. You can select the same type more than once."
+msgstr ""
+
+#: gallery_block_admin.inc:231
+msgid "Album or Item ID"
+msgstr ""
+
+#: gallery_block_admin.inc:235
+msgid "Enter the Gallery image or album ID (or blank). If an album or item ID is specified, random\r\n                         images will only be selected from that album and its sub-albums. If 'user' (or 'user:123')\r\n                         is entered, items will be taken from the current (or specified) user's useralbum."
+msgstr ""
+
+#: gallery_block_admin.inc:242 gallery_settings.inc:609
+msgid "Image data"
+msgstr ""
+
+#: gallery_block_admin.inc:245 gallery_settings.inc:612
+msgid "Choose the item metadata you would like to display."
+msgstr ""
+
+#: gallery_block_admin.inc:250 gallery_settings.inc:617
+msgid "Image size method"
+msgstr ""
+
+#: gallery_block_admin.inc:253 gallery_settings.inc:620
+msgid "Max Size"
+msgstr ""
+
+#: gallery_block_admin.inc:254 gallery_settings.inc:621
+msgid "Exact Size"
+msgstr ""
+
+#: gallery_block_admin.inc:256
+msgid "'Max Size' gives faster image downloading, but the image size\r\n                         may be smaller than the size defined below. <br />'Exact Size' may be slower\r\n                         (as a larger image is downloaded and then scaled by the browser) but the image\r\n                         will be guaranteed to be the size defined below."
+msgstr ""
+
+#: gallery_block_admin.inc:264 gallery_settings.inc:631
+msgid "Image size"
+msgstr ""
+
+#: gallery_block_admin.inc:268
+msgid "Sets the size (in pixels) of the longest side of the image according to the method defined above."
+msgstr ""
+
+#: gallery_block_admin.inc:272 gallery_settings.inc:297;553
+msgid "Requires the Gallery2 Image Frame plugin (!imageframe_status)."
+msgstr ""
+
+#: gallery_block_admin.inc:279 gallery_settings.inc:641
+msgid "Album frame"
+msgstr ""
+
+#: gallery_block_admin.inc:287 gallery_settings.inc:649
+msgid "Item frame"
+msgstr ""
+
+#: gallery_block_admin.inc:295 gallery_settings.inc:657
+msgid "Link target"
+msgstr ""
+
+#: gallery_block_admin.inc:299
+msgid "Enter a link target (e.g. '_blank' to open in a new window)."
+msgstr ""
+
+#: gallery_block_admin.inc:304 gallery_settings.inc:666
+msgid "Image Link"
+msgstr ""
+
+#: gallery_block_admin.inc:308
+msgid "By default the image has a link to the item in the Gallery. This\r\n      can be overridden here (or leave empty for the default). Use 'none' for no link, or a URL\r\n      to link somewhere else instead."
+msgstr ""
+
+#: gallery_block_admin.inc:341
+msgid "Image size must be a number greater than ten pixels.\r\n                              (The value has been updated to '10' for your convenience.)"
+msgstr ""
+
+#: gallery_filter.inc:118
+msgid "Filter parameters"
+msgstr ""
+
+#: gallery_filter.inc:122
+msgid "Error trying to get image block."
+msgstr ""
+
+#: gallery_groups.inc:23
+msgid "Error loading Gallery user from Drupal user id (:uid)"
+msgstr ""
+
+#: gallery_groups.inc:30;231
+msgid "Error getting Gallery group info for user (:uid)"
+msgstr ""
+
+#: gallery_groups.inc:34;235
+msgid "G2 groups for G2 user (uid: :g2uid)"
+msgstr ""
+
+#: gallery_groups.inc:39;243
+msgid "Drupal roles for Drupal user (uid: :uid)"
+msgstr ""
+
+#: gallery_groups.inc:43
+msgid "Drupal roles <> G2 groups map (for Drupal user)"
+msgstr ""
+
+#: gallery_groups.inc:47
+msgid "Drupal roles <> G2 groups map (for G2 user)"
+msgstr ""
+
+#: gallery_groups.inc:51
+msgid "Remove user from these groups"
+msgstr ""
+
+#: gallery_groups.inc:55
+msgid "Error removing user from Gallery group (Gallery Group Id: :gid)"
+msgstr ""
+
+#: gallery_groups.inc:63
+msgid "Add user to these groups"
+msgstr ""
+
+#: gallery_groups.inc:67 gallery_user.inc:192
+msgid "Error adding user to Gallery group (:gid)"
+msgstr ""
+
+#: gallery_groups.inc:96;265
+msgid "Error retrieving Gallery group Id for 'Everybody' group"
+msgstr ""
+
+#: gallery_groups.inc:101
+msgid "Error creating Drupal role <> Gallery group mapping for 'anonymous user' role (Drupal Role Id: :rid, Gallery Group Id: :gid)"
+msgstr ""
+
+#: gallery_groups.inc:109;270
+msgid "Error retrieving Gallery group Id for 'Registered Users' group"
+msgstr ""
+
+#: gallery_groups.inc:114
+msgid "Error creating Drupal role <> Gallery group mapping for 'authenticated user' role (Drupal Role Id: :rid, Gallery Group Id: :gid)"
+msgstr ""
+
+#: gallery_groups.inc:125;278 gallery_user.inc:186
+msgid "Error getting 'adminGroup' id"
+msgstr ""
+
+#: gallery_groups.inc:130
+msgid "Error creating Drupal role <> Gallery 'Site Admin' group mapping (Drupal Role Id: :rid, Gallery Group Id: :gid)"
+msgstr ""
+
+#: gallery_groups.inc:141
+msgid "Error creating Gallery group (Drupal Role Id: :rid, Drupal Role Name: :rname)"
+msgstr ""
+
+#: gallery_groups.inc:149
+msgid "Error creating Drupal role <> Gallery group mapping (Drupal Role Id: :rid, Gallery Group Id: :gid)"
+msgstr ""
+
+#: gallery_groups.inc:162
+msgid "Error retrieving Gallery Group Id from Drupal Role Id (Drupal Role Id: :rid)"
+msgstr ""
+
+#: gallery_groups.inc:169
+msgid "Error updating Gallery group (Drupal Role Id: :rid, Drupal Role Name: :rname)"
+msgstr ""
+
+#: gallery_groups.inc:185
+msgid "Error deleting Gallery group (Gallery Group Id: :gid)"
+msgstr ""
+
+#: gallery_groups.inc:211
+msgid "Error fetching 'GalleryGroup' entries from 'ExternalIdMap'"
+msgstr ""
+
+#: gallery_groups.inc:239
+msgid "Mapped Drupal roles for G2 user (uid: :g2uid)"
+msgstr ""
+
+#: gallery_groups.inc:259
+msgid "Error fetching Gallery Group names"
+msgstr ""
+
+#: gallery_help.inc:27
+msgid "You may link to Gallery2 items on this site <a href=\"@url\">using a special syntax</a>."
+msgstr ""
+
+#: gallery_help.inc:48
+msgid "<p><strong>A serious error has occured. This can happen due to an incorrect configuration or a bug in the\r\n            gallery module. If you plan to submit a bug report to the issue queue at <a href=\"@gallery-issues\">drupal.org</a>\r\n            consider to include the <a href=\"@report\">pre-generated report file</a>.</strong></p>"
+msgstr ""
+
+#: gallery_install.inc:23
+msgid "PHP Memory Limit"
+msgstr ""
+
+#: gallery_install.inc:28
+msgid "Gallery2 locations"
+msgstr ""
+
+#: gallery_install.inc:33;969
+msgid "Drupal Modules / Gallery2 Plugins"
+msgstr ""
+
+#: gallery_install.inc:38
+msgid "Clean URL / URL Rewrite"
+msgstr ""
+
+#: gallery_install.inc:43;772
+msgid "Initial User Synchronization"
+msgstr ""
+
+#: gallery_install.inc:72
+msgid "Critical errors are present."
+msgstr ""
+
+#: gallery_install.inc:82;749
+msgid "Overall Status (Installation)"
+msgstr ""
+
+#: gallery_install.inc:87
+msgid "Step"
+msgstr ""
+
+#: gallery_install.inc:87;974 gallery_settings.inc:20 gallery_user_admin.inc:23
+msgid "Status"
+msgstr ""
+
+#: gallery_install.inc:87;974
+msgid "Description"
+msgstr ""
+
+#: gallery_install.inc:96;205
+msgid "Install status"
+msgstr ""
+
+#: gallery_install.inc:99
+msgid "Correct configuration of the following items is essential for the\r\n                         embedded gallery to function properly."
+msgstr ""
+
+#: gallery_install.inc:119;505
+msgid "The Gallery2 location settings appear to be correct."
+msgstr ""
+
+#: gallery_install.inc:120;482
+msgid "Errors in your current Gallery2 location settings:"
+msgstr ""
+
+#: gallery_install.inc:123
+msgid "Gallery2 location settings"
+msgstr ""
+
+#: gallery_install.inc:123;309
+msgid "Auto Configuration"
+msgstr ""
+
+#: gallery_install.inc:123;309
+msgid "Manual Configuration"
+msgstr ""
+
+#: gallery_install.inc:126
+msgid "Overview of your Gallery2 location settings as specified or autodetected during install."
+msgstr ""
+
+#: gallery_install.inc:129;343;404
+msgid "Gallery2 URL or URI"
+msgstr ""
+
+#: gallery_install.inc:135;355;416
+msgid "Gallery2 filesystem path"
+msgstr ""
+
+#: gallery_install.inc:141;367;428
+msgid "Embed URI"
+msgstr ""
+
+#: gallery_install.inc:146
+msgid "Gallery base"
+msgstr ""
+
+#: gallery_install.inc:160
+msgid "Clean URLs / URL Rewrite settings"
+msgstr ""
+
+#: gallery_install.inc:163
+msgid "Overview of your URL Rewrite settings as specified during install."
+msgstr ""
+
+#: gallery_install.inc:166;606
+msgid "Public path to your .htaccess file"
+msgstr ""
+
+#: gallery_install.inc:171;615
+msgid "Filesystem path to your .htaccess file"
+msgstr ""
+
+#: gallery_install.inc:180
+msgid "Your initial user synchronization has been completed already.<br /> If you\r\n                                           want to resync all your users or you want to import users from an existing\r\n                                           Gallery2 setup, you can always use the <a href= \"@gallery-usersync\">Advanced\r\n                                           Sync</a> options in the Gallery user administration."
+msgstr ""
+
+#: gallery_install.inc:192;253
+msgid "Reset & Restart"
+msgstr ""
+
+#: gallery_install.inc:208
+msgid ""
+msgstr ""
+
+#: gallery_install.inc:292
+msgid "Step 1: PHP Memory Test"
+msgstr ""
+
+#: gallery_install.inc:292;321;525;562;694
+msgid "(OK)"
+msgstr ""
+
+#: gallery_install.inc:298
+msgid "Until this is fixed your Gallery2 cannot be installed."
+msgstr ""
+
+#: gallery_install.inc:299
+msgid "Check PHP memory again"
+msgstr ""
+
+#: gallery_install.inc:309
+msgid "Step 2: Gallery2 location settings"
+msgstr ""
+
+#: gallery_install.inc:311
+msgid "Enter the 'Gallery2 URL or URI' and click 'Test location settings'\r\n         to automatically configure the settings needed for embedding Gallery2 into Drupal. Note that\r\n         the auto-config will not work for all host configurations. If you have tried it with a value\r\n         you know is correct and it did not work then just use the manual configuration instead."
+msgstr ""
+
+#: gallery_install.inc:315
+msgid "Enter the 'Gallery2 URL or URI' and 'Gallery2 filesystem path' and then click\r\n         'Test location settings'. This will check and configure the settings needed for embedding\r\n         Gallery2 into Drupal."
+msgstr ""
+
+#: gallery_install.inc:347;408
+msgid "URL or URI of the G2 standalone location. This can be either the full URL to Gallery2\r\n                           (e.g. http://www.example.com/gallery2) or the path from docroot to the Gallery2 directory\r\n                           (e.g. /gallery2). If using a URI the protocol/hostname are both optional."
+msgstr ""
+
+#: gallery_install.inc:379;440
+msgid "Gallery base (optional)"
+msgstr ""
+
+#: gallery_install.inc:383;444
+msgid "Drupal path to embedded Gallery. This option defaults to 'gallery' and the embedded gallery\r\n                           will be located at '@default-base'."
+msgstr ""
+
+#: gallery_install.inc:420
+msgid "The filesystem path of your Gallery2 directory. This can be either an absolute path\r\n                           (e.g. /home/mysite/htdocs/gallery2) or relative to the root directory of your Drupal\r\n                           installation (e.g. ../gallery2)."
+msgstr ""
+
+#: gallery_install.inc:432
+msgid "URI to access G2 via Drupal. Don't worry if you are using clean urls in Drupal and this\r\n                           still ends in 'index.php?q=gallery'. This is needed to get the Gallery2 URL rewrite module\r\n                           to work correctly and will not be visible."
+msgstr ""
+
+#: gallery_install.inc:453
+msgid "Test location settings"
+msgstr ""
+
+#: gallery_install.inc:458
+msgid "Use Manual Configuration"
+msgstr ""
+
+#: gallery_install.inc:458
+msgid "Use Auto Configuration"
+msgstr ""
+
+#: gallery_install.inc:506
+msgid "There is a problem with the Gallery2 location settings. Please check below and retest.\r\n       Remember that the auto-config will not work for all hosts."
+msgstr ""
+
+#: gallery_install.inc:525
+msgid "Step 3: Drupal Modules / Gallery2 Plugins"
+msgstr ""
+
+#: gallery_install.inc:536
+msgid "There are errors in your plugin configuration. Enable/Disable the\r\n                       respective plugins to meet the requirements."
+msgstr ""
+
+#: gallery_install.inc:541
+msgid "Check Plugins status again"
+msgstr ""
+
+#: gallery_install.inc:562
+msgid "Step 4: Clean URLs / URL Rewrite settings"
+msgstr ""
+
+#: gallery_install.inc:573
+msgid "'Reset & Restart' your configuration to change these settings."
+msgstr ""
+
+#: gallery_install.inc:582
+msgid "Clean URLs are enabled in Drupal, but the Gallery2 URL Rewrite plugin is unavailable (!status)."
+msgstr ""
+
+#: gallery_install.inc:586;633
+msgid "Check URL Rewrite status again"
+msgstr ""
+
+#: gallery_install.inc:592
+msgid "Clean URLs are !clean_url_status in Drupal and the Gallery2 URL Rewrite plugin is\r\n                                            !rewrite_status. It is possible to automatically configure the URL Rewrite plugin.\r\n                                            The configuration assumes that the rules should be placed in your Drupal .htaccess\r\n                                            file (it will add them to the beginning) which works in most applications. If you\r\n                                            need a special configuration, enter the desired values manually."
+msgstr ""
+
+#: gallery_install.inc:610
+msgid "This is the location of your Drupal .htaccess file relative to your webserver document root."
+msgstr ""
+
+#: gallery_install.inc:619
+msgid "This is the absolute directory path of your Drupal .htaccess file."
+msgstr ""
+
+#: gallery_install.inc:625
+msgid "Configure URL Rewrite plugin"
+msgstr ""
+
+#: gallery_install.inc:640
+msgid "Skip URL Rewrite Config"
+msgstr ""
+
+#: gallery_install.inc:694
+msgid "Step 5: Initial User Synchronization"
+msgstr ""
+
+#: gallery_install.inc:703
+msgid "Your initial user synchronization has been completed already.<br />\r\n                                           If you want to resync all your users or you want to import users from an existing\r\n                                           Gallery2 setup, you can always use the <a href= \"@gallery-usersync\">Advanced Sync\r\n                                           </a> options in the Gallery user administration."
+msgstr ""
+
+#: gallery_install.inc:710
+msgid "User synchronization is essential for the embedded Gallery to work correctly.\r\n                                           Drupal users/groups are usually synced with their Gallery counterparts when a\r\n                                           user/group is modified in Drupal. Missing user mappings will cause errors in your\r\n                                           embedded Gallery.<br /><br />\r\n                                           It is recommended that you sync your users now. However there can be reasons to\r\n                                           skip this step, e.g. if you have a working Gallery with many users and a fresh\r\n                                           Drupal installation. Note that the current user and the Drupal superuser (uid=1)\r\n                                           will always be sync."
+msgstr ""
+
+#: gallery_install.inc:721
+msgid "Sync users/groups"
+msgstr ""
+
+#: gallery_install.inc:726
+msgid "Skip sync"
+msgstr ""
+
+#: gallery_install.inc:790
+msgid "URI of Gallery2"
+msgstr ""
+
+#: gallery_install.inc:794
+msgid "Location of Gallery2"
+msgstr ""
+
+#: gallery_install.inc:798
+msgid "Gallery Init"
+msgstr ""
+
+#: gallery_install.inc:904
+msgid "Everything seemed OK, but the Gallery could still not be initialised.\r\n                                           Perhaps a manually entered value is incorrect."
+msgstr ""
+
+#: gallery_install.inc:953
+msgid "Your location settings are valid, but your Gallery2 is installed outside the Drupal\r\n                              root directory. It is highly advisable to move G2 into the Drupal folder or to create\r\n                              a symbolic link in the Drupal directory pointing to your G2 installation (see\r\n                              instructions on <a href=\"@codex\">codex.gallery2.org</a>)."
+msgstr ""
+
+#: gallery_install.inc:974
+msgid "Name"
+msgstr ""
+
+#: gallery_install.inc:996
+msgid "Recommended Gallery2 plugins"
+msgstr ""
+
+#: gallery_install.inc:1000
+msgid "These Gallery2 plugins support much of the functionality that the Drupal Gallery module provides.\r\n                         None of them are strictly required, but you will almost certainly want to activate at least some\r\n                         of them (particularly the Image Block plugin)."
+msgstr ""
+
+#: gallery_install.inc:1023
+msgid "Gallery2 plugins which should not be installed"
+msgstr ""
+
+#: gallery_install.inc:1027
+msgid "These Gallery2 plugins should not be used when Gallery2 is\r\n                         embedded into Drupal as they may cause problems."
+msgstr ""
+
+#: gallery_install.inc:1049
+msgid "Optional Drupal modules"
+msgstr ""
+
+#: gallery_install.inc:1053
+msgid "These Drupal modules can optionally be used to enhance the functionality of the Gallery module."
+msgstr ""
+
+#: gallery_install.inc:1064
+msgid "You may have some loss in functionality in your embedded Gallery2 (see below for details). You should check\r\n       the details and if the functionality is not important for your site you can just ignore this."
+msgstr ""
+
+#: gallery_install.inc:1066
+msgid "The status of all Drupal modules and Gallery2 plugins is optimal for your embedded Gallery2."
+msgstr ""
+
+#: gallery_install.inc:1072
+msgid "Due to errors in your location settings status information is\r\n                                            not available for your G2 plugins."
+msgstr ""
+
+#: gallery_install.inc:1086
+msgid "URL Rewrite has been disabled manually."
+msgstr ""
+
+#: gallery_install.inc:1093
+msgid "Due to errors in your location settings the URL Rewrite\r\n                                               status could not be obtained."
+msgstr ""
+
+#: gallery_install.inc:1105
+msgid "There is a writable .htaccess file in your defined Drupal directory\r\n                                                    (@dir)."
+msgstr ""
+
+#: gallery_install.inc:1110
+msgid "The .htaccess file in your defined Drupal directory (@dir) is not\r\n                                                    writable. Please CHMOD it to 644 (or 666 if 644 does not work)."
+msgstr ""
+
+#: gallery_install.inc:1117
+msgid "There is no .htaccess file in your defined Drupal directory (@dir) or\r\n                                                  the directory does not exist."
+msgstr ""
+
+#: gallery_install.inc:1123
+msgid "Clean URLs are enabled in Drupal, but the Gallery2 URL Rewrite plugin\r\n                                                is unavailable."
+msgstr ""
+
+#: gallery_install.inc:1129
+msgid "Clean URLs are disabled in Drupal and the URL Rewrite plugin will not\r\n                                              be configured."
+msgstr ""
+
+#: gallery_install.inc:1139
+msgid "Your 'Show Item' rule should start with '@gallery-base/'.\r\n                                                               Make sure to change the URL Rewrite rule(s) accordingly."
+msgstr ""
+
+#: gallery_install.inc:1152
+msgid "Error trying to create URL Rewrite plugin instance."
+msgstr ""
+
+#: gallery_install.inc:1154
+msgid "URL Rewrite plugin could not be instantiated.\r\n                            Please check its configuration in standalone Gallery2."
+msgstr ""
+
+#: gallery_install.inc:1162
+msgid "Error trying to fetch Embedded URL Rewrite configuration."
+msgstr ""
+
+#: gallery_install.inc:1200
+msgid "Error trying to save Embedded URL Rewrite configuration."
+msgstr ""
+
+#: gallery_install.inc:1205
+msgid "The Gallery2 URL Rewrite plugin returned the following error:"
+msgstr ""
+
+#: gallery_report.inc:123
+msgid "Gallery module : Report Generator"
+msgstr ""
+
+#: gallery_search.inc:48
+msgid "n/a"
+msgstr ""
+
+#: gallery_search.inc:64
+msgid "Gallery item: Untitled"
+msgstr ""
+
+#: gallery_search.inc:119
+msgid "Error invoking search() method."
+msgstr ""
+
+#: gallery_search.inc:137;153
+msgid "Advanced search"
+msgstr ""
+
+#: gallery_search.inc:145
+msgid "Only the following fields"
+msgstr ""
+
+#: gallery_search.inc:186
+msgid "Error creating instance of GallerySearchInterface. Make sure the 'Search' plugin is enabled in Gallery2."
+msgstr ""
+
+#: gallery_search.inc:192
+msgid "Error getting 'Search' module options."
+msgstr ""
+
+#: gallery_search.inc:213
+msgid "<p>Total Number of Matches: @count</p>"
+msgstr ""
+
+#: gallery_settings.inc:29
+msgid "Theme and Display settings"
+msgstr ""
+
+#: gallery_settings.inc:36
+msgid "System default"
+msgstr ""
+
+#: gallery_settings.inc:42
+msgid "Gallery page theme"
+msgstr ""
+
+#: gallery_settings.inc:45
+msgid "Drupal theme to be used for all gallery pages (gallery/*)."
+msgstr ""
+
+#: gallery_settings.inc:49
+msgid "Gallery embedded theme"
+msgstr ""
+
+#: gallery_settings.inc:51
+msgid "Gallery default"
+msgstr ""
+
+#: gallery_settings.inc:52
+msgid "Gallery2 theme to be used for embedded gallery."
+msgstr ""
+
+#: gallery_settings.inc:55
+msgid "Default root album"
+msgstr ""
+
+#: gallery_settings.inc:57
+msgid "Default root album to use on gallery pages. If you have a separate album for use with nodes (Filter, G2Image, ...)\r\n       it can be helpful to move the root album to hide that album from the browseable gallery."
+msgstr ""
+
+#: gallery_settings.inc:64
+msgid "Gallery block settings"
+msgstr ""
+
+#: gallery_settings.inc:67
+msgid "Use these settings to determine the number of available blocks.<br />\r\n                         <strong>Warning: If you decrease the number of blocks, always the last\r\n                         block (with the highest ID) will be removed.</strong>"
+msgstr ""
+
+#: gallery_settings.inc:73
+msgid "Number of blocks"
+msgstr ""
+
+#: gallery_settings.inc:77
+msgid "Select how many blocks should be available."
+msgstr ""
+
+#: gallery_settings.inc:83
+msgid "Sidebar settings"
+msgstr ""
+
+#: gallery_settings.inc:90
+msgid "Move Gallery2 sidebar to Drupal Gallery Navigation block"
+msgstr ""
+
+#: gallery_settings.inc:92
+msgid "When selected, the Gallery2 sidebar will be moved into\r\n                         the Drupal \"Gallery Navigation\" block. This typically allows\r\n                         for a much cleaner embedded gallery and is generally\r\n                         recommended. Note that you will need to enable the Gallery\r\n                         Navigation block."
+msgstr ""
+
+#: gallery_settings.inc:100
+msgid "Move Gallery2 Admin sidebar to Drupal Gallery Navigation block"
+msgstr ""
+
+#: gallery_settings.inc:102
+msgid "When selected, the Gallery2 Admin sidebar will be moved into\r\n                         the Drupal \"Gallery Navigation\" block. This is not normally\r\n                         recommended since the Admin Sitebar is very long and the\r\n                         formatting does not always fit with the rest of the block\r\n                         (but cannot be changed in the current Gallery2 versions)."
+msgstr ""
+
+#: gallery_settings.inc:117
+msgid "Allows the Gallery2 sitemap to be merged with the Drupal one so that only one URL needs to\r\n             be supplied to search engines. Requires the Drupal XML Sitemap module (!xmlsitemap_status) and\r\n             the Gallery2 sitemap module (!gallery2_sitemap_status) to be installed/activated."
+msgstr ""
+
+#: gallery_settings.inc:128
+msgid "XML Sitemap settings"
+msgstr ""
+
+#: gallery_settings.inc:136
+msgid "Enable merge of Gallery2 sitemap with Drupal sitemap"
+msgstr ""
+
+#: gallery_settings.inc:144
+msgid "Error logging / Debug settings"
+msgstr ""
+
+#: gallery_settings.inc:151
+msgid "Error logging"
+msgstr ""
+
+#: gallery_settings.inc:153
+msgid "Watchdog"
+msgstr ""
+
+#: gallery_settings.inc:154
+msgid "Output to the browser"
+msgstr ""
+
+#: gallery_settings.inc:155
+msgid "Verbose error messages"
+msgstr ""
+
+#: gallery_settings.inc:156
+msgid "Choose where errors are displayed and how detailed they are."
+msgstr ""
+
+#: gallery_settings.inc:160
+msgid "Enable bug report assistant"
+msgstr ""
+
+#: gallery_settings.inc:162
+msgid "In case of errors the module can automatically assemble useful data (system info and debug\r\n                         traces) to help you with detailed bug reports. Only available to users with 'administer\r\n                         site configuration' permission."
+msgstr ""
+
+#: gallery_settings.inc:169
+msgid "Redirect to Gallery search form for invalid paths"
+msgstr ""
+
+#: gallery_settings.inc:171
+msgid "Instead of showing a message that the requested Gallery URL does not exist the\r\n                         user is redirected to the search form."
+msgstr ""
+
+#: gallery_settings.inc:177
+msgid "Debug settings"
+msgstr ""
+
+#: gallery_settings.inc:185
+msgid "Enable debug mode"
+msgstr ""
+
+#: gallery_settings.inc:187
+msgid "Print out debug variables and verbose error messages. Only visible to users\r\n                         with 'administer site configuration' permission."
+msgstr ""
+
+#: gallery_settings.inc:192
+msgid "Enable G2 debug output"
+msgstr ""
+
+#: gallery_settings.inc:194
+msgid "Enables Gallery2's buffered debug output to be displayed."
+msgstr ""
+
+#: gallery_settings.inc:201
+msgid "Links to the most relevant Drupal & Gallery2 pages"
+msgstr ""
+
+#: gallery_settings.inc:213
+msgid "Links to Drupal paths"
+msgstr ""
+
+#: gallery_settings.inc:234
+msgid "Links to Gallery2 Site Admin sections"
+msgstr ""
+
+#: gallery_settings.inc:255
+msgid "Number of image blocks must be a positiv integer greater zero."
+msgstr ""
+
+#: gallery_settings.inc:276
+msgid "Note that changing the defaults here will change the all the gallery filter images\r\n    on the site, not just new images. "
+msgstr ""
+
+#: gallery_settings.inc:278
+msgid "The Gallery Filter requires the Gallery2 Image Block plugin (!imageblock_status) and\r\n              optionally the Gallery2 Image Frame plugin (!imageframe_status)."
+msgstr ""
+
+#: gallery_settings.inc:287;527 gallery_g2image/gallery_g2image_settings.inc:28
+msgid "<a href= \"@g2_plugins\">Gallery2 Plugins</a>"
+msgstr ""
+
+#: gallery_settings.inc:289;529 gallery_g2image/gallery_g2image_settings.inc:30
+msgid "Gallery2 Site Admin -> Plugins"
+msgstr ""
+
+#: gallery_settings.inc:290
+msgid " However the Image Block plugin is unavailable, so the Gallery Filter is\r\n      not available and the settings are disabled. To use the filter please go to\r\n      the !g2_plugins page and install/activate the Image Block plugin."
+msgstr ""
+
+#: gallery_settings.inc:302
+msgid "Gallery Filter settings"
+msgstr ""
+
+#: gallery_settings.inc:310
+msgid "Specific item"
+msgstr ""
+
+#: gallery_settings.inc:315
+msgid "Filter prefix"
+msgstr ""
+
+#: gallery_settings.inc:319
+msgid "Prefix to use with filter. Example: 'G2' means you use [G2: 999].\r\n        Be careful when changing this as any pages using the previous prefix will not be changed\r\n        and so will not be filtered correctly."
+msgstr ""
+
+#: gallery_settings.inc:326
+msgid "Default image type"
+msgstr ""
+
+#: gallery_settings.inc:329
+msgid "Pick the default type of image you would like to use."
+msgstr ""
+
+#: gallery_settings.inc:334
+msgid "Cache gallery filter pages"
+msgstr ""
+
+#: gallery_settings.inc:336
+msgid "By default the gallery filter output is cached by Drupal to speed up page loading.\r\n                           However, it will not cache the css class info for the frames. The best approach is the\r\n                           make sure that the sidebar image block and the gallery filter images use the same frames.\r\n                           If you are unable to do this you will have to deselect this option to force Drupal not to\r\n                           cache the pages, or else your frames will not appear. If you change this option you will\r\n                           need to go to <a href=\"@link\">admin/settings/filters</a> and re-save the image formats\r\n                           that use gallery filter."
+msgstr ""
+
+#: gallery_settings.inc:347
+msgid "Default number of images"
+msgstr ""
+
+#: gallery_settings.inc:351
+msgid "How many images you want the default block to show.  Best to keep at 1 and use the n parameter."
+msgstr ""
+
+#: gallery_settings.inc:356
+msgid "Default image data"
+msgstr ""
+
+#: gallery_settings.inc:359
+msgid "Choose the item metadata you would like to display by default.\r\n                           This will change all instances where show parameter was not specified."
+msgstr ""
+
+#: gallery_settings.inc:373;381
+msgid "Default class"
+msgstr ""
+
+#: gallery_settings.inc:385
+msgid "left, right, or nowrap. (See gallery_filter.css to add more or modify these.)"
+msgstr ""
+
+#: gallery_settings.inc:391
+msgid "Default 'Max Size' thumbnail size"
+msgstr ""
+
+#: gallery_settings.inc:399
+msgid "Default 'Exact Size' thumbnail size"
+msgstr ""
+
+#: gallery_settings.inc:403
+msgid "If no size is specified when calling the filter, one of\r\n        these sizes (and implied method) will be used. <br />'Max Size' gives faster\r\n        image downloading, but the image size \r\n        may be smaller than the size defined. <br />'Exact Size' may be slower\r\n        (as a larger image is downloaded and then scaled by the browser) but the image\r\n        will be guaranteed to be the size defined. Only supported for G2.2+.\r\n        Only fill in one size box (not both) to set the default method."
+msgstr ""
+
+#: gallery_settings.inc:414
+msgid "Default album frame"
+msgstr ""
+
+#: gallery_settings.inc:422
+msgid "Default item frame"
+msgstr ""
+
+#: gallery_settings.inc:430
+msgid "Default link target"
+msgstr ""
+
+#: gallery_settings.inc:434;661
+msgid "Enter a link target (e.g. \"_blank\", \"_new\")."
+msgstr ""
+
+#: gallery_settings.inc:439
+msgid "Default Image Link"
+msgstr ""
+
+#: gallery_settings.inc:443
+msgid "By default the image has a link to the item in the Gallery. This\r\n        can be overridden here (or leave empty for the default). Use 'none' for no link, or a URL\r\n        to link somewhere else instead."
+msgstr ""
+
+#: gallery_settings.inc:465
+msgid "You must set either the Max Size or the Exact Size, not both."
+msgstr ""
+
+#: gallery_settings.inc:470
+msgid "You must set either the Max Size or the Exact Size."
+msgstr ""
+
+#: gallery_settings.inc:476
+msgid "Max Size must be a number greater than zero."
+msgstr ""
+
+#: gallery_settings.inc:482
+msgid "Exact Size must be a number greater than zero."
+msgstr ""
+
+#: gallery_settings.inc:488
+msgid "Number of images must be a number greater than zero."
+msgstr ""
+
+#: gallery_settings.inc:516
+msgid "The Gallery Search requires the Gallery2 Search plugin (!search_status) and\r\n    optionally the Gallery2 Image Block plugin (!imageblock_status) and Gallery2 Image Frame\r\n    plugin (!imageframe_status)."
+msgstr ""
+
+#: gallery_settings.inc:532
+msgid " However the Search plugin is unavailable, so the search is\r\n      not available and these settings are disabled. To use the search feature please go to\r\n      the !g2_plugins page and install/activate the Image Block plugin."
+msgstr ""
+
+#: gallery_settings.inc:538
+msgid "To display search results with thumbnail images requires the Gallery2 Image\r\n      Block plugin (!imageblock_status) and optionally the  and Gallery2 Image Frame \r\n      plugin (!imageframe_status)."
+msgstr ""
+
+#: gallery_settings.inc:546
+msgid " However the Image Block plugin is unavailable, so the thumbnails are\r\n      not available and these settings are disabled. To use this feature please go to\r\n      the !g2_plugins page and install/activate the Image Block plugin."
+msgstr ""
+
+#: gallery_settings.inc:558
+msgid "Search settings"
+msgstr ""
+
+#: gallery_settings.inc:570
+msgid "Display advanced search options"
+msgstr ""
+
+#: gallery_settings.inc:572
+msgid "Adds options to the search form to select which Gallery fields to search in."
+msgstr ""
+
+#: gallery_settings.inc:577
+msgid "Number of search results per table row"
+msgstr ""
+
+#: gallery_settings.inc:580
+msgid "Select the number of search results per row in the paged table."
+msgstr ""
+
+#: gallery_settings.inc:585
+msgid "Number of rows per page"
+msgstr ""
+
+#: gallery_settings.inc:588
+msgid "Select the number of rows in the paged table."
+msgstr ""
+
+#: gallery_settings.inc:593
+msgid "Search thumbnail settings"
+msgstr ""
+
+#: gallery_settings.inc:602
+msgid "Display thumbnails"
+msgstr ""
+
+#: gallery_settings.inc:604
+msgid "Display thumbnail images for the search results."
+msgstr ""
+
+#: gallery_settings.inc:623
+msgid "'Max Size' gives faster image downloading, but the image size \r\n          may be smaller than the size defined below. <br />'Exact Size' may be slower\r\n          (as a larger image is downloaded and then scaled by the browser) but the image\r\n          will be guaranteed to be the size defined below. Only supported for G2.2+."
+msgstr ""
+
+#: gallery_settings.inc:635
+msgid "Sets the size (in pixels) of the longest side of the image\r\n          according to the method defined above."
+msgstr ""
+
+#: gallery_settings.inc:670
+msgid "By default the image has a link to the item in the Gallery. This\r\n          can be overridden here (or leave empty for the default). Use 'none' for no link, or a\r\n          URL to link somewhere else instead."
+msgstr ""
+
+#: gallery_settings.inc:689
+msgid "Image size must be a number greater than zero."
+msgstr ""
+
+#: gallery_settings.inc:705
+msgid "Default"
+msgstr ""
+
+#: gallery_settings.inc:748
+msgid "There is no memory limit restricting your PHP installation."
+msgstr ""
+
+#: gallery_settings.inc:754
+msgid "Your PHP is configured to limit the memory to @mem_limit\r\n        (memory_limit parameter in php.ini). You must raise this limit \r\n        to at least @min_mem_limitM for proper embedded Gallery2 operation."
+msgstr ""
+
+#: gallery_settings.inc:767
+msgid "Your PHP is configured to limit the memory to @mem_limit\r\n        (memory_limit parameter in php.ini). This should be fine for embedded Gallery2 operation."
+msgstr ""
+
+#: gallery_settings.inc:786
+msgid "Allows images to be included in the Drupal sidebar or in nodes."
+msgstr ""
+
+#: gallery_settings.inc:792
+msgid "Provides a variety of frames around the images."
+msgstr ""
+
+#: gallery_settings.inc:798
+msgid "Allow the Drupal search to also search the Gallery."
+msgstr ""
+
+#: gallery_settings.inc:804
+msgid "Allow short URLs (clean URLs)."
+msgstr ""
+
+#: gallery_settings.inc:813
+msgid "All user registration must take place via Drupal to ensure that the users\r\n            are synchronized between Drupal and Gallery2. This plugin would allow a user to register\r\n            only in Gallery2 and not in Drupal and so should not be used."
+msgstr ""
+
+#: gallery_settings.inc:826
+msgid "Enables the Drupal and Gallery2 sitemaps to be merged which allows for\r\n                       a single sitemap to be sent to Google and other web search sites."
+msgstr ""
+
+#: gallery_settings.inc:833
+msgid "Allows support of the 'Full Name' field in Gallery2."
+msgstr ""
+
+#: gallery_settings.inc:854
+msgid "Gallery2 plugin '@plugin' is not available"
+msgstr ""
+
+#: gallery_settings.inc:881
+msgid "Status not available"
+msgstr ""
+
+#: gallery_settings.inc:893
+msgid "enabled"
+msgstr ""
+
+#: gallery_settings.inc:896;932
+msgid "disabled"
+msgstr ""
+
+#: gallery_settings.inc:906 gallery_user.inc:374
+msgid "OK"
+msgstr ""
+
+#: gallery_settings.inc:908
+msgid "Error"
+msgstr ""
+
+#: gallery_settings.inc:910
+msgid "Warning"
+msgstr ""
+
+#: gallery_settings.inc:912
+msgid "Advisory"
+msgstr ""
+
+#: gallery_settings.inc:914
+msgid "Unknown"
+msgstr ""
+
+#: gallery_settings.inc:930
+msgid "activated"
+msgstr ""
+
+#: gallery_settings.inc:934
+msgid "deactivated"
+msgstr ""
+
+#: gallery_settings.inc:936
+msgid "not installed"
+msgstr ""
+
+#: gallery_settings.inc:938
+msgid "missing"
+msgstr ""
+
+#: gallery_settings.inc:941
+msgid "unknown"
+msgstr ""
+
+#: gallery_user.inc:112
+msgid "Error updating Gallery user (username changed)"
+msgstr ""
+
+#: gallery_user.inc:121
+msgid "Error determining user map state"
+msgstr ""
+
+#: gallery_user.inc:131
+msgid "Error creating map entry (ExternlIdMapEntry)"
+msgstr ""
+
+#: gallery_user.inc:144
+msgid "Error updating Gallery user"
+msgstr ""
+
+#: gallery_user.inc:153
+msgid "Error removing map entry (ExternlIdMapEntry)"
+msgstr ""
+
+#: gallery_user.inc:168
+msgid "Error creating Gallery user"
+msgstr ""
+
+#: gallery_user.inc:173
+msgid "Error loading newly created Gallery user"
+msgstr ""
+
+#: gallery_user.inc:201
+msgid "Error deleting Gallery user"
+msgstr ""
+
+#: gallery_user.inc:211
+msgid "Error loading Gallery user"
+msgstr ""
+
+#: gallery_user.inc:217
+msgid "Error acquiring write lock"
+msgstr ""
+
+#: gallery_user.inc:222
+msgid "Locking user account failed"
+msgstr ""
+
+#: gallery_user.inc:253 gallery.info:0 gallery_g2image/gallery_g2image.info:0 gallery_menu/gallery_menu.info:0 gallery_profile/gallery_profile.info:0
+msgid "Gallery2"
+msgstr ""
+
+#: gallery_user.inc:259
+msgid "Album: @username"
+msgstr ""
+
+#: gallery_user.inc:265
+msgid "User has not created an album yet"
+msgstr ""
+
+#: gallery_user.inc:273
+msgid "Gallery2-Drupal Sync Status"
+msgstr ""
+
+#: gallery_user.inc:297
+msgid "Error fetching user album id"
+msgstr ""
+
+#: gallery_user.inc:375
+msgid "Any Error"
+msgstr ""
+
+#: gallery_user.inc:376
+msgid "Missing from G2"
+msgstr ""
+
+#: gallery_user.inc:377
+msgid "Different Usernames"
+msgstr ""
+
+#: gallery_user.inc:378
+msgid "Different Full Names"
+msgstr ""
+
+#: gallery_user.inc:379
+msgid "G2 Full Name missing"
+msgstr ""
+
+#: gallery_user.inc:380
+msgid "Different E-Mails"
+msgstr ""
+
+#: gallery_user.inc:381
+msgid "Different Passwords"
+msgstr ""
+
+#: gallery_user.inc:382
+msgid "Imported/Different hash method"
+msgstr ""
+
+#: gallery_user.inc:383
+msgid "Roles <> Groups"
+msgstr ""
+
+#: gallery_user.inc:463
+msgid "G2 Users"
+msgstr ""
+
+#: gallery_user.inc:464
+msgid "G2 ExternalIdMap"
+msgstr ""
+
+#: gallery_user.inc:470
+msgid "Error fetching user by username (:name)"
+msgstr ""
+
+#: gallery_user.inc:478;492
+msgid "G2 User Import (uid: :uid, name: ':name'): !error"
+msgstr ""
+
+#: gallery_user.inc:504
+msgid "G2 User Import (uid: :uid, name: ':name'): The e-mail address :mail is already registered."
+msgstr ""
+
+#: gallery_user.inc:514
+msgid "Error fetching groups for user (uid: :uid)"
+msgstr ""
+
+#: gallery_user.inc:526
+msgid "Error calling isDisabledUsername() for ':name'"
+msgstr ""
+
+#: gallery_user.inc:536
+msgid "Error creating Drupal user for G2 user (uid: :uid)"
+msgstr ""
+
+#: gallery_user.inc:566
+msgid "Error updating Gallery user (password)"
+msgstr ""
+
+#: gallery_user.inc:593
+msgid "G2 User Import (name: ':name'): e-mail address :oldmail changed to :newmail."
+msgstr ""
+
+#: gallery_user.inc:618
+msgid "Error fetching 'GalleryUser' entries from 'ExternalIdMap'"
+msgstr ""
+
+#: gallery_user_admin.inc:20
+msgid "ID"
+msgstr ""
+
+#: gallery_user_admin.inc:21
+msgid "G2ID"
+msgstr ""
+
+#: gallery_user_admin.inc:22
+msgid "Username"
+msgstr ""
+
+#: gallery_user_admin.inc:24
+msgid "Sync Status"
+msgstr ""
+
+#: gallery_user_admin.inc:25
+msgid "Operations"
+msgstr ""
+
+#: gallery_user_admin.inc:29
+msgid "blocked"
+msgstr ""
+
+#: gallery_user_admin.inc:29
+msgid "active"
+msgstr ""
+
+#: gallery_user_admin.inc:38
+msgid "Error calling 'GalleryCoreApi::isUserInSiteAdminGroup'."
+msgstr ""
+
+#: gallery_user_admin.inc:53
+msgid "N/A"
+msgstr ""
+
+#: gallery_user_admin.inc:55
+msgid "edit"
+msgstr ""
+
+#: gallery_user_admin.inc:61
+msgid "edit G2"
+msgstr ""
+
+#: gallery_user_admin.inc:65
+msgid "sync"
+msgstr ""
+
+#: gallery_user_admin.inc:88
+msgid "There are no users with the selected status."
+msgstr ""
+
+#: gallery_user_admin.inc:106
+msgid "Filter by status"
+msgstr ""
+
+#: gallery_user_admin.inc:114
+msgid "Show only users with status"
+msgstr ""
+
+#: gallery_user_admin.inc:120 gallery.module:140
+msgid "Filter"
+msgstr ""
+
+#: gallery_user_admin.inc:126
+msgid "Reset"
+msgstr ""
+
+#: gallery_user_admin.inc:167
+msgid "Advanced Sync (Batch operations)"
+msgstr ""
+
+#: gallery_user_admin.inc:173
+msgid "Import users from Gallery2"
+msgstr ""
+
+#: gallery_user_admin.inc:176
+msgid "Use this option to import users from an existing Gallery2 install into Drupal."
+msgstr ""
+
+#: gallery_user_admin.inc:180
+msgid "Synchronize (export) all existing users"
+msgstr ""
+
+#: gallery_user_admin.inc:183
+msgid "Use this option to sync all users between Drupal and Gallery2."
+msgstr ""
+
+#: gallery_user_admin.inc:188
+msgid "Switch Drupal to 'offline mode' for operation"
+msgstr ""
+
+#: gallery_user_admin.inc:195
+msgid "Start"
+msgstr ""
+
+#: gallery_user_admin.inc:206
+msgid "No option selected."
+msgstr ""
+
+#: gallery_user_admin.inc:228;397
+msgid "User Synchronization"
+msgstr ""
+
+#: gallery_user_admin.inc:259
+msgid "Error getting number of G2 users"
+msgstr ""
+
+#: gallery_user_admin.inc:273
+msgid "Error fetching G2 usernames"
+msgstr ""
+
+#: gallery_user_admin.inc:320
+msgid "Error emptying 'ExternalIdMap'"
+msgstr ""
+
+#: gallery_user_admin.inc:354
+msgid "User synchronization (partially) failed."
+msgstr ""
+
+#: gallery_user_admin.inc:358;360
+msgid "The following messages occured:"
+msgstr ""
+
+#: gallery_user_admin.inc:359
+msgid "Invalid user items were skipped."
+msgstr ""
+
+#: gallery_user_admin.inc:363
+msgid "User synchronization successfully completed."
+msgstr ""
+
+#: gallery_user_admin.inc:369
+msgid "An error occurred while processing @operation"
+msgstr ""
+
+#: gallery_user_admin.inc:381
+msgid "Settings"
+msgstr ""
+
+#: gallery_user_admin.inc:389 gallery_profile/gallery_profile.module:100
+msgid "Hide Gallery2 section in profiles"
+msgstr ""
+
+#: gallery_user_admin.inc:391 gallery_profile/gallery_profile.module:102
+msgid "Hide the Gallery2 section (i.e. Gallery2-Drupal Sync Status) on the user profile pages."
+msgstr ""
+
+#: gallery_user_admin.inc:402
+msgid "none"
+msgstr ""
+
+#: gallery_user_admin.inc:407
+msgid "Drupal 'admin' role"
+msgstr ""
+
+#: gallery_user_admin.inc:410
+msgid "Select the Drupal role equivalent to Gallery2's 'Site Admin' group (or 'none' to disable this\r\n                         feature). The roles 'anonymous' and 'authenticated' are not available for selection."
+msgstr ""
+
+#: gallery_user_admin.inc:416
+msgid "Lock G2 accounts"
+msgstr ""
+
+#: gallery_user_admin.inc:418
+msgid "Locking G2 account prevents users from changing their details (password, email, ...) in G2."
+msgstr ""
+
+#: gallery_user_admin.inc:424
+msgid "Full names in Gallery2 can be supported by using the profile module\r\n            (!profile_status) with a 'Full Name' profile field as defined below."
+msgstr ""
+
+#: gallery_user_admin.inc:429
+msgid " However the profile module is disabled, so this functionality is\r\n      not available and the options are disabled."
+msgstr ""
+
+#: gallery_user_admin.inc:434
+msgid "Full Name settings"
+msgstr ""
+
+#: gallery_user_admin.inc:443
+msgid "Enable Full Name support"
+msgstr ""
+
+#: gallery_user_admin.inc:447
+msgid "Use full name from profile module in Gallery2 user data. Note that\r\n                           enabling/disabling this only updates Gallery2 user data when the\r\n                           Drupal user is updated or if a user sync is performed."
+msgstr ""
+
+#: gallery_user_admin.inc:461
+msgid "Full name profile category"
+msgstr ""
+
+#: gallery_user_admin.inc:464
+msgid "Name of the category containing the 'Full Name' field in profile module."
+msgstr ""
+
+#: gallery_user_admin.inc:473
+msgid "Full name profile field"
+msgstr ""
+
+#: gallery_user_admin.inc:476
+msgid "Name of 'Full Name' field in profile module."
+msgstr ""
+
+#: gallery_user_admin.inc:484
+msgid "Advanced Sync - Import"
+msgstr ""
+
+#: gallery_user_admin.inc:491
+msgid "Import Gallery2 groups"
+msgstr ""
+
+#: gallery_user_admin.inc:493
+msgid "Import Gallery2 groups into Drupal roles (in addition to users)."
+msgstr ""
+
+#: gallery_user_admin.inc:498
+msgid "Override existing Drupal users"
+msgstr ""
+
+#: gallery_user_admin.inc:500
+msgid "Replaces user details (password, email, groups, ...) of existing Drupal users with Gallery2 imported values."
+msgstr ""
+
+#: gallery_user_admin.inc:505
+msgid "Auto-resolve email address conflicts"
+msgstr ""
+
+#: gallery_user_admin.inc:508
+msgid "Duplicate e-mail addresses"
+msgstr ""
+
+#: gallery_user_admin.inc:509
+msgid "Invalide e-mail addresses"
+msgstr ""
+
+#: gallery_user_admin.inc:511
+msgid "Renames duplicate/invalid e-mail addresses to username@drupaldomain.\r\n                         If this option is disabled you get a list of users to handle conflicts yourself."
+msgstr ""
+
+#: gallery_user_admin.inc:518
+msgid "Advanced Sync - Export (Synchronize)"
+msgstr ""
+
+#: gallery_user_admin.inc:525
+msgid "Remap all users"
+msgstr ""
+
+#: gallery_user_admin.inc:527
+msgid "Remaps all users instead of missing or mismatching ones only.\r\n                         This will completely flush Gallery2's 'externalIdMap'."
+msgstr ""
+
+#: gallery_user_admin.inc:540
+msgid "Reset to defaults"
+msgstr ""
+
+#: gallery_user_admin.inc:548
+msgid "Full Name settings have changed. You should now synchronize\r\n                            your users on the <a href=\"@user-admin\">Gallery users</a> page."
+msgstr ""
+
+#: gallery.module:410
+msgid "Gallery2 filter"
+msgstr ""
+
+#: gallery.module:412
+msgid "Allow users to easily reference Gallery2 items from nodes."
+msgstr ""
+
+#: gallery.module:460
+msgid "Home"
+msgstr ""
+
+#: gallery.module:516
+msgid "Error loading the Gallery2 Sitemap. Make sure the 'Sitemap' plugin is enabled in Gallery2."
+msgstr ""
+
+#: gallery.module:521 gallery_menu/gallery_menu.module:100
+msgid "Error calling getDefaultAlbumId()"
+msgstr ""
+
+#: gallery.module:532
+msgid "Error getting sitemap from Gallery2."
+msgstr ""
+
+#: gallery.module:20
+msgid "administer gallery settings"
+msgstr ""
+
+#: gallery.module:20
+msgid "access gallery"
+msgstr ""
+
+#: gallery.module:107
+msgid "Visit your embedded Gallery2."
+msgstr ""
+
+#: gallery.module:115
+msgid "Gallery settings"
+msgstr ""
+
+#: gallery.module:116
+msgid "Configure settings for embedding Gallery2 into Drupal."
+msgstr ""
+
+#: gallery.module:124
+msgid "Install"
+msgstr ""
+
+#: gallery.module:135 gallery_profile/gallery_profile.module:22
+msgid "General"
+msgstr ""
+
+#: gallery.module:151
+msgid "Search"
+msgstr ""
+
+#: gallery.module:179
+msgid "Gallery users"
+msgstr ""
+
+#: gallery.module:180
+msgid "Gallery2 user integration and synchronization."
+msgstr ""
+
+#: gallery.module:187
+msgid "User Status"
+msgstr ""
+
+#: gallery.module:192
+msgid "Advanced Sync"
+msgstr ""
+
+#: gallery.module:202
+msgid "User Settings"
+msgstr ""
+
+#: gallery.module:0
+msgid "gallery"
+msgstr ""
+
+#: gallery.info:0
+msgid "Embeds Gallery2 into Drupal."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:18
+msgid "G2Image requires the Gallery2 Image Block plugin (!imageblock_status) and\r\n             the G2Image application (!g2image_status) to be installed."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:31
+msgid "<br />However, the Image Block plugin is unavailable. To use G2Image please go to\r\n                the !g2_plugins page and install/activate the Image Block plugin."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:36
+msgid "<br />However, the G2Image application is unavailable. Please <a href=\"@g2image_url\">download\r\n                G2Image</a> and install it as outlined in README.TXT."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:43
+msgid "Gallery Image Assist (G2Image) settings"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:52
+msgid "Mode"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:55
+msgid "Disabled"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:56;209
+msgid "Standalone"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:57;204
+msgid "TinyMCE"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:59
+msgid "Determines the mode of operation. For anything other than 'Disabled' the G2Image\r\n                           application has to be installed. See the README.txt instructions. In 'Standalone'\r\n                           mode a button will be visible under textfields to launch the g2image window. In\r\n                           'TinyMCE' mode the g2image button can be used in the TinyMCE toolbar. Note that the\r\n                           TinyMCE version will NOT work wih Safari - use the standalone version instead."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:69
+msgid "Show G2Image link on specific pages (Standalone mode)"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:72
+msgid "Show on every page except the listed pages."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:73
+msgid "Show on only the listed pages."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:79
+msgid "Pages (Standalone mode only)"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:81
+msgid "Enter one page per line as Drupal paths. The '*' character is a wildcard. Example paths are\r\n                             '%blog' for the blog page and %blog-wildcard for every personal blog. %front is the front page."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:89
+msgid "Default Sort Order"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:92
+msgid "Gallery2 Title (A-z)"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:93
+msgid "Gallery2 Title (z-A)"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:94
+msgid "Filename (A-z)"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:95
+msgid "Filename (z-A)"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:96
+msgid "Last Modification (newest first)"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:97
+msgid "Last Modification (oldest first)"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:99
+msgid "Determines the default sorting order."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:104
+msgid "Default Number of images per page"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:107
+msgid "Choose the default number of images per page."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:112
+msgid "Default Display Options"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:115
+msgid "Thumbnails only"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:116
+msgid "Thumbnails with title and filename"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:118
+msgid "Choose the default display option for images."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:123
+msgid "Default Action"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:126
+msgid "Gallery Filter ID"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:127
+msgid "Thumbnail with link to image"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:128
+msgid "Thumbnail with link to parent album"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:129
+msgid "Thumbnail with link to custom URL"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:130
+msgid "Thumbnail only"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:131
+msgid "Text link to image"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:132
+msgid "Text link to parent album"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:134
+msgid "Choose the default method of inserting the image info."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:139
+msgid "Default custom url"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:143
+msgid "The default custom url. Used with 'Thumbnail with link to custom URL' action setting"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:148
+msgid "Normal"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:149
+msgid "Float Left"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:150
+msgid "Float Right"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:151
+msgid "Centered"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:160
+msgid "Default Alignment"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:163
+msgid "Choose the default alignment of images."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:170
+msgid "Custom Class @index"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:176
+msgid "Additional css classes to be available\r\n                                                                                for selection (must be defined in .css file)."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:181
+msgid "Alignment Class Insertion Point"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:184
+msgid "<img class=...>"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:185
+msgid "<div class=...><img ...>"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:187
+msgid "Determines where the alignment class will be inserted. If you choose '&lt;div\r\n                           class=...&gt;&lt;img ...&gt;', you will have to manually delete any &lt;div&gt; tags\r\n                           manually after deleting images from the TinyMCE window."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:220
+msgid "G2Image does not seem to be installed for @mode mode in the required directory (@dir), or the\r\n                          directory is not writable. Please see the INSTALL.txt for instructions."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:284;290
+msgid "Could not write to G2Image config file. Please check the permissions for @filename."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image_settings.inc:295
+msgid "G2Image configuration file successfully created."
+msgstr ""
+
+#: gallery_g2image/gallery_g2image.module:114
+msgid "Click here to add images from Gallery2 albums"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image.module:116
+msgid "Add Gallery2 images"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image.module:23
+msgid "access standalone g2image"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image.module:33
+msgid "G2Image"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image.module:0
+msgid "gallery_g2image"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image.info:0
+msgid "Gallery G2Image"
+msgstr ""
+
+#: gallery_g2image/gallery_g2image.info:0
+msgid "Integrates G2Image with Gallery module"
+msgstr ""
+
+#: gallery_menu/gallery_menu.module:90
+msgid "Error fetching item parents"
+msgstr ""
+
+#: gallery_menu/gallery_menu.module:216
+msgid "Gallery menu settings"
+msgstr ""
+
+#: gallery_menu/gallery_menu.module:222
+msgid "Depth of Gallery albums"
+msgstr ""
+
+#: gallery_menu/gallery_menu.module:0
+msgid "gallery_menu"
+msgstr ""
+
+#: gallery_menu/gallery_menu.info:0
+msgid "Gallery Menu"
+msgstr ""
+
+#: gallery_menu/gallery_menu.info:0
+msgid "Gallery2 albums => Drupal menu items"
+msgstr ""
+
+#: gallery_profile/gallery_profile.module:58
+msgid "Album: %username"
+msgstr ""
+
+#: gallery_profile/gallery_profile.module:93;27
+msgid "User Profile"
+msgstr ""
+
+#: gallery_profile/gallery_profile.module:107
+msgid "Title of Gallery2 profile section"
+msgstr ""
+
+#: gallery_profile/gallery_profile.module:111
+msgid "Title of the Gallery2 section on profile pages."
+msgstr ""
+
+#: gallery_profile/gallery_profile.module:116
+msgid "Hide sync status message"
+msgstr ""
+
+#: gallery_profile/gallery_profile.module:118
+msgid "Hide 'Gallery2-Drupal Sync Status' message in the profile."
+msgstr ""
+
+#: gallery_profile/gallery_profile.module:124
+msgid "Profile gallery mode"
+msgstr ""
+
+#: gallery_profile/gallery_profile.module:127
+msgid "Show link to useralbum"
+msgstr ""
+
+#: gallery_profile/gallery_profile.module:128
+msgid "Show (useralbum) gallery/images"
+msgstr ""
+
+#: gallery_profile/gallery_profile.module:130
+msgid "By default a link to the useralbum is shown. But you may also insert a gallery of\r\n                         random/recent images from the useralbum into the user profile."
+msgstr ""
+
+#: gallery_profile/gallery_profile.module:138
+msgid "Useralbum settings"
+msgstr ""
+
+#: gallery_profile/gallery_profile.module:143
+msgid "profile useralbum"
+msgstr ""
+
+#: gallery_profile/gallery_profile.module:12
+msgid "access gallery profile"
+msgstr ""
+
+#: gallery_profile/gallery_profile.module:0
+msgid "gallery_profile"
+msgstr ""
+
+#: gallery_profile/gallery_profile.info:0
+msgid "Gallery Profile"
+msgstr ""
+
+#: gallery_profile/gallery_profile.info:0
+msgid "Customize user profiles to include Gallery2 content (e.g. useralbum images)."
+msgstr ""
+

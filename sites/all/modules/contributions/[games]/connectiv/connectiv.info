@@ -1,0 +1,20 @@
+; $Id: connectiv.info,v 1.2 2008/07/06 08:54:36 skinhat Exp $
+
+name = "Connect IV"
+description = "Connect IV game for drupal"
+version = "$Name: DRUPAL-6--1-2 $"
+core = 6.x
+
+; Information added by drupal.org packaging script on 2007-03-04
+version = "6.x-1.0"
+project = "connectiv"
+
+
+
+
+; Information added by drupal.org packaging script on 2009-01-25
+version = "6.x-1.2"
+core = "6.x"
+project = "connectiv"
+datestamp = "1232844307"
+

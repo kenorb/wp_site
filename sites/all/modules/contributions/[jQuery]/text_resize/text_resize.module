@@ -1,0 +1,222 @@
+<?php
+// $Id: text_resize.module,v 1.1.2.5 2009/02/05 19:18:27 attheshow Exp $
+
+/**
+ * @file
+ * Creates a small block with jQuery links that resize text within the BODY tag.
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function text_resize_menu() {
+  $items = array();
+  $items['admin/settings/text_resize'] = array(
+    'title' => 'Text Resize',
+    'description' => 'Settings for your Text Resize block.',
+    'access arguments' => array('administer site configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_text_resize_admin_settings'),
+    'type' => MENU_NORMAL_ITEM
+  );
+  return $items;
+}
+
+/**
+ * Builder function for admin settings form.
+ */
+function _text_resize_admin_settings() {
+  $form = array();
+
+  $form['text_resize_scope'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Text Resize Scope',
+    '#default_value' => _text_resize_scope(),
+    '#description' => t('Which portion of the body would you like to be resized by the Text Resize block? You may enter either the CSS class attribute, the CSS id attribute, or an HTML tag.<br />For example, if you want all text within &lt;div id="my-container"&gt; to be resized, enter the ID <strong>my-container</strong>.<br />If, on the other hand, you would like all text within the BODY tag to be resized, enter <strong>body</strong>.'),
+    '#required' => TRUE,
+  );
+  $form['text_resize_minimum'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Minimum Text Size',
+    '#maxlength' => 2,
+    '#default_value' => _text_resize_minimum(),
+    '#description' => 'What is the smallest font size (in pixels) that your text can be resized to by users?',
+    '#required' => TRUE,
+  );
+  $form['text_resize_maximum'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Maximum Text Size',
+    '#maxlength' => 2,
+    '#default_value' => _text_resize_maximum(),
+    '#description' => 'What is the largest font size (in pixels) that your text can be resized to by users?',
+    '#required' => TRUE,
+  );
+  $form['text_resize_line_height_allow'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Allow Line-Height Adjustment',
+    '#default_value' => _text_resize_line_height_allow(),
+    '#description' => 'Do you want to allow Text Resize to change the spacing between the lines of text?',
+    '#required' => TRUE
+  );
+  $form['text_resize_line_height_allow'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Allow Line-Height Adjustment',
+    '#default_value' => _text_resize_line_height_allow(),
+    '#description' => 'Do you want to allow Text Resize to change the spacing between the lines of text?',
+  );
+  $form['text_resize_line_height_min'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Minimum Line-Height',
+    '#maxlength' => 2,
+    '#default_value' => _text_resize_line_height_min(),
+    '#description' => 'What is the smallest line-height (in pixels) that your text can be resized to by users?',
+  );
+  $form['text_resize_line_height_max'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Maximum Line-Height',
+    '#maxlength' => 2,
+    '#default_value' => _text_resize_line_height_max(),
+    '#description' => 'What is the largest line-height (in pixels) that your text can be resized to by users?',
+  );
+  $form = system_settings_form($form);
+  // Rebuild the menu after updating the settings.
+  $form['#submit'][] = 'menu_rebuild';
+  return $form;
+}
+
+function _text_resize_scope($value = NULL) {
+  if (is_null($value)) {
+    return _get_text_resize_scope();
+  }
+  variable_set('text_resize_scope', $value);
+}
+
+// Get the scope specified by the admin
+function _get_text_resize_scope() {
+  $text_resize_scope = variable_get('text_resize_scope', 'content-inner');
+  return $text_resize_scope;
+}
+
+function _text_resize_minimum($value = NULL) {
+  if (is_null($value)) {
+    return _get_text_resize_minimum();
+  }
+  variable_set('text_resize_minimum', $value);
+}
+
+// Get the minimum size specified by the admin
+function _get_text_resize_minimum() {
+  $text_resize_minimum = variable_get('text_resize_minimum', '12');
+  return $text_resize_minimum;
+}
+
+function _text_resize_maximum($value = NULL) {
+  if (is_null($value)) {
+    return _get_text_resize_maximum();
+  }
+  variable_set('text_resize_maximum', $value);
+}
+
+// Get the maximum size specified by the admin
+function _get_text_resize_maximum() {
+  $text_resize_maximum = variable_get('text_resize_maximum', '25');
+  return $text_resize_maximum;
+}
+
+function _text_resize_line_height_allow($value = NULL) {
+  if (is_null($value)) {
+    return _get_text_resize_line_height_allow();
+  }
+  variable_set('text_resize_line_height_allow', $value);
+}
+
+// Get the line height preference specified by the admin
+function _get_text_resize_line_height_allow() {
+  $text_resize_line_height_allow = variable_get('text_resize_line_height_allow', FALSE);
+  return $text_resize_line_height_allow;
+}
+
+function _text_resize_line_height_min($value = NULL) {
+  if (is_null($value)) {
+    return _get_text_resize_line_height_min();
+  }
+  variable_set('text_resize_line_height_min', $value);
+}
+
+// Get the minimum line height preference specified by the admin
+function _get_text_resize_line_height_min() {
+  $text_resize_line_height_min = variable_get('text_resize_line_height_min', 16);
+  return $text_resize_line_height_min;
+}
+
+function _text_resize_line_height_max($value = NULL) {
+  if (is_null($value)) {
+    return _get_text_resize_line_height_max();
+  }
+  variable_set('text_resize_line_height_max', $value);
+}
+
+// Get the maximum line height preference specified by the admin
+function _get_text_resize_line_height_max() {
+  $text_resize_line_height_max = variable_get('text_resize_line_height_max', 36);
+  return $text_resize_line_height_max;
+}
+
+/**
+ * Implementation of hook_block().
+ */
+function text_resize_block($op = 'list', $delta = 0, $edit = array()) {
+  global $user;
+  switch ($op) {
+    case 'list': // Makes it show up on /admin/build/block page.
+      $blocks[0]['info'] = t('Text Resize');
+      return $blocks;
+    case 'view':
+      // Show the block.
+      $block['subject'] = t('Text Resize');
+      $block['content'] = theme('text_resize_block');
+      return $block;
+  }
+}
+
+/**
+ * Implementation of hook_init().
+ */
+function text_resize_init() {
+  drupal_add_css(drupal_get_path('module', 'text_resize') .'/text_resize.css');
+  drupal_add_js(drupal_get_path('module', 'text_resize') .'/jquery.cookie.js', 'file');
+  drupal_add_js("var text_resize_scope = ". drupal_to_js(_get_text_resize_scope()) .";
+    var text_resize_minimum = ". drupal_to_js(_get_text_resize_minimum()) .";
+    var text_resize_maximum = ". drupal_to_js(_get_text_resize_maximum()) .";
+    var text_resize_line_height_allow = ". drupal_to_js(_get_text_resize_line_height_allow()) .";
+		var text_resize_line_height_min = ". drupal_to_js(_get_text_resize_line_height_min()) .";
+    var text_resize_line_height_max = ". drupal_to_js(_get_text_resize_line_height_max()) .";", 'inline');
+  drupal_add_js(drupal_get_path('module', 'text_resize') .'/text_resize.js', 'file');
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function text_resize_theme() {
+  return array(
+    'text_resize_block' => array(),
+  );
+}
+// Create a theme function that can be overridden by other theme developers.
+function theme_text_resize_block() {
+  $output = t('<a href="javascript:;" class="changer" id="text_resize_decrease"><sup>-</sup>A</a> <a href="javascript:;" class="changer" id="text_resize_increase"><sup>+</sup>A</a><div id="text_resize_clear"></div>');
+  return $output;
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function text_resize_help($section = 'admin/help#text_resize') {
+  switch ($section) {
+    case 'admin/help#text_resize':
+      $output = '<p>'. t('The Text Resize module creates a block on the page that can be used by your site visitors to quickly and easily adjust the sizing of text as it displays for them.  In order to enable the functionality of the Text Resize module, you will need to make sure that you have enabled the Text Resize block on the <a href="admin/build/block">blocks page</a>. You will also probably want to configure the behavior of the module at the administration pages listed below:') .'</p>';
+      return $output;
+    case 'admin/settings/modules#description':
+      return t('Creates a block that allows your users to resize text on the page.');
+  }
+}

@@ -1,0 +1,318 @@
+# translation of jobsearch-5.x-2.x-dev.po to russian
+# $Id: ru.po,v 1.1 2009/01/02 02:48:36 kbahey Exp $
+# Russian translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  job.module,v 1.7.2.6.2.1 2008/02/04 02:46:46 kbahey
+#  job.info: n/a
+#  resume.module,v 1.5 2007/04/27 23:16:55 kbahey
+#  resume.info: n/a
+#  access/job_access.module: n/a
+#  access/resume_access.module: n/a
+#  access/job_access.info: n/a
+#  access/resume_access.info: n/a
+#
+# Vlad Savitsky <vlad_savitsky@mail.ru>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: jobsearch-5.x-2.x-dev\n"
+"POT-Creation-Date: 2008-02-26 17:28+0200\n"
+"PO-Revision-Date: 2008-02-26 21:11+0200\n"
+"Last-Translator: Vlad Savitsky <vlad_savitsky@mail.ru>\n"
+"Language-Team: russian <ru@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#: job.module:18
+msgid "Allows users to apply for jobs posted."
+msgstr "Позволяет пользователям отвечать на опубликованные предложения работы."
+
+#: job.module:34;286 job.info:0
+msgid "Job"
+msgstr "Предложения работы"
+
+#: job.module:35
+msgid "Job settings."
+msgstr "Настройки предложений работы."
+
+#: job.module:58;128
+msgid "Job applications"
+msgstr "Предложения работы"
+
+#: job.module:70
+msgid "Enable job application for these content types"
+msgstr "Использовать эти типы материалов для предложений работы"
+
+#: job.module:95
+msgid "Please login or register to apply"
+msgstr "Пожалуйста, представьтесь системе, чтобы отвечать на предложения работы"
+
+#: job.module:104
+msgid "You applied for this job"
+msgstr "Вы ответили на это предложение работы"
+
+#: job.module:111
+msgid "Apply for this job"
+msgstr "Ответить на предложение работы"
+
+#: job.module:141
+msgid "Please !login or !register to apply"
+msgstr ""
+"Пожалйста, !login или !register, чтобы "
+"отвечать на предложение работы"
+
+#: job.module:143
+msgid "login"
+msgstr "войти"
+
+#: job.module:144
+msgid "register"
+msgstr "зарегистрироваться"
+
+#: job.module:150
+msgid "You are not authorized to apply for jobs."
+msgstr "Вы не представились и не можете отвечать на предложения работы."
+
+#: job.module:155
+msgid "No job specified."
+msgstr "Не указано предложение работы."
+
+#: job.module:169
+msgid "Please !create to apply"
+msgstr "Пожалуйста, !create, чтобы ответить"
+
+#: job.module:169
+msgid "create a resume"
+msgstr "создайте резюме"
+
+#: job.module:178
+msgid "Position: "
+msgstr "Должность: "
+
+#: job.module:179
+msgid "Select from your resumes below, or !create"
+msgstr "Выберите ваше резюме из приведённых ниже или !create"
+
+#: job.module:180
+msgid "create a new resume"
+msgstr "создайте новое резюме"
+
+#: job.module:184
+msgid "view"
+msgstr "просмотреть"
+
+#: job.module:185
+msgid "apply"
+msgstr "ответить"
+
+#: job.module:186
+msgid "edit"
+msgstr "изменить"
+
+#: job.module:194
+msgid "Resume Title"
+msgstr "Заголовок резюме"
+
+#: job.module:194
+msgid "Last Changed"
+msgstr "Последнее изменение"
+
+#: job.module:194;286
+msgid "Operations"
+msgstr "Действия"
+
+#: job.module:224
+msgid "You already applied for this position."
+msgstr "Вы уже ответили на эту должность."
+
+#: job.module:233
+msgid "Thank you. Your application has been submitted."
+msgstr "Спасибо. Ваше ответ на предложение работы был добавлен."
+
+#: job.module:253
+msgid "Job application #@nid has been cleared."
+msgstr "Ответ на предложение работы #@nid был очищен."
+
+#: job.module:286
+msgid "Applicant"
+msgstr "Соискатель"
+
+#: job.module:286 resume.module:21 resume.info:0
+msgid "Resume"
+msgstr "Резюме"
+
+#: job.module:286
+msgid "Date"
+msgstr "Дата"
+
+#: job.module:296
+msgid "Clear"
+msgstr "Очистить"
+
+#: job.module:311
+msgid "No job applications."
+msgstr "Предложение работы не имеет ответов."
+
+#: job.module:348
+msgid "The following user has applied for the above job.\n"
+msgstr "Следующие пользователи ответили на это предложение работы.\n"
+
+#: job.module:349
+msgid "\nJob: @title"
+msgstr "\nПредложение работы: @title"
+
+#: job.module:350
+msgid "\nJob URL: @url"
+msgstr "\nURL предложения работы: @url"
+
+#: job.module:351
+msgid "\nApplicant name: @name"
+msgstr "\nИмя соискателя: @name"
+
+#: job.module:352
+msgid "\nApplicant email: @email"
+msgstr "\nАдрес электронной почты соискателя: @email"
+
+#: job.module:353
+msgid "\nApplicant URL: @url"
+msgstr "\nURL соискателя: @url"
+
+#: job.module:354
+msgid "\nResume: @title"
+msgstr ""
+"\n"
+"Резюме: @title"
+
+#: job.module:355
+msgid "\nResume URL: @url"
+msgstr ""
+"\n"
+"URL резюме: @url"
+
+#: job.module:356
+msgid "\n\nManage job applications at @manage"
+msgstr "\n\nУправлять предложениями работы на @manage"
+
+#: job.module:401
+msgid "Job: Date/Time applied for"
+msgstr "Предложение работы: Дата/Время ответа"
+
+#: job.module:405
+msgid "Displays the date/time applied for this Job."
+msgstr "Показывает дату/время ответа на это предложение работы."
+
+#: job.module:408
+msgid "Resume: Applicant Name"
+msgstr "Резюме: Имя соискателя"
+
+#: job.module:411
+msgid "Displays the name of the applicant."
+msgstr "Показывает имя соискателя."
+
+#: job.module:414
+msgid "Resume: Node ID"
+msgstr "Резюме: ID документа"
+
+#: job.module:418
+msgid "Displays the Node ID of the resume node."
+msgstr "Показывает ID документа-резюме."
+
+#: job.module:424
+msgid "Job: Date/time applied for"
+msgstr "Предложение работы: Дата/время ответа"
+
+#: job.module:425
+msgid "Sort by the date/time applied for this job"
+msgstr "Сортировать по дате/времени ответа на это предложение работы"
+
+#: job.module:431
+msgid "Job: Application status"
+msgstr "Предложение работы: Наличие ответов"
+
+#: job.module:436
+msgid "Job has no applications"
+msgstr "Предложение работы не имеет ответов"
+
+#: job.module:437
+msgid "Job has one or more applications"
+msgstr "Предложение работы имеет один или более ответов"
+
+#: job.module:439
+msgid "Filter by whether a job has applications or not."
+msgstr "Фильтровать предложения работы, которые имеют или не имеют ответы."
+
+#: job.module:443
+msgid "Job: Applicant User ID"
+msgstr "Предложение работы: ID cоискателя"
+
+#: job.module:448
+msgid "Currently Logged In User"
+msgstr "Пользователь, представившийся системе"
+
+#: job.module:449
+msgid "All Users"
+msgstr "Все пользователи"
+
+#: job.module:451
+msgid "This allows you to filter based on favorites nodes."
+msgstr "Это позволяет вам фильтровать на основании избранных документов."
+
+#: job.module:492
+msgid "Job: Applied for by User ID"
+msgstr "Предложение работы: ответы на предложения работы пользователя с ID"
+
+#: job.module:339;0
+msgid "job"
+msgstr "предложение работы"
+
+#: resume.module:12
+msgid "Allows users to post resumes and use them to apply for jobs."
+msgstr "Позволяет пользователям публиковать резюме и использовать их для ответа на предложение работы."
+
+#: resume.module:22
+msgid "Resume settings."
+msgstr "Настройки резюме."
+
+#: resume.module:35
+msgid "Enable resume for these content types"
+msgstr "Использовать эти типы материалов для резюме"
+
+#: resume.module:0
+msgid "resume"
+msgstr "резюме"
+
+#: job.info:0
+msgid "Allows recruiters to post jobs."
+msgstr "Позволяет работодателям публиковать предложения работы."
+
+#: resume.info:0
+msgid "Allows job seekers to post resumes and use them to apply for jobs posted."
+msgstr "Позволяет соискателям работы публиковать резюме и использовать их для ответа на опубликованные предложения работы."
+
+#: access/job_access.module:0
+msgid "job_access"
+msgstr "job_access"
+
+#: access/resume_access.module:0
+msgid "resume_access"
+msgstr "resume_access"
+
+#: access/job_access.info:0
+msgid "Job access"
+msgstr "Доступ к предложениям работы"
+
+#: access/job_access.info:0
+msgid "Allows setting of permissions on jobs."
+msgstr "Предоставляет настройку прав доступа к предложениям работы."
+
+#: access/resume_access.info:0
+msgid "Resume access"
+msgstr "Доступ к резюме"
+
+#: access/resume_access.info:0
+msgid "Allows setting of permissions on resumes by role."
+msgstr "Предоставляет настройку прав доступа к резюме для ролей."
+

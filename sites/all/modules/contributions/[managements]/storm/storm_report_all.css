@@ -1,0 +1,114 @@
+body {
+font-size: 9pt;
+}
+
+table.storm_report_header {
+width: 100%;
+}
+
+td.storm_report_myorganization {
+width: 50%;
+vertical-align: top;
+}
+
+td.storm_report_header {
+width: 50%;
+text-align: right;
+}
+
+div.storm_report_title {
+text-align: center;
+margin-top: 40px;
+margin-bottom: 40px;
+font-weight: bold;
+font-size: 14pt;
+border-bottom: 1px solid #cccccc;
+}
+
+div.storm_report_footer {
+text-align: center;
+margin-top: 20pt;
+margin-bottom: 20pt;
+font-weight: bold;
+}
+
+#storm_report_content table {
+width: 100%;
+border-collapse: collapse;
+border: 1px solid #cccccc;
+}
+
+#storm_report_content table th {
+background-color: #e9e9e9;
+border: 1px solid #cccccc;
+}
+
+#storm_report_content table tr.odd {
+}
+
+#storm_report_content table tr.even {
+background-color: #f6f6f6;
+}
+
+#storm_report_content table tr td {
+border: 1px solid #cccccc;
+}
+
+#storminvoice_billto {
+  width: 35%;
+  float: left;
+  margin-bottom: 80px;
+}
+
+td.storminvoice_billto_title {
+  font-weight: bold;
+  background-color: #E9E9E9;
+}
+
+#storminvoice_details {
+  width: 55%;
+  float: right;
+  margin-bottom: 80px;
+}
+
+td.storminvoice_details_title {
+  font-weight: bold;
+  background-color: #E9E9E9;
+}
+
+#storminvoice_payment_modes {
+  margin-top: 80px;
+  clear: both;
+}
+
+#storminvoice_payment_modes li {
+  padding-bottom: 10px;
+}
+
+td.storminvoice_payment_title {
+  font-weight: bold;
+  background-color: #E9E9E9;
+}
+
+#storminvoice_items {
+  margin-top: 60px;
+  clear: both;
+}
+
+#storminvoice_vat_exempt {
+  margin-top: 20px;
+}
+
+#paid {
+text-align: center;
+}
+
+div.site_name {
+font-size: 18pt;
+font-weight: bold;
+}
+
+div.site_slogan {
+font-size: 12pt;
+font-weight: bold;
+}

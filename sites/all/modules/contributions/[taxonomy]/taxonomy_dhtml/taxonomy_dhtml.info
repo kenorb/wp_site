@@ -1,0 +1,15 @@
+; $Id: taxonomy_dhtml.info,v 1.2 2008/10/01 08:25:08 darthclue Exp $
+name = Taxonomy DHTML
+description = Provides a DHTML representation of the site taxonomy.
+version = VERSION
+core = 6.x
+package = Other
+dependencies[] = taxonomy
+dependencies[] = dhtml_menu
+
+; Information added by drupal.org packaging script on 2008-12-12
+version = "6.x-1.0-rc3"
+core = "6.x"
+project = "taxonomy_dhtml"
+datestamp = "1229119253"
+

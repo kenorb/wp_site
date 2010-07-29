@@ -1,0 +1,12 @@
+/* $Id: corner.css,v 1.1 2008/12/08 20:58:37 kirie Exp $ */
+.corner {
+  position: absolute;
+  z-index: 10;  
+  top: 0;
+}
+.corner-left {
+  left: 0;
+}
+.corner-right {
+  right: 0;
+}

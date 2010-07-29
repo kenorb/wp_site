@@ -1,0 +1,35 @@
+<?php
+/**
+ * hook_install
+ */
+function lowername_install(){
+  drupal_install_schema('lowername');
+  db_query("INSERT INTO {term_lowername} (tid, lowername) SELECT tid, LOWER(name) FROM {term_data}");
+}
+
+/**
+ * hook_uninstall
+ */
+function lowername_uninstall(){
+  drupal_uninstall_schema('lowername');
+}
+
+/**
+ * hook_schema
+ */
+function lowername_schema(){
+  $tables['term_lowername'] = array(
+    'fields' => array(
+      'tid' => array(
+        'type' => 'int',
+        'not null' => true),
+      'lowername' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '')
+    ),
+    'primary key' => array('tid'),
+    'indexes' => array('lowername_index' => array('lowername')));
+  return $tables;
+}

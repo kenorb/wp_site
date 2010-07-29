@@ -1,0 +1,52 @@
+<?php
+//$Id: userpoints_role_exempt.module,v 1.3.2.2 2009/01/11 19:09:44 kbahey Exp $
+
+// Copyright 2005-2008 Khalid Baheyeldin http://2bits.com
+
+define('USERPOINTS_ROLE_EXEMPT', 'userpoints_role_exempt_');
+
+function userpoints_role_exempt_help($section) {
+  switch ($section) {
+    case 'admin/settings/userpoints_role_exempt':
+    case 'admin/modules#description':
+      return t('Allows certain roles to be exempt from points.');
+  }
+}
+
+function userpoints_role_exempt_userpoints($op, $params = array()) {
+  switch($op) {
+    case 'setting':
+      $group = 'role_exempt';
+      $form[$group] = array(
+        '#type'        => 'fieldset',
+        '#title'       => t('Exempt roles'),
+        '#description' =>  t('Select one or more roles to be exempted from earning points. This is useful for administrators, moderators and the like.'),
+        '#collapsible' => TRUE,
+        '#collapsed'   => TRUE,
+      );
+  
+      foreach (user_roles(TRUE) as $rid => $name) {
+        $role = USERPOINTS_ROLE_EXEMPT . $rid;
+          $form[$group][USERPOINTS_ROLE_EXEMPT . $rid] = array(
+            '#type'          => 'checkbox',
+            '#title'         => $name,
+            '#return_value'  => 1,
+            '#default_value' => variable_get($role, 0),
+        );
+      }
+      return $form;
+
+    case 'points before':
+      $uid = $params['uid'];
+      // Check the roles the user belong to, and if they are exempted from userpoints
+      $user = user_load(array('uid'=>$uid));
+      $rc = TRUE;
+      foreach($user->roles as $rid => $name) {
+        if (variable_get(USERPOINTS_ROLE_EXEMPT . $rid, 0)) {
+          $rc = FALSE;
+          break;
+        }
+      }
+      return $rc;
+  }
+}

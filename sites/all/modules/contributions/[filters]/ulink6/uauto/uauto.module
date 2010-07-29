@@ -1,0 +1,397 @@
+<?php
+//$Id;
+
+/**
+ * Module - an addon to uLink
+ *
+ * @file
+ * Provides the server side handling and settings for uauto - auto completition of links
+ */
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function uauto_form_alter(&$form, $form_state, $form_id) {
+  if (!(isset($form['#node']) && $form['#node']->type .'_node_form' == $form_id))
+      return;	
+      
+	if (user_access('access uauto')) {      
+    $form['uauto-path'] = array(
+      '#type' => 'hidden',
+      '#default_value' => url("uauto", array('absolute' => TRUE)),
+    );           
+    if (variable_get('uauto_i_enable', 1)) {
+      $form['uauto-isearch'] = array(
+        '#type' => 'hidden',
+        '#default_value' => '1',
+      );
+    }
+    drupal_add_js(drupal_get_path('module', 'uauto') .'/jquery.uauto.js');
+    drupal_add_css(drupal_get_path('module', 'uauto') .'/uauto.css');      
+  }
+}
+/**
+ * Implementation of hook_perm().
+ */
+function uauto_perm() {
+  return array('access uauto');
+}
+/**
+ * Implementation of hook_menu().
+ */
+function uauto_menu() {
+  $items['uauto/%/%'] = array(
+    'title'           => t('uauto'),
+    'page callback'   => 'uauto_usearch',    
+    'page arguments'  => array(1,2),
+    'type'            => MENU_CALLBACK,
+    'access arguments'=> array('access uauto'),
+  );  
+  return $items;
+}
+/**
+ * Implementation of hook_ulink_general_settings().
+ */
+function uauto_ulink_general_settings() {
+  $form['uauto_root_allow']= array(
+    '#type' => 'checkbox',
+    '#title' => t('Allow root user to be referred'),
+    '#default_value' => variable_get('uauto_root_allow', 0),
+    '#description' => t('Avoid referring to root-user accounts in the links for security reasons'),
+  ); 
+  $form['k_search']= array(
+    '#type' => 'fieldset',
+    '#title' => t('ksearch'),
+    '#collapsible' => FALSE,
+    '#description' => t('keytext search settings <br /> 
+                         Ksearch is automatically enabled with uAuto module.'),
+  );  
+  $form['k_search']['uauto_k_no_results']= array(
+    '#type' => 'textfield',
+    '#title' => t('Limit search results to'),
+    '#size' => 3,
+    '#maxlength' => 4, 
+    '#default_value' => variable_get('uauto_k_no_results', 5),
+    '#description' => t('Number of maximum entries to be searched for and displayed.'),
+  ); 
+  $form['i_search']= array(
+    '#type' => 'fieldset',
+    '#title' => t('Isearch'),
+    '#collapsible' => FALSE,
+    '#description' => t('Isearch settings'),
+  );  
+  $form['i_search']['uauto_i_enable']= array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable Isearch'),
+    '#default_value' => variable_get('uauto_i_enable', 1),
+    '#description' => t('Turn off Isearch globally.'),
+  ); 
+  $form['i_search']['uauto_i_extensive_search']= array(
+    '#type' => 'radios',
+    '#options' => array(0 => t('Only node titles'), 
+                        1 => t('Extensive node search (it\'ll take considerable amount of time in busy congested sites.)')),
+    '#title' => t('Extensive node search'),
+    '#default_value' => variable_get('uauto_i_extensive_search', 1),
+  );
+  $form['i_search']['uauto_i_no_results']= array(
+    '#type' => 'textfield',
+    '#size' => 3,
+    '#maxlength' => 4, 
+    '#title' => t('Limit search results to'),
+    '#default_value' => variable_get('uauto_i_no_results', 5),
+    '#description' => t('Number of maximum entries to be searched for and displayed.'),
+  ); 
+  $form['i_search']['ulink_i_display']= array(
+    '#type' => 'radios',
+    '#options' => array(
+      0=> t('Title'),
+      1=> t('Snippet'),
+      2=> t('Title and Snippet'),
+      3=> t('Title and Type'),
+      4=> t('Title and User'),
+      5=> t('Title and Score'),
+      6=> t('Title, Snippet and Score')
+    ),
+    '#default_value' => variable_get('ulink_i_display', 2),
+    '#title' => t('Show this in the results of Isearch'),
+  ); 
+  return $form;
+}
+/**
+ * Handling ajax calls
+ *
+ * @param $type
+ *   type of search to be performed.
+ * @param $data
+ *   data relevant to the search.
+ *
+ * @return
+ *   search results in an array converted to Jason format. The array can possibly be of multilevel.
+ *
+ * This function provides the interface for the client to contact the searver through ajax calls
+ */
+function uauto_usearch($type, $data=null) {
+  $data = check_plain(str_replace("@$!", "/", $data));	
+	$find = array();		
+	switch ($type) {	
+	  case 1://ksearch
+			foreach (module_implements('uauto_ksearch') as $module) {
+				$function = $module .'_uauto_ksearch';
+				$function($data, $find);
+			}     
+			break;
+	  case 4: //isearch - remember 4 not 2 as 2 is internally used in uauto.jquery
+			foreach (module_implements('uauto_isearch') as $module) {
+				$function = $module .'_uauto_isearch';
+				$function($data, $find);
+			}
+			break;
+    case 3: //request macro
+      $macroarray = array();
+      $macro = variable_get('ulink_i_macro', "");
+      if($macro)
+        eval('$macroarray = array('.$macro.");");
+      if(in_array($data, $macroarray))
+        $find[$data] = $macroarray[$data];
+      else
+        $find = $macroarray;
+      break;
+		case 5:
+		  //remembering results      
+      $temp = explode('#$#', $data);
+			$text = array_shift($temp);	$key = array_shift($temp);	$description = array_shift($temp);
+			if (db_result(db_query("SELECT COUNT(*) from {uauto} WHERE text = '%s'", $text))) {
+				db_query("UPDATE {uauto} SET dest = '%s', description= '%s' WHERE  text = '%s'",  $key, $description, $text);
+			}
+			else {
+				db_query("INSERT INTO {uauto} (text, dest, description) VALUES ('%s', '%s', '%s')", $text, $key, $description);
+			}
+      exit();
+		default:
+			break;				
+	}
+  // removed as it affects the flow of autocomplete styled UI
+  //	if (!count($find))
+	//  $find["node"] = t('No results found');		
+	print drupal_to_js($find);
+	exit();
+}
+
+/**
+ *  Peforming searches on keytext
+ *
+ * @param $keytext
+ *   key to the search
+ * @param $limit
+ *   limit search to.
+ *
+ * @param &find
+ *   search results in an array 
+ *  the implementing module can upadate, delete or insert new results
+ *
+ * This function acts a helper function for usearch for single keywords
+ */
+function uauto_uauto_ksearch($keytext = null, &$find) {
+  $limit = variable_get('uauto_k_no_results', 5);
+
+	if (strlen($keytext) > 2) {	
+	  $limit = $limit - count($find);
+
+		//uauto cache table
+    $result = db_query_range(db_rewrite_sql("SELECT dest, description FROM {uauto} WHERE text = '%s'"), $keytext, 0, $limit); 
+	  while ($data = db_fetch_object($result)) {
+		  $find[$data->dest] = $data->description;
+		}    
+		$limit = $limit - count($find);
+		//url_alias table
+	  _uauto_urlalias($keytext, $limit, $find);
+	  $limit = $limit - count($find);
+		//data specific table
+		$id = array_pop(explode('/', $keytext));
+	  if (is_numeric($id) && $limit > 0) {
+      $type = array_shift(explode('/', $keytext));
+		  _uauto_type_numeric($type, $limit, $find, $id); //Type specific:  if type is found, ie a numeric ID is provided to identify the content within the type
+	  }
+	  else if ($limit > 0) {
+		  _uauto_type($keytext, $limit, $find); //Type unspecific: 
+		}
+	}	
+}
+
+/**
+ * Peforming searches on user selected word / phrase / number of words
+ *
+ * @param $keytext
+ *   key to the search
+  * @param $limit
+ *   limit search to.
+*
+ * @param &find
+ *   search results in an array 
+ *  the implementing module can upadate, delete or insert new results
+ *
+ * This function acts a helper function for usearch for set of keywords
+ */
+function uauto_uauto_isearch($keytext = null, &$find) { 
+  $limit = variable_get('uauto_i_no_results', 5);
+	if (strlen($keytext) > 2) {	
+		//perform key search first thus produce results faster
+	  uauto_uauto_ksearch($keytext, $find);	
+	  $limit = $limit- count($find);			
+		// extensive node search
+	  if (variable_get('uauto_i_extensive_search', 1) && module_exists('search')) {
+	    _uauto_extensive_node_search($keytext, $limit, $find); 
+	  }
+  }
+}
+/**
+ * provides path alias search from  url_alias table
+ */
+function _uauto_urlalias($keytext, $limit, &$find) {
+
+  $result = db_query_range(db_rewrite_sql("SELECT dst,src FROM {url_alias} WHERE dst like '%%%s%%'"), $keytext, 0, $limit);
+	
+  while ($item = db_fetch_array($result)) {   
+    $id = array_pop(explode('/', $item['src']));	    
+    $type = array_shift(explode('/', $item['src']));
+    
+		if($id < 2 && !strcasecmp($type,'user') && !variable_get('uauto_root_allow', 0)) {
+			continue;
+		}
+    // get more information about the targer to be presented to the user
+    if (is_numeric($id)) {
+      switch ($type) {
+        case 'node':
+          $name = db_result(db_query(db_rewrite_sql("SELECT title FROM {node} WHERE nid = %d"), $id));
+          break;
+        case 'user':
+          $name = db_result(db_query(db_rewrite_sql("SELECT name FROM {users} WHERE uid = %d"), $id));
+          break;
+        case 'files':
+          $name = db_result(db_query(db_rewrite_sql("SELECT filename FROM {files} WHERE fid = %d"), $id));
+          break;
+        default:
+          $name = $item['dst'];
+      }
+    }
+    else {
+      $name = $item['dst'];
+    }
+		
+    if(!$name){
+      $name = "unknown";
+    }		
+    $find[$item['dst']] = $name; 
+  }
+}
+/**
+ * provides extensive search on the node contents by utilising search module
+ */
+function _uauto_extensive_node_search($keytext, $limit, &$find) {
+
+	$result = node_search('search', $keytext);
+	$id = variable_get('ulink_i_display', 2);   
+	foreach ($result as $item) {  
+	  $temp = '';
+		switch ($id) {
+			case 0:
+				$temp = $item['title'];
+				break;
+			case 1:
+				$temp = $item['snippet'];
+				break;
+			case 2:
+				$temp = $item['title']."<br />".$item['snippet'];
+				break;
+			case 3:
+				$temp = $item['title']." {".$item['type']."}";
+				break;
+			case 4:
+				$temp = $item['title']." (".$item['user'].")";
+				break;
+			case 5:
+				$temp = $item['title']." :".$item['score'];
+				break;
+			case 6:
+				$temp = "<strong>".$item['title']."</strong> : ".$item['score']."<br />".$item['snippet'];
+				break;
+		}
+		$find['node/'.$item['node']->nid] = $temp;
+		$limit--;
+		if ($limit < 0) {
+			break;
+		}      
+	}   
+	// to handle bug in creating temporary tables per page once and retaining them between searches			
+	db_query_temporary("DROP table IF EXISTS temp_search_sids");  
+	db_query_temporary("DROP table IF EXISTS temp_search_results"); 	
+}		
+	
+/**
+ * provides a type unspecific search. 
+ */
+function _uauto_type($keytext, $limit, &$find) {
+  //user search
+  $result = db_query_range(db_rewrite_sql("SELECT * FROM {users} WHERE LOWER(name) LIKE LOWER('%%%s%%')"), $keytext, 0, $limit);
+  while ($account = db_fetch_object($result)) {
+    $find['user/'. $account->uid] = $account->name;
+    $limit--;
+  }
+	//node search
+  $result = db_query_range(db_rewrite_sql("SELECT * FROM {node} WHERE LOWER(title) LIKE LOWER('%%%s%%')"), $keytext, 0, $limit);
+  while ($item = db_fetch_object($result)) {
+    $find['node/'. $item->nid] = $item->title;
+    $limit--;
+  }	
+	//comment search
+  $result = db_query_range(db_rewrite_sql("SELECT * FROM {comments} WHERE LOWER(subject) LIKE LOWER('%%%s%%')"), $keytext, 0, $limit);
+  while ($item = db_fetch_object($result)) {
+    $find['node/'. $item->nid.'#comment-'.$item->cid] = $item->subject;
+    $limit--;
+  }		
+	//file search
+  $result = db_query_range(db_rewrite_sql("SELECT * FROM {files} WHERE LOWER(filename) LIKE LOWER('%%%s%%')"), $keytext, 0, $limit);
+  while ($item = db_fetch_object($result)) {
+    $find[$item->filepath] = $item->filename;
+    $limit--;
+  }	
+}
+
+/**
+ * provides a data-type specific search based on the corresponding IDs. forexample, it the data is found to be referring to a file, specificallly
+*  file table is searched with fid otherwise by default, node search will be performed 
+ */
+ function _uauto_type_numeric($type, $limit, &$find, $id=1) {
+
+  switch($type) {
+    case 'user' :
+      $type = 'users';
+      $ret_name = 'name';
+      $ret_id = 'uid';
+      break;
+    case 'files' :
+      $ret_name = 'filename';
+      $ret_id = 'fid';
+      break; 
+    case 'node' :
+    default:
+      $type = 'node';
+      $ret_name = 'title';
+      $ret_id = 'nid';			
+      break;
+  } 	
+  $result = db_query_range(db_rewrite_sql("SELECT * FROM {$type} WHERE LOWER($ret_id) LIKE LOWER('%%%s%%')"), $id,0, $limit);
+	
+  while ($item = db_fetch_object($result)) {      
+    if (!strcasecmp($type,'files')) {
+      //for files, filepath is used 
+		  $find[$item->$filepath] = $item->$ret_name; 
+		}		 
+    else {
+  		if (!strcasecmp($type,'user') && (!$item->$ret_id || (!variable_get('uauto_root_allow', 0) && $item->$ret_id== 1))) { 
+			  continue;   
+			}
+		  $find[$type."/".$item->$ret_id] = $item->$ret_name ; 
+    }
+  }
+}

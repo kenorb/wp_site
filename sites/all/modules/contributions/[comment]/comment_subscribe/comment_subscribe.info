@@ -1,0 +1,13 @@
+; $Id: comment_subscribe.info,v 1.2.2.3 2008/12/22 10:28:43 zyxware Exp $
+name = Comment Subscribe
+description = "Comment follow up e-mail notification for anonymous as well as registered users."
+package = Other
+dependencies[] = comment
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-12-24
+version = "6.x-1.2"
+core = "6.x"
+project = "comment_subscribe"
+datestamp = "1230120308"
+

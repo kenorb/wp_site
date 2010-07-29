@@ -1,0 +1,14 @@
+; $Id: composite_cck.info,v 1.1 2008/10/14 01:03:56 bengtan Exp $
+
+name = "Composite Layout Fields"
+description = "Provides additional integration between Composite Layout and Content Construction Kit."
+dependencies[] = composite
+dependencies[] = content
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-01-15
+version = "6.x-1.0-beta6"
+core = "6.x"
+project = "composite"
+datestamp = "1231987509"
+

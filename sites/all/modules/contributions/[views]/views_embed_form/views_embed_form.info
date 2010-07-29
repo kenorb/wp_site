@@ -1,0 +1,10 @@
+name = Views Embed Form
+description = Provides an API for modules to embed any form as a field in Views display.
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-01-07
+version = "6.x-1.2"
+core = "6.x"
+project = "views_embed_form"
+datestamp = "1231341046"
+

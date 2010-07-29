@@ -1,0 +1,68 @@
+January 25th, 2009 (-beta2)
+ - jobtrack.module
+    o bug #362132: don't pass by reference
+
+January 23rd, 2009
+ - jobtrack.module
+    o users with 'administer jobtrack' permission can view all client's tickets
+    o new feature to allow suppression of ticket notifications (with permission)
+    o fix initial email notification to properly credit ticket creator
+    o if managing multiple clients, jobtrack remembers last visited client and
+      auto-populates where possible
+    o make it possible to theme ticket overview based on state and priority
+    o truncate long fields in ticket overview
+    o list "Reported by" and "Assigned to" in ticket overview
+ - jobtrack.user.inc
+    o make it possible to theme ticket overview based on state and priority
+    o truncate long fields in ticket overview
+
+January 19th, 2009
+ - jobtrack.module
+    o only invoke nodeapi when processing ticket nodes
+
+January 12th, 2009 (-beta1)
+ - jobtrack.admin.inc
+    o properly show client status
+ - jobtrack.module
+    o cleanup paths for accessing jobtrack tickets
+    o properly auto-subscribe users to notifications when multiple usernames 
+      are defined
+    o allow admins to subscribe/unsubscribe other users to/from notifications 
+    o cleanup handling of emailed updates
+
+January 7th, 2009
+ - jobtrack.install
+    o bug #355006: remove reference to nonexistent admin field
+
+January 6th, 2009
+ - jobtrack.install
+    o fix commas so schema can be created
+ - jobtrack.module
+    o provide ability to assign tickets to self
+    o provide ability for admins to assign tickets to others that can see ticket
+    o provide link to find tickets assigned to self
+    o be sure the person assigned the ticket always gets email alerts
+    o rename "administer clients" to "administer jobtrack"
+ - jobtrack.user.inc
+    o provide view of all tickets assigned to self
+
+January 5th, 2009
+ - jobtrack.admin.inc
+    o add support for setting a custom client path
+    o add support for automatically subscribing users to client tickets
+    o add support for configuring domains that can generate/update tickets
+ - jobtrack.install
+    o new jobtrack_client fields: path, autosubscribe, domains
+    o new jobtrack_assigned field: active
+ - jobtrack.module
+    o cleanup menus
+    o provide ability to unsubscribe from ticket notification
+    o provide ability to create tickets via email (optionally limited to 
+      specific domains)
+    o provide ability to update tickets via email (optionally limited to 
+      specific domains)
+ - jobtrack.user.module
+    o list all issues a user has been involved in
+
+January 4th, 2009
+ - Initial public release

@@ -1,0 +1,104 @@
+<?php
+// $Id: rotor.install,v 1.1.2.7.2.1 2008/12/21 14:40:53 mrfelton Exp $
+
+/**
+ * @file
+ * Provides install and uninstall functions for rotor.
+ *
+ * @author Tom Kirkpatrick (mrfelton), www.kirkdesigns.co.uk
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function rotor_install() {
+  module_enable(array('jquery_plugin'));
+  drupal_install_schema('rotor');
+  db_query("DELETE FROM {cache_views}");
+  drupal_set_message(t('Rotor Banner installed'));
+}
+
+/**
+ * Implementation of hook_enable().
+ */
+function rotor_enable() {
+  module_enable(array('jquery_plugin'));
+  db_query("DELETE FROM {cache_views}");
+}
+
+/**
+ * Implementation of hook_disable().
+ * Empty the rotor caches.
+ */
+function rotor_disable() {
+  db_query("DELETE FROM {cache_views}");
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function rotor_uninstall() {
+  $result = db_query("SELECT nid FROM {node} WHERE type = 'rotor_item'");
+  if ($result) {
+    while ($node = db_fetch_array($result)) {
+      node_delete($node);
+    }
+  }
+  drupal_uninstall_schema('rotor');
+  db_query("DELETE FROM {variable} WHERE name LIKE 'rotor_%'");
+  
+  $ret = array();
+  $displays = array(
+    'rotor', 
+    );
+  $result = db_query("SELECT DISTINCT vid FROM {views_display} WHERE display_plugin IN ('". implode("','", $displays) ."')");
+  while($row = db_fetch_array($result)) {
+    db_query("DELETE FROM {views_view} WHERE vid = %d", $row['vid']);
+    db_query("DELETE FROM {views_display} WHERE vid = %d", $row['vid']);
+  }
+  db_query("DELETE FROM {cache_views}");
+  return $ret;
+  
+  drupal_set_message(t('Rotor Banner unistalled'));
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function rotor_schema() {
+  $schema['rotor_item'] = array(
+    'fields' => array(
+      'nid'    => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'description' => 'The node id associated.'),
+      'file_path' => array('type' => 'varchar', 'not null' => FALSE, 'length' => 255, 'description' => 'The path of the image that will be displayed.'),
+      'alt_text' => array('type' => 'varchar', 'not null' => FALSE, 'length' => 255, 'description' => 'The alt text for the rotor item image.'),
+      'url' => array('type' => 'varchar', 'not null' => FALSE, 'length' => 255, 'description' => 'The url of the image that will be actived.'),
+      'link_target' => array('type' => 'varchar', 'not null' => FALSE, 'length' => 255, 'description' => 'The target for the link.'),
+    ),
+    'primary key' => array('nid'),
+    'description' => 'The file path for the rotor item image.',
+  );
+  return $schema;
+}
+
+/**
+ * Implementation of hook_update_N().
+ */
+function rotor_update_6000() {
+  $ret = array();
+  db_add_field($ret, 'rotor_item', 'url', array(
+    'type' => 'varchar', 'not null' => FALSE, 'length' => 255, 'description' => 'The url of the image that will be actived.'
+  ));
+  db_add_field($ret, 'rotor_item', 'alt_text', array(
+    'type' => 'varchar', 'not null' => FALSE, 'length' => 255, 'description' => 'The alt text for the rotor item image.'
+  ));
+  return $ret;
+}
+
+function rotor_update_6001() {
+  $ret = array();
+  db_add_field($ret, 'rotor_item', 'link_target', array(
+    'type' => 'varchar', 'not null' => FALSE, 'length' => 255, 'description' => 'The target for the link.'
+  ));
+  return $ret;
+}
+    

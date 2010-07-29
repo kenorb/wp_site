@@ -1,0 +1,55 @@
+<?php
+// $Id: shadowbox.install,v 1.1.2.5.2.1 2008/11/05 00:07:12 psynaptic Exp $
+
+/**
+ * @file
+ * Shadowbox module install file.
+ */
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function shadowbox_uninstall() {
+  db_query("DELETE FROM {variable} WHERE name LIKE 'shadowbox_%'");
+}
+
+/**
+ * Implementation of hook_requirements().
+ */
+function shadowbox_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+  switch ($phase) {
+    case 'install':
+    case 'runtime':
+    $path = drupal_get_path('module', 'shadowbox');
+    if (!file_exists($path .'/shadowbox/')) {
+      $requirements['shadowbox'] = array(
+        'title' => $t('Shadowbox'),
+        'description' => $t('In order for the Shadowbox module to work correctly, the Shadowbox 2.0 Full distribution must exists at <code>%path</code>.', array('%path' => $path .'/shadowbox')),
+        'severity' => $phase == 'install' ? REQUIREMENT_WARNING : REQUIREMENT_ERROR,
+        'value' => $t('Install 3rd party Shadowbox software'),
+      );
+    }
+    elseif (!file_exists($path .'/shadowbox/build/shadowbox.js') || !file_exists($path .'/shadowbox/build/adapter/shadowbox-jquery.js')) {
+      $requirements['shadowbox'] = array(
+        'title' => $t('Shadowbox'),
+        'description' => $t('The <code>%path</code> path exists but it appears that the directory structure underneath is incorrect. Please check that <code>%shadowbox</code> and <code>%jquery</code> exist.',
+          array('%path' => $path .'/shadowbox',
+            '%shadowbox' => $path .'/shadowbox/build/shadowbox.js',
+            '%jquery' => $path .'/shadowbox/build/adapter/shadowbox-jquery.js',
+          )),
+        'severity' => $phase == 'install' ? REQUIREMENT_WARNING : REQUIREMENT_ERROR,
+        'value' => $t('3rd party Shadowbox software not properly installed'),
+      );
+    }
+    elseif ($phase == 'runtime') {
+      $requirements['shadowbox'] = array(
+        'title' => $t('Shadowbox'),
+        'severity' => REQUIREMENT_OK,
+        'value' => $t('Installed correctly'),
+      );
+    }
+  }
+  return $requirements;
+}

@@ -1,0 +1,105 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Unit tests for the admin_links module.
+ */
+
+class AdminLinksTestCase extends DrupalWebTestCase {
+  function getInfo() {
+    return array(
+      'name' => t('Admin links'),
+      'description' => t('Test admin links module functionality.'),
+      'group' => t('Admin links'),
+    );
+  }
+
+  function setUp() {
+    parent::setUp('admin_links');
+  }
+
+  /**
+   * Test admin links module functionality.
+   */
+  function testAdminLinks() {
+    // Create test users.
+    $this->user_admin = $this->drupalCreateUser(array('access content', 'administer nodes', 'administer site configuration'));
+    $this->user_edit = $this->drupalCreateUser(array('access content', 'edit own page content'));
+    $this->user_delete = $this->drupalCreateUser(array('access content', 'delete own page content'));
+
+    // Set variables.
+    variable_set('admin_links_edit', 1);
+    variable_set('admin_links_delete', 1);
+    variable_set('admin_links_universaledit', 1);
+
+    // Create test nodes.
+    $node_admin = $this->drupalCreateNode(array('promote' => 1, 'uid' => $this->user_admin->uid));
+    $node_edit= $this->drupalCreateNode(array('promote' => 1, 'uid' => $this->user_edit->uid));
+    $node_delete = $this->drupalCreateNode(array('promote' => 1, 'uid' => $this->user_delete->uid));
+
+    // Test admin links for user with only the 'edit own node' permission.
+    $this->drupalLogin($this->user_edit);
+    $this->drupalGet('node');
+    $this->assertRaw($this->getEditLink($node_edit->nid), t('Edit link found on own node.'));
+    $this->assertNoRaw($this->getEditLink($node_delete->nid), t('Edit link not found on another user\'s node.'));
+    $this->assertNoRaw($this->getDeleteLink($node_edit->nid), t('Delete link not found on another user\'s node.'));
+    $this->assertNoRaw($this->getDeleteLink($node_delete->nid), t('Delete link not found on another user\'s node.'));
+    $this->drupalGet('node/'. $node_edit->nid);
+    $this->assertRaw($this->getUniversalEditLink($node_edit->nid), t('Universal edit link found on own node.'));
+    $this->assertNoRaw($this->getDeleteTab($node_edit->nid), t('Delete tab not found on another user\'s node.'));
+    $this->drupalGet('node/'. $node_delete->nid);
+    $this->assertNoRaw($this->getUniversalEditLink($node_delete->nid), t('Universal edit link not found on another user\'s node.'));
+    $this->assertNoRaw($this->getDeleteTab($node_delete->nid), t('Delete tab not found on another user\'s node.'));
+    $this->drupalLogout();
+
+    // Test admin links for user with only the 'delete own node' permission.
+    $this->drupalLogin($this->user_delete);
+    $this->drupalGet('node');
+    $this->assertNoRaw($this->getEditLink($node_edit->nid), t('Edit link not found on another user\'s node.'));
+    $this->assertNoRaw($this->getEditLink($node_delete->nid), t('Edit link not found on another user\'s node.'));
+    $this->assertNoRaw($this->getDeleteLink($node_edit->nid), t('Delete link not found on another user\'s node.'));
+    $this->assertRaw($this->getDeleteLink($node_delete->nid), t('Delete link found on own node.'));
+    $this->drupalGet('node/'. $node_edit->nid);
+    $this->assertNoRaw($this->getUniversalEditLink($node_edit->nid), t('Universal edit link not found on another user\'s node.'));
+    $this->assertNoRaw($this->getDeleteTab($node_edit->nid), t('Delete tab not found on another user\'s node.'));
+    $this->drupalGet('node/'. $node_delete->nid);
+    $this->assertNoRaw($this->getUniversalEditLink($node_delete->nid), t('Universal edit link not found on another user\'s node.'));
+    $this->assertRaw($this->getDeleteTab($node_delete->nid), t('Delete tab found on own node.'));
+    $this->drupalLogout();
+
+    // Disable all admin links.
+    $this->drupalLogin($this->user_admin);
+    $edit = array(
+      'admin_links_edit' => FALSE,
+      'admin_links_delete' => FALSE,
+      'admin_links_universaledit' => FALSE,
+    );
+    $this->drupalPost('admin/settings/admin-links', $edit, t('Save configuration'));
+
+    // Test admin links are not present for user with 'administer nodes' permission.
+    $this->drupalGet('node');
+    $this->assertNoRaw($this->getEditLink($node_admin->nid), t('Edit link not found.'));
+    $this->assertNoRaw($this->getDeleteLink($node_admin->nid), t('Delete link not found.'));
+    $this->drupalGet('node/'. $node_admin->nid);
+    $this->assertNoRaw($this->getUniversalEditLink($node_admin->nid), t('Universal edit link not found.'));
+  }
+
+  function getUniversalEditLink($nid) {
+    return '<link rel="alternate" type="application/x-wiki" title="'. t('Edit this page') .'" href="'. url("node/$nid/edit", array('absolute' => TRUE)) .'" />';
+  }
+
+  function getEditLink($nid) {
+    return '<a href="'. url("node/$nid/edit", array('query' => 'destination=node')) .'">'. t('Edit') .'</a>';
+  }
+
+  function getDeleteLink($nid) {
+    return '<a href="'. url("node/$nid/delete", array('query' => 'destination=node')) .'">'. t('Delete') .'</a>';
+  }
+
+  function getDeleteTab($nid) {
+    // TODO: Why does this get formatted as '<li >...'???
+    return '<li ><a href="'. url("node/$nid/delete") .'">'. t('Delete') .'</a></li>';
+  }
+
+}

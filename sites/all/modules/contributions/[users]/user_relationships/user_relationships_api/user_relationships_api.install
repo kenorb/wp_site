@@ -1,0 +1,62 @@
+<?php
+// $Id: user_relationships_api.install,v 1.1.2.5 2008/10/14 09:14:03 alexk Exp $
+
+
+/**
+ * @file
+ * User Relationships Schema
+ */
+function user_relationships_api_schema() {
+  $schema['user_relationships'] = array(
+    'fields' => array(
+      'rid'           => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'requester_id'  => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'requestee_id'  => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'rtid'          => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'approved'      => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'size' => 'tiny'),
+      'created_at'    => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'updated_at'    => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'flags'         => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+    ),
+    'unique keys' => array(
+      'relationship' => array('requester_id', 'requestee_id', 'rtid'),
+    ),
+    'indexes' => array(
+      'rid' => array('rid'),
+      'requester_id' => array('requester_id'),
+      'requestee_id' => array('requestee_id'),
+      'rtid' => array('rtid'),
+    ),
+  );
+
+  $schema['user_relationship_types'] = array(
+    'fields' => array(
+      'rtid'              => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'name'              => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''),
+      'plural_name'       => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''),
+      'is_oneway'         => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'size' => 'tiny'),
+      'requires_approval' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'size' => 'tiny'),
+      'expires_val'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+    ),
+    'unique keys' => array(
+      'name'  => array('name'),
+    ),
+    'primary key' => array('rtid')
+  );
+
+  return $schema;
+}
+
+/**
+ * Install
+ */
+function user_relationships_api_install() {
+  drupal_install_schema('user_relationships_api');
+}
+
+/**
+ * Uninstall
+ */
+function user_relationships_api_uninstall() {
+  drupal_uninstall_schema('user_relationships_api');
+}

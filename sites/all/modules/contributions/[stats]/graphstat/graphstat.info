@@ -1,0 +1,14 @@
+; $Id: graphstat.info,v 1.2.2.2 2009/01/25 21:08:34 profix898 Exp $
+
+name = "Graphstat"
+description = "Creates graphs visualizing statistical data of your site."
+dependencies[] = statistics
+core = 6.x
+php = 5.2
+
+; Information added by drupal.org packaging script on 2009-01-26
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "graphstat"
+datestamp = "1232928312"
+

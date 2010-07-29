@@ -1,0 +1,12 @@
+name = FeedAPI Comments - Emfield integration
+description = "Simplifies UI on node forms with Embedded Media fields and enabled FeedAPI. Use this if you would like to aggregate comments from the media you're embedding. See README.txt for more information."
+dependencies[] = feedapi_comments
+dependencies[] = emfield
+package = FeedAPI Comment Scraper
+core = 6.x
+; Information added by drupal.org packaging script on 2008-12-01
+version = "6.x-1.0"
+core = "6.x"
+project = "feedapi_comments"
+datestamp = "1228148712"
+

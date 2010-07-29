@@ -1,0 +1,12 @@
+name = "Broken Anchors"
+description = "Broken Anchors"
+package = "Administration"
+project = "broken_anchor"
+version = "6.x-1.0-rc3"
+core = 6.x
+; Information added by drupal.org packaging script on 2009-02-03
+version = "6.x-1.0-rc3"
+core = "6.x"
+project = "broken_anchor"
+datestamp = "1233680106"
+

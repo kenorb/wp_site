@@ -1,0 +1,13 @@
+name = Node Gallery
+description = "An image gallery module."
+core = 6.x
+dependencies[] = upload
+dependencies[] = imagecache
+package = Node Gallery
+version = "6.x-1.0alpha"
+; Information added by drupal.org packaging script on 2008-11-17
+version = "6.x-1.0-alpha3"
+core = "6.x"
+project = "node_gallery"
+datestamp = "1226886916"
+

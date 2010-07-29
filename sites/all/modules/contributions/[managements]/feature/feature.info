@@ -1,0 +1,11 @@
+name = Feature
+description = "Provides a custom feature set for a web site."
+core = 6.x
+package = Managements
+
+; Information added by drupal.org packaging script on 2008-01-07
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "feature"
+datestamp = "1199707447"
+

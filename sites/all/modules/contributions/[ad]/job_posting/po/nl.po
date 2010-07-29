@@ -1,0 +1,499 @@
+# $Id: nl.po,v 1.1.2.2 2008/07/15 22:56:56 gmarus Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright 2008 ainigma32 <ainigma32@yahoo.com>
+# Generated from files:
+#  job-posting-node.tpl.php,v 1.2 2008/05/01 20:11:10 gmarus
+#  job_posting.module,v 1.14 2008/07/10 16:07:08 gmarus
+#  job_posting.info,v 1.3 2008/05/01 20:11:10 gmarus
+#  job_posting.install,v 1.3 2008/07/09 15:09:42 gmarus
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: job_posting 6.x\n"
+"POT-Creation-Date: 2008-07-12 22:55+0200\n"
+"PO-Revision-Date: 2008-07-12 22:55+0200\n"
+"Last-Translator: ainigma32 <ainigma32@yahoo.com>\n"
+"Language-Team: Dutch\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: job-posting-node.tpl.php:24
+msgid "Reference: "
+msgstr "Referentie: "
+
+#: job-posting-node.tpl.php:30
+msgid "Location: "
+msgstr "Lokatie: "
+
+#: job-posting-node.tpl.php:37
+msgid "Employer: "
+msgstr "Werkgever: "
+
+#: job-posting-node.tpl.php:44
+msgid "Application deadline: "
+msgstr "Sollicitatie deadline: "
+
+#: job-posting-node.tpl.php:52
+msgid "Contact: "
+msgstr "Contactpersoon: "
+
+#: job-posting-node.tpl.php:59
+msgid "Url: "
+msgstr "Url: "
+
+#: job_posting.module:24 job_posting.info:0
+msgid "Job Posting"
+msgstr "Vacatures"
+
+#: job_posting.module:26
+msgid "Create a job posting announcement."
+msgstr "Vacature aankondiging aanmaken."
+
+#: job_posting.module:28;503
+msgid "Title"
+msgstr "Titel"
+
+#: job_posting.module:30
+msgid "Description"
+msgstr "Beschrijving"
+
+#: job_posting.module:71;758;786
+msgid "Current jobs"
+msgstr "Huidige vacatures"
+
+#: job_posting.module:77;895
+msgid "Submit an application"
+msgstr "Stuur een sollicitatie"
+
+#: job_posting.module:84
+msgid "Job posting settings"
+msgstr "Vacature instellingen"
+
+#: job_posting.module:106
+msgid "Job reference number prefix"
+msgstr "Vacature referentie voorvoegsel"
+
+#: job_posting.module:107
+msgid "Enter a text string to be used as a prefix for identifying\n      each job posting. The full reference id is a combination of this prefix and\n      the job posting node id number (e.g. JOB33)."
+msgstr "Geef een karakterreeks in die als voorvoegsel voor elke vacature gebruikt kan worden. De volledige referentie bestaat uit een combinatie van dit voorvoegsel en het nummer van de vacature (bijv. VACATURE33)."
+
+#: job_posting.module:116
+msgid "Job posting sort order"
+msgstr "Vacature sorteer volgorde"
+
+#: job_posting.module:117
+msgid "Choose whether you want job posting lists sorted by\n      the newest first or oldest first."
+msgstr "Kies of u de vacatures met de nieuwste boven of de oudste boven wilt sorteren."
+
+#: job_posting.module:119
+msgid "Newest first"
+msgstr "Nieuwste eerst"
+
+#: job_posting.module:119
+msgid "Oldest first"
+msgstr "Oudste eerst"
+
+#: job_posting.module:126
+msgid "Job posting summaries per page"
+msgstr "Vacature samenvattingen per pagina"
+
+#: job_posting.module:127
+msgid "Enter the number of job posting summaries to show on the\n      job listing pages."
+msgstr "Geef het aantal vacature samenvattingen op dat getoond moet worden op de vacature overzicht pagina's."
+
+#: job_posting.module:134
+msgid "Save"
+msgstr "Opslaan"
+
+#: job_posting.module:147
+msgid "Per page limit must be a number greater than zero."
+msgstr "Aantal per pagina moet een getal groter dan 0 zijn."
+
+#: job_posting.module:152
+msgid "Reference prefix must be an alphabetic string."
+msgstr "Referentie voorvoegsel moet een alfabetische karakterreeks zijn."
+
+#: job_posting.module:170
+msgid "Settings have been saved."
+msgstr "Instellingen zijn opgeslagen."
+
+#: job_posting.module:180
+msgid "--"
+msgstr "--"
+
+#: job_posting.module:204
+msgid "Required"
+msgstr "Vereist"
+
+#: job_posting.module:205
+msgid "These fields are required and comprise the minimum\n      information needed to handle job posting display and processing."
+msgstr "Deze velden zijn vereist en vormen de minimale informatie die nodig is om vacatures te tonen en verwerken."
+
+#: job_posting.module:213
+msgid "Provide the job title or position"
+msgstr "Geef de vacature naam of functie in"
+
+#: job_posting.module:223
+msgid "Provide detailed description for this job posting"
+msgstr "Geef de vacature naam of functie in"
+
+#: job_posting.module:232
+msgid "Email address"
+msgstr "E-mailadres"
+
+#: job_posting.module:233
+msgid "Provide a valid employer email address. This address \n      is not displayed in postings but is used as the destination address for\n      job application processing so it must be valid."
+msgstr "Geef een geldig werkgever e-mailadres in. Dit adres wordt niet bij vacatures getoond maar wordt gebruikt als bestemming voor sollicitaties en moet dus geldig zijn."
+
+#: job_posting.module:243
+msgid "Application processing"
+msgstr "Sollicitatie verwerking"
+
+#: job_posting.module:244
+msgid "Choose whether you want job application processing\n      to be enabled for this job posting. Enabled nodes provide applicants\n      with a link for applying to a particular job by email. Pick disabled if\n      you'd prefer to provide the posting as 'information only'."
+msgstr "Kies of u de sollicitatie verwerking in wilt schakelen voor deze vacature. Indien ingeschakeld wordt een link getoond waarmee sollicitanten per e-mail kunnen solliciteren. Kies uitgeschakeld als u de vacature alleen 'ter informatie' wilt gebruiken."
+
+#: job_posting.module:248
+msgid "Enabled"
+msgstr "Ingeschakeld"
+
+#: job_posting.module:248
+msgid "Disabled"
+msgstr "Uitgeschakeld"
+
+#: job_posting.module:255
+msgid "Expires"
+msgstr "Vervalt"
+
+#: job_posting.module:256
+msgid "Choose whether you want this job posting to have an\n      application deadline associated with it. Expiring nodes are automatically \n      de-activated and purged from display views once the specified deadline \n      passes. Pick false if you want this posting to remain active until manually \n      removed."
+msgstr "Kies of u een deadline aan deze vacature wilt verbinden. Vervallen nodes worden automatisch gedeactiveerd en niet meer getoond zodra de deadline verloopt. Kies false als u deze vacature actief wilt laten blijven totdat u de vacature handmatig verwijdert."
+
+#: job_posting.module:261
+msgid "True"
+msgstr "Waar"
+
+#: job_posting.module:261
+msgid "False"
+msgstr "Onwaar"
+
+#: job_posting.module:268
+msgid "Application deadline"
+msgstr "Sollicitatie deadline"
+
+#: job_posting.module:269
+msgid "Set an application deadline for this posting, unless\n      you chose 'false' for the 'expires' field listed above (in which case\n      these fields are ignored). This value is used to determine the amount \n      of time remaining before the posting will be removed from list/block views \n      and hence, no longer eligible for job application processing."
+msgstr "Stel een sollicitatie deadline in voor deze vacature, tenzij u 'onwaar' kiest in het 'vervalt' veld hierboven (in dat geval worden deze velden genegeerd). Deze waarde wordt gebruikt om te bepalen hoeveel tijd er resteert voordat de vacature van het blok wordt verwijderd en daardoor, niet langer meer in aanmerking komt voor sollicitatie verwerking."
+
+#: job_posting.module:278
+msgid "Deadline date"
+msgstr "Deadline datum"
+
+#: job_posting.module:279
+msgid "Set the deadline date."
+msgstr "Stel de deadline datum in."
+
+#: job_posting.module:301
+msgid "Deadline hour"
+msgstr "Deadline uur"
+
+#: job_posting.module:302
+msgid "Set the deadline hour of day."
+msgstr "Stel het deadline uur in."
+
+#: job_posting.module:314
+msgid "Optional"
+msgstr "Optioneel"
+
+#: job_posting.module:315
+msgid "These fields are optional and not needed for application\n      processing. Any empty fields will be omitted from display."
+msgstr "Deze velden zijn optioneel en niet nodig voor sollicitatie verwerking. Lege velden worden weggelaten uit de display."
+
+#: job_posting.module:321
+msgid "Location"
+msgstr "Lokatie"
+
+#: job_posting.module:322
+msgid "The geographical location associated with this job posting."
+msgstr "De geografische lokatie van deze vacature."
+
+#: job_posting.module:327
+msgid "City"
+msgstr "Stad"
+
+#: job_posting.module:328
+msgid "Provide the city location for this job posting"
+msgstr "Geef de stad voor deze vacature in"
+
+#: job_posting.module:335
+msgid "State/Province"
+msgstr "Staat/Provincie"
+
+#: job_posting.module:336
+msgid "Provide the state or province location for this job posting"
+msgstr "Geef de staat of provincie voor deze vacature in"
+
+#: job_posting.module:343
+msgid "Country"
+msgstr "Land"
+
+#: job_posting.module:344
+msgid "Select the country location for this job posting"
+msgstr "Selecteer het land voor deze vacature"
+
+#: job_posting.module:352
+msgid "Employer"
+msgstr "Werkgever"
+
+#: job_posting.module:353
+msgid "The person or organization sponsoring this job posting."
+msgstr "De persoon of organisatie die deze vacature sponsoren."
+
+#: job_posting.module:358
+msgid "Name"
+msgstr "Naam"
+
+#: job_posting.module:359
+msgid "Enter the employer or organization name or leave blank\n      if the site only supports its own job listings"
+msgstr "Geef de werkgeversnaam of laat leeg als de site alleen eigen vacatures ondersteund"
+
+#: job_posting.module:367
+msgid "Website url"
+msgstr "Website adres"
+
+#: job_posting.module:368
+msgid "Supply a valid website url for the employer"
+msgstr "Geef een geldig adres voor de website van de werkgever"
+
+#: job_posting.module:375
+msgid "Contact person"
+msgstr "Contactpersoon"
+
+#: job_posting.module:376
+msgid "Supply the name of the employer contact person \n      related to the job posting"
+msgstr "Geef de naam in van de contactpersoon van de werkgever die aan de vacature is gekoppeld"
+
+#: job_posting.module:398
+msgid "Deadline date must be set \n        for some time in the future."
+msgstr "Deadline datum moet in de toekomst liggen."
+
+#: job_posting.module:408
+msgid "Deadline hour must be set \n        for some time in the future."
+msgstr "Deadline uur moet in de toekomst liggen."
+
+#: job_posting.module:415
+msgid "That email address does not \n        appear to be valid."
+msgstr "Het e-mailadres lijkt ongeldig te zijn."
+
+#: job_posting.module:422
+msgid "The website address you provided must be in\n        proper url format (e.g. http://www.example.com)"
+msgstr "Het website adres dat u ingaf moet in het juiste format worden ingegeven (bijv. http://www.example.com)"
+
+#: job_posting.module:461
+msgid "The application deadline for this job posting has passed. \n        Although you can still view the information no new applications for\n        this job are currently being accepted."
+msgstr "De sollicitatie deadline voor deze vacature is verlopen. Hoewel u de informatie nog kunt zien worden er geen sollicitaties meer geaccepteerd."
+
+#: job_posting.module:504
+msgid "@title (@reference)"
+msgstr "@title (@reference)"
+
+#: job_posting.module:509
+msgid "Applicant"
+msgstr "Sollicitant"
+
+#: job_posting.module:515
+msgid "Cover letter"
+msgstr "Sollicitatiebrief"
+
+#: job_posting.module:516
+msgid "@coverletter"
+msgstr "@coverletter"
+
+#: job_posting.module:519
+msgid "Enter your introductory covering letter."
+msgstr "Voer uw sollicitatiebrief in."
+
+#: job_posting.module:525
+msgid "Attach resume"
+msgstr "Voeg CV toe"
+
+#: job_posting.module:526
+msgid "Choose a resume file to upload along with your \n      covering letter. Files must not exceed 1M in size and can use only \n      the following extensions: txt doc pdf."
+msgstr "Kies een CV bestand om te uploaden samen met uw sollicitatiebrief. Het bijgevoegde bestand moet een van volgende extensies hebben (txt doc pdf) en kleiner dan 1MB in grootte zijn."
+
+#: job_posting.module:531
+msgid "Send"
+msgstr "Versturen"
+
+#: job_posting.module:579;585
+msgid "!error"
+msgstr "!error"
+
+#: job_posting.module:637
+msgid "Your application has been submitted. Thank you."
+msgstr "Uw sollicitatie is verstuurd. Dank u."
+
+#: job_posting.module:641
+msgid "A confirmation message has been sent to "
+msgstr "Een bevestiging is gestuurd naar "
+
+#: job_posting.module:658;669
+msgid "!subject"
+msgstr "!subject"
+
+#: job_posting.module:660
+msgid "!content"
+msgstr "!content"
+
+#: job_posting.module:671
+msgid "!message"
+msgstr "!message"
+
+#: job_posting.module:764
+msgid "Number of job postings to display"
+msgstr "Aantal te tonen vacatures"
+
+#: job_posting.module:791;814
+msgid "No job postings to display"
+msgstr "Geen vacatures om weer te geven"
+
+#: job_posting.module:882
+msgid "CLOSED"
+msgstr "GESLOTEN"
+
+#: job_posting.module:903
+msgid "<a href=\"@login\">Login</a> or <a href=\"@register\">register</a> to submit an application"
+msgstr "<a href=\"@login\">Login</a> of <a href=\"@register\">schrijf je in</a> om te solliciteren"
+
+#: job_posting.module:909
+msgid "<a href=\"@login\">Login</a> to submit an application"
+msgstr "<a href=\"@login\">Login</a> om te solliciteren"
+
+#: job_posting.module:927
+msgid "More jobs"
+msgstr "Meer vacatures"
+
+#: job_posting.module:928
+msgid "View more job postings"
+msgstr "Bekijk meer vacatures"
+
+#: job_posting.module:1028
+msgid "1 week "
+msgid_plural "@count weeks "
+msgstr[0] "1 week "
+msgstr[1] "@count weken "
+
+#: job_posting.module:1032
+msgid " 1 day "
+msgid_plural " @count days "
+msgstr[0] " 1 dag "
+msgstr[1] " @count dagen "
+
+#: job_posting.module:1036
+msgid " 1 hour "
+msgid_plural " @count hours "
+msgstr[0] " 1 uur "
+msgstr[1] " @count uren "
+
+#: job_posting.module:1040
+msgid " 1 minute"
+msgid_plural " @count minutes"
+msgstr[0] " 1 minuut "
+msgstr[1] " @count minuten"
+
+#: job_posting.module:41
+msgid "create job posting"
+msgstr "maak vacature aan"
+
+#: job_posting.module:42
+msgid "edit job posting"
+msgstr "wijzig vacature"
+
+#: job_posting.module:43
+msgid "edit own job posting"
+msgstr "wijzig eigen vacature"
+
+#: job_posting.module:88
+msgid "Change administrative settings for job postings."
+msgstr "Wijzig beheerinstellingen voor vacatures."
+
+#: job_posting.module:0
+msgid "job_posting"
+msgstr "job_posting"
+
+#: job_posting.install:291
+msgid "Stores node data particular to job postings."
+msgstr "Bevat node gegevens specifiek voor vacatures."
+
+#: job_posting.install:298
+msgid "Holds the {node}.nid this posting refers to."
+msgstr "Bevat de {node}.nid waar deze vacature naar verwijst."
+
+#: job_posting.install:305
+msgid "Holds the most recent {node_revisions}.vid \n          for this nid."
+msgstr "Bevat de meest recente {node_revisions}.vid voor dit nid."
+
+#: job_posting.install:313
+msgid "Holds the string identifying the city location \n          for the job posting."
+msgstr "Bevat de string met de stad lokatie voor deze vacature."
+
+#: job_posting.install:321
+msgid "Holds the string identifing the state/province \n          location for the job posting."
+msgstr "Bevat de string met de staat/provincie lokatie voor deze vacature."
+
+#: job_posting.install:329
+msgid "Holds the {job_posting_country}.cid country \n          location for the job posting."
+msgstr "Bevat de {job_posting_country}.cid land lokatie voor deze vacature."
+
+#: job_posting.install:337
+msgid "Holds the string employer name sponsoring the job \n          posting."
+msgstr "Bevat de string met naam de werkgever die de vacature sponsort."
+
+#: job_posting.install:345
+msgid "Holds the string identifying the employer \n          website url."
+msgstr "Bevat de string met de url van de website van de werkgever."
+
+#: job_posting.install:353
+msgid "Holds string identifying the name of the \n          main contact person."
+msgstr "Bevat de string met de naam van de contactpersoon."
+
+#: job_posting.install:361
+msgid "Holds string identifying contact person email address."
+msgstr "Bevat de string met het e-mailadres van de contactpersoon."
+
+#: job_posting.install:368
+msgid "Holds an integer unix timestamp denoting the \n          deadline for job posting applications, in the poster's localtime."
+msgstr "Bevat een UNIX timestamp die de sollicitatie deadline aangeeft in de lokale tijd van de sollicitant."
+
+#: job_posting.install:377
+msgid "Holds an int representing a boolean denoting whether\n          a node should expire after the timestamp in {job_posting}.deadline has passed."
+msgstr "Bevat een int die een boolean voorstelt waarmee wordt aangegeven of de node na het verstrijken van de deadline moet vervallen."
+
+#: job_posting.install:391
+msgid "Stores information on countries."
+msgstr "Bevat informatie over landen."
+
+#: job_posting.install:397
+msgid "Holds an autoincrementing primary id for each country."
+msgstr "Bevat een autoincrementele primaire sleutel voor elk land."
+
+#: job_posting.install:404
+msgid "Holds a string denoting the official country name."
+msgstr "Bevat een string met de officiÃ«le landnaam."
+
+#: job_posting.install:425
+msgid "Holds an int representing a boolean denoting whether\n        a node should expire after the timestamp in {job_posting}.deadline has passed."
+msgstr "Bevat een int die een boolean voorstelt waarmee wordt aangegeven of de node na het verstrijken van de deadline moet vervallen."
+
+#: job_posting.install:441
+msgid "Holds an int representing a boolean denoting whether\n        a node should provide application processing (1) or for information only (0)."
+msgstr "Bevat een int die een boolean voorstelt waarmee wordt aangegeven of een node sollicitaties verwerkt (1) of alleen ter informatie (0) wordt getoond."
+
+#: job_posting.info:0
+msgid "Lightweight module for the creation of job posting nodes and basic job application processing"
+msgstr "Lichtgewicht module voor het aanmaken van vacatures en basale sollicitatie verwerking"
+

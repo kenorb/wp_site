@@ -1,0 +1,111 @@
+$Id: CHANGELOG.txt,v 1.2.2.14.2.1 2008/11/05 00:07:11 psynaptic Exp $
+
+Shadowbox 5.x-2.1, 2008-09-20
+-----------------------------
+- Sorted formatters to make it easier to choose the desired option.
+
+Shadowbox 5.x-2.1, 2008-09-17
+-----------------------------
+- Created tabs in admin settings form.
+- Removed global fieldset on default tab of admin settings form.
+- Added automatic image link handling using JavaScript.
+- #308059: Enabled translations by Davy Van Den Bremt.
+- Optimised assigning of variables in shadowbox.js.
+
+Shadowbox 5.x-2.x-dev, 2008-07-29
+---------------------------------
+- Updated module to use Shadowbox 2.0.
+- Added page activation option to choose whether to activate or deactivate for listed pages.
+- Removed shadowbox.css as min-width rules where interfering with drag functionality.
+
+Shadowbox 5.x-1.x-dev, 2008-07-12
+---------------------------------
+- Improved install instructions in INSTALL.txt.
+
+Shadowbox 5.x-1.x-dev, 2008-07-12
+---------------------------------
+- Released Shadowbox 5.x-1.0.
+- Edited download location in README.txt to compatible version of Shadowbox.
+- Remove per-node configuration options.
+- Removed static variable function.
+
+Shadowbox 5.x-1.x-dev, 2008-07-10
+---------------------------------
+- #274519, #280448: Added static variable to ensure we only add JavaScript settings once.
+- Copied CCK formatters from lightbox2.
+- Added gallery mode to imagefield and imagecache presets, idea from lightbox2.
+
+Shadowbox 5.x-1.x-dev, 2008-06-14
+---------------------------------
+- Added pdf media type option and made both pdf and txt default to not supported.
+- #270356 reported by jstamper: Fixed node form validation issue.
+- Reported by snpower: Wrapping form error messages in t().
+- Reported by snpower: Adjusting regex to allow period in asset URL.
+- Escaped dashes to prevent 'range out of order' errors occurring in the future.
+
+Shadowbox 5.x-1.x-dev, 2008-06-09
+---------------------------------
+- Changed overlay color input to remove requirement to input # before hex value.
+- Added per-node option to change overlay color.
+- Reformatted comments to break at column 80.
+- Moved activation logic into shadowbox_construct_header().
+- #267917 by Davy Van Den Bremt: Added ability to translate Shadowbox.
+- Dropped support for imagecache 5.x-1.x in favour of 5.x-2.x.
+- A small amount of code shortening.
+
+Shadowbox 5.x-1.x-dev, 2008-06-06
+---------------------------------
+- Added per-node configuration option to disable key controls.
+
+Shadowbox 5.x-1.x-dev, 2008-06-06
+---------------------------------
+- Implemented integration with imagefield and imagecache.
+- Changed realpath to file_exists and added validation that flv player exists.
+- Moved shadowbox_enabled condition to hook_menu.
+
+Shadowbox 5.x-1.x-dev, 2008-06-05
+---------------------------------
+- Changed displayed text in hook_requirements.
+- Moved JavaScript options from hook_init to hook_menu.
+- Added options for controlling which media types to open in Shadowbox.
+- Rerouted form_set_error calls after previous change of form element names.
+- Added validation that assets actually exist (loading image and background image).
+- Changed asset URL to no leading or trailing slashes and relative to base_path.
+- Added ability to select light CSS skin.
+- Added ability to exclude pages. Defaults to admin*, img_assist*, node/add/*, node/*/edit.
+- Created header building function and moved from hook_nodeapi to hook_menu.
+- Added CSS file with min-width to fix disappearing controls.
+- Added requirements check for 3rd party software.
+- Removed unnecessary hook_install.
+- Streamlined hook_uninstall (by Morbus).
+- Changed erroneous use of url in favour of base_path.
+
+Shadowbox 5.x-1.x-dev, 2008-06-01
+---------------------------------
+- Ported to Drupal 5.
+- Added @file Doxygen comments.
+- Fixed bug: erroneous use of url() with shadowbox_asset_url.
+- Removed #validate attributes.
+- Added dependency: jquery_update.
+
+Shadowbox 6.x-1.x-dev, 2008-05-12
+---------------------------------
+- Improved Doxygen comments as per #1354.
+- Improved cleaning of variable table on uninstall.
+- Improved naming of variables _explode_to_int().
+- Inverted return value and calls to _validate_keys_string().
+- Changed dependency from 'code only' to 'full' Shadowbox distribution.
+- Now using compressed files from shadowbox/build/*.
+
+Shadowbox HEAD, 2008-04-24
+--------------------------
+- Added all Shadowbox options as global settings (except on* callbacks):
+- Added help documentation.
+- Added usage examples to online help and INSTALL.txt.
+- Added input validation.
+- Added global killswitch.
+
+Shadowbox HEAD, 2008-04-16 (initial commit)
+--------------------------
+- Created initial module.
+- Added options for animate, animSequence, overlayColor.

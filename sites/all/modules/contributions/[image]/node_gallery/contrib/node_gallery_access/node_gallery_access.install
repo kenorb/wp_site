@@ -1,0 +1,59 @@
+<?php
+// $Id: node_gallery_access.install,v 1.3 2008/11/17 01:46:40 wilson98 Exp $
+
+/**
+ * @file
+ * Node gallery access install file. 
+ *
+ */
+
+function node_gallery_access_schema() {
+  $schema = array();
+  $schema['ng_access'] = array(
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('Gallery node id.'),
+      ),
+      'access_type' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    'password' => array(
+      'description' => t('The sha1 hashed password for the given node.'),
+      'type' => 'varchar',
+      'length' => 40,
+      'not null' => TRUE,
+      'default' => ''
+      ),
+    ),
+    'unique keys' => array(
+      'nid' => array('nid', 'access_type'),
+    ),
+  );
+  
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install()
+ *
+ */
+function node_gallery_access_install() {
+  drupal_install_schema('node_gallery_access');
+  db_query("UPDATE {system} SET weight = 100 WHERE name = 'node_gallery_access' AND type = 'module'");
+}
+
+/**
+ * Implementation of hook_uninstall()
+ *
+ */
+function node_gallery_access_uninstall() {
+  drupal_uninstall_schema('node_gallery_access');
+}

@@ -1,0 +1,16 @@
+; $Id: stormtask.info,v 1.4 2008/06/23 16:46:36 robertogerola Exp $
+name = Storm Task
+description = "SpeedTech Organizer and Resource Manager - Task"
+dependencies[] = storm 
+dependencies[] = stormattribute
+dependencies[] = stormorganization
+dependencies[] = stormproject
+package = Storm
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-01-07
+version = "6.x-1.20"
+core = "6.x"
+project = "storm"
+datestamp = "1231318237"
+

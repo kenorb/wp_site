@@ -1,0 +1,14 @@
+; $Id: lm_paypal_paid_adverts.info,v 1.25.6.1 2008/10/13 04:24:39 lyricnz Exp $
+name = "LM Paypal Paid Adverts"
+description = "Provides PayPal paid advert pages."
+package = "LM PayPal"
+core = 6.x
+dependencies[] = lm_paypal
+dependencies[] = lm_paypal_subscriptions
+
+; Information added by drupal.org packaging script on 2009-02-06
+version = "6.x-2.0-alpha1"
+core = "6.x"
+project = "lm_paypal"
+datestamp = "1233959131"
+

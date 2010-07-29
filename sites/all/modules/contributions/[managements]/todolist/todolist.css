@@ -1,0 +1,74 @@
+/* $Id: todolist.css,v 1.2 2008/07/30 00:06:52 marvil07 Exp $ */
+
+div#dragHelper{
+  overflow:visible !important;
+  }
+ul.todolist {
+  position:relative;
+  }
+ul.todolist li,
+div.item-list ul.todolist li,
+div#dragHelper li {
+  list-style:none;
+  background:transparent;
+  margin:0; padding:0;
+  position:relative;
+  }
+div#dragHelper .nub,
+ul.todolist .nub {
+  background:url(images/nub.png) no-repeat;
+  z-index:99999;
+  font:normal 10px/11px "Lucida Grande", verdana, arial, helvetica, sans-serif;
+  color:#f00;
+  height:26px;
+  padding:7px;
+  position:absolute;
+  }
+ul.todolist .nub a,
+div#dragHelper .nub a {
+  color:#f00;
+  text-decoration:underline;
+  float:left;
+  display:block;
+  height:11px;
+  }
+ul.todolist div.nub a.delete,
+div#dragHelper .nub a.delete {
+  text-indent:-9999px; font-size:0; line-height:0;
+  background:url(images/delete.gif) no-repeat;
+  width:10px;
+  margin:1px 4px 0 0;
+  }
+ul.todolist div.nub a.edit,
+div#dragHelper .nub a.edit {
+  margin:0 4px 0 0;
+  }
+ul.todolist div.nub a.reorder,
+div#dragHelper .nub a.reorder {
+  text-indent:-9999px; font-size:0; line-height:0;
+  background:url(images/reorder.gif) no-repeat;
+  margin:1px 0 0 0;
+  width:11px;
+  cursor:move;
+  }
+
+ul.todolist.complete li.task {
+  font-size:10px;
+  color:#9c9a9c;
+  }
+ul.todolist.complete li.task input {
+  float:left;
+  }
+ul.todolist.complete li.task a.delete {
+  text-indent:-9999px; font-size:0; line-height:0;
+  background:url(images/delete.gif) no-repeat;
+  display:block; width:10px; height:11px; line-height:11px;
+  margin:4px 4px 0 4px; float:left; padding:0;
+  }
+ul.todolist.complete li.task span {
+  color:#636563;
+  }
+ul.todolist .loading {
+  text-indent:-9999px !important;
+  background:url(images/loading.gif) no-repeat 0 10px !important;
+  }

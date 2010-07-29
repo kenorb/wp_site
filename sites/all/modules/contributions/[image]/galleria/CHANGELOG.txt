@@ -1,0 +1,5 @@
+// $Id: CHANGELOG.txt,v 1.1.2.1 2008/12/12 14:40:28 marktheunissen Exp $
+
+Galleria 1.0, 2008-12-12
+----------------------
+- Initial release

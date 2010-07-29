@@ -1,0 +1,825 @@
+# $Id: abuse.hu.po,v 1.1.2.1 2008/08/01 08:49:02 aries Exp $
+#
+# Generated from files:
+#  abuse-page.tpl.php,v 1.1.2.2 2008/07/18 15:52:50 btmash
+#  abuse-report.tpl.php,v 1.1.2.3 2008/07/18 15:52:50 btmash
+#  abuse.module,v 1.34.4.3 2008/07/18 15:52:51 btmash
+#  watchlist.module,v 1.4.6.3 2008/07/18 15:52:51 btmash
+#  abuse.admin.inc,v 1.1.2.3 2008/07/18 15:52:51 btmash
+#  abuse.info,v 1.5.6.3 2008/07/18 15:52:51 btmash
+#  abuse.install,v 1.5.6.3 2008/07/18 15:52:51 btmash
+#  watchlist.info,v 1.4.6.3 2008/07/18 15:52:51 btmash
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Abuse for Drupal 6.0\n"
+"POT-Creation-Date: 2008-07-29 18:34+0200\n"
+"PO-Revision-Date: 2008-07-29 23:55+0100\n"
+"Last-Translator: DTB <dtbb@freemail.hu>\n"
+"Language-Team: Drupal.hu Fordítói Csapat <forditas [at] drupal.hu>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Poedit-Language: Hungarian\n"
+"X-Poedit-Country: HUNGARY\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: abuse-page.tpl.php:25
+msgid "Get More Tickets"
+msgstr "További moderálásra várók"
+
+#: abuse-report.tpl.php:23
+msgid "Type:"
+msgstr "Típus:"
+
+#: abuse-report.tpl.php:24
+msgid "Comment"
+msgstr "Hozzászólás"
+
+#: abuse-report.tpl.php:25
+msgid "Status:"
+msgstr "Állapot:"
+
+#: abuse-report.tpl.php:28
+msgid "Assigned To:"
+msgstr "Kapcsolódik:"
+
+#: abuse-report.tpl.php:35
+msgid "By: !username"
+msgstr "Felhasználó: !username"
+
+#: abuse-report.tpl.php:37
+msgid "Email"
+msgstr "E-mail"
+
+#: abuse-report.tpl.php:39
+msgid "Age"
+msgstr ""
+
+#: abuse-report.tpl.php:41
+msgid "Offences"
+msgstr "Szabályszegések"
+
+#: abuse-report.tpl.php:43;75
+msgid "Warnings"
+msgstr "Figyelmeztetések"
+
+#: abuse-report.tpl.php:47
+msgid "Edit Account"
+msgstr "Hozzáférés szerkesztése"
+
+#: abuse-report.tpl.php:48
+msgid "View Account History"
+msgstr "Felhasználói fiók előzménye"
+
+#: abuse-report.tpl.php:61
+#: abuse.module:257
+msgid "History"
+msgstr "Történet"
+
+#: abuse-report.tpl.php:66
+msgid "Changed status to %status"
+msgstr "Állapot megváltoztatva erre: %status"
+
+#: abuse-report.tpl.php:70;84;99
+msgid "None"
+msgstr "none"
+
+#: abuse-report.tpl.php:80
+msgid "sent warning on %date"
+msgstr "figyelmeztetés elküldve: %date"
+
+#: abuse-report.tpl.php:89
+msgid "Flags"
+msgstr "Jelzések"
+
+#: abuse-report.tpl.php:93;93
+#: watchlist/watchlist.module:422
+msgid "Watchlist"
+msgstr "Tiltott szavak listája"
+
+#: abuse.admin.inc:12
+msgid "Reasons"
+msgstr "Szabályok"
+
+#: abuse.admin.inc:14
+msgid "You can configure the list of reasons at !link"
+msgstr "A szabályok listájának konfigurálása ezen a linken: !link"
+
+#: abuse.admin.inc:18
+msgid "Enable flagging for these content types"
+msgstr "A visszajelzések engedélyezése a következő tartalom típusokhoz:"
+
+#: abuse.admin.inc:32
+msgid "comments"
+msgstr "hozzászólások"
+
+#: abuse.admin.inc:38
+#: watchlist/watchlist.module:142
+msgid "users"
+msgstr "felhasználók"
+
+#: abuse.admin.inc:40
+msgid "Users is still a work in progress - do not bother till fully coded out"
+msgstr ""
+
+#: abuse.admin.inc:47
+msgid "Ticketing settings"
+msgstr "Cimkézés beállításai"
+
+#: abuse.admin.inc:53
+msgid "Abuse Assigned Moderators"
+msgstr "Abuse felhatalmazott moderátorok"
+
+#: abuse.admin.inc:54
+msgid "Select this option if you have a pool of moderators and you wish to assign each one a certain number of tickets to work with."
+msgstr ""
+
+#: abuse.admin.inc:60
+msgid "Moderator queue limit"
+msgstr "Moderátor várólista limit"
+
+#: abuse.admin.inc:62
+msgid "This field is to set a maximum limit on the number of flagged items that will be added to the queue of a moderator"
+msgstr ""
+
+#: abuse.admin.inc:68
+msgid "Reset assigned ticket items (Please type hour of day)"
+msgstr ""
+
+#: abuse.admin.inc:77
+msgid "Settings for all abuse content"
+msgstr "Tiltott tartalmak beállításai"
+
+#: abuse.admin.inc:79
+msgid "These settings apply to all content that is allowed to be flagged into the abuse administration system"
+msgstr "Ezek a beállítások az összes megadott tartalom típusra érvényesek, ahol engedélyezve lett a felhasználói visszajelzés"
+
+#: abuse.admin.inc:84
+msgid "Abuse threshold"
+msgstr "Abuse küszöbérték"
+
+#: abuse.admin.inc:93;580
+msgid "Warning subject"
+msgstr "A figyelmeztetés tárgya"
+
+#: abuse.admin.inc:95;424;581
+msgid "Abuse warning"
+msgstr "Moderátor figyelmeztetés"
+
+#: abuse.admin.inc:101;588
+msgid "Warning body"
+msgstr "A figyelmeztetés üzenete"
+
+#: abuse.admin.inc:110
+msgid "Warning BCC"
+msgstr "Figyelmeztetés másolat"
+
+#: abuse.admin.inc:117
+msgid "Abuse form intro text"
+msgstr "Abuse form bevezető szöveg"
+
+#: abuse.admin.inc:131
+msgid "Add new reason"
+msgstr "Új szabály hozzáadása"
+
+#: abuse.admin.inc:138;214
+msgid "Reason"
+msgstr "Szabály"
+
+#: abuse.admin.inc:139;215
+msgid "Provide a short form of what the reason is"
+msgstr "Rövid név a megjelenő szabály beállításaihoz"
+
+#: abuse.admin.inc:145;187;222
+msgid "Description"
+msgstr "Leírás"
+
+#: abuse.admin.inc:146;223
+msgid "A more details description of what the reason is"
+msgstr "További részletek a szabályhoz"
+
+#: abuse.admin.inc:152;230
+msgid "Email Notice addition"
+msgstr "E-mail értesítés kiegészítése"
+
+#: abuse.admin.inc:153
+msgid "Text that will automatically be included in the warning email."
+msgstr "A figyelmeztető levélbe automatikusan bekerülő szöveg."
+
+#: abuse.admin.inc:159;238;251;267;285;301
+msgid "Save"
+msgstr "Mentés"
+
+#: abuse.admin.inc:165
+msgid "Current list of reasons - check items that you wish to remove"
+msgstr "Jelenlegi szabályok listája - a törléshez ki kell jelölni az elemet"
+
+#: abuse.admin.inc:179
+msgid "Remove from of list of reasons"
+msgstr "Eltávolítás a szabályok listájából"
+
+#: abuse.admin.inc:191
+msgid "Email content"
+msgstr "E-mail tartalom"
+
+#: abuse.admin.inc:196;272
+msgid "Remove"
+msgstr "Eltávolít"
+
+#: abuse.admin.inc:231
+msgid "Text that should automatically be included in the warning email."
+msgstr "A figyelmeztető levélbe automatikusan bekerülő szöveg."
+
+#: abuse.admin.inc:242
+msgid "Cancel"
+msgstr "Mégsem"
+
+#: abuse.admin.inc:253;287
+msgid "You MUST provide a reason."
+msgstr "A szabály megadása kötelező."
+
+#: abuse.admin.inc:256;290
+msgid "You MUST provide a description of the reason."
+msgstr "A szabályhoz tartozó leírás megadása kötelező."
+
+#: abuse.admin.inc:259;293
+msgid "You MUST provide an email notice that may be sent to the user for this reason."
+msgstr "Az értesítő e-mail megadása kötelező ehhez a szabályhoz. "
+
+#: abuse.admin.inc:270
+msgid "Added new reason to list"
+msgstr "A szabály hozzáadódott a listához"
+
+#: abuse.admin.inc:379
+msgid "Sorry, this content could not be allowed"
+msgstr "Ez a tartalom nem engedélyezett"
+
+#: abuse.admin.inc:383
+msgid "Item allowed"
+msgstr "A tartalom engedélyezve"
+
+#: abuse.admin.inc:392
+msgid "Sorry, this content could not be removed"
+msgstr "Ez a tartalom nem távolítható el"
+
+#: abuse.admin.inc:396
+msgid "Item removed: %title"
+msgstr "A tartalom eltávolítva: %title"
+
+#: abuse.admin.inc:404
+msgid "Sorry, this content could not be sent to the super moderator"
+msgstr ""
+
+#: abuse.admin.inc:408
+msgid "Item sent to super moderator: %title"
+msgstr "A %title tartalom elküldve a moderátornak"
+
+#: abuse.admin.inc:417
+msgid "Sorry, the user could not be warned and the operation could not be carried out"
+msgstr ""
+
+#: abuse.admin.inc:437
+msgid "Your message has been sent."
+msgstr "Az üzenet elküldve."
+
+#: abuse.admin.inc:463
+msgid "The user @name has been unbanned"
+msgstr "A @name felhasználó kitiltása visszavonva"
+
+#: abuse.admin.inc:511
+msgid "Allow content on site?"
+msgstr "Engedélyezett a tartalom?"
+
+#: abuse.admin.inc:520
+msgid "Are you sure you want to allow !content?"
+msgstr "Valóban engedélyezhető ez a tartalom: !content?"
+
+#: abuse.admin.inc:527;674
+msgid "allow"
+msgstr "engedélyezett"
+
+#: abuse.admin.inc:533
+msgid "Remove content from site?"
+msgstr "A tartalom eltávolítása?"
+
+#: abuse.admin.inc:542
+msgid "Are you sure you want to remove !content?"
+msgstr "Valóban eltávolítható ez a tartalom: !content?"
+
+#: abuse.admin.inc:549;677
+msgid "remove"
+msgstr "eltávolít"
+
+#: abuse.admin.inc:555;689
+msgid "assign to superadmin"
+msgstr "szuperadmin jogosultság"
+
+#: abuse.admin.inc:561
+msgid "Warn and Allow"
+msgstr "Figyelmeztet és engedélyez"
+
+#: abuse.admin.inc:571
+msgid "Warn and Remove"
+msgstr "Figyelmeztet és eltávolít"
+
+#: abuse.admin.inc:592
+msgid "available fields are !title, !url, !name, and !id. You can copy from the list below."
+msgstr "rendelkezésre álló mezők:  !title, !url, !name és a !id.  You can copy from the list below."
+
+#: abuse.admin.inc:609;680
+msgid "warn and allow"
+msgstr "figyelmeztet és engedélyez"
+
+#: abuse.admin.inc:614;683
+msgid "warn and remove"
+msgstr "figyelmeztet és eltávolít"
+
+#: abuse.admin.inc:620
+msgid "Ban !user?"
+msgstr "!user kitiltása?"
+
+#: abuse.admin.inc:629;732
+msgid "Are you sure you want to ban !name?"
+msgstr "Valóban ki kell tíltani a !name nevű felhasználót?"
+
+#: abuse.admin.inc:636;646;686
+msgid "ban"
+msgstr "kitiltás"
+
+#: abuse.admin.inc:647
+msgid "User cannot be banned"
+msgstr "A felhasználó nem tiltható ki"
+
+#: abuse.admin.inc:672
+msgid "Sorry, could not perform requested operation."
+msgstr "A kért művelet nem végrehajtható"
+
+#: abuse.admin.inc:706
+msgid "Sorry, you are not allowed to ban this user"
+msgstr "Nincs jogosultság ennek a felhasználónak a kitiltásához"
+
+#: abuse.admin.inc:712
+msgid "Ban !user"
+msgstr "!user kitiltása"
+
+#: abuse.admin.inc:736;753;769
+msgid "Yes"
+msgstr "Igen"
+
+#: abuse.admin.inc:741
+msgid "No"
+msgstr "Nem"
+
+#: abuse.admin.inc:754
+msgid "You cannot ban the site administrator or yourself."
+msgstr ""
+
+#: abuse.admin.inc:779
+msgid "The user @name has been banned."
+msgstr "A @name felhasználó kitiltva."
+
+#: abuse.module:90
+msgid "allow users to report abusive content"
+msgstr "A felhasználók jelezhetik a méltatlan tartalmat"
+
+#: abuse.module:321
+msgid "View abuse history"
+msgstr "Abuse előzmények"
+
+#: abuse.module:334;344;375;385
+msgid "Flag as offensive"
+msgstr "Jelzés a moderátornak"
+
+#: abuse.module:337;347
+msgid "Notify administrators of problematic content"
+msgstr "Admin értesítése a tartalommal kapcsolatban"
+
+#: abuse.module:378;388
+msgid "Notify administrators of problematic comment"
+msgstr "Admin értesítése a hozzászólással kapcsolatban"
+
+#: abuse.module:437
+msgid "here"
+msgstr "itt"
+
+#: abuse.module:442
+msgid "Click !link to unban @username."
+msgstr "A @username felhasználó újbóli engedélyezéséhez ide kell kattintani: !link"
+
+#: abuse.module:512
+msgid "Sorry, you cannot flag your own content"
+msgstr "Saját tartalom nem megjelölhető"
+
+#: abuse.module:516
+msgid "Sorry, you are not allowed to flag this content"
+msgstr "Nincs jogosultság ennek a tartalomnak a megjelöléséhez"
+
+#: abuse.module:535;550;600
+msgid "from"
+msgstr "feladó"
+
+#: abuse.module:557
+msgid "email"
+msgstr "e-mail"
+
+#: abuse.module:565
+msgid "about"
+msgstr "Közzététel helye:"
+
+#: abuse.module:575
+msgid "reason"
+msgstr "szabály"
+
+#: abuse.module:581
+msgid "message"
+msgstr "üzenet"
+
+#: abuse.module:587;598
+msgid "send"
+msgstr "küldés"
+
+#: abuse.module:591;635
+msgid "cancel"
+msgstr "mégsem"
+
+#: abuse.module:600
+msgid "<em>!field</em> is required"
+msgstr "a <em>!field</em> mező kitöltése kötelező"
+
+#: abuse.module:603
+msgid "A valid email address is required."
+msgstr "valós e-mail címet kell megadni"
+
+#: abuse.module:606
+msgid "Please give a reason."
+msgstr "szabály megadása"
+
+#: abuse.module:610
+msgid "Please provide a more detailed description - no links please."
+msgstr "További, részletes információk - linkek nem szükségesek."
+
+#: abuse.module:617
+msgid "Please do not use links in your description of the problem."
+msgstr ""
+
+#: abuse.module:638
+msgid "We have already received your report.  Thank you very much!"
+msgstr "Megérkezett a tartalommal kapcsolatos visszajelzés. Köszönjük, és a továbbiakban is számítunk az ilyen irányú segítségre!"
+
+#: abuse.module:644
+msgid "You cannot flag your own content"
+msgstr "A saját tartalom megjelölése nem végrehajtható"
+
+#: abuse.module:656
+msgid "Thank you for your report.  We will look into this shortly."
+msgstr "Köszönjük a beküldött figyelmeztetést.  Rövidesen ellenőrizzük ezt a tartalmat."
+
+#: abuse.module:660
+msgid "Thank you for your report."
+msgstr "Köszönjük az értesítést"
+
+#: abuse.module:760
+msgid "Anonymous Admin"
+msgstr "anonim Admin"
+
+#: abuse.module:863
+msgid "OK"
+msgstr "OK"
+
+#: abuse.module:864
+msgid "Pending"
+msgstr "Függőben"
+
+#: abuse.module:865
+msgid "Hidden"
+msgstr "Rejtett"
+
+#: abuse.module:866
+msgid "Removed"
+msgstr "Eltávolított"
+
+#: abuse.module:867
+msgid "Superadmin Assigned"
+msgstr ""
+
+#: abuse.module:916
+msgid "Invalid user account - content cannot be allowed"
+msgstr "Érvénytelen felhasználói jogosultág - a tartalom nem engedélyezhető"
+
+#: abuse.module:107
+msgid "Flag"
+msgstr "Jelzés"
+
+#: abuse.module:117
+msgid "Abuse Moderation settings"
+msgstr "Abuse moderálás beállításai"
+
+#: abuse.module:118
+msgid "Configure the various parts in moderation"
+msgstr "Abuse moderálás konfigurálása"
+
+#: abuse.module:126
+msgid "Abuse Moderation reasons"
+msgstr "Abuse moderálás szabályai"
+
+#: abuse.module:127
+msgid "Add, edit, or remove reasons for flagging content"
+msgstr "Szabályok hozzáadása, szerkesztése, törlése a tartalom moderálásához"
+
+#: abuse.module:135
+msgid "Edit reason"
+msgstr "Szabály szerkesztése"
+
+#: abuse.module:136
+msgid "Edit a reason with a provided ID"
+msgstr ""
+
+#: abuse.module:147
+msgid "Moderate content"
+msgstr "Tartalom moderálása"
+
+#: abuse.module:165
+msgid "Ban user"
+msgstr "felhasználó kitiltása"
+
+#: abuse.module:175
+msgid "Unban user"
+msgstr "Felhasználó kitiltásának visszavonása"
+
+#: abuse.module:186
+msgid "Pending Items (!num)"
+msgstr "Függőben: !num"
+
+#: abuse.module:223
+msgid "Removed Items (!num of !num2)"
+msgstr "Eltávolított elemek, összes: !num, ebből eltávolítva: !num2"
+
+#: abuse.module:248
+msgid "Moderate"
+msgstr "Moderálás"
+
+#: abuse.module:249
+msgid "Manage items that were either flagged by the system or by other users"
+msgstr "A felhasználók vagy a rendszer által megjelölt tartalmak karbantartása"
+
+#: abuse.module:258
+msgid "Check the status of a particular item"
+msgstr ""
+
+#: abuse.module:0
+#: abuse.info:0
+msgid "abuse"
+msgstr ""
+
+#: abuse.install:31
+msgid "A way to associate a flag for content by a user"
+msgstr ""
+
+#: abuse.install:34
+msgid "ID of the flag"
+msgstr "A jelzés azonosítója:"
+
+#: abuse.install:40;109;152;198
+msgid "Original content ID"
+msgstr "Eredeti tartalom azonosítója:"
+
+#: abuse.install:46;115;158;204
+msgid "Content Type"
+msgstr "Tartalom típusa:"
+
+#: abuse.install:53
+msgid "ID of user flagging content"
+msgstr ""
+
+#: abuse.install:60;67
+msgid "Name of user"
+msgstr "A felhasználó neve:"
+
+#: abuse.install:74
+msgid "General reason for flagging content"
+msgstr "Általános szabály a megjelölt tartalmakhoz"
+
+#: abuse.install:81
+msgid "Text from user on what is wrong with content"
+msgstr ""
+
+#: abuse.install:87
+msgid "Check that the flag is valid"
+msgstr "A visszajelzés valódiságának ellenőrzése"
+
+#: abuse.install:95;136;226
+msgid "Timestamp"
+msgstr "Időbélyeg"
+
+#: abuse.install:106
+msgid "A list of warnings that have been sent out to users for inappropriate content"
+msgstr ""
+
+#: abuse.install:122;129;211
+msgid "Flagged content user ID"
+msgstr "Megjelölt tartalom felhasználói azonosítója:"
+
+#: abuse.install:149
+msgid "Current status of a particular piece of content"
+msgstr ""
+
+#: abuse.install:165
+msgid "Moderating user content has been assigned to"
+msgstr ""
+
+#: abuse.install:172
+msgid "Last timestamp of when content status was added/changed"
+msgstr "Utolsó módosítás ideje, amikor a tartalom beküldésre került vagy változott"
+
+#: abuse.install:179
+msgid "Current status of the content"
+msgstr "A tartalom jelenlegi státusza"
+
+#: abuse.install:195
+msgid "A log of the change to the status of a given content"
+msgstr ""
+
+#: abuse.install:218
+msgid "Status of the content"
+msgstr "A tartalom státusza"
+
+#: abuse.install:238
+msgid "A customizable reasons (categories) for flagging content on the site"
+msgstr "Egyedi szabályok (kategóriák) a tartalom megjelölésére a honlapon"
+
+#: abuse.install:241
+msgid "Reason ID"
+msgstr "Szabály azonosító:"
+
+#: abuse.install:247
+msgid "Short sentence of reason for flagging content"
+msgstr ""
+
+#: abuse.install:254
+msgid "A description for admins on what this reason is"
+msgstr ""
+
+#: abuse.install:261
+msgid "Text that will be added to the email body"
+msgstr "Az e-mail üzenethez hozzáadott szöveg"
+
+#: abuse.install:277
+msgid "The user wrote very mean things"
+msgstr "A felhasználó illetlen szavakat írt"
+
+#: abuse.install:277;278;279;280;281
+msgid "Please refrain from writing such mean things"
+msgstr "A sértő, obszcén kifejezéseket töröljük. kérjük ezeket kerülni."
+
+#: abuse.install:278
+msgid "The user's wrote very explicit language"
+msgstr "A felhasználó vulgáris, megbotránkoztató tartalmat irt"
+
+#: abuse.install:279
+msgid "The user wrote very derogatory comments"
+msgstr "A felhasználó sértő, becsmérlő hozzászólást írt"
+
+#: abuse.install:280
+msgid "The user wrote about private information"
+msgstr "A felhasználó nem engedélyezett, személyes információt írt"
+
+#: abuse.install:281
+msgid "The user wrote about other types of mean things"
+msgstr "A felhasználó egyéb, sértő tartalmat írt"
+
+#: abuse.info:0
+msgid "An abuse system to flag content on the site"
+msgstr "Moderátor rendszer a honlap tartalmainak felügyeletére"
+
+#: abuse.info:0
+#: watchlist/watchlist.info:0
+msgid "Administration"
+msgstr "Adminisztráció"
+
+#: watchlist/watchlist.module:33
+msgid "Bad words filter"
+msgstr "Tiltott szavak szűrője"
+
+#: watchlist/watchlist.module:35
+msgid "Replaces bad words in the string with a user specified safe text"
+msgstr ""
+
+#: watchlist/watchlist.module:79
+msgid "Watchlist word settings"
+msgstr "Tiltott szavak beállításai"
+
+#: watchlist/watchlist.module:80
+msgid "These words fall in a grey area of being good or bad.  Content found with these words will be flagged into the pending pile (and into a hidden pile if premoderation is allowed on the content type)"
+msgstr ""
+
+#: watchlist/watchlist.module:86
+msgid "Watch list"
+msgstr "Tiltott szavak listája"
+
+#: watchlist/watchlist.module:90
+msgid "The watch list, one per line.  Do not use empty line breaks."
+msgstr "A tiltott szavak listája, soronként eggyesével. Az üres sor kerülendő."
+
+#: watchlist/watchlist.module:93
+msgid "Filtered/banned word settings"
+msgstr "Szürt/tiltott szavak listájának beállításai"
+
+#: watchlist/watchlist.module:94
+msgid "These words will enable content to be automatically hidden from the site and, if allowed back on site, filters the banned words"
+msgstr "Ezeket a szavakat használó tartalmakat a rendszer automatikusan elrejti, újraengedélyezés esetén a tiltott szavakat lecseréli."
+
+#: watchlist/watchlist.module:101
+msgid "Filtered/banned word list"
+msgstr "Szürt/Tiltott szavak listája"
+
+#: watchlist/watchlist.module:105
+msgid "The banned word list, one per line.  Do not use empty line breaks."
+msgstr "A tiltott szavak listája, soronként eggyet kell megadni.  Üres sorokat, sortöréseket nem tartalmazhat."
+
+#: watchlist/watchlist.module:108
+msgid "Replacement string"
+msgstr "Helyettesítő szöveg"
+
+#: watchlist/watchlist.module:113
+msgid "String to replace banned words with"
+msgstr "Helyettsítő szöveg a tiltott szavak helyére"
+
+#: watchlist/watchlist.module:118
+msgid "Enable moderation from the watchlist and banned list for these content types"
+msgstr "A moderálás engedélyezése a szűrt és tiltott szavak listája alapján az alábbi tartalom típusokhoz"
+
+#: watchlist/watchlist.module:136;166
+msgid "comment"
+msgstr "hozzászólás"
+
+#: watchlist/watchlist.module:144
+msgid "Validate the username is not part of a bad list of words"
+msgstr ""
+
+#: watchlist/watchlist.module:151
+msgid "Enable pre-moderation from the watchlist and banned list for these content types"
+msgstr "Az előzetes moderálás engedélyezése a szűrt és tiltott szavak listája alapján az alábbi tartalom típusokhoz"
+
+#: watchlist/watchlist.module:152
+msgid "Content gets flagged regardless of abuse module setting."
+msgstr ""
+
+#: watchlist/watchlist.module:186
+msgid "Please remove all empty line breaks from the %list list"
+msgstr "Az összes üres sort el kell távolítani a %list listából"
+
+#: watchlist/watchlist.module:203
+msgid "Test out watchlist word settings"
+msgstr "A tiltott szavak beállításainak tesztelése"
+
+#: watchlist/watchlist.module:204
+msgid "Test the validity of the watch word list and banned word list."
+msgstr ""
+
+#: watchlist/watchlist.module:210
+msgid "Test Box"
+msgstr "Teszt Szövegdoboz"
+
+#: watchlist/watchlist.module:214
+msgid "The text you wish to test."
+msgstr "A tesztelésre szánt szöveg."
+
+#: watchlist/watchlist.module:220;236
+msgid "test"
+msgstr "teszt"
+
+#: watchlist/watchlist.module:306
+msgid "Inappropriate name !name requested."
+msgstr "Nem megfelelő név! !name szükséges."
+
+#: watchlist/watchlist.module:448
+msgid "No watched or banned words found."
+msgstr "Nincs figyelt vagy tiltott szó."
+
+#: watchlist/watchlist.module:15
+msgid "Watchlist settings"
+msgstr "Tiltások beállításai"
+
+#: watchlist/watchlist.module:16
+msgid "Set the watchlist words, types of content to act on, pre-moderation"
+msgstr "A "
+
+#: watchlist/watchlist.module:21
+msgid "Test watchlist settings"
+msgstr "Tiltó beállítások tesztelése"
+
+#: watchlist/watchlist.module:22
+msgid "Test the regular expressions set in the watchlist by testing words and sentences"
+msgstr ""
+
+#: watchlist/watchlist.module:0
+#: watchlist/watchlist.info:0
+msgid "watchlist"
+msgstr "Tiltott szavak listája"
+
+#: watchlist/watchlist.info:0
+msgid "A filter/check system to validate content on the site"
+msgstr "Szűrő/ellenőrző rendszer a honlap tartalmának moderálásához"
+

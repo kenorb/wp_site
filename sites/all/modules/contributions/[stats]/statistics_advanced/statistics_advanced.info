@@ -1,0 +1,13 @@
+; $Id$
+name = Statistics advanced settings
+description = Adds advanced settings and extra functionality to the Statistics module.
+dependencies[] = statistics
+enhanced[] = browscap
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-12-18
+version = "6.x-1.3"
+core = "6.x"
+project = "statistics_advanced"
+datestamp = "1229579153"
+

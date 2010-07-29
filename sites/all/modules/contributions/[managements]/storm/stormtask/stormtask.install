@@ -1,0 +1,60 @@
+<?php
+// $Id: stormtask.install,v 1.2.4.2 2008/09/19 12:44:54 robertogerola Exp $
+
+/**
+ * @file
+ */
+
+function stormtask_install() {
+  drupal_install_schema('stormtask');
+}
+
+function stormtask_uninstall() {
+  drupal_uninstall_schema('stormtask');
+}
+
+function stormtask_schema() {
+  $schema['stormtask'] = array(
+    'fields'        => array(
+      'vid'                 => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'nid'                 => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'stepno'              => array('type' => 'varchar', 'length' => 50),
+      'organization_nid'    => array('type' => 'int'),
+      'organization_title'  => array('type' => 'varchar', 'length' => 150),
+      'project_nid'         => array('type' => 'int'),
+      'project_title'       => array('type' => 'varchar', 'length' => 150),
+      'parent_nid'          => array('type' => 'int'),
+      'weight'              => array('type' => 'int'),
+      'taskstatus'          => array('type' => 'varchar', 'length' => 20),
+      'taskcategory'        => array('type' => 'varchar', 'length' => 20),
+      'taskpriority'        => array('type' => 'varchar', 'length' => 20),
+      'pricemode'           => array('type' => 'varchar', 'length' => 20),
+      'price'               => array('type' => 'float'),
+      'currency'            => array('type' => 'varchar', 'length' => 20),
+      'datebegin'           => array('type' => 'int', 'default' => 0),
+      'dateend'             => array('type' => 'int', 'default' => 0),
+      'durationunit'        => array('type' => 'varchar', 'length' => 20),
+      'duration'            => array('type' => 'float', 'default' => 0),
+    ),
+    'primary key' => array('vid', 'nid'),
+  );
+
+  return $schema;
+}
+
+function stormtask_update_1() {
+  $ret = array();
+  db_add_field($ret, 'stormtask', 'taskcategory', array('type' => 'varchar', 'length' => 20));
+  db_add_field($ret, 'stormtask', 'taskpriority', array('type' => 'varchar', 'length' => 20));
+  return $ret;
+}
+
+function stormtask_update_2() {
+  $ret = array();
+  db_add_field($ret, 'stormtask', 'datebegin', array('type' => 'int', 'default' => 0));
+  db_add_field($ret, 'stormtask', 'dateend', array('type' => 'int', 'default' => 0));
+  db_add_field($ret, 'stormtask', 'durationunit', array('type' => 'varchar', 'length' => 20));
+  db_add_field($ret, 'stormtask', 'duration', array('type' => 'float', 'default' => 0));
+  return $ret;
+}
+

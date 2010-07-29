@@ -1,0 +1,83 @@
+<?php
+
+/* This file is part of "Broken Anchor for Node comments Module".
+ *    Copyright 2009, arNuméral
+ *    Author : Yoran Brault
+ *    eMail  : yoran.brault@bad_arnumeral.fr (remove bad_ before sending an email)
+ *    Site   : http://www.arnumeral.fr/node/2
+ *
+ * "Broken Anchor for Node comments Module" is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * "Broken Anchor for Node comments Module" is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with "Broken Anchor for Node comments Module"; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+
+/**
+ * Implementation of hook_menu
+ */
+function broken_anchor_node_menu() {
+  $items = array (
+  'admin/settings/broken_anchor/nodes' => array (
+      'title' => t('Nodes'), 
+      'description' => t('Broken anchor settings.'), 
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array ('broken_anchor_node_admin_settings'),
+      'access arguments' => array ('administer site configuration'),
+      'file' => 'broken_anchor_node.admin.inc',
+      'type' => MENU_LOCAL_TASK,
+  ),
+  );
+  return $items;
+}
+
+
+/**
+ * Implementation of hook_broken_anchor_info
+ */
+function broken_anchor_node_broken_anchor_info() {
+  return array('description'=> "Nodes content");
+}
+
+function broken_anchor_node_broken_anchor_link($id) {
+  $node=node_load($id);
+  return l($node->title, "node/$id/edit",array('attributes'=>array('target'=>'broken_anchor')));
+}
+
+function broken_anchor_node_broken_anchor_get_progress($id) {
+  $total=db_result(db_query("select count(*) from {node}"));
+  $passed=db_result(db_query("select count(*) from {node} where nid < %d",$id));
+  return array('passed'=>$passed, 'total'=>$total);
+  }
+/**
+ * Implementation of hook_broken_anchor_get_contents
+ */
+function broken_anchor_node_broken_anchor_get_contents($start_id, $limit) {
+  $cursor=db_query("
+      select nid as id 
+      from {node} 
+      where nid >= %d 
+      order by nid 
+      limit %d", 
+  $start_id, $limit);
+  $nodes=array();
+  while ($nid=db_result($cursor)) {
+    $node=node_load($nid);
+    $node=node_prepare($node, FALSE);
+    $nodes[]=array(
+      'id'=>$nid,
+      'content'=>$node->body,
+    );
+  }
+  return $nodes;
+}

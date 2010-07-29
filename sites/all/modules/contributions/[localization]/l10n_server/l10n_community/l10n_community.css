@@ -1,0 +1,200 @@
+/* $Id: l10n_community.css,v 1.1.2.10 2008/07/11 07:47:35 goba Exp $ */
+
+div.admin .admin-panel-contribute {
+  background: #ffb;
+  margin-bottom: 2em;
+  padding-bottom: 0.3em;
+}
+table#l10n-community-overview {
+  width: 45%;
+  margin-left: 1em;
+  float: left;
+}
+table#l10n-community-overview td {
+  vertical-align: middle;
+}
+div.admin table#l10n-community-overview {
+  width: auto;
+}
+div.admin .form-submit {
+  margin-top: 0;
+}
+div.admin form {
+  margin-bottom: 0 !important;
+}
+
+/* Overview navigation tables for projects and languages */
+#l10n-community-overview td, #l10n-community-overview thead th {
+  text-align: center;
+}
+#l10n-community-overview td.rowhead, #l10n-community-overview thead th.rowhead {
+  text-align: left;
+}
+.l10n-community-progress {
+  height: 1em;
+  border: 1px solid #adadad;
+  padding: 2px;
+  background-color: #f5f5f5;
+}
+.l10n-community-progress-translated,
+.l10n-community-progress-untranslated {
+  background-color: #69b123;
+  height: 1em;
+  float: left;
+}
+.l10n-community-progress-untranslated {
+  background-color: #bdbdbd;
+}
+
+/* String search filtering form */
+#l10n-community-filter-form {
+  white-space:nowrap;
+}
+
+#l10n-community-filter-form a.permalink {
+  font-size:90%;
+}
+
+#l10n-community-filter-form .form-text {
+  width: 10em !important; 
+}
+
+/* Emphasized replaceable parts of translatables */
+em.l10n-community-marker {
+  font-weight: bold;
+}
+
+/* Translation editor styles */
+#l10n-community-translate-view .pager,
+#l10n-community-translate-form .pager {
+  margin:1em 0em;
+}
+
+table.l10n-server-translate .hidden {
+  display:none;
+}
+
+table.l10n-server-translate input.form-text,
+table.l10n-server-translate textarea {
+  width:95%;
+}
+
+table.l10n-server-translate td {
+  vertical-align:top;
+  width:50%;
+}
+
+  table.l10n-server-translate td.source {
+    padding:10px 5px;
+  }
+
+  table.l10n-server-translate td.translation {
+    padding:0px;
+  }
+
+  table.l10n-server-translate td .l10n-panes {
+    min-height:60px;
+    position:relative;
+    padding:0px 20px 0px 0px;
+  }
+
+  table.l10n-server-translate td .pane {
+    padding:10px 5px;
+  }
+
+  table.l10n-server-translate td .suggestions,
+  table.l10n-server-translate td .lookup {
+    display:none;
+  }
+  
+table.l10n-server-translate .toolbox {
+  position:absolute; top:0px; right:0px;
+}
+
+table.l10n-server-translate tr .form-item {
+  white-space: normal;
+}
+
+table.l10n-server-translate label.option {
+  font-size:90%;
+}
+
+.l10n-button {
+  cursor:pointer;
+  display: block;
+  width: 20px;
+  height: 20px;
+  overflow: hidden;
+  text-indent: -9999px;
+}
+
+  .l10n-approval-buttons {
+    padding-right:10px;
+    float:right;
+  }
+
+  .l10n-approval-buttons .l10n-button {
+    float:left;
+  }
+
+  .l10n-approval-buttons .l10n-approve,
+  .l10n-save {
+    background: url(images/icon_approval.gif) 0px 0px no-repeat;
+  }
+
+    .l10n-approval-buttons .l10n-approve:active,
+    .l10n-save:active {
+      background-position: 0px bottom;
+    }
+
+  .l10n-approval-buttons .l10n-decline,
+  .l10n-clear {
+    width:21px;
+    background: url(images/icon_approval.gif) -20px 0px no-repeat;
+  }
+
+    .l10n-approval-buttons .l10n-decline:active,
+    .l10n-clear:active {
+      background-position: -20px bottom;
+    }
+
+  .l10n-community-copy {
+    background: url(images/icon_copy.gif) no-repeat;
+  }
+
+  .l10n-translate {
+    background: url(images/icon_toolbox.gif) 0px 0px no-repeat;
+  }
+
+    .l10n-translate.active {
+      background: url(images/icon_toolbox.gif) right 0px no-repeat;
+    }
+
+  .l10n-suggestions {
+    background: url(images/icon_toolbox.gif) 0px -40px no-repeat;
+  }
+
+    .l10n-suggestions.active {
+      background: url(images/icon_toolbox.gif) right -40px no-repeat;
+    }
+
+  .l10n-lookup {
+    background: url(images/icon_toolbox.gif) 0px -20px no-repeat;
+  }
+
+    .l10n-lookup.active {
+      background: url(images/icon_toolbox.gif) right -20px no-repeat;
+    }
+
+ul.l10n-community-strings li {
+  padding-left: 20px;
+}
+
+ul.l10n-community-strings li .buttons {
+  margin-left:-20px;
+  float:left;  
+}
+
+.l10n-community-string .original {
+  display:none;
+}

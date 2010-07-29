@@ -1,0 +1,29 @@
+// $Id: INSTALL.txt,v 1.6 2008/10/04 15:34:54 agentken Exp $
+
+/**
+ * @file
+ * INSTALL file for Domain Conf
+ */
+
+Domain Access: Site Configuration
+Advanced site configuration options for Domain Access.
+
+CONTENTS
+--------
+
+1.  Introduction
+2.  Installation
+
+----
+1.  Introduction
+
+This routine was in hook_init(), but there are cases where
+the $conf array needs to be loaded in early phases of bootstrap.
+In particular, these variables need to be available during variable_init().
+
+
+----
+2.  Installation
+
+As of 6.x.2, this module is now loaded directly from settings.php when you 
+install the Domain module correctly.

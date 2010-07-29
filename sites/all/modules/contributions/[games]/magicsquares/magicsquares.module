@@ -1,0 +1,228 @@
+<?php
+
+// $Id: magicsquares.module,v 1.10 2008/07/06 09:31:39 skinhat Exp $
+
+/*
+ * Drupal Module: Magic Squares
+ *
+ * @author: Glenn Linde <www.skinhat.com/contact>
+ */
+
+function magicsquares_menu() {
+  $items = array();
+
+
+    $items['admin/settings/magicsquares'] = array(
+      'title' => 'Magic Squares Configuration',
+      'description' => 'Configure the game.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('magicsquares_admin_settings'),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM, // optional
+    );
+
+    $items['magicsquares/win'] = array(
+      'title' => 'none',
+      'page callback' => 'magicsquares_win',
+      //'type' => MENU_NORMAL_ITEM ,
+      'access callback' => TRUE,
+      'type' => MENU_CALLBACK,
+      'access' => TRUE
+
+    );
+  return $items;
+}
+
+/**
+* Display help and module information
+* @param section which section of the site we're displaying help
+* @return help text for section
+*/
+function magicsquares_help($path,$arg) {
+
+  $output = '';
+
+  switch ($path) {
+    case "admin/modules#description":
+      $output = t("Displays links to nodes created on this date");
+      break;
+  }
+
+  return $output;
+} // function magicsquares_help
+
+
+/**
+/* Generate HTML for the magicsquares block
+* @param op the operation from the URL
+* @param delta offset
+* @returns block HTML
+*/
+function magicsquares_block($op='list', $delta=0) {
+  if ($op == "list") {
+    $block[0]["info"] = t('Magic Squares');
+    return $block;
+  } else if ($op == 'view') {
+    $block['subject'] = 'Magic Squares';
+    $modulepath='/'.drupal_get_path('module', 'magicsquares');
+
+    $content='<style>.magicsquares_cell {';
+    //$content.='  width:36px;';
+    //$content.='  height:40px;';
+    $content.='  font-family:Verdana, Arial;';
+    $content.='  font-size:10pt;';
+    $content.='  font-weight:bold;';
+    $content.='  background-color:#606060;';
+    $content.='  color:#ffffff;';
+    $content.='  border-top:3px solid #cccccc;';
+    $content.='  border-left:3px solid #cccccc;';
+    $content.='  border-right:3px solid #000000;';
+    $content.='  border-bottom:3px solid #000000;';
+    $content.='  text-align:center;';
+    $content.='}';
+    $content.='.hole {';
+    $content.='  background-color:#999999;';
+    $content.='  text-align:center;';
+    $content.='}';
+    $content.='</style>';
+    $content.='<div id=\'magicsquares_formmessage\' style=\'height:50px; ibackground-color:#c7e7f4\'>';
+    $content.=variable_get('magicsquares_start', 'Order the squares as quickly as possible.').'
+</div>';
+    $content.='<script language=\'javascript\' src=\''. $modulepath.'/magicsquares.js\'></script>';
+    $content.='<div id=\'magicsquares_board\'></div>';
+    $content.='<div id=\'magicsquares_fldStatus\' class=\'capt2\'>&nbsp;</div><br/>';
+    $content.='<script language=\'javascript\' >modulepath=\''.$modulepath.'\'; ';
+
+
+    if (variable_get('magicsquares_besttime', '')!='')
+      $content.='magicsquares_besttime='.variable_get('magicsquares_besttime', '').'; ';
+
+     $content.='messagestart=\''.variable_get('magicsquares_start', 'Order the squares as quickly as possible.').'\'; ';
+     $content.='messagewin=\''.variable_get('magicsquares_win', 'Well done. Youve solved the puzzle..').'\'; ';
+    $content.='imagename=\''.variable_get('magicsquares_image', $modulepath.'/image.jpg').'\'; ';
+	 if (variable_get('magicsquares_shuffleimageinitially', false))
+       $content.='magicsquares_shuffleimageinitially=true;';
+	
+    $content.=  ' loadBoard('.variable_get('magicsquares_width', 4).');';
+    $content.=  '</script>';
+ 
+    $content.='<input type=\'button\' class=\'but\' value=\'Start Game\' id=\'magicsquares_startstop\' onClick=\' startGame();\'/>';
+    $content.='&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    $content.='<span align=\'right\' style=\'font-size:0.6em\'><a href=\'http://www.skinhat.com/drupal\'>Skinhat</a></span>';
+
+    $content.='<form id=\'magicsquares_winform\' method=\'POST\' action=\'/magicsquares/win\' > ';
+    $content.='<input type=\'hidden\' id=\'magicsquares_message\' name=\'magicsquares_message\'/>';
+    $content.='<input type=\'hidden\' id=\'magicsquares_ticker\' name=\'magicsquares_ticker\'/>';
+    $content.='<input type=\'hidden\' id=\'magicsquares_win\'/>';
+    $content.='</form>';
+    if (variable_get('magicsquares_besttime', -1)>0)
+      $content.='Best: '.variable_get('magicsquares_besttime', -1).' secs by <b>'.variable_get('magicsquares_bestuser', 'anon').'</b>';
+
+    $block['content'] = $content;
+    return $block;
+  }
+
+} // end magicsquares_block
+
+/**
+ * Implementation of hook_settings()
+ */
+function magicsquares_admin_settings() {
+  $form = array();
+  $form['magicsquares_start'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Start Message'),
+    '#default_value' => variable_get('magicsquares_start', 'Order the squares as quickly as possible.'),
+    '#description' => t('When a player first starts what is the message?'), 
+    '#required' => TRUE
+  );
+
+
+  $form['magicsquares_win'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Message when reordered puzzle'),
+    '#default_value' => variable_get('magicsquares_win', 'Well done. Youve solved the puzzle.'),
+    '#description' => t('Message when player solved the puzzle'), 
+    '#required' => TRUE
+  );
+
+  $form['magicsquares_width'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Width of Magic Square'),
+    '#default_value' => variable_get('magicsquares_width', 4),
+    '#description' => t('How wide is the magic square?'), 
+    '#required' => TRUE,
+  );
+
+  $form['magicsquares_image'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Image'),
+    '#default_value' => variable_get('magicsquares_image', '/'.drupal_get_path('module', 'magicsquares').'/image.jpg'),
+    '#description' => t('URL of image to use in game. Leave blank if use numbers instead.')
+  );
+
+  $form['magicsquares_shuffleimageinitially'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Board initially shuffled?'),
+    '#default_value' => variable_get('magicsquares_shuffleimageinitially', false),
+    '#description' => t('Does the player see the board shuffled initially?')
+  );  
+  
+  $form['magicsquares_besttime'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Best game solve time'),
+    '#default_value' => variable_get('magicsquares_besttime', ''),
+    '#description' => t('Set the best solve game time. Set to blank to reset.')
+  );
+
+  $form['magicsquares_bestuser'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Best game solve user'),
+    '#default_value' => variable_get('magicsquares_bestuser', ''),
+    '#description' => t('Set the user who got the best solve time')
+  );
+
+  return system_settings_form($form);
+}
+
+function magicsquares_admin_settings_validate($form, &$form_state) {
+  // Form submitted with single quotes
+  foreach ($form_state['values'] as $key => $value) {
+    if ( substr($key, 0, 15) == "magicsquares_" ) {
+      if ( ! strpos($value, "'") === false ) {
+        drupal_set_message(t("Countdown Timer admin settings may not contain single quotes(')."), 'error');
+        drupal_goto('admin/settings/magicsquares');
+      }
+    }
+  }
+}
+
+function magicsquares_win()
+{      
+  global $user;
+  $ticker=$_POST['magicsquares_ticker'];
+  $output='';
+  if ($ticker)
+  {
+    if ($user->name)
+    {
+      $message=$_POST['magicsquares_message'];
+ 
+      if ($message)
+        $output=$message.'<br/>';
+      $output.='Congratulations '.$user->name.' on getting '.$ticker.' seconds.'; //$user->uid;
+      variable_set('magicsquares_besttime',$ticker);
+      variable_set('magicsquares_bestuser',$user->name);
+    }
+    else
+      $output='Congratulations you got the best time. If you were logged in your score would have been recorded!';
+
+  }
+    return  $output;
+  //return theme('table', $output);
+
+}
+
+
+
+?>

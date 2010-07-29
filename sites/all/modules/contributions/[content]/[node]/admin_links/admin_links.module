@@ -1,0 +1,96 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Adds edit and delete links to node lists, and adds support for the
+ * Universal Edit Button.
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function admin_links_menu() {
+  $items['admin/settings/admin-links'] = array(
+    'title' => 'Admin links',
+    'description' => 'Settings for administration links in node lists.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('admin_links_settings_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'admin_links.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_menu_alter().
+ *
+ * Change node delete menu callback to an accessible tab on the node page.
+ */
+function admin_links_menu_alter(&$callbacks) {
+  $callbacks['node/%node/delete']['type'] = MENU_LOCAL_TASK;
+  $callbacks['node/%node/delete']['weight'] = 2;
+}
+
+/**
+ * Implementation of hook_link().
+ *
+ * Adds node admin links to node lists.
+ */
+function admin_links_link($type, $node = NULL, $teaser = FALSE) {
+  $links = array();
+
+  if ($type == 'node') {
+    $node_page = (arg(0) == 'node' && is_numeric(arg(1)));
+    if (!$node_page && admin_links_var('admin_links_edit') && node_access('update', $node)) {
+      $links['admin_edit'] = array(
+        'title' => t('Edit'),
+        'href' => "node/{$node->nid}/edit",
+        'query' => drupal_get_destination(),
+      );
+    }
+    if (!$node_page && admin_links_var('admin_links_delete') && node_access('delete', $node)) {
+      $links['admin_delete'] = array(
+        'title' => t('Delete'),
+        'href' => "node/{$node->nid}/delete",
+        'query' => drupal_get_destination(),
+      );
+    }
+    if ($node_page && admin_links_var('admin_links_universaledit') && node_access('update', $node)) {
+      drupal_add_link(array(
+        'rel' => 'alternate',
+        'type' => 'application/x-wiki',
+        'title' => t('Edit this page'),
+        'href' => url("node/{$node->nid}/edit", array('absolute' => TRUE)),
+      ));
+    }
+  }
+
+  return $links;
+}
+
+/**
+ * Internal default variables for admin_links_var().
+ */
+function admin_links_variables() {
+  return array(
+    'admin_links_edit' => 1,
+    'admin_links_delete' => 0,
+    'admin_links_universaledit' => 0,
+  );
+}
+
+/**
+ * Internal implementation of variable_get().
+ */
+function admin_links_var($name) {
+  static $defaults = NULL;
+  if (!isset($defaults)) {
+    $defaults = admin_links_variables();
+  }
+  if (!isset($defaults[$name])) {
+    watchdog('admin_links', 'Default variable for %variable not found.', array('%variable' => $name));
+  }
+  return variable_get($name, isset($defaults[$name]) ? $defaults[$name] : NULL);
+}

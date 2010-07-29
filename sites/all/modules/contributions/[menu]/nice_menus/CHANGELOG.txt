@@ -1,0 +1,60 @@
+// $Id: CHANGELOG.txt,v 1.9 2008/07/11 15:43:12 add1sun Exp $
+
+=== DRUPAL 6 ===
+6.x-1.2/6.x-2.0
+- BUG #235562: JS is now called using drupal_add_js and you can enable/disable IE support. This will turn on JS for all browsers but Nice menus only actually runs its JS hacks for IE.
+- TRANSLATION added. Swedish translation by seals.
+  
+6.x-1.1 (March 2008)
+- BUG #225439: Fixed a minor bug re: the link theme function.
+- BUG #228323: Using user name on the navigation block.
+- BUG #235053: Empty ULs were created when the user did not have access
+  to child menu items.
+- BUG #236078: Primary link theme function assumed using the default
+  primary-links menu.
+- FEATURE #211749: The number of Nice Menus blocks can now be set to any
+  number from 0-99. It is a textfield rather than the limited dropdown from
+  before.
+- FEATURE #170840: Added an IE hover class for the LI so it can be themed
+  the same way as other browsers.
+  
+6.x-1.0 (February 2008)
+- Official release for Drupal 6.
+
+6.x-1.0-rc2 (January 2008)
+- BUG #210284: Moved CSS and JS inclusion to hook_init rather than the theme function due to block caching.
+
+6.x-1.0-rc1 (January 2008)
+- BUG # 206910: Fixed wrong submit handler for the custom CSS setting.
+
+6.x-1.0-beta (January 2008)
+- BUG #205662: Fixed disabled menu items still showing.
+- TASK: Cleaned up documentation and removed debug code.
+
+6.x-1.0-alpha1 (December 2007)
+- Upgraded to Drupal 6.
+
+=== DRUPAL 5 ===
+5.x-1.2 (February 2008)
+- BUG #215477: Remove extra creation of iFrame and make it JS only as well as adding the JS src fix for SSL.
+
+5.x-1.1 (December 2007)
+- BUG #196323: Removed slideDown/Up in IE JS to improve performance.
+- BUG #200990: Changed iFrame dimensions to get rid of blank box in certain setups.
+- TASK: Adding newlines to lists so the view source isn't a nightmare of one long string.
+  
+5.x-1.0 (November 2007)
+- First official release.
+
+5.x-1.x-dev
+July 2007:
+- Add ability to create custom menu trees.
+- Add themeable primary links function.
+
+June 2007:
+- Now supports up to 3 levels of children menus.
+
+April 2007:
+- Upgraded to Drupal 5.
+- Class name changes to using dash(-) rather than underscore(_).
+- Add themeable function.

@@ -1,0 +1,63 @@
+-------------
+Requirements:
+-------------
+ - PHP 4.3.0 or later.
+     http://www.php.net/downloads.php
+
+ - Drupal 5.x
+     http://drupal.org/download
+
+ - Ad module 1.5 or later.
+     http://drupal.org/project/ad
+
+ - Version 1.0.1 or later of the geoip PHP PECL package:
+     http://pecl.php.net/package/geoip
+
+ - Version 1.4.0 or later of the GeoIP C library:
+     http://www.maxmind.com/app/c
+
+ - One or more of the GeoIP databases:
+     http://www.maxmind.com/app/geoip_features
+   A couple of which are freely available:
+     http://www.maxmind.com/app/geoip_country
+     http://www.maxmind.com/app/geolitecity
+
+
+-------------
+Installation:
+-------------
+1) Download, compile and install the latest MaxMind GeoIP C library.  (The URL
+   can be found above in the requirements section.)
+
+   Debian/Ubuntu users can easily install the GeoIP C library without compiling
+   it using the following command:
+     sudo aptitude install libgeoip-dev libgeoip1
+
+
+2) Download and install the latest geoip PHP PECL package.  (The URL can be
+   found above in the requirements section.)  Directions on how to install
+   and configure the geoip package can be found here:
+     http://www.php.net/manual/en/geoip.setup.php
+
+   It is generally as simple as typing the following command, then adding 
+   "extension=geoip.so" to your php.ini:
+     sudo pecl install geoip
+
+   Once installed, restart Apache and review the output from phpinfo() to 
+   verify the geoip is properly installed.
+
+
+3) Download and install one or more of the MaxMind GeoIP binary databases.  You
+   can install one of the free databases, or one of the commercial databases.
+   (URLs can be found above in the requirements sections.)  Installation
+   instructions can be found here:
+     http://www.maxmind.com/app/installation
+
+
+4) Enable the ad_geoip module.
+
+   Visit "Administer >> Site building >> Modules" and enable the "Ad GeoIP"
+   module, found in the "Ad" section toward the top of that patch.  You can
+   then visit "Administer >> Logs >> Status report" to confirm that the GeoIP
+   requirements are properly installed.
+

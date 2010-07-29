@@ -1,0 +1,31 @@
+/* $Id: paging.css,v 1.5 2009/01/19 07:26:09 Gurpartap Exp $ */
+
+div.paging-button-wrapper {
+  float: right;
+  margin: 0;
+  padding-right: 5%;
+}
+
+div.teaser-button-wrapper {
+  padding-right: 1%;
+}
+
+img.paging-separator-image {
+  cursor: pointer;
+  outline: none;
+}
+
+.paging-drop-down {
+  vertical-align: bottom;
+}
+
+#paging-title-navigation {
+  margin: 0 auto;
+  width: auto;
+  border-collapse: separate;
+}
+
+#paging-title-navigation ul.links li {
+  padding-left: .5em;
+  padding-right: .5em;
+}

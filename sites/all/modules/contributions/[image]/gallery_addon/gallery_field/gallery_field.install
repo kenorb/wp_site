@@ -1,0 +1,30 @@
+<?php
+// $Id: gallery_field.install,v 1.1 2008/06/09 17:29:41 profix898 Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function gallery_field_install() {
+  content_notify('install', 'gallery_field');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function gallery_field_uninstall() {
+  content_notify('uninstall', 'gallery_field');
+}
+
+/**
+ * Implementation of hook_enable().
+ */
+function gallery_field_enable() {
+  content_notify('enable', 'gallery_field');
+}
+
+/**
+ * Implementation of hook_disable().
+ */
+function gallery_field_disable() {
+  content_notify('disable', 'gallery_field');
+}

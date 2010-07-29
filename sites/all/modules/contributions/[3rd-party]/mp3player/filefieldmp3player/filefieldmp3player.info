@@ -1,0 +1,13 @@
+; $Id: filefieldmp3player.info,v 1.1.2.3 2009/01/02 12:18:02 starnox Exp $
+name = Filefield MP3 Player Formatter
+description = "Formats an MP3 file into the MP3 Player."
+dependencies[] = filefield
+dependencies[] = mp3player
+package = CCK
+core = 6.x
+; Information added by drupal.org packaging script on 2009-01-11
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "mp3player"
+datestamp = "1231632662"
+

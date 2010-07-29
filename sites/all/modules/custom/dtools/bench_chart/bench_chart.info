@@ -1,0 +1,9 @@
+; $Id: bench_chart.info,v 1.1 2009/03/27 12:49:42 kenorb Exp $
+name = "Bench Chart"
+description = "Show statistics for hook execution"
+dependencies[] = bench_chart_helper
+dependencies[] = charts
+package = "Development"
+core = 6.x
+version = "6.x-1.x-dev" 
+

@@ -1,0 +1,9 @@
+; $Id$
+name = Message Effects
+description = Calls more attention to Drupal messages.
+version = "$Name: alpha$"
+package = User Interface
+dependencies[] = jquery_update
+dependencies[] = jquery_ui
+dependencies[] = colorpicker
+core = 6.x

@@ -1,0 +1,47 @@
+<?php
+// $Id: views_savedsearches.install,v 1.1.2.1 2007/09/05 10:14:42 wimleers Exp $
+
+/**
+ * Implementation of hook_schema().
+ */
+function views_savedsearches_schema() {
+  $schema['views_savedsearches'] = array(
+    'fields' => array(
+      'sid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => '30',
+        'not null' => TRUE),
+      'filters' => array(
+        'type' => 'text',
+        'size' => 'big'),
+    ),
+    'primary key' => array('sid'),
+  );
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function views_savedsearches_install() {
+  drupal_install_schema('views_savedsearches');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function views_savedsearches_uninstall() {
+  drupal_uninstall_schema('views_savedsearches');
+}

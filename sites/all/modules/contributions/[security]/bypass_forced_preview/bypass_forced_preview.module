@@ -1,0 +1,34 @@
+<?php
+// $Id: bypass_forced_preview.module,v 1.3.2.2 2008/11/19 20:50:18 markuspetrux Exp $
+
+/**
+ * @file
+ * Allow privileged users bypass forced node/comment post preview.
+ */
+
+/**
+ * Implementation of hook_perm().
+ */
+function bypass_forced_preview_perm() {
+  return array('bypass forced preview');
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function bypass_forced_preview_form_alter(&$form, $form_state, $form_id) {
+  // Deal with node edit form.
+  if (isset($form['type']) && isset($form['#node']) && $form['type']['#value'] .'_node_form' == $form_id) {
+    if (isset($form['buttons']['submit']['#access']) && user_access('bypass forced preview')) {
+      $form['buttons']['submit']['#access'] = TRUE;
+    }
+  }
+  // Deal with the comment form.
+  if ($form_id == 'comment_form' && !isset($form['submit']) && user_access('bypass forced preview')) {
+    // Compute the weight of the submit button based on weight defined for preview button.
+    // This is just a defensive measure in case of core is changed. It defaults to 19,
+    // which is the weight used in comment module in this Drupal version.
+    $weight = (isset($form['preview']['#weight']) ? $form['preview']['#weight']-1 : 19);
+    $form['submit'] = array('#type' => 'submit', '#value' => t('Save'), '#weight' => $weight);
+  }
+}

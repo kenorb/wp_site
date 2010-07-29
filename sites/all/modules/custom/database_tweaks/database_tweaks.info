@@ -1,0 +1,6 @@
+; $Id$
+name = Database tweaks
+description = Database tweaks MySQL settings on heavy websites.
+core = 6.x
+package = Database
+version = "6.x-0.2-test"

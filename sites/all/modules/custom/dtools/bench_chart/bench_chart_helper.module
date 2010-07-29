@@ -1,0 +1,19 @@
+<?php
+/*
+	version: $Id: bench_chart_helper.module,v 1.1 2009/03/27 12:49:42 kenorb Exp $
+	author: kenorb@gmail.com
+*/
+
+/**
+ * Implementation of hook_boot().  Runs even for cached pages.
+ */
+function bench_chart_helper_boot() {
+    if (module_exists('bench_chart')) {
+	bench_chart_gen_hooks('bench_chart_helper', 'end');
+	bench_chart_my_hook(array('boot','end'));
+    }
+} 
+
+if (function_exists('bench_chart_my_hook')) {
+    bench_chart_my_hook(array('(load)', 'end'));
+}

@@ -1,0 +1,218 @@
+<?php
+// $Id: lm_paypal.base.test,v 1.1.2.4 2009/01/19 07:46:57 lyricnz Exp $
+
+// Why is this required? Otherwise I get PHP errors
+include_once 'sites/all/modules/simpletest/drupal_web_test_case.php';
+
+abstract class AbstractLmPaypalTestCase extends DrupalWebTestCase {
+
+  /**
+   * SimpleTest core method: code run before each and every test method.
+   */
+  function setUp() {
+    // Call the setUp() function from the parent class, and add some modules.
+    $args = func_get_args();
+    call_user_func_array(
+      array('AbstractLmPaypalTestCase', 'parent::setUp'),
+      array_merge($args, array('lm_paypal', 'dblog')));
+
+    // Clear out the Watchdog table.
+    $this->emptyWatchdog();
+
+    // Configure Drupal's mail-delivery to use a dummy function that adds
+    // entries to the watchdog() log rather than actually sending mail.
+    variable_set('smtp_library', drupal_get_path('module', 'lm_paypal') . '/tests/lm_paypal.base.test');
+
+    // Setup basic config. This *disables* IPN validation!
+    variable_set('lm_paypal_business', 'dummy@dummy.com');
+    variable_set('lm_paypal_host', 'www.sandbox.paypal.com');
+    variable_set('lm_paypal_ipns_max_age', 120);
+    variable_set('lm_paypal_debug', FALSE);
+    variable_set('lm_paypal_obey_test_ipns', TRUE);
+    variable_set('lm_paypal_skip_validation', TRUE);
+  }
+
+  /**
+   * SimpleTest core method: code run after each and every test method.
+   */
+  function tearDown() {
+    // Check for watchdog errors
+    $this->assertNoWatchdogErrors(WATCHDOG_WARNING);
+
+    // Always call the tearDown() function from the parent class.
+    parent::tearDown();
+  }
+
+  /**
+   * Load an unserialize a file from the lm_paypal/tests/ directory.
+   * @param $filename
+   *   Basename of the file to load.
+   * @return mixed
+   *   The unserialized data from the given file.
+   */
+  function loadTestIpn($filename) {
+    $filename = drupal_get_path('module', 'lm_paypal') . '/tests/' . $filename;
+    return unserialize(file_get_contents($filename, TRUE));
+  }
+
+  /**
+   * Using a prepared IPN (from the IPN test simulator), and possibly some
+   * overrides, send this to the IPN service on the local Drupal install.
+   * @param $filename
+   *   Basename of the file to load.
+   * @param $overrides
+   *   Array of values to overwrite from the IPN before posting.
+   * @return array the IPN as submitted to the POST request.
+   */
+  function postPreparedIpn($filename, $overrides = array()) {
+    $post = $this->loadTestIpn($filename);
+    unset($post['protection_eligibility']);
+
+    // Apply overrides from arguments.
+    $post = array_merge($post, $overrides);
+
+    $content = $this->curlExec(
+      array(
+        CURLOPT_URL => $this->getAbsoluteUrl('lm_paypal/ipn'),
+        CURLOPT_POST => TRUE,
+        CURLOPT_POSTFIELDS => $post,
+      )
+    );
+
+    // return $content;
+    return $post;
+  }
+
+
+  function _getWatchdogMessageCount($message, $severity = NULL) {
+    if ($severity == NULL) {
+      $result = db_query("SELECT COUNT(*) c FROM {watchdog} WHERE message LIKE '%s'", $message);
+    }
+    else {
+      $result = db_query("SELECT COUNT(*) c FROM {watchdog} WHERE message LIKE '%s' AND severity = %d", $message, $severity);
+    }
+    $row = db_fetch_array($result);
+    return $row['c'];
+  }
+
+
+  function assertWatchdogError($message, $severity = NULL, $reset = TRUE) {
+    $num_messages = $this->_getWatchdogMessageCount($message, $severity);
+    $this->assertNotEqual($num_messages, 0, "Found $num_messages watchdog message \"$message\" (expecting > 0)");
+    if ($reset) {
+      $this->deleteWatchdogMessage($message);
+    }
+  }
+
+  function assertNoWatchdogError($message, $severity = NULL, $reset = TRUE) {
+    $num_messages = $this->_getWatchdogMessageCount($message, $severity);
+    $this->assertEqual($num_messages, 0, "Found $num_messages watchdog message \"$message\" (expecting 0)");
+    if ($reset) {
+      $this->deleteWatchdogMessage($message);
+    }
+  }
+
+
+
+  /**
+   * Check to see if any messages with severity $severity or higher have been
+   * recorded by watchdog(). This requires the dblog module to be enabled.
+   *
+   * @param $severity
+   *   (optional) The error level to start warning at, defaults to WATCHDOG_ERROR.
+   * @param $reset
+   *   (optional) If TRUE then delete ALL entries from the watchdog tables afterwards.
+   * @return
+   *   TRUE if any errors were found, FALSE otherwise.
+   */
+  function assertNoWatchdogErrors($severity = WATCHDOG_ERROR, $reset = TRUE) {
+    if (!module_exists('dblog')) {
+      return FALSE;
+    }
+
+    include_once drupal_get_path('module', 'dblog') .'/dblog.admin.inc';
+    $levels = watchdog_severity_levels();
+
+    // Check if there are any errors in the watchdog log.
+    $found = FALSE;
+    $result = db_query('SELECT type, severity, message, variables FROM {watchdog} WHERE severity <= %d', $severity);
+    while ($dblog = db_fetch_object($result)) {
+      $vars = array(
+        '%type' => t($dblog->type),
+        '!severity' => $levels[$dblog->severity],
+        '!message' => _dblog_format_message($dblog),
+      );
+      $this->fail(t('Watchdog-!severity (%type) !message', $vars));
+      $found = TRUE;
+    }
+
+    // Delete all messages from watchdog log if requested.
+    if ($reset) {
+      $this->emptyWatchdog();
+    }
+
+    return $found;
+  }
+
+  /**
+   * Delete ALL entries from the watchdog log provided by dblog.module.
+   */
+  function emptyWatchdog() {
+    if (module_exists('dblog')) {
+      db_query('DELETE FROM {watchdog}');
+    }
+  }
+
+  function deleteWatchdogMessage($message) {
+    // TODO: document that $message is a SQL search string
+    db_query("DELETE FROM {watchdog} WHERE message LIKE '%s'", $message);
+    return db_affected_rows();
+  }
+
+  function dumpWatchdogErrors($severity = WATCHDOG_ERROR, $reset = TRUE) {
+    if (!module_exists('dblog')) {
+      return FALSE;
+    }
+
+    include_once drupal_get_path('module', 'dblog') .'/dblog.admin.inc';
+    $levels = watchdog_severity_levels();
+
+    // Check if there are any errors in the watchdog log.
+    $result = db_query('SELECT type, severity, message, variables FROM {watchdog} WHERE severity <= %d', $severity);
+    while ($dblog = db_fetch_object($result)) {
+      $vars = array(
+        '%type' => t($dblog->type),
+        '!severity' => $levels[$dblog->severity],
+        '!message' => _dblog_format_message($dblog),
+      );
+      error_log(t('Watchdog-!severity (%type) !message', $vars));
+    }
+
+    // Delete all messages from watchdog log if requested.
+    if ($reset) {
+      $this->emptyWatchdog();
+    }
+  }
+
+  function writeFile($filename = 'out.html', $data = NULL) {
+    $data = ($data == NULL) ?  $this->drupalGetContent() : $data;
+    $filename = file_directory_temp() . '/' . $filename;
+    $this->assertTrue(file_put_contents($filename, $data), t('Wrote content to %filename', array('%filename' => $filename)));
+    drupal_set_message("Wrote content to $filename");
+  }
+
+  function dumpAllIpns() {
+    error_log("Dumping all IPNs:");
+    $result = db_query("SELECT * FROM {lm_paypal_ipns}");
+    while ($ipn = db_fetch_array($result)) {
+      error_log(print_r($ipn, TRUE));
+    }
+  }
+
+}
+
+if (!function_exists('drupal_mail_wrapper')) {
+  function drupal_mail_wrapper($message) {
+    watchdog('mail', 'Sent email', NULL, WATCHDOG_WARNING);
+  }
+}

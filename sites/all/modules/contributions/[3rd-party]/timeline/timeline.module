@@ -1,0 +1,457 @@
+<?php
+// $Id: timeline.module,v 1.20.2.4 2008/12/12 17:19:20 jmiccolis Exp $
+
+/**
+ * @file
+ * Module providing a scrollable timeline view for Drupal events and nodes.
+ */
+
+//////////////////////////////////////////////////////////////////////////////
+define('TIMELINE_HORIZONTAL', 0);
+define('TIMELINE_VERTICAL', 1);
+define('TIMELINE_ISO_DATE',      '/^([\d]{4})-([\d]{2})-([\d]{2})T([\d]{2}):([\d]{2}):([\d]{2})/');
+
+include dirname(__FILE__) .'/timeline.theme.inc';
+
+//////////////////////////////////////////////////////////////////////////////
+// DRUPAL API HOOKS
+
+/**
+ * Implementation of hook_help(). Provides online user help.
+ */
+function timeline_help($section) {
+  switch ($section) {
+    case 'admin/modules#name':
+      return t('timeline');
+    case 'admin/modules#description':
+      return t('Provides a draggable and scrollable timeline view. Requires the
+                views module and makes use of the events module if available.');
+    case 'admin/build/timelines':
+      return t('<p>Timeline views provide a draggable and scrollable widget for
+                 visualizing temporal information. This screen allows you to
+                 override default settings for each timeline. To actually
+                 create and manage timelines, use the <a href="!views">views
+                 administration</a> screen.</p>', array('!views' => url('admin/build/views')));
+  }
+}
+
+/**
+ * Implementation of hook_views_api
+ */
+function timeline_views_api() {
+  return array('api' => 2);
+}
+
+/**
+ * Implementation of hook_menu(). Defines menu items and page callbacks.
+ */
+function timeline_menu() {
+  $items = array();
+  $items['admin/settings/timeline'] = array(
+    'title' => 'Timeline',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('timeline_admin_settings'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['timeline/json'] = array(
+    'title' => '',
+    'page callback' => 'timeline_data_json',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['timeline/xml'] = array(
+    'title' => '',
+    'page callback' => 'timeline_data_xml',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Declares administrative settings for the module.
+ */
+function timeline_admin_settings() {
+  // Display settings
+  $form['display'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Display settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['display']['timeline_default_width'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Default width'),
+    '#default_value' => variable_get('timeline_default_width', '100%'),
+    '#size'          => 25,
+    '#maxlength'     => 6,
+    '#description'   => t('The default width of a timeline (in units of em, px or %), e.g. 600px or 90%.'),
+  );
+  $form['display']['timeline_default_height'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Default height'),
+    '#default_value' => variable_get('timeline_default_height', '400px'),
+    '#size'          => 25,
+    '#maxlength'     => 6,
+    '#description'   => t('The default height of a timeline (in units of em, px or %), e.g. 400px.'),
+  );
+  $form['display']['timeline_initial_date'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Initial date focus'),
+    '#default_value' => variable_get('timeline_initial_date', 'first'),
+    '#options'       => array('first' => t('First event in timeline'), 'last' => t('Last event in timeline'), 'today' => t('The current date')),
+    '#description'   => t('Determines which event or date the timeline views should initially be centered on after they have loaded.'),
+  );
+
+  // Cache settings
+  $form['caching'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Cache settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $period = drupal_map_assoc(array(0, 60, 180, 300, 600, 900, 1800, 2700, 3600, 10800, 21600, 32400, 43200, 86400), 'format_interval');
+  $period[0] = t('none');
+  $form['caching']['timeline_feed_lifetime'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Data feed cache lifetime on client'),
+    '#default_value' => variable_get('timeline_feed_lifetime', 0),
+    '#options'       => $period,
+    '#description'   => t('Determines whether to send HTTP expiry and cache control headers for timeline data feeds, allowing them to be cached in the user\'s browser for a pre-determined time. This can speed up timeline loading on the client and reduce load on the server, at the cost of potentially stale timeline data. Note that this is currently entirely a client-side setting; the timeline feeds are not cached on the server.'),
+  );
+
+  // Advanced settings
+  $form['advanced'] = array('#type' => 'fieldset', '#title' => t('Advanced settings'), '#collapsible' => TRUE, '#collapsed' => TRUE);
+  $form['advanced']['timeline_feed_type'] = array(
+    '#type'          => 'radios',
+    '#title'         => t('Data feed type'),
+    '#options'       => array('json' => t('JSON'), 'xml' => t('XML')),
+    '#default_value' => variable_get('timeline_feed_type', 'json'),
+    '#description'   => t('Whether the widget should load event data using JSON or XML. You will normally want to use JSON as it is more lightweight on both server and client. Only specify XML if JSON is giving you trouble for some reason.'),
+  );
+  $form['advanced']['timeline_widget_url'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Widget URL'),
+    '#default_value' => variable_get('timeline_widget_url', 'sites/all/modules/timeline/api/timeline-api.js'),
+    '#size'          => 60,
+    '#maxlength'     => 255,
+    '#description'   => t('Path to the Simile Timeline widget\'s JavaScript initialization file (timeline-api.js). You can specify a relative path such as <em>sites/all/modules/timeline/api/timeline-api.js</em>.'),
+  );
+
+  // Event module integration
+  if (module_exists('event')) {
+    $form['event'] = array('#type' => 'fieldset', '#title' => t('Event module integration'), '#collapsible' => TRUE, '#collapsed' => TRUE);
+    $form['event']['timeline_event_link'] = array(
+      '#type'          => 'radios',
+      '#title'         => t('Provide timeline tab'),
+      '#default_value' => variable_get('timeline_event_link', FALSE),
+      '#options'       => array(FALSE => t('Disabled'), TRUE => t('Enabled')),
+      '#description'   => t('Adds a timeline tab to the <a href="%calendar">calendar view</a> provided by the Event module, with a link to the <a href="%timeline">timeline/events</a> timeline view.', array('%calendar' => url('event'), '%timeline' => url('timeline/events'))),
+    );
+  }
+
+  return system_settings_form($form);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// TIMELINE MENU ACTIONS
+
+/**
+ * Outputs the timeline data feed for a Drupal view in JSON format.
+ *
+ * Expects the view name to be passed as the 'view' request parameter.
+ */
+function timeline_data_json() {
+  if ($view = views_get_view($_REQUEST['view'])) {
+    _timeline_set_headers('application/json');
+
+    $view_args = empty($_REQUEST['args']) ? array() : unserialize($_REQUEST['args']);
+    $events = timeline_data($view, $view_args);
+
+    print drupal_to_js(array('dateTimeFormat' => 'iso8601', 'events' => $events));
+    die(); // Prevent other modules (e.g. devel.module) from interfering with our output
+  }
+
+  drupal_not_found();
+}
+
+/**
+ * Outputs the timeline data feed for a Drupal view in XML format.
+ *
+ * Expects the view name to be passed as the 'view' request parameter.
+ */
+function timeline_data_xml() {
+  if ($view = views_get_view($_REQUEST['view'])) {
+    _timeline_set_headers('text/xml');
+
+    $view_args = empty($_REQUEST['args']) ? array() : unserialize($_REQUEST['args']);
+    $events = timeline_data($view, $view_args);
+
+    $elements = array();
+    foreach ($events as $event) {
+      $description = $event['description'];
+      unset($event['description']);
+      $elements[] = array(
+        'key'        => 'event',
+        'value'      => $description,
+        'attributes' => $event,
+      );
+    }
+    $attributes = array('date-time-format' => 'iso8601');
+
+    print '<'.'?xml version="1.0" encoding="utf-8"?>'."\n";
+    print format_xml_elements(array(array('key' => 'data', 'attributes' => $attributes, 'value' => $elements)));
+    die(); // Prevent other modules (e.g. devel.module) from interfering with our output
+  }
+
+  drupal_not_found();
+}
+
+/**
+ * Outputs HTTP headers for a timeline data feed.
+ *
+ * Handles setting the Content-Type header as well as any needed cache
+ * control directives.
+ *
+ * @param $content_type the MIME content type to set
+ */
+function _timeline_set_headers($content_type) {
+  drupal_set_header('Content-Type: '. $content_type .'; charset=utf-8');
+  $feed_lifetime = variable_get('timeline_feed_lifetime', 0);
+
+  if ((int)$feed_lifetime > 0) {
+    drupal_set_header('Last-Modified: '. gmdate('D, d M Y H:i:s') .' GMT');
+    $expires = time() + $feed_lifetime;
+    drupal_set_header('Expires: '. gmdate('D, d M Y H:i:s', $expires) .' GMT');
+    drupal_set_header('Cache-Control: max-age='. $feed_lifetime .', private, must-revalidate');
+    drupal_set_header('Pragma: cache'); // Need to override no-cache set by Drupal.
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// TIMELINE API IMPLEMENTATION
+
+/**
+ * Returns the data feed for a Drupal timeline view.
+ *
+ * @param $view
+ *   Drupal view object
+ * @param $view_args
+ *   associative array of additional view arguments
+ *
+ * @return an associative array of timeline events
+ */
+function timeline_data($view, $view_args = array()) {
+  $view->set_display('default'); // Set a proper display, to fix the set problem.
+  $view->set_arguments($view_args);
+
+  // $view->execute() doesn't check use pages, so we do.
+  if (!$view->pager['use_pager']) {
+    $view->pager['items_per_page'] = 0;
+  }
+
+  $bands = array();
+  $processed_fields = timeline_process_fields($view->display_handler->options['fields']);
+
+  if (isset($processed_fields['start']) && isset($processed_fields['title'])) {
+    $view->execute();
+
+    // TODO In order to poperly build sets I need to be internal to the view
+    // display, so I'm going to need to define another one. For the moment I'm
+    // just pushing all the results in the first 'set'.
+    $sets = array($view->result);
+
+    foreach ($sets as $k => $set) {
+      foreach ($set as $item) {
+        // Perhaps there is a better way to handle these two outliers - jm
+        $event = array('link' => url('node/'. $item->nid), 'description' => '');
+
+        foreach ($processed_fields as $type => $field) {
+          switch ($type) {
+            case 'start':
+              $view->field[$field['id']]->pre_render($item);
+              $event['start'] = timeline_format_iso8601_date($item->{$field['table'] .'_'. $field['field']});
+              break;
+            case 'end':
+              $view->field[$field['id']]->pre_render($item);
+              $event['end'] = timeline_format_iso8601_date($item->{$field['table'] .'_'. $field['field']});
+              break;
+            case 'title':
+              $view->field[$field['id']]->pre_render($item);
+              $convstr = $view->field[$field['id']]->render($item);
+              // Not sure if this html_entity_decode() is proper but it fixes
+              // some display issues with single quotes.
+              $event['title'] .= html_entity_decode($convstr, ENT_QUOTES);
+              break;
+            case 'body':
+              foreach ($field as $body_field) {
+                $view->field[$body_field['id']]->pre_render($item);
+                $event['description'] .= $view->field[$body_field['id']]->render($item);
+              }
+              break;
+          }
+        }
+
+        // Prevent bad data from taking out the timeline.
+        if (isset($event['end']) && $event['start'] >= $event['end']) {
+          unset($event['end']);
+        }
+        $bands[$k][] = $event;
+      }
+    }
+  }
+  return $bands;
+}
+
+/**
+ * Parses an array of fields and determines which should be used and the start
+ * and end times of the item, which should be the title, an then assumes the
+ * rest should be used in the body.
+ *
+ * @param $fields
+ *  An array of field definitions
+ *
+ * @return
+ *  An array of: start field, end field, title field,
+ *  and an array of body fields
+ */
+function timeline_process_fields($fields) {
+  $return = array();
+  foreach ($fields as $key => $field) {
+    if (!isset($return['start']) && timeline_is_temporal($field)) {
+      $return['start'] = $field;
+    }
+    elseif (!isset($return['end']) && timeline_is_temporal($field)) {
+      $return['end'] = $field;
+    }
+    elseif (!isset($return['title'])) {
+      $return['title'] = $field;
+    }
+    else {
+      $return['body'][] = $field;
+    }
+  }
+  return $return;
+}
+
+/**
+ * Check if a field can be used as start or end date'
+ *
+ * @param $field
+ *   A field array to evaluate.
+ *
+ * @return
+ *   True if the field can be used as a start or end time. False otherwise.
+ */
+function timeline_is_temporal($field) {
+  static $temporals = array();
+  if (count($temporals) == 0) {
+    $temporals = array(
+      'node_created',
+      'node_changed',
+      'comment_timestamp',
+      'node_counter_timestamp',
+      'accesslog_timestamp',
+    );
+    if  (module_exists('feedapi')) {
+      $temporals[] = 'feedapi_node_item_timestamp';
+    }
+    if  (module_exists('content')) {
+      foreach (content_fields() as $item) {
+        if ($item['module'] === 'date') {
+          foreach ($item['columns'] as $key => $value) {
+            $temporals[] = content_views_tablename($item) .'_'. $item['field_name'] .'_'. $key;
+          }
+        }
+      }
+    }
+  }
+
+  $field_id = $field['table'] .'_'. $field['field'];
+  return in_array($field_id, $temporals);
+}
+
+/**
+ * Returns the currently logged-in user's timezone, in seconds from GMT.
+ *
+ * @return an integer representation of a timezone
+ */
+function timeline_get_timezone() {
+  global $user;
+  return (variable_get('configurable_timezones', 1) && $user->uid && strlen($user->timezone)) ?
+    (integer)$user->timezone : (integer)variable_get('date_default_timezone', 0);
+}
+
+/**
+ * Formats a timestamp into the ISO-8601 date format expected by the
+ * timeline widget, taking into account the current user's timezone.
+ *
+ * @return a string containing a timestamp in ISO-8601 format
+ */
+function timeline_format_iso8601_date($timestamp) {
+  // Check if the given argument is already a string in the required format;
+  // this would at present only be the case with values from CCK fields
+  // based on the Date module.
+  if (preg_match(TIMELINE_ISO_DATE, $timestamp)) {
+    return $timestamp;
+  }
+
+  // FIXME: currently, the timeline widget wholly ignores the timezone of
+  // supplied dates, which means we have to fiddle with them to output the
+  // dates as if they were UTC, when they are in fact explicitly adjusted to
+  // the current user's timezone. Until the situation is remedied upstream
+  // in the SIMILE widget itself, mess with this hack at your own peril.
+  $timestamp = is_numeric($timestamp) ? (integer)$timestamp : strtotime($timestamp);
+
+  // Make sure that datestamps with historical dates get properly formatted.
+  $date = function_exists('adodb_date') ? 'adodb_date' : 'date';
+  return $date('Y-m-d\TH:i:s\Z', $timestamp - timeline_get_timezone());
+}
+
+/**
+ * @return a string in the format "Thu Jan 01 1970 1:00:00 GMT+0100"
+ */
+function timeline_format_initial_date($timestamp) {
+  return _timeline_date('D M d Y G:i:s', $timestamp) .' GMT'. _timeline_date('O', $timestamp);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// EXTENDED DATE HELPERS (for pre-1970 dates)
+
+_timeline_load_extended_dates();
+
+function _timeline_load_extended_dates() {
+  if (!function_exists('adodb_date_test_date')) {
+    $adodb_file = 'adodb-time.inc.php';
+    $adodb_path = module_exists('date') ?
+      drupal_get_path('module', 'date') .'/'. $adodb_file :
+      drupal_get_path('module', 'timeline') .'/'. $adodb_file;
+    if (file_exists($adodb_path)) {
+      include_once($adodb_path);
+    }
+  }
+}
+
+function _timeline_date($format, $timestamp = FALSE) {
+  $date = function_exists('adodb_date') ? 'adodb_date' : 'date';
+  return $date($format, $timestamp);
+}
+
+function _timeline_gmdate($format, $timestamp = FALSE) {
+  $gmdate = function_exists('adodb_gmdate') ? 'adodb_gmdate' : 'gmdate';
+  return $gmdate($format, $timestamp);
+}
+
+function _timeline_strtotime($time) {
+  if (function_exists('adodb_gmmktime') && preg_match(TIMELINE_ISO_DATE, $time, $matches)) {
+    $args = array_map('intval', array_slice($matches, 1));
+    $args = array_merge(array_slice($args, 3), array_slice($args, 1, 2), array_slice($args, 0, 1));
+    return call_user_func_array('adodb_gmmktime', $args);
+  }
+  return strtotime($time);
+}

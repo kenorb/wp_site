@@ -1,0 +1,14 @@
+;; $Id: node_import.info,v 1.1.4.3 2008/12/16 09:38:13 robrechtj Exp $
+name = Node import
+description = Allows users to import node content from a CSV or TSV file.
+package = Development
+core = 6.x
+php = 5
+dependencies[] = date_api
+
+; Information added by drupal.org packaging script on 2008-12-29
+version = "6.x-1.0-rc3"
+core = "6.x"
+project = "node_import"
+datestamp = "1230541523"
+

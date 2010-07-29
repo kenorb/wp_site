@@ -1,0 +1,605 @@
+/* $Id: imagebrowser.css,v 1.1.2.7 2008/12/03 22:18:51 starnox Exp $ */
+
+/*==============================*/
+/* GENERAL                      */
+/*==============================*/
+
+html {
+  overflow: hidden;
+}
+
+body {
+  background: #FFF;
+  padding: 10px 0 0 10px;
+  margin: 0;
+  width: 660px;
+  height: 426px;
+  overflow: hidden;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+h2
+{
+  padding-bottom: 20px;
+}
+
+#fade {
+  width: 680px;
+  height: 439px;
+  background: #FFF;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  display: block;
+}
+
+/*==============================*/
+/* UPLOAD                       */
+/*==============================*/
+
+#upload {
+  width: 658px;
+  height: 40px;
+  display: block;
+  border: 1px solid #F0C020;
+  background: #FFFFDD;
+  margin-bottom: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+#edit-upload-wrapper label {
+  float: left;
+  width: 150px;
+  height: 30px;
+  margin-left: 10px;
+  display: block;
+}
+
+#edit-upload-wrapper {
+  float: left;
+  width: 550px;
+  display: block;
+  margin: 10px 0 0 0;
+}
+
+#edit-attach {
+  position: absolute;
+  margin: 0;
+  top: 8px;
+  right: 8px;
+  border: 1px solid #F7DF7F;
+  background: #FFFFE9;
+  height: 24px;
+  width: 60px;
+  line-height: 24px;
+}
+
+#edit-attach:hover {
+  border: 1px solid #F0C020;
+  background: #FCF4BB;
+}
+
+.ahah-progress {
+  position: absolute;
+  top: 9px;
+  right: 72px;
+}
+.ahah-progress .throbber {
+  width: 15px;
+  height: 15px;
+}
+
+/*==============================*/
+/* BROWSE                       */
+/*==============================*/
+
+.selectors {
+  padding: 0 29px;
+  text-align: right;
+  margin-top: 13px;
+  height: 22px;
+}
+
+.selectors a:link, .selectors a:visited {
+  background: #FFF;
+  padding: 0px 8px;
+  border: 1px solid #D9EAF5;
+  color: #027AC6;
+  display: block;
+}
+
+.selectors a:hover, .selectors a:active {
+  background: #D9EAF5;
+  border: 1px solid #5895BE;
+  text-decoration: none;
+}
+
+.selectors .open-filters {
+  float: right;
+}
+
+.selectors .open-messages {
+  float: left;
+}
+
+#browse {
+  width: 638px;
+  height: 350px;
+  margin: 0;
+  margin: 5px 0 0 0;
+  padding: 10px;
+  border: 1px solid #439BD4;
+  background: #F5F9FC;
+}
+
+#browse p {
+  padding: 0;
+  margin: 0;
+  line-height: 24px;
+  color: #439BD4;
+  height: 30px;
+  border-bottom: 1px solid #D9EBF6;
+  text-align: center;
+  font-style: italic;
+}
+
+#browse .views-admin-links {
+  display: none;
+}
+
+#browse .view-content ul {
+  width: 580px;
+  height: 236px;
+  display: block;
+  overflow: hidden;
+  margin: 12px 29px;
+  border: 1px solid #D9EAF5;
+  background: #FFF;
+}
+
+#browse .view-content ul li.last
+{
+  clear: both;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 0;
+  float: none;
+}
+
+#browse .view-content ul, #browse .view-content ul li {
+  list-style: none;
+  background: #FFF;
+  padding: 0;
+  text-align: center;
+}
+
+#browse .view-content ul li a {
+  line-height: 100px;
+}
+
+#browse .view-content ul li
+{
+  width: 102px;
+  height: 102px;
+  margin: 2px;
+  padding: 5px;
+  display: block;
+  float: left;
+  border: 0;
+}
+
+#browse .view-content ul li.message
+{
+  width: 458px;
+  height: 212px;
+  margin: 2px;
+  padding: 5px;
+  text-align: center;
+  line-height: 212px;
+  display: block;
+  float: left;
+  border: 0;
+}
+
+#browse .view-content ul li a img {
+  border: 1px solid #555;
+  vertical-align: middle;
+}
+
+#browse .browse ul.pager li {
+  padding: 0;
+}
+
+#browse .browse ul.pager li.pager-current {
+  background: #5895BE;
+  padding: 2px 5px;
+  border: 1px solid #437496;
+  color: #FFF;
+}
+
+#browse .browse ul.pager li a:link, #browse .browse ul.pager li a:visited {
+  background: #FFF;
+  padding: 2px 5px;
+  border: 1px solid #D9EAF5;
+  color: #027AC6;
+}
+
+#browse .browse ul.pager li a:hover, #browse .browse ul.pager li a:active {
+  background: #D9EAF5;
+  padding: 2px 5px;
+  border: 1px solid #5895BE;
+  text-decoration: none;
+}
+
+/*==============================*/
+/* INSERT                       */
+/*==============================*/
+
+#insert {
+  width: 618px;
+  height: 377px;
+  background: #FFF;
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  border: 1px solid #333;
+  z-index: 3;
+  display: none;
+}
+
+#insert .spacer
+{
+  height: 5px;
+}
+
+#insert .message
+{
+  width: 618px;
+  line-height: 357px;
+  text-align: center;
+}
+
+#insert .presets
+{
+  overflow: auto;
+  height:303px;
+  padding: 0;
+  width: 338px;
+  display: block;
+  float: left;
+}
+
+#insert .presets table {
+  width: 90%;
+  margin: 10px auto;
+}
+
+#insert .presets table tr th. {
+  width: 150px;
+}
+
+#insert .presets table tr th.dimensions {
+  width: 100px;
+}
+
+#insert .presets table tr th.actions {
+  width: 70px;
+}
+
+#insert .details {
+  border-left: 1px solid #D3E7F4;
+  height:303px;
+  background: #F5F9FC;
+  width: 279px;
+  display: block;
+  float: left;
+  text-align: center;
+}
+
+#insert .details table {
+  margin: 0;
+  margin: 10px 15px 0 15px;
+  width: 260px;
+  text-align: left;
+}
+
+#insert .details table tbody {
+  border: 0;
+}
+
+#insert .details table tr {
+  height: 16px;
+}
+
+#insert .details table tr th, #insert .details table tr td {
+  padding: 0 5px;
+  border: 0;
+}
+
+#insert .details table tr th {
+  width: 100px;
+  height: 25px;
+}
+
+#insert .details table tr td {
+  width: 160px;
+}
+
+#insert .details img {
+  padding: 0;
+  margin: 20px 0 10px 0;
+  border: 1px solid #D9EAF5;
+}
+
+#insert .page {
+  width: 598px;
+  height: 357px;
+  padding: 10px;
+  overflow: auto;
+}
+
+/*==============================*/
+/* MESSAGES                     */
+/*==============================*/
+
+#upload .messages {
+  display: none;
+}
+
+.views-messages {
+  display: none;
+}
+
+#messages {
+  width: 618px;
+  height: 377px;
+  background: #FFF;
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  border: 1px solid #333;
+  z-index: 3;
+  display: none;
+}
+
+h2 {
+  height: 24px;
+  background: #D9EAF5;
+  padding: 6px;
+  border-bottom: 1px solid #439BD4;
+}
+
+#messages .log {
+  height: 305px;
+  width: 618px;
+  overflow: auto;
+  padding: 0;
+  margin: 0;
+}
+
+.footer {
+  height: 24px;
+  background: #D9EAF5;
+  padding: 6px;
+  border-top: 1px solid #439BD4;
+  clear: both;
+}
+
+.footer a {
+  float: left;
+  margin-right: 5px;
+}
+
+.footer a:link, .footer a:visited {
+  border: 1px solid #439BD4;
+  background: #F5F9FC;
+  height: 22px;
+  line-height: 22px;
+  display: block;
+  text-decoration: none;
+  padding: 0 5px;
+  width: 70px;
+  text-align: center;
+  font-size: 0.9em;
+}
+
+.footer a:hover, .footer a:active {
+  border: 1px solid #439BD4;
+  background: #8CC2E4;
+  height: 22px;
+  line-height: 22px;
+  display: block;
+  text-decoration: none;
+  padding: 0 5px;
+  width: 70px;
+  text-align: center;
+  font-size: 0.9em;
+  color: #FFF;
+}
+
+#messages .log li {
+  list-style-type: none;
+  background: none;
+  list-style-position: inside;
+  padding: 10px 10px;
+  margin: 0;
+  margin: 10px;
+  border: 1px #EEE solid;
+}
+
+#messages .log li.hidden {
+  display: none;
+}
+
+#messages .log li h3 {
+  font-size: 1.2em;
+}
+
+#messages .log li .messages {
+  margin: 10px 0 0 0;
+  width: auto;
+}
+
+#messages .log li .messages ul li {
+  margin: 0 0 0 0;
+  padding: 0.5em 1em;
+  border: 0;
+}
+
+#browse .browse .views-throbbing {
+  display: block;
+  height: 21px;
+  background: url('throbber.gif') center center no-repeat;
+}
+
+#insert .loading {
+  display: block;
+  height: 31px;
+  width: 90px;
+  background: #F5F9FC url('throbber.gif') center center no-repeat;
+  border: 1px solid #439BD4;
+  margin: 163px auto 0 auto;
+}
+
+/*==============================*/
+/* FILTERS                      */
+/*==============================*/
+
+#browse .view-filters {
+  width: 618px;
+  height: 377px;
+  background: #FFF;
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  border: 1px solid #333;
+  z-index: 3;
+  display: none;
+}
+
+#browse .view-filters form div.wrapper {
+  height: 265px;
+  width: 578px;
+  overflow: auto;
+  padding: 20px;
+  margin: 0;
+}
+
+#browse .view-filters label {
+  font-weight: bold;
+}
+
+#browse .view-filters .form-item {
+  margin-top: 0;
+}
+
+#edit-submit {
+  display: none;
+}
+
+
+
+
+
+#edit {
+  width: 618px;
+  height: 377px;
+  background: #FFF;
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  border: 1px solid #333;
+  z-index: 4;
+  display: none;
+}
+
+#edit iframe {
+  width: 618px;
+  height: 303px;
+  overflow: auto;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  display: block;
+}
+
+#edit .footer {
+}
+
+#insert .details .confirm {
+  display: none;
+}
+
+#insert .options {
+  width: 184px;
+  margin: 15px auto 0 auto;
+}
+
+.options a:link, .options a:visited {
+  border: 1px solid #D3E7F4;
+  background: #FFF;
+  height: 22px;
+  line-height: 22px;
+  display: block;
+  text-decoration: none;
+  padding: 0 5px;
+  margin: 0 5px;
+  width: 70px;
+  text-align: center;
+  font-size: 0.9em;
+  float: left;
+}
+
+.options a:hover, .options a:active {
+  border: 1px solid #439BD4;
+  background: #8CC2E4;
+  height: 22px;
+  line-height: 22px;
+  display: block;
+  text-decoration: none;
+  padding: 0 5px;
+  width: 70px;
+  text-align: center;
+  font-size: 0.9em;
+  color: #FFF;
+}
+
+.confirm p {
+  padding: 0 50px;
+}
+
+.confirm a:link, .confirm a:visited {
+  border: 1px solid #D3E7F4;
+  background: #FFF;
+  height: 22px;
+  line-height: 22px;
+  display: block;
+  text-decoration: none;
+  padding: 0 5px;
+  margin: 5px auto;
+  width: 70px;
+  text-align: center;
+  font-size: 0.9em;
+}
+
+.confirm a:hover, .confirm a:active {
+  border: 1px solid #439BD4;
+  background: #8CC2E4;
+  height: 22px;
+  line-height: 22px;
+  display: block;
+  text-decoration: none;
+  padding: 0 5px;
+  width: 70px;
+  text-align: center;
+  font-size: 0.9em;
+  color: #FFF;
+}

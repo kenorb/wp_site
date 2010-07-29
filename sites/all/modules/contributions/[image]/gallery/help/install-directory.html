@@ -1,0 +1,49 @@
+<p>
+<h3>Directory Settings</h3>
+<p>"URI of Gallery2" is the URI of the Gallery2 standalone location. Path from docroot to the directory main.php is located. Protocol / host name are both optional. Examples: /gallery2/, /sub/gallery2/, http://photos.example.com/,       www.example.com/photos/main.php </p>
+<p>"Location of Gallery2" is the path of your gallery2 installation, either absolute (starts with "/") or relative to your Drupal installation directory. Normally this is auto-detected, but in case this fails you can turn off auto-detection and manually enter a value. </p>
+<p>"Embed URI" is the URI needed to access Gallery2 through Drupal. This will end in \'?q=gallery\' (non-clean URLs) or \'gallery\' (clean URLs). Normally this is auto-detected, but in case this fails you can turn off auto-detection and manually enter a value. </p>
+<p>Some examples: </p>
+<p>Example 1: If your directory structure and website structure is
+<ul>
+  <li>Drupal dir: /var/www/web/html/</li>
+  <li>Gallery dir: /var/www/web/html/gallery2/</li>
+  <li>Website URL: http://www.example.com</li>
+  <li>Standalone Gallery2 URL: http://www.example.com/gallery2/</li>
+  <li>Then
+    <ul>
+      <li>"URI of Gallery2" = "/gallery2/" or "http://www.example.com/gallery2/"</li>
+      <li>"Location of Gallery2" = "gallery2/" or "/var/www/web/html/gallery2/"</li>
+      <li>"Embed URI" = "?q=gallery" or "http://www.example.com/?q=gallery"</li>
+    </ul>
+</ul>
+</p>
+<p>Example 2: If your directory structure and website structure is
+<ul>
+  <li>Drupal dir: /var/www/web/html/drupal/</li>
+  <li>Gallery dir: /var/www/web/html/gallery2/</li>
+  <li>Website URL: http://www.example.com/drupal</li>
+  <li>Standalone Gallery2 URL: http://www.example.com/gallery2/</li>
+  <li>Then
+    <ul>
+      <li>"URI of Gallery2" = "/gallery2/" or "http://www.example.com/gallery2/"</li>
+      <li>"Location of Gallery2" = "../gallery2/" or "/var/www/web/html/gallery2/"</li>
+      <li>"Embed URI" = "/drupal/?q=gallery" or "http://www.example.com/drupal/?q=gallery"</li>
+    </ul>
+</ul>
+</p>
+<p>Example 3: If your directory structure and website structure is
+<ul>
+  <li>Drupal dir: /var/www/web/html/drupal/</li>
+  <li>Gallery dir: /var/www/web/html/someotherdir/gallery2/</li>
+  <li>Website URL: http://www.example.com/</li>
+  <li>Standalone Gallery2 URL: http://www.anotherexample.com/gallery2/</li>
+  <li>Then
+    <ul>
+      <li>"URI of Gallery2" = "http://www.anotherexample.com/gallery2/"</li>
+      <li>"Location of Gallery2" = "/var/www/web/html/someotherdir/gallery2/"</li>
+      <li>"Embed URI" = "/drupal/?q=gallery" or "http://www.example.com/drupal/?q=gallery"</li>
+    </ul>
+</ul>
+</p>
+</p>

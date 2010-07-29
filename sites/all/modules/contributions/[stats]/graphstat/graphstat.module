@@ -1,0 +1,237 @@
+<?php
+// $Id: graphstat.module,v 1.13.2.2 2009/01/25 21:08:34 profix898 Exp $
+
+/**
+ * Implementation of hook_perm().
+ */
+function graphstat_perm() {
+  return array('access graphs');
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function graphstat_theme() {
+  return array(
+    'graphstat_filter_form' => array(
+      'arguments' => array('form' => NULL),
+    ),
+    'graphstat_graph' => array(
+      'arguments' => array('url' => NULL, 'title' => '', 'description' => '', 'attributes' => array()),
+    )
+  );
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function graphstat_menu() {
+  $items = array();
+  $items['admin/reports/graphs'] = array(
+    'title' => 'Graphs',
+    'description' => 'Displays graphs with statistical data.',
+    'access callback' => 'user_access',
+    'access arguments' => array('access graphs'),
+    'page callback' => 'graphstat_graphs',
+    'page arguments' => array('history'),
+    'weight' => 11
+  );
+  $graphs = module_invoke_all('graphstat');
+  foreach ($graphs as $group => $graph) {
+    $items['admin/reports/graphs/'. strtr($group, ' ', '_')] = array(
+      'title' => check_plain(isset($graph['#title']) ? $graph['#title'] : drupal_ucfirst($group)),
+      'access callback' => 'user_access',
+      'access arguments' => array('access graphs'),
+      'page callback' => 'graphstat_graphs',
+      'page arguments' => array($group),
+      'type' => ($group == 'history') ? MENU_DEFAULT_LOCAL_TASK : MENU_LOCAL_TASK
+    );
+    foreach (array_keys($graph) as $key) {
+      $items['graphstat/'. strtr($group .'_'. $key, ' ', '_')] = array(
+        'access callback' => 'user_access',
+        'access arguments' => array('access graphs'),
+        'page callback' => 'graphstat_render_graph',
+        'page arguments' => array($group, $key),
+        'file' => 'graphstat_render.inc',
+        'type' => MENU_CALLBACK
+      );
+    }
+  }
+  
+  return $items;
+}
+
+/**
+ * Implementation of hook_cron().
+ */
+function graphstat_cron() {
+  _graphstat_invoke_modules('cron');
+}
+
+/**
+ * Implementation of hook_graphstat().
+ */
+function graphstat_graphstat() {
+  return _graphstat_invoke_modules('graphstat');
+}
+
+/**
+ * Implementation of hook_graphstat_data().
+ */
+function graphstat_graphstat_data() {
+  return _graphstat_invoke_modules('graphstat_data');
+}
+
+/**
+ * Function graphstat_graphs().
+ * (menu callback: page containing multiple graphs)
+ */
+function graphstat_graphs($group = NULL) {
+  drupal_add_css(drupal_get_path('module', 'graphstat') .'/graphstat.css');
+  
+  $graphs = module_invoke_all('graphstat');
+  if ($group && isset($graphs[$group])) {
+    $graphs = $graphs[$group];
+    $output = isset($graphs['#prefix']) ? $graphs['#prefix'] : '';
+    // If this graph group defines a filter callback then add the filter form
+    if (isset($graphs['#filter'])) {
+      $options = $graphs['#filter']['#options'];
+      $filter = isset($_SESSION['graphstat_filter'][$group]) ? $_SESSION['graphstat_filter'][$group] : NULL;
+      if (isset($_POST['graphstat_filter_select'])) {
+        $filter = $_POST['graphstat_filter_select'];
+        $_SESSION['graphstat_filter'][$group] = $filter;
+      }
+      $output .= drupal_get_form('graphstat_filter_form', $options, $filter);
+    }
+    // Loop over the graphs for this graph group
+    foreach (element_children($graphs) as $key) {
+      $graph = $graphs[$key];
+      $url = url('graphstat/'. strtr($group .'_'. $key, ' ', '_'), array('absolute' => TRUE));
+      $title = isset($graph['#title']) ? $graph['#title'] : drupal_ucfirst($group);
+      $description = isset($graph['#description']) ? $graph['#description'] : '';
+      $output .= theme('graphstat_graph', $url, $title, $description);
+    }
+    $output .= isset($graphs['#suffix']) ? $graphs['#suffix'] : '';
+    $output .= drupal_get_form('graphstat_size_form');
+  }
+  else {
+    $output = t('There are no graphs available for this group.');
+  }
+  
+  return $output;
+}
+
+/**
+ * Function graphstat_filter_form().
+ */
+function graphstat_filter_form($form_state, $options, $default = NULL) {
+  $form = array('#attributes' => array('class' => 'graphstat-filter-form'));
+  $form['graphstat_filter_select'] = array(
+    '#type' => 'select',
+    '#default_value' => $default ? $default : $options[0],
+    '#options' => $options
+  );
+  $form['graphstat_filter_submit'] = array('#type' => 'submit', '#value' => t('Show'));
+  
+  return $form;
+}
+
+/**
+ * Function theme_graphstat_filter_form().
+ */
+function theme_graphstat_filter_form($form) {
+  $rows[] = array(
+    drupal_render($form['graphstat_filter_select']),
+    drupal_render($form['graphstat_filter_submit'])
+  );
+  
+  return theme('table', array(), $rows, array('width' => '250px'));
+}
+
+/**
+ * Function graphstat_size_form().
+ * (add buttons to change (larger/default/smaller) the size of the graphs)
+ */
+function graphstat_size_form($form_state) {
+  $form = array('#attributes' => array('class' => 'graphstat-size-form'));
+  $form['graphstat_size_larger'] = array('#type' => 'submit', '#value' => t('Larger graphs'));
+  $form['graphstat_size_default'] = array('#type' => 'submit', '#value' => t('Default'));
+  $form['graphstat_size_smaller'] = array('#type' => 'submit', '#value' => t('Smaller graphs'));
+
+  return $form;
+}
+
+/**
+ * Function graphstat_size_form_submit().
+ */
+function graphstat_size_form_submit($form, &$form_state) {
+  if (isset($form_state['values']['op'])) {
+    global $user;
+    $cid = 'graphstat:'. $user->uid;
+    $cache = cache_get($cid);
+    $data['width'] = $cache ? $cache->data['width'] : 500;
+    $data['height'] = $cache ? $cache->data['height'] : 300;
+    switch ($form_state['values']['op']) {
+      case t('Larger graphs'):
+        $data['width'] += 100;
+        $data['height'] += 60;
+        break;
+      case t('Smaller graphs'):
+        $data['width'] -= 100;
+        $data['height'] -= 60;
+        break;
+      default:
+        $data['width'] = 500;
+        $data['height'] = 300;
+    }
+    cache_set($cid, $data, 'cache', CACHE_PERMANENT);
+  }
+}
+
+/**
+ * Function theme_graphstat_graph().
+ * (format a single graph with title, description, ...)
+ */
+function theme_graphstat_graph($url, $title = '', $description = '', $attributes = array()) {
+  global $user;
+  $cache = cache_get('graphstat:'. $user->uid);
+  $attributes['width'] = $cache ? $cache->data['width'] : 500;
+  $attributes['height'] = $cache ? $cache->data['height'] : 300;
+  $attributes['alt'] = isset($attributes['alt']) ? $attributes['alt'] : check_plain($title);
+   
+  $output  = '<div class="graphstat-container">';
+  $output .= '<div class="graphstat-image">';
+  $output .= '<img src="'. check_url($url) .'" title="'. check_plain($title) .'" '. drupal_attributes($attributes) .' />';
+  $output .= '</div>';
+  if (!empty($description)) {
+    $output .= '<div class="description graphstat-legend">';
+    $output .= check_plain($description);
+    $output .= '</div>';
+  }
+  $output .= '</div>';
+  
+  return $output;
+}
+
+/**
+ * Function _graphstat_invoke_modules().
+ * (invoke hook in internal graphstat modules)
+ */
+function _graphstat_invoke_modules($hook = 'graphstat') {
+  $return = array();
+  // Scan graphstat/modules/ folder for (internal) modules
+  $files = file_scan_directory(drupal_get_path('module', 'graphstat') .'/modules', '\graphstat.[a-z]+.inc$');
+  foreach ($files as $file) {
+    list( , $module) = explode('.', $file->name);
+    // If the corresponding module is installed, invoke graphstat_$module_graphstat()
+    if (module_exists($module)) {
+      require_once(drupal_get_path('module', 'graphstat') .'/modules/'. $file->name .'.inc');
+      $function = str_replace('.', '_', $file->name) .'_'. $hook;
+      if (function_exists($function)) {
+        $return = array_merge_recursive($return, $function());
+      }
+    }
+  }
+
+  return $return;
+}

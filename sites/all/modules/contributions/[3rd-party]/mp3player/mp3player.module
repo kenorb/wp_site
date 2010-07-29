@@ -1,0 +1,530 @@
+<?php
+// $Id: mp3player.module,v 1.1.2.3 2009/01/02 12:18:02 starnox Exp $
+
+/**
+ * @file
+ * mp3player main module file.
+ */
+
+
+/**
+ * Used to count unique IDs when theming.
+ */
+global $mp3_player_id;
+$mp3_player_id = 0;
+
+
+/** ========================================
+ * GENERAL FUNCTIONS
+ */
+
+
+/**
+ * Implementation of hook_help().
+ */
+function mp3player_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case "admin/help#mp3player":
+      $output = '<p>'. t("A module to integrate the 1pixelout player into Drupal.") .'</p>';
+      break;
+  }
+  return $output;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function mp3player_perm() {
+  return array('edit mp3player settings', 'administer mp3player');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function mp3player_menu() {
+  $items = array();
+  //Admin settings
+  $items['admin/settings/mp3player'] = array(
+    'title' => 'MP3 Player',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mp3player_settings'),
+    'access arguments' => array('administer mp3player')
+  );
+  return $items;
+}
+
+
+/** ========================================
+ * ADMIN FUNCTIONS
+ */
+
+
+/**
+ * mp3player's admin settings.
+ */
+function mp3player_settings() {
+  if (user_access('administer mp3player')) {
+    $form['mp3player_options'] = array(
+      '#type' => 'fieldset', 
+      '#title' => t('Player Options'), 
+      '#weight' => 0, 
+      '#collapsible' => TRUE, 
+      '#collapsed' => FALSE,
+    );
+
+    $form['mp3player_options']['mp3player_autostart'] = array(
+      '#type' => 'select',
+      '#title' => t('Auto-start'),
+      '#default_value' => variable_get('mp3player_autostart', 'no'),
+      '#options' => array('no' => t('No'), 'yes' => t('Yes')),
+      '#description' => t('If yes, player starts automatically.'),
+    );
+    $form['mp3player_options']['mp3player_loop'] = array(
+      '#type' => 'select',
+      '#title' => t('Loop Audio'),
+      '#default_value' => variable_get('mp3player_loop', 'no'),
+      '#options' => array('no' => t('No'), 'yes' => t('Yes')),
+      '#description' => t('If yes, player loops audio.'),
+    );
+    $form['mp3player_options']['mp3player_animation'] = array(
+      '#type' => 'select',
+      '#title' => t('Animate'),
+      '#default_value' => variable_get('mp3player_animation', 'yes'),
+      '#options' => array('no' => t('No'), 'yes' => t('Yes')),
+      '#description' => t('If no, player is always open.'),
+    );
+    $form['mp3player_options']['mp3player_remaining'] = array(
+      '#type' => 'select',
+      '#title' => t('Time Remaining'),
+      '#default_value' => variable_get('mp3player_remaining', 'no'),
+      '#options' => array('no' => t('No'), 'yes' => t('Yes')),
+      '#description' => t('If yes, shows remaining track time rather than elapsed time.'),
+    );
+    $form['mp3player_options']['mp3player_noinfo'] = array(
+      '#type' => 'select',
+      '#title' => t("Don't display information"),
+      '#default_value' => variable_get('mp3player_noinfo', 'no'),
+      '#options' => array('no' => t('No'), 'yes' => t('Yes')),
+      '#description' => t('If yes, disables the track information display.'),
+    );
+    $form['mp3player_options']['mp3player_initialvolume'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Initial Volume'),
+      '#default_value' => variable_get('mp3player_initialvolume', '60'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#description' => t('Initial volume level (from 0 to 100).'),
+    );
+    $form['mp3player_options']['mp3player_buffer'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Buffer Time'),
+      '#default_value' => variable_get('mp3player_buffer', '5'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#description' => t('Buffering time in seconds.'),
+    );
+    $form['mp3player_options']['mp3player_encode'] = array(
+      '#type' => 'select',
+      '#title' => t('Encode'),
+      '#default_value' => variable_get('mp3player_encode', 'no'),
+      '#options' => array('no' => t('No'), 'yes' => t('Yes')),
+      '#description' => t('Tells Flash to look for a policy file when loading mp3 files (this allows Flash to read ID3 tags from files hosted on a different domain.'),
+    );
+    $form['mp3player_options']['mp3player_rtl'] = array(
+      '#type' => 'select',
+      '#title' => t('Text Right-to-Left'),
+      '#default_value' => variable_get('mp3player_rtl', 'no'),
+      '#options' => array('no' => t('No'), 'yes' => t('Yes')),
+      '#description' => t('Switches the layout to RTL (right to left) for Hebrew and Arabic languages.'),
+    );
+    $form['mp3player_options']['mp3player_width'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Player Width'),
+      '#default_value' => variable_get('mp3player_width', '290'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#description' => t('Width of the player. e.g. 290 (290 pixels) or 100%.'),
+    );
+    $form['mp3player_options']['mp3player_transparentpagebg'] = array(
+      '#type' => 'select',
+      '#title' => t('Transparent Player Background'),
+      '#default_value' => variable_get('mp3player_transparentpagebg', 'no'),
+      '#options' => array('no' => t('No'), 'yes' => t('Yes')),
+      '#description' => t('If yes, the player background is transparent (matches the page background).'),
+    );
+    $form['mp3player_options']['mp3player_pagebg'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Player Background Colour'),
+      '#default_value' => variable_get('mp3player_pagebg', NULL),
+      '#required' => FALSE,
+      '#size' => '20',
+      '#field_prefix' => '#',
+      '#description' => t("Player background colour (set it to your page background when transparentbg is set to 'no')."),
+    );
+    
+    $form['mp3player_colours'] = array(
+      '#type' => 'fieldset', 
+      '#title' => t('Player Colour Scheme'), 
+      '#weight' => 0, 
+      '#collapsible' => TRUE, 
+      '#collapsed' => FALSE,
+    );
+    
+    $form['mp3player_colours']['mp3player_bg'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Background'),
+      '#default_value' => variable_get('mp3player_bg', 'E5E5E5'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+    );
+    $form['mp3player_colours']['mp3player_leftbg'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Left Background'),
+      '#default_value' => variable_get('mp3player_leftbg', 'CCCCCC'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+      '#description' => t('Speaker icon/Volume control background.'),
+    );
+    $form['mp3player_colours']['mp3player_lefticon'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Speaker Icon'),
+      '#default_value' => variable_get('mp3player_lefticon', '333333'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+    );
+    $form['mp3player_colours']['mp3player_voltrack'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Volume Track Background'),
+      '#default_value' => variable_get('mp3player_voltrack', 'F2F2F2'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+    );
+    $form['mp3player_colours']['mp3player_volslider'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Volume Track Slider'),
+      '#default_value' => variable_get('mp3player_volslider', '666666'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+    );
+    $form['mp3player_colours']['mp3player_rightbg'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Right Background'),
+      '#default_value' => variable_get('mp3player_rightbg', 'B4B4B4'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+      '#description' => t('Play/Pause button background.'),
+    );
+    $form['mp3player_colours']['mp3player_rightbghover'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Right Background Hover'),
+      '#default_value' => variable_get('mp3player_rightbghover', '999999'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+      '#description' => t('Play/Pause button background (hover state).'),
+    );
+    $form['mp3player_colours']['mp3player_righticon'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Play/Pause Icon'),
+      '#default_value' => variable_get('mp3player_righticon', '333333'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+    );
+    $form['mp3player_colours']['mp3player_righticonhover'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Play/Pause Icon (hover state)'),
+      '#default_value' => variable_get('mp3player_righticonhover', 'FFFFFF'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+    );
+    $form['mp3player_colours']['mp3player_loader'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Loading Bar'),
+      '#default_value' => variable_get('mp3player_loader', '009900'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+    );
+    $form['mp3player_colours']['mp3player_track'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Track Backgrounds'),
+      '#default_value' => variable_get('mp3player_track', 'FFFFFF'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+      '#description' => t('Loading/Progress bar track background.'),
+    );
+    $form['mp3player_colours']['mp3player_tracker'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Progress Track'),
+      '#default_value' => variable_get('mp3player_tracker', 'DDDDDD'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+    );
+    $form['mp3player_colours']['mp3player_border'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Progress Track Border'),
+      '#default_value' => variable_get('mp3player_border', 'CCCCCC'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+    );
+    $form['mp3player_colours']['mp3player_skip'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Previous/Next Buttons'),
+      '#default_value' => variable_get('mp3player_skip', '666666'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+    );
+    $form['mp3player_colours']['mp3player_text'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Text'),
+      '#default_value' => variable_get('mp3player_text', '333333'),
+      '#required' => TRUE,
+      '#size' => '10',
+      '#field_prefix' => '#',
+    );
+    $form['#validate'][] = 'mp3player_settings_validate';
+    $form['#submit'][] = 'system_settings_form_submit';
+    $form['#submit'][] = 'mp3player_settings_submit';
+    return system_settings_form($form);
+  }
+}
+
+/**
+ * Custom validation function for the system settings form.
+ */
+function mp3player_settings_validate($form, &$form_state) {
+  if ($form_state['values']['mp3player_initialvolume'] < 0 || $form_state['values']['mp3player_initialvolume'] > 100) {
+    form_set_error('mp3player_initialvolume', t('Volume must be between 0 and 100.'));
+  }
+  if (!is_numeric($form_state['values']['mp3player_buffer'])) {
+    form_set_error('mp3player_buffer', t('Buffer must be an integer.'));
+  }
+  $percentage = strstr($form_state['values']['mp3player_width'], '%');
+  if (!is_numeric($form_state['values']['mp3player_width']) && $percentage != '%') {
+    form_set_error('mp3player_width', t('Width must be an integer or percentage.'));
+  }
+  if($form_state['values']['mp3player_pagebg'] != '' && strlen($form_state['values']['mp3player_pagebg']) != 6) {
+    form_set_error('mp3player_pagebg', t('HEX code must be 6 characters long.'));
+  }
+  
+  if(strlen($form_state['values']['mp3player_bg']) != 6) {
+    form_set_error('mp3player_bg', t('HEX code must be 6 characters long.'));
+  }
+  if(strlen($form_state['values']['mp3player_leftbg']) != 6) {
+    form_set_error('mp3player_leftbg', t('HEX code must be 6 characters long.'));
+  }
+  if(strlen($form_state['values']['mp3player_lefticon']) != 6) {
+    form_set_error('mp3player_lefticon', t('HEX code must be 6 characters long.'));
+  }
+  if(strlen($form_state['values']['mp3player_voltrack']) != 6) {
+    form_set_error('mp3player_voltrack', t('HEX code must be 6 characters long.'));
+  }
+  if(strlen($form_state['values']['mp3player_volslider']) != 6) {
+    form_set_error('mp3player_volslider', t('HEX code must be 6 characters long.'));
+  }
+  if(strlen($form_state['values']['mp3player_rightbg']) != 6) {
+    form_set_error('mp3player_rightbg', t('HEX code must be 6 characters long.'));
+  }
+  if(strlen($form_state['values']['mp3player_rightbghover']) != 6) {
+    form_set_error('mp3player_rightbghover', t('HEX code must be 6 characters long.'));
+  }
+  if(strlen($form_state['values']['mp3player_righticon']) != 6) {
+    form_set_error('mp3player_righticon', t('HEX code must be 6 characters long.'));
+  }
+  if(strlen($form_state['values']['mp3player_righticonhover']) != 6) {
+    form_set_error('mp3player_righticonhover', t('HEX code must be 6 characters long.'));
+  }
+  if(strlen($form_state['values']['mp3player_loader']) != 6) {
+    form_set_error('mp3player_loader', t('HEX code must be 6 characters long.'));
+  }
+  if(strlen($form_state['values']['mp3player_track']) != 6) {
+    form_set_error('mp3player_track', t('HEX code must be 6 characters long.'));
+  }
+  if(strlen($form_state['values']['mp3player_tracker']) != 6) {
+    form_set_error('mp3player_tracker', t('HEX code must be 6 characters long.'));
+  }
+  if(strlen($form_state['values']['mp3player_border']) != 6) {
+    form_set_error('mp3player_border', t('HEX code must be 6 characters long.'));
+  }
+  if(strlen($form_state['values']['mp3player_skip']) != 6) {
+    form_set_error('mp3player_skip', t('HEX code must be 6 characters long.'));
+  }
+  if(strlen($form_state['values']['mp3player_text']) != 6) {
+    form_set_error('mp3player_text', t('HEX code must be 6 characters long.'));
+  }
+  
+}
+
+/**
+ * Custom submit function for the system settings form.
+ */
+function mp3player_settings_submit($form, &$form_state) {
+  cache_set('mp3playersettings', _mp3player_get_settings());
+  //The default submit function actually gets called twice, but that's just so it gets called before we set the cache.
+  drupal_get_messages('status');
+  drupal_set_message(t("MP3 Player's settings cache as been rebuilt."));
+}
+
+/**
+ * Implementation of hook_init().
+ */
+function mp3player_init() {
+  drupal_add_js(drupal_get_path('module', 'mp3player').'/mp3player/audio-player.js');
+
+  //If cache isn't set, set it.
+  if(cache_get('mp3playersettings') == '') {
+    cache_set('mp3playersettings', _mp3player_get_settings());
+  }
+
+  $js_audio_settings = cache_get('mp3playersettings');
+
+  drupal_add_js($js_audio_settings->data, 'inline');
+}
+
+/**
+ * Returns a string of audio player settings.
+ */
+function _mp3player_get_settings() {
+  $js_audio_settings = 'AudioPlayer.setup("'.base_path().drupal_get_path('module', 'mp3player').'/mp3player/player.swf", {';
+  $js_audio_settings .= 'width:'.variable_get('mp3player_width', '290').',';
+  
+  if(variable_get('mp3player_autostart', 'no') != 'no') {
+    $js_audio_settings .= 'autostart: "yes",';
+  }
+  if(variable_get('mp3player_loop', 'no') != 'no') {
+    $js_audio_settings .= 'loop: "yes",';
+  }
+  if(variable_get('mp3player_animation', 'yes') != 'yes') {
+    $js_audio_settings .= 'animation: "no",';
+  }
+  if(variable_get('mp3player_remaining', 'no') != 'no') {
+    $js_audio_settings .= 'remaining: "yes",';
+  }
+  if(variable_get('mp3player_noinfo', 'no') != 'no') {
+    $js_audio_settings .= 'noinfo: "yes",';
+  }
+  if(variable_get('mp3player_initialvolume', '60') != '60') {
+    $js_audio_settings .= 'initialvolume: '.variable_get('mp3player_initialvolume', '60').',';
+  }
+  if(variable_get('mp3player_buffer', '5') != '5') {
+    $js_audio_settings .= 'buffer: '.variable_get('mp3player_buffer', '5').',';
+  }
+  if(variable_get('mp3player_encode', 'no') != 'no') {
+    $js_audio_settings .= 'encode: "yes",';
+  }
+  if(variable_get('mp3player_rtl', 'no') != 'no') {
+    $js_audio_settings .= 'rtl: "yes",';
+  }
+  if(variable_get('mp3player_transparentpagebg', 'no') != 'no') {
+    $js_audio_settings .= 'transparentpagebg: "yes",';
+  }
+  if(variable_get('mp3player_pagebg', NULL) != NULL) {
+    $js_audio_settings .= 'pagebg: "'.variable_get('mp3player_pagebg', NULL).'",';
+  }
+
+  if(variable_get('mp3player_bg', 'E5E5E5') != 'E5E5E5') {
+    $js_audio_settings .= 'bg: "'.variable_get('mp3player_bg', 'E5E5E5').'",';
+  }
+  if(variable_get('mp3player_leftbg', 'CCCCCC') != 'CCCCCC') {
+    $js_audio_settings .= 'leftbg: "'.variable_get('mp3player_leftbg', 'CCCCCC').'",';
+  }
+  if(variable_get('mp3player_lefticon', '333333') != '333333') {
+    $js_audio_settings .= 'lefticon: "'.variable_get('mp3player_lefticon', '333333').'",';
+  }
+  if(variable_get('mp3player_voltrack', 'F2F2F2') != 'F2F2F2') {
+    $js_audio_settings .= 'voltrack: "'.variable_get('mp3player_voltrack', 'F2F2F2').'",';
+  }
+  if(variable_get('mp3player_volslider', '666666') != '666666') {
+    $js_audio_settings .= 'volslider: "'.variable_get('mp3player_volslider', '666666').'",';
+  }
+  if(variable_get('mp3player_rightbg', 'B4B4B4') != 'B4B4B4') {
+    $js_audio_settings .= 'rightbg: "'.variable_get('mp3player_rightbg', 'B4B4B4').'",';
+  }
+  if(variable_get('mp3player_rightbghover', '999999') != '999999') {
+    $js_audio_settings .= 'rightbghover: "'.variable_get('mp3player_rightbghover', '999999').'",';
+  }
+  if(variable_get('mp3player_righticon', '333333') != '333333') {
+    $js_audio_settings .= 'righticon: "'.variable_get('mp3player_righticon', '333333').'",';
+  }
+  if(variable_get('mp3player_righticonhover', 'FFFFFF') != 'FFFFFF') {
+    $js_audio_settings .= 'righticonhover: "'.variable_get('mp3player_righticonhover', 'FFFFFF').'",';
+  }
+  if(variable_get('mp3player_loader', '009900') != '009900') {
+    $js_audio_settings .= 'loader: "'.variable_get('mp3player_loader', '009900').'",';
+  }
+  if(variable_get('mp3player_track', 'FFFFFF') != 'FFFFFF') {
+    $js_audio_settings .= 'track: "'.variable_get('mp3player_track', 'FFFFFF').'",';
+  }
+  if(variable_get('mp3player_tracker', 'DDDDDD') != 'DDDDDD') {
+    $js_audio_settings .= 'tracker: "'.variable_get('mp3player_tracker', 'DDDDDD').'",';
+  }
+  if(variable_get('mp3player_border', 'CCCCCC') != 'CCCCCC') {
+    $js_audio_settings .= 'border: "'.variable_get('mp3player_border', 'CCCCCC').'",';
+  }
+  if(variable_get('mp3player_skip', '666666') != '666666') {
+    $js_audio_settings .= 'skip: "'.variable_get('mp3player_skip', '666666').'",';
+  }
+  if(variable_get('mp3player_text', '333333') != '333333') {
+    $js_audio_settings .= 'text: "'.variable_get('mp3player_text', '333333').'",';
+  }
+
+  //Remove the last comma otherwise IE will throw a big hissy fit like a little girl
+  $js_audio_settings = substr($js_audio_settings, 0, -1);
+
+  $js_audio_settings .= '});';
+
+  return $js_audio_settings;
+}
+
+
+/** ========================================
+ * THEME FUNCTIONS
+ */
+
+
+/**
+ * Implementation of hook_theme().
+ */
+function mp3player_theme() {
+  return array(
+    'mp3player' => array(
+      'arguments' => array(
+        'file' => NULL,
+        'title' => NULL,
+        'artist' => NULL,
+      ),
+    ),
+  );
+}
+
+/**
+ * Setup theme function for the MP3 Player.
+ */
+function theme_mp3player($file, $title, $artist) {
+  global $mp3_player_id;
+  $mp3_player_id++;
+
+  $extras = NULL;
+  if($title != NULL) {
+    $extras .= ', titles: "'.$title.'"';
+  }
+  if($artist !=NULL) {
+    $extras .= ', artists: "'.$artist.'"';
+  }
+
+  return '<p id="mp3player_'.$mp3_player_id.'">'.t("It look's like you don't have Adobe Flash Player installed. <a href='http://get.adobe.com/flashplayer/'>Get it now.</a>").'</p>
+<script type="text/javascript">AudioPlayer.embed("mp3player_'.$mp3_player_id.'", {soundFile: "'.$file.'"'.$extras.'});</script>';
+}

@@ -1,0 +1,75 @@
+/* $Id: author_pane.css,v 1.1.2.5 2009/01/05 04:38:06 michellec Exp $ */
+
+/* Wrappers */
+.author-pane {
+}
+
+.author-pane-inner {
+}
+
+/* Sections */
+.author-pane-section {
+  margin-bottom: 10px;
+}
+
+.author-pane-name-status {
+}
+
+.author-pane-stats {
+}
+
+.author-pane-admin {
+}
+
+.author-pane-contact {
+}
+
+/* Lines & icons*/
+.author-pane-line {
+  padding-bottom: 5px;
+}
+
+.author-pane-icon {
+  display: inline;
+  padding: 10px 2px 2px 0;
+}
+
+/* Fields */
+.author-pane .author-pane-label {
+  font-weight: bold;
+}
+
+.author-pane-name-status .picture {
+  float: none;
+  padding-left: 0px;
+}
+
+.author-pane-name-status .picture img {
+  border: 1px solid #CCCCCC;
+  height: auto; 
+  padding: 8px;
+}
+
+.author-facebook-status {
+}
+
+.author-title {
+}
+
+.author-badges {
+}
+
+.author-joined {
+}
+
+.author-posts {
+}
+
+.author-points {
+}
+
+.author-ip {
+}
+
+.author-fasttoggle-block {
+}

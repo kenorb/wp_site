@@ -1,0 +1,13 @@
+; $Id: rotor.info,v 1.1.2.4.2.2 2008/12/21 14:40:53 mrfelton Exp $
+name = Rotor Banner
+description = A rotor banner functionality that shows content for some seconds and keeps changing
+dependencies[]  = jquery_plugin
+dependencies[]  = views_ui
+core = 6.x
+package = Advertising
+; Information added by drupal.org packaging script on 2009-01-06
+version = "6.x-2.x-dev"
+core = "6.x"
+project = "rotor"
+datestamp = "1231244033"
+

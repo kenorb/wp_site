@@ -1,0 +1,68 @@
+<?php
+//$Id: job.install,v 1.4 2009/01/02 02:49:21 kbahey Exp $
+// Copyright Khalid Baheyeldin 2008-2009 http://2bits.com
+ 
+/**
+ * Implementation of hook_install().
+ */
+function job_install() {
+	drupal_install_schema('job');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function job_schema() {
+  $schema['job'] = array(
+    'description' => t('The table for jobs'),
+    'fields' => array(
+      
+      'nid' => array(
+        'description' => t('The {node} this version belongs to.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      ),
+
+      'uid' => array(
+        'description' => t('The {users}.uid that created this version.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+
+      'resume_nid' => array(
+        'description' => t('The resume nid'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      ),
+
+      'timestamp' => array(
+        'description' => t('A Unix timestamp indicating when this version was created.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+
+      'status' => array(
+        'description' => t('Is the node published or not'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('nid', 'uid'),
+  );
+  return $schema;
+}
+
+/**
+ * Implentation of hook_uninstall();
+ *
+ */
+function job_uninstall() {
+  drupal_uninstall_schema('job');
+}

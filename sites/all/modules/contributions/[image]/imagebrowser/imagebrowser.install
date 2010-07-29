@@ -1,0 +1,46 @@
+<?php
+// $Id: imagebrowser.install,v 1.1.2.10 2008/12/03 22:18:50 starnox Exp $
+
+/**
+ * @file
+ * The install file for Image Browser.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function imagebrowser_install() {
+  //Nothing to install
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function imagebrowser_uninstall() {
+  variable_del('imagebrowser_insert_type');
+  variable_del('imagebrowser_editor');
+}
+
+/**
+ * Implementation of hook_requirements().
+ */
+function imagebrowser_requirements($phase) {
+  $requirements = array();
+  // Ensure translations don't break at install time
+  $t = get_t();
+
+  // Report Drupal version
+  if ($phase == 'install') {
+    $toolkits = imageapi_get_available_toolkits();
+
+    if (count($toolkits) == 0) {
+      $requirements['image_toolkit'] = array(
+        'title' => $t('Image API Toolkit'),
+        'description' => $t('There are no image toolkit modules enabled. Toolkit modules can be enabled from the <a href="!admin-build-modules">module configuration page</a>.', array('!admin-build-modules' => url('admin/build/modules'))),
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+
+  return $requirements;
+}

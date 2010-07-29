@@ -1,0 +1,165 @@
+# $Id: xmlsitemap_engines.fr.po,v 1.1.2.3 2009/06/16 16:16:49 hass Exp $
+#
+# French translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  xmlsitemap.module,v 1.1.2.56 2009/03/18 21:22:29 kiam
+#  xmlsitemap_node.module,v 1.19.2.81 2009/03/23 14:00:46 kiam
+#  xmlsitemap_term.module,v 1.11.2.43 2009/03/19 13:19:50 kiam
+#  xmlsitemap_engines.module,v 1.5.2.19 2009/02/15 00:36:18 kiam
+#  xmlsitemap.install,v 1.1.2.30 2009/03/14 18:52:18 kiam
+#  xmlsitemap.info,v 1.1.2.2 2009/03/08 23:47:46 kiam
+#  xmlsitemap_engines.info,v 1.2.2.1 2009/03/08 23:47:46 kiam
+#  xmlsitemap_file.info,v 1.1.4.3 2008/11/28 19:11:58 kiam
+#  xmlsitemap_helper.info,v 1.1.2.1 2009/03/08 23:47:46 kiam
+#  xmlsitemap_menu.install,v 1.1.4.26 2009/03/11 16:01:08 kiam
+#  xmlsitemap_menu.info,v 1.1.4.3 2009/03/08 23:47:47 kiam
+#  xmlsitemap_node.info,v 1.2.2.1 2009/03/08 23:47:48 kiam
+#  xmlsitemap_term.info,v 1.2.2.1 2009/02/19 16:15:46 kiam
+#  xmlsitemap_user.info,v 1.2.2.1 2009/03/08 23:47:48 kiam
+#  xmlsitemap_file.module,v 1.1.4.35 2009/03/19 13:19:56 kiam
+#  xmlsitemap_helper.module,v 1.1.2.4 2009/03/18 21:04:15 kiam
+#  xmlsitemap_helper.install.inc,v 1.1.2.1 2009/03/08 23:47:47 kiam
+#  xmlsitemap_user.module,v 1.12.2.58 2009/03/19 13:19:42 kiam
+#  xmlsitemap_menu.module,v 1.1.4.29 2009/03/23 13:51:26 kiam
+#  xmlsitemap_node.install,v 1.9.2.46 2009/03/11 16:01:03 kiam
+#  xmlsitemap_user.install,v 1.6.2.43 2009/03/11 16:00:59 kiam
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: French Translation for xmlsitemap_engines drupal6 module\n"
+"POT-Creation-Date: 2009-04-01 11:14+0200\n"
+"PO-Revision-Date: 2009-04-01 11:16+0100\n"
+"Last-Translator: Sylvain Moreau <sylvain.moreau@ows.fr>\n"
+"Language-Team: Sylvain Moreau, OWS <sylvain.moreau@ows.fr>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+"X-Poedit-Language: French\n"
+"X-Poedit-Country: FRANCE\n"
+
+#: xmlsitemap_engines.module:61
+msgid "Ask.com"
+msgstr "Ask.com"
+
+#: xmlsitemap_engines.module:67
+msgid "Submit the site map to Ask.com"
+msgstr "Soumettre le plan du site à Ask.com"
+
+#: xmlsitemap_engines.module:72;90;114;132;162
+msgid "Submission URL"
+msgstr "URL de soumission"
+
+#: xmlsitemap_engines.module:73;91;115;133;163
+msgid "The URL to submit the site map to. Use %placeholder like placeholder for the site map URL."
+msgstr "L'URL à laquelle soumettre le plan du site. Utilisez %placeholder en tant que valeur de substitution pour l'URL du plan du site."
+
+#: xmlsitemap_engines.module:79
+msgid "Google"
+msgstr "Google"
+
+#: xmlsitemap_engines.module:85
+msgid "Submit the site map to Google"
+msgstr "Soumettre le plan du site à Google"
+
+#: xmlsitemap_engines.module:96;168
+msgid "Verification link"
+msgstr "Lien de vérification"
+
+#: xmlsitemap_engines.module:97
+msgid "In order to show statistics, Google will ask you to verify that you control this site by creating a file with a certain name. Enter that name here and the XML Sitemap module will create a path to that file name. This will only work if you have clean URLs enabled."
+msgstr "Pour pouvoir afficher des statistiques, Google vous demandera de vérifier que vous controllez ce site en créant un fichier avec un nom particulier. Entrez ici ce nom et le module XML Sitemap créera un chemin vers ce nom de fichier. Cela ne fonctionnera que si vous avez activé les URL simplifiées."
+
+#: xmlsitemap_engines.module:103
+msgid "Moreover.com"
+msgstr "Moreover.com"
+
+#: xmlsitemap_engines.module:109
+msgid "Submit the site map to Moreover.com"
+msgstr "Soumettre le plan du site à Moreover.com"
+
+#: xmlsitemap_engines.module:121
+msgid "Windows Live"
+msgstr "Windows Live"
+
+#: xmlsitemap_engines.module:127
+msgid "Submit the site map to Windows Live"
+msgstr "Soumettre le plan du site à Windows live"
+
+#: xmlsitemap_engines.module:138
+msgid "Authentication file"
+msgstr "Fichier d'authentification"
+
+#: xmlsitemap_engines.module:139
+msgid "Before allowing you to view additional information, Windows Live will ask you to verify that you control this site by creating a file with a certain name. Enter that name here, and XML Sitemap will create a path to that file name. This will only work if you have clean URLs enabled."
+msgstr "Avant de vous autoriser à voir des informations supplémentaires, Windows Live vous demandera de vérifier que vous controllez ce site en créant un fichier avec un nom particulier. Entrer ce nom ici et XML Sitemap créera un chemin pour ce fichier. Cela ne fonctionnera que si vous avez activé les URL simplifiées."
+
+#: xmlsitemap_engines.module:144
+msgid "Authentication tag"
+msgstr "Tag d'authentification"
+
+#: xmlsitemap_engines.module:145
+msgid "Windows Live will give you an authentication tag."
+msgstr "Windows Live vous donnera une balise d'authentification."
+
+#: xmlsitemap_engines.module:151
+msgid "Yahoo!"
+msgstr "Yahoo!"
+
+#: xmlsitemap_engines.module:157
+msgid "Submit the site map to Yahoo!"
+msgstr "Soumettre le plan du site à Yahoo!"
+
+#: xmlsitemap_engines.module:169
+msgid "Before allowing you to view additional information, Yahoo! will ask you to verify that you control this site by creating a file with a certain name. Enter that name here, and XML Sitemap will create a path to that file name. This will only work if you have clean URLs enabled."
+msgstr "Avant de vous autoriser à voir des informations supplémentaires, Yahoo! vous demandera de vérifier que vous controllez ce site en créant un fichier avec un nom particulier. Entrer ce nom ici et XML Sitemap créera un chemin pour ce fichier. Cela ne fonctionnera que si vous avez activé les URL simplifiées."
+
+#: xmlsitemap_engines.module:174
+msgid "Authentication key"
+msgstr "Clé d'authentification"
+
+#: xmlsitemap_engines.module:175
+msgid "Yahoo! will ask you to put an authentication key in the verification file."
+msgstr "Yahoo! vous demandera de mettre une clé d'authentification dans le fichier de vérification."
+
+#: xmlsitemap_engines.module:270;275
+msgid "xmlsitemap"
+msgstr "xmlsitemap"
+
+#: xmlsitemap_engines.module:270
+msgid "Sitemap successfully submitted to !engine."
+msgstr "Le Sitemap a été soumis avec succès au moteur !engine."
+
+#: xmlsitemap_engines.module:275
+msgid "Error occurred submitting sitemap to !engine: !code"
+msgstr "Une erreur s'est produite lors de la soumission du sitemap au moteur !engine : !code."
+
+#: xmlsitemap_engines.module:26
+msgid "Google verification page"
+msgstr "Page de vérification de Google"
+
+#: xmlsitemap_engines.module:35
+msgid "Yahoo! verification page"
+msgstr "Page de vérification de Yahoo!"
+
+#: xmlsitemap_engines.module:44
+msgid "Windows Live verification page"
+msgstr "Page de vérification de Windows Live"
+
+#: xmlsitemap_engines.module:0
+msgid "xmlsitemap_engines"
+msgstr "xmlsitemap_engines"
+
+#: xmlsitemap_engines.info:0
+msgid "XML Sitemap: Engines"
+msgstr "XML Sitemap : Engines"
+
+#: xmlsitemap_engines.info:0
+msgid "Submits site map to search engines."
+msgstr "Soumet le plan du site aux moteurs de recherche."
+
+#: xmlsitemap_engines.info:0
+msgid "XML Sitemap"
+msgstr "XML Sitemap"
+

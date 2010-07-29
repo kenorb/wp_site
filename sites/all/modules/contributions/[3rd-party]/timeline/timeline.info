@@ -1,0 +1,13 @@
+; $Id: timeline.info,v 1.3 2008/09/12 02:15:02 jmiccolis Exp $
+name = Timeline
+description = Provides a draggable and scrollable timeline view. Requires the views module and makes use of the events module if available.
+package = Views
+dependencies[] = views
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-12-13
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "timeline"
+datestamp = "1229127326"
+

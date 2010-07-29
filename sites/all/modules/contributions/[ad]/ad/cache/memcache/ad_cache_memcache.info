@@ -1,0 +1,12 @@
+; $Id: ad_cache_memcache.info,v 1.1.2.2.2.1 2008/08/11 21:15:26 jeremy Exp $
+name = Ad memcache cache
+package = Ad
+dependencies[] = ad
+description = Integrates the ad module with memcached, allowing ads to be served directly out of RAM.
+core = 6.x
+; Information added by drupal.org packaging script on 2009-02-12
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "ad"
+datestamp = "1234396837"
+

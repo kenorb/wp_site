@@ -1,0 +1,100 @@
+<?php
+// $Id: javascript_aggregator.module,v 1.17.2.5 2008/12/23 21:04:04 robloach Exp $
+
+/**
+ * Implementation of hook_help().
+ */
+function javascript_aggregator_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#javascript_aggregator':
+      $output = '<p>'. t('Uses the <a href="@jsmin">JSMin</a> library to minify the aggregated JavaScript file when <em>JavaScript optimization</em> has been enabled in the <a href="@performance">Performance settings</a>.', array('@performance' => url('admin/settings/performance'), '@jsmin' => 'http://code.google.com/p/jsmin-php/')) .'</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function javascript_aggregator_form_alter(&$form, $form_state, $form_id) {
+  if ($form_id == 'system_performance_settings') {
+    $form['bandwidth_optimizations']['preprocess_js']['#title'] = t('Optimize and Minify JavaScript files');
+    $form['bandwidth_optimizations']['preprocess_js']['#description'] .= t(' Once the JavaScript files have been aggregated, they will be minified.');
+    $form['bandwidth_optimizations']['preprocess_js']['#weight'] = 1;
+
+    $form['bandwidth_optimizations']['javascript_aggregator_gzip'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('GZip JavaScript'),
+      '#description' => t('Once minified, optionally <a href="@gzip">GZip</a> the aggregated JavaScript file to dramatically decrease its size.', array('@gzip' => 'http://en.wikipedia.org/wiki/Gzip')),
+      '#default_value' => variable_get('javascript_aggregator_gzip', FALSE),
+      '#weight' => 2,
+    );
+  }
+}
+
+/**
+ * Implementation of hook_preprocess_hook().
+ *
+ * Minify the aggregated JavaScript file if JavaScript Optimization is turned on.
+ */
+function javascript_aggregator_preprocess_page(&$variables) {
+  // Only do this for pages that have JavaScript on them.
+  if (!empty($variables['scripts'])) {
+    // Only process it is JavaScript Optimization is enabled.
+    if (variable_get('preprocess_js', 0)) {
+      // Strip out the aggregated JavaScript file.
+      $path = base_path() . file_directory_path();
+      $pattern = "!(<script type=\"text\/javascript\" src=\"$path)(.*?)(\"(.*?)><\/script>)!";
+      preg_match_all($pattern, $variables['scripts'], $matches);
+      $aggregated_file = $matches[2][0];
+      $jsmin_file = $aggregated_file .'min.js';
+
+      // Construct the final JSMin file path.
+      $jsmin_file_path = file_directory_path() . $jsmin_file;
+
+      // Create the JSMinified file if it doesn't exist yet.
+      if (!file_exists($jsmin_file_path)) {
+        // JSMin the contents of the aggregated file.
+        require_once(drupal_get_path('module', 'javascript_aggregator') .'/jsmin.php');
+        $contents = JSMin::minify(file_get_contents(file_directory_path() . $aggregated_file));
+
+        // GZip the JavaScript if required.
+        if (variable_get('javascript_aggregator_gzip', FALSE)) {
+
+          // Create the GZip file if it doesn't already exist.
+          if (!file_exists($jsmin_file .'.gz')) {
+            file_save_data(gzencode($contents, 9), $jsmin_file .'.gz', FILE_EXISTS_REPLACE);
+          }
+
+          // Make sure the .htaccess file is active to handle GZipped JavaScript files.
+          $htaccess = file_directory_path() . '/js/.htaccess';
+          if (!file_exists($htaccess)) {
+            $htaccess_contents = <<<EOT
+# If we're serving a .gz JavaScript file.
+<Files *.js.gz>
+  # Set the encoding for the browser.
+  AddEncoding gzip .js
+  # Force the js MIME type (otherwise the browser sees js).
+  ForceType application/x-javascript
+</Files>
+<IfModule mod_rewrite.c>
+  # If the browser accepts gzip encoded data.
+  RewriteCond %{HTTP:Accept-encoding} gzip
+  # And a .gz version of the requested file exists.
+  RewriteCond %{REQUEST_FILENAME}.gz -f
+  # Then rewrite the request to seamlessly serve the gzip file instead
+  RewriteRule ^(.*)\.js $1.js.gz [L,QSA]
+</IfModule>
+EOT;
+            file_save_data($htaccess_contents, $htaccess, FILE_EXISTS_REPLACE);
+          }
+        }
+
+        // Save the contents to the JavaScript file.
+        file_save_data($contents, $jsmin_file_path, FILE_EXISTS_REPLACE);
+      }
+
+      // Replace the aggregated file with the minified JavaScript file.
+      $variables['scripts'] = str_replace($aggregated_file, $jsmin_file, $variables['scripts']);
+    }
+  }
+}

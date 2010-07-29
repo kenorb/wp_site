@@ -1,0 +1,57 @@
+<?php
+// $Id: userpoints_pageviews.module,v 1.1.4.2 2009/01/11 00:46:44 kbahey Exp $
+
+define('USERPOINTS_PAGE_VIEWS', 'userpoints_pageviews');
+
+function userpoints_pageviews_userpoints($op = 'setting', $params = array()) {
+  if ($op == 'setting') {
+    $group = 'pageviews';
+    $form[$group] = array(
+      '#type'        => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed'   => TRUE,
+      '#title'       => t('!Points for node page views', userpoints_translation()),
+    );
+
+    $form[$group][USERPOINTS_PAGE_VIEWS] = array(
+      '#type'          => 'textfield',
+      '#title'         => t('!Points for node page views', userpoints_translation()),
+      '#default_value' => variable_get(USERPOINTS_PAGE_VIEWS , 0),
+      '#size'          => 5,
+      '#maxlength'     => 5,
+    );
+    
+      $form[$group]['userpoints_pageview_tid'] = array(
+        '#type'          => 'select',
+        '#title'         => t('Category'),
+        '#default_value' => variable_get(userpoints_pageview_tid, 0),
+        '#options'       => userpoints_get_categories(),
+        '#description'   => t('Page views will be assigned to this category. You can modify what categories are available by modifying the <a href="!url">Userpoints taxonomy</a>.', 
+          array('!url' => url('admin/content/taxonomy/'. variable_get(USERPOINTS_CATEGORY_DEFAULT_VID, '')))),
+      );
+      
+    return $form;
+  }
+}
+
+function userpoints_pageviews_nodeapi(&$node, $op = 'view', $teaser, $page) {
+  global $user;
+
+  switch($op) {
+    case 'view':
+      if ($page) {
+        // Node is being viewed in page mode, not in a list
+        if ($user->uid) {
+          // The user is logged in, not anonymous
+          if ($node->uid !== $user->uid) {
+            // The user did not not create this node...
+            userpoints_userpointsapi(array(
+              'uid' => $node->uid,
+              'points' => variable_get(USERPOINTS_PAGE_VIEWS, 0),
+              'tid'         => variable_get('userpoints_pageview_tid', 0),
+              ));
+          }
+        }
+      }
+  }
+}

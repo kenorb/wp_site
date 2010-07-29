@@ -1,0 +1,78 @@
+<?php
+// $Id: G2DrupalHelper.class,v 1.1 2008/02/10 22:39:51 profix898 Exp $
+
+/**
+ * Class G2DrupalHelper {}.
+ */
+class G2DrupalHelper {
+    function registerEventListeners($listeners) {
+        foreach ($listeners as $listener) {
+            // Default path to event listener class
+            if (!isset($listener['path'])) {
+                $listener['path'] = drupal_get_path('module', 'gallery') .'/G2DrupalHelper.class';
+            }
+            // Store event parameters
+            $listener['events'] = is_array($listener['events']) ? $listener['events'] : array($listener['events']);
+            foreach ($listener['events'] as $event) {
+                $params = isset($listener['params']) ? $listener['params'] : NULL;
+                G2DrupalHelper::eventParams($event, $params);
+            }
+            // Register event listener
+            $ret = GalleryCoreApi::registerFactoryImplementationForRequest(
+                'GalleryEventListener',
+                $listener['class'],
+                'G2Drupal',
+                $listener['path'],
+                'G2Drupal',
+                $listener['events']
+            );
+            // G2 register call failed
+            if ($ret) {
+                return $ret;
+            }
+        }
+        
+        return false;
+    }
+    
+    function eventParams($event, $params = NULL) {
+        static $storage = NULL;
+        
+        // Save event params
+        if (isset($params)) {
+            $storage[$event] = $params;
+        }
+        // Get event params
+        if (isset($storage[$event])) {
+            return $storage[$event];
+        }
+        
+        return array();
+    }
+}
+
+/**
+ * Class G2DrupalSimpleThemeEventListener {}.
+ */
+class G2DrupalSimpleThemeEventListener /* extends GalleryEventListener */ {
+    function handleEvent($event) {
+        $eventParams = G2DrupalHelper::eventParams($event->getEventName());
+        if (count($eventParams)) {
+            return array(null, $eventParams);
+        }
+        
+        return array(null, null);
+    }
+}
+
+/**
+ * Class G2DrupalPageCacheEventListener {}.
+ */
+class G2DrupalPageCacheEventListener /* extends GalleryEventListener */ {
+    function handleEvent($event) {
+        // Clear the page cache, so that the updated G2 item shows correctly
+        cache_clear_all();
+        
+        return array(null, null);
+    }
+}

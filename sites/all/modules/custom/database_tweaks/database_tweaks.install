@@ -1,0 +1,12 @@
+<?php
+// $Id$
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function database_tweaks_uninstall() {
+  variable_del('mysql_sql_big_selects');
+  variable_del('mysql_max_join_size');
+  variable_del('max_allowed_packet');
+}
+

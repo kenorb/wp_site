@@ -1,0 +1,211 @@
+<?php
+// $Id: taxonomy_breadcrumb.module,v 1.7 2009/01/12 02:19:26 mgn Exp $.
+
+/**
+ * @file
+ * The taxonomy_breadcrumb module generates taxonomy based breadcrumbs on node
+ * pages and taxonomy/term pages.  The breadcrumb trail takes on the form:
+ *   [HOME] >> [VOCABULARY] >> TERM >> [TERM] ...
+ *
+ *   - The HOME breadcrumb (if present) links to the homepage.  The text
+ *     displayed for HOME is administrator configurable.  If the HOME
+ *     breadcrumb is not defined by the administrator, it will not appear
+ *     in the breadcrumb trail.
+ *   - The VOCABULARY breadcrumb (if present) will link to an administrator
+ *     defined page.  If the VOCABULARY does not have an administrator
+ *     defined page, it will not appear in the breadcrumb trail.
+ *   - Each TERM breadcrumb will link to either
+ *     (1) taxonomy/term/tid by default, or
+ *     (2) an administrator defined page if one is defined for the term.
+ *   - These administrator defined "breadcrumb links" for VOCABULARIES and TERMS
+ *     are controlled from the add/edit vocabulary and add/edit term
+ *     administrator pages.
+ *
+ * Examples:
+ *   home >> term >> term
+ *   mysite >> term >> term
+ *   home >> vocabulary >> term >> term
+ *   vocabulary >> term >> term
+ *
+ * Issues:
+ *   - use of db_rewrite_sql?
+ *   - This module is not expected to be compatible with other modules that call
+ *     drupal_set_breadcrumb, such as taxonomy_context.
+ *   - With multi-parent terms, all parent terms seem to show up, look into
+ *     taxonomy_get_parents_all.
+ */
+
+// default value for Advanced Settings, Node Types
+define('TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT', 'book');
+
+/**
+ * Implementation of hook_menu().
+ */
+function taxonomy_breadcrumb_menu() {
+  $items['admin/settings/taxonomy-breadcrumb'] = array(
+    'title' => 'Taxonomy Breadcrumb',
+    'description' => 'Configure how taxonomy based breadcrumbs are displayed.',
+    'file'              => 'taxonomy_breadcrumb.admin.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('taxonomy_breadcrumb_admin_settings'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM, // optional
+  );
+
+  // Similiar to core menu item in taxonomy_menu, except callback is different
+  $items['taxonomy/term/%'] = array(
+    'title' => 'Taxonomy term',
+    'file'              => 'taxonomy_breadcrumb.inc',
+    'page callback'     => '_taxonomy_breadcrumb_term_page',
+    'page arguments'    => array(2),
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function taxonomy_breadcrumb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  // If we are on a page view (not just a teaser), set the breadcrumb
+  // $a4 contains TRUE if we are on a page view
+  if ($op == 'view' && $a4 && !drupal_is_front_page()) {
+    // Include the .inc file with all helper functions
+    include_once drupal_get_path('module', 'taxonomy_breadcrumb') .'/taxonomy_breadcrumb.inc';
+
+    // See if the node type of the current node is part of the node types listed on the advanced settings page.
+    $array_of_types = explode(' ', variable_get('taxonomy_breadcrumb_node_types', TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT));
+    $in_list = in_array($node->type, $array_of_types);
+
+    // if the node type IS IN     the node types list and the list IS     inclusive OR
+    // if the node type IS NOT IN the node types list and the list IS NOT inclusive (e.g. exclusive)
+    // THEN modify the breadcrumb trail.
+    if ($in_list == variable_get('taxonomy_breadcrumb_include_nodes', FALSE) ) {
+
+      // Extract lightest term from lightest vocabulary assosciated with node.
+      $term = _taxonomy_breadcrumb_node_get_lightest_term($node->nid);
+      $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($term->tid);
+      drupal_set_breadcrumb($breadcrumb);
+    }
+  }
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function taxonomy_breadcrumb_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#taxonomy_breadcrumb':
+      return t('<p>See %link.</p>', array('%link' => l('admin/settings/taxonomy-breadcrumb', 'admin/settings/taxonomy-breadcrumb')));
+    case 'admin/settings/taxonomy-breadcrumb':
+      return t('The taxonomy_breadcrumb module generates taxonomy based breadcrumbs on node pages and taxonomy/term pages.  The breadcrumb trail takes on the form:
+                    <ul>[HOME] >> [VOCABULARY] >> TERM >> [TERM] ...</ul>
+                    <ul>
+                    <li>The text displayed for HOME is configurable below.  The <em>HOME </em>breadcrumb (if present) links to the homepage.  The text displayed for HOME is administrator configurable.  If the HOME breadcrumb is not defined by the administrator, it will not appear in the breadcrumb trail.</li>
+                    <li>The <em>VOCABULARY </em>breadcrumb (if present) will link to an administrator defined page.  If the VOCABULARY does not have an administrator defined page, it will not appear in the breadcrumb trail. This can be configured on the add/edit vocabulary pages within !tax_link (taxonomy).</li>
+                    <li>Each <em>TERM </em>breadcrumb will link to either (1) taxonomy/term/tid by default, or (2) an administrator defined page if one is defined for the term. This can be configured on the add/edit term pages within !tax_link (taxonomy).</li>
+                    </ul>
+                    <br />
+                    <p>Examples:
+                    <ul>
+                    <li>home >> term >> term</li>
+                    <li>mysite >> term >> term</li>
+                    <li>home >> vocabulary >> term >> term</li>
+                    <li>vocabulary >> term >> term</li>
+                    </ul>', array('!tax_link' => l('administer >> categories', 'admin/content/taxonomy')));
+  }
+}
+
+/**
+ * Implementation of hook_form_alter().
+ *
+ * This must be used over hook_taxonomy to
+ * add the Breadcrumb Path fields to the vocabulary and term forms.  The
+ * hook_taxonomy function does not provide a way to obtain the vid or tid
+ * of the vocabulary or term.
+ */
+function taxonomy_breadcrumb_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
+  // Include the .inc file with all helper functions
+  include_once drupal_get_path('module', 'taxonomy_breadcrumb') .'/taxonomy_breadcrumb.admin.inc';
+  include_once drupal_get_path('module', 'taxonomy_breadcrumb') .'/taxonomy_breadcrumb.inc';
+
+    $form['taxonomy_breadcrumb_path'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Breadcrumb path (taxonomy_breadcrumb)'),
+    '#default_value'  => _taxonomy_breadcrumb_get_vocabulary_path($form['vid']['#value']),
+      '#maxlength' => 128,
+      '#description' => t('Specify the path this vocabulary links to as a breadcrumb.  If blank, the breadcrumb will not appear.  Use a relative path and don\'t add a trailing slash.  For example: node/42 or my/path/alias.'),
+      '#weight' => 0,
+    );
+  }
+
+/**
+ * Implementation of hook_form_alter().
+ *
+ * This must be used over hook_taxonomy to
+ * add the Breadcrumb Path fields to the vocabulary and term forms. The
+ * hook_taxonomy function does not provide a way to obtain the vid or tid
+ * of the vocabulary or term.
+ */
+function taxonomy_breadcrumb_form_taxonomy_form_term_alter(&$form, &$form_state) {
+  // Include the .inc file with all helper functions
+  include_once drupal_get_path('module', 'taxonomy_breadcrumb') .'/taxonomy_breadcrumb.inc';
+
+    $form['taxonomy_breadcrumb_path'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Breadcrumb path (taxonomy_breadcrumb)'),
+    '#default_value'  => _taxonomy_breadcrumb_get_term_path($form['tid']['#value']),
+      '#maxlength' => 128,
+      '#description' => t('Specify the path this term links to as a breadcrumb.  If blank, the breadcrumb links to the default taxonomy page.  Use a relative path and don\'t add a trailing slash.  For example: node/42 or my/path/alias.'),
+      '#weight' => 0,
+    );
+  }
+
+/**
+ * Implementation of hook_taxonomy().  This implementation checks to see if a
+ * vocabulary or term is being updated and makes the necessary changes in
+ * the taxonomy_breadcrumb database tables.
+ */
+function taxonomy_breadcrumb_taxonomy($op, $type, $object = NULL) {
+
+  // if (after a vocabulary or term is updated)
+  // called by module_invoke_all('taxonomy', 'update', 'term', $edit);  in taxonomy.module
+  if ( $op == 'update' && ($type == 'vocabulary' || $type == 'term') ) {
+    // Include the .inc file with all helper functions
+    include_once drupal_get_path('module', 'taxonomy_breadcrumb') .'/taxonomy_breadcrumb.inc';
+
+    // Set variables to used in SQL query to reflect if vocabulary or term is
+    // being updated.
+    if ($type == 'vocabulary') {
+      $table = '{taxonomy_breadcrumb_vocabulary}';
+      $key_type = 'vid';
+      $old_path = _taxonomy_breadcrumb_get_vocabulary_path($object['vid']);
+    }
+    elseif ($type == 'term') {
+      $table = '{taxonomy_breadcrumb_term}';
+      $key_type = 'tid';
+      $old_path = _taxonomy_breadcrumb_get_term_path($object['tid']);
+    }
+    $key = $object[$key_type];
+    $new_path = $object['taxonomy_breadcrumb_path'];
+
+    // Delete record from taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
+    if (drupal_strlen($new_path) == 0 && $old_path !== NULL) {
+      db_query("DELETE FROM $table WHERE $key_type = %d", $key);
+    }
+
+    // Update existing record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
+    elseif (drupal_strlen($new_path) != 0 && $old_path != NULL) {
+      db_query("UPDATE $table SET path = '%s' WHERE $key_type = %d", $new_path, $key );
+    }
+
+    // Create new record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
+    elseif (drupal_strlen($new_path) != 0 && $old_path == NULL) {
+      db_query("INSERT INTO $table ($key_type, path) VALUES (%d, '%s')", $key, $new_path);
+    }
+  }
+}

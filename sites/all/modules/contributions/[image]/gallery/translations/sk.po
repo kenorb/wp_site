@@ -1,0 +1,4067 @@
+# Slovak translation of Gallery (all releases)
+# Copyright (c) 2009 by the Slovak translation team
+# Generated from files:
+#  gallery_search.inc,v 1.2.2.13 2008/02/18 23:12:20 profix898
+#  gallery_settings.inc,v 1.10.2.46 2008/02/18 21:22:20 profix898
+#  gallery_user_admin.inc,v 1.1.2.23 2007/10/21 14:39:42 profix898
+#  gallery_g2image_settings.inc,v 1.1.2.2 2008/06/10 14:58:13 profix898
+#  gallery.module,v 1.26.2.36 2008/02/24 23:45:21 profix898
+#  gallery_block.inc,v 1.6.2.20 2008/02/10 11:39:43 profix898
+#  gallery_install.inc,v 1.1.2.28 2008/02/09 17:48:05 profix898
+#  gallery_menu.module,v 1.1.2.21 2007/11/21 22:26:54 profix898
+#  gallery_block_admin.inc,v 1.1.2.8 2008/08/04 21:13:06 profix898
+#  gallery_base.inc,v 1.6.2.51 2008/02/10 20:45:52 profix898
+#  gallery_help.inc,v 1.3.2.6 2007/09/10 18:04:08 profix898
+#  gallery_profile.module,v 1.1.2.3 2007/11/14 00:56:46 profix898
+#  gallery_user.inc,v 1.9.2.36 2007/10/21 16:45:07 profix898
+#  gallery.info,v 1.2.2.1 2007/02/24 23:39:44 profix898
+#  gallery_filter.inc,v 1.3.2.22 2008/02/18 23:12:20 profix898
+#  gallery_g2image.inc,v 1.1.6.7 2007/10/18 16:24:11 profix898
+#  gallery_g2image.module,v 1.1.2.2 2008/06/10 14:58:13 profix898
+#  gallery_groups.inc,v 1.1.2.9 2007/09/10 18:04:08 profix898
+#  gallery_report.inc,v 1.1.2.11 2007/12/28 17:05:28 profix898
+#  gallery_menu.info,v 1.1.2.1 2007/02/24 23:39:48 profix898
+#  gallery_profile.info,v 1.1.2.2 2007/11/02 16:38:42 profix898
+#  gallery_g2image.info,v 1.1.2.2 2008/07/19 16:32:23 profix898
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Gallery (all releases)\n"
+"POT-Creation-Date: 2009-01-01 15:18+0100\n"
+"PO-Revision-Date: 2009-01-01 13:10+0100\n"
+"Language-Team: Slovak\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=((n==1)?(0):(((n>=2)&&(n<=4))?(1):2));\n"
+
+#: gallery_search.inc:48
+msgid "n/a"
+msgstr "nie je"
+
+#: gallery_settings.inc:705
+msgid "Default"
+msgstr "Predvolené"
+
+#: gallery_user_admin.inc:31,25
+msgid "Operations"
+msgstr "Operácie"
+
+#: gallery_settings.inc:866; gallery_g2image/gallery_g2image_settings.inc:52
+msgid "Mode"
+msgstr "Režim"
+
+#: gallery.module:89,151
+msgid "Search"
+msgstr "Hľadať"
+
+#: gallery_user_admin.inc:60,55
+msgid "edit"
+msgstr "upraviť"
+
+#: gallery.module:395,460
+msgid "Home"
+msgstr "Domov"
+
+#: gallery_settings.inc:1495,908
+msgid "Error"
+msgstr "Chyba"
+
+#: gallery_user_admin.inc:393,381
+msgid "Settings"
+msgstr "Nastavenia"
+
+#: gallery_user_admin.inc:420,402
+msgid "none"
+msgstr "žiadne"
+
+#: gallery_block.inc:88,104; gallery_settings.inc:1223,610
+msgid "Title"
+msgstr "Názov"
+
+#: gallery_install.inc:87,983
+msgid "Description"
+msgstr "Popis"
+
+#: gallery_settings.inc:869; gallery_g2image/gallery_g2image_settings.inc:55
+msgid "Disabled"
+msgstr "Vypnuté"
+
+#: gallery_settings.inc:885; gallery_g2image/gallery_g2image_settings.inc:72
+msgid "Show on every page except the listed pages."
+msgstr "Zobraziť na každej stránke, okrem vypísaných."
+
+#: gallery_settings.inc:886; gallery_g2image/gallery_g2image_settings.inc:73
+msgid "Show on only the listed pages."
+msgstr "Zobraziť len na vypísaných stránkach."
+
+#: gallery_user_admin.inc:558,540
+msgid "Reset to defaults"
+msgstr "Predvolené nastavenia"
+
+#: gallery_install.inc:87,983; gallery_settings.inc:28,20; gallery_user_admin.inc:29,23
+msgid "Status"
+msgstr "Stav"
+
+#: gallery_install.inc:983
+msgid "Name"
+msgstr "Názov"
+
+#: gallery_user_admin.inc:123,138,120; gallery.module:70,140
+msgid "Filter"
+msgstr "Filter"
+
+#: gallery_menu/gallery_menu.module:278
+msgid "Parent item"
+msgstr "Nadradená položka"
+
+#: gallery_user_admin.inc:125,126
+msgid "Reset"
+msgstr "Zrušiť"
+
+#: gallery_settings.inc:1483,1519,896,932
+msgid "disabled"
+msgstr "vypnuté"
+
+#: gallery_menu/gallery_menu.module:24
+msgid "Menu"
+msgstr "Menu"
+
+#: gallery_search.inc:137,153
+msgid "Advanced search"
+msgstr "Pokročilé vyhľadávanie"
+
+#: gallery_settings.inc:1171,558
+msgid "Search settings"
+msgstr "Nastavenia vyhľadávania"
+
+#: gallery_block.inc:89,105
+msgid "Date"
+msgstr "Dátum"
+
+#: gallery_settings.inc:44,36
+msgid "System default"
+msgstr "Štandardné"
+
+#: gallery_user_admin.inc:28,22
+msgid "Username"
+msgstr "Používateľské meno"
+
+#: gallery_user_admin.inc:35,29
+msgid "blocked"
+msgstr "blokovaný"
+
+#: gallery_user_admin.inc:35,29
+msgid "active"
+msgstr "aktívny"
+
+#: gallery_settings.inc:156,153
+msgid "Watchdog"
+msgstr "Watchdog"
+
+#: gallery_block_admin.inc:17,67
+msgid "Block cache"
+msgstr "Vyrovnávacia pamäť blokov"
+
+#: gallery_settings.inc:1501,914
+msgid "Unknown"
+msgstr "Neznámy"
+
+#: gallery_base.inc:229,234,238,301,306,310; gallery_settings.inc:327,960; gallery_block_admin.inc:225; gallery_g2image/gallery_g2image_settings.inc:147
+msgid "None"
+msgstr "Žiadne"
+
+#: gallery_help.inc:76; gallery_install.inc:208
+msgid ""
+msgstr "_"
+
+#: gallery_settings.inc:961; gallery_g2image/gallery_g2image_settings.inc:148
+msgid "Normal"
+msgstr "Normálny"
+
+#: gallery.module:63,135; gallery_profile/gallery_profile.module:22
+msgid "General"
+msgstr "Všeobecné"
+
+#: gallery_block.inc:74; gallery_profile/gallery_profile.module:114
+msgid "Random image"
+msgstr "Náhodný obrázok"
+
+#: gallery_settings.inc:366,518,1244,631; gallery_profile/gallery_profile.module:166; gallery_block_admin.inc:264
+msgid "Image size"
+msgstr "Veľkosť obrázka"
+
+#: gallery.module:45,115
+msgid "Gallery settings"
+msgstr "Nastavenia Galérie"
+
+#: gallery_user_admin.inc:58,53
+msgid "N/A"
+msgstr "N/A"
+
+#: gallery_menu/gallery_menu.module:278
+msgid "Show"
+msgstr "Zobraziť"
+
+#: gallery_settings.inc:461; gallery_profile/gallery_profile.module:120; gallery_block_admin.inc:196
+msgid "Number of columns"
+msgstr "Počet stĺpcov"
+
+#: gallery_user_admin.inc:26,20
+msgid "ID"
+msgstr "ID"
+
+#: gallery_settings.inc:1525,938
+msgid "missing"
+msgstr "chýba"
+
+#: gallery_user_admin.inc:178,196,195
+msgid "Start"
+msgstr "Štart"
+
+#: gallery_settings.inc:1493,906; gallery_user.inc:367,374
+msgid "OK"
+msgstr "OK"
+
+#: gallery_block_admin.inc:80
+msgid "Block type"
+msgstr "Typ bloku"
+
+#: gallery_settings.inc:1480,893
+msgid "enabled"
+msgstr "povolené"
+
+#: gallery_settings.inc:1528,941
+msgid "unknown"
+msgstr "neznáme"
+
+#: gallery_settings.inc:871,1016; gallery_g2image/gallery_g2image_settings.inc:57,204
+msgid "TinyMCE"
+msgstr "TinyMCE"
+
+#: gallery_base.inc:75,66
+msgid ""
+"Unable to initialize embedded Gallery. You need to <a href=\"@link\"> "
+"configure your embedded Gallery</a>."
+msgstr ""
+"Nedá sa inicializovať začlenená Glaléria. Bude potrebné <a "
+"href=\"@link\"> konfigurovať začlenenú Galériu</a>."
+
+#: gallery_base.inc:105,134
+msgid "Embedding API version is incompatible."
+msgstr "Začleňovaná verzia API nie je kompatibilná."
+
+#: gallery_base.inc:119,149
+msgid ""
+"Initialization seemed successful, but classes 'GalleryEmbed'\n"
+"                       and/or 'GalleryCoreApi' are still not "
+"available."
+msgstr ""
+"Inicializácia vyzerá byť úspešná, ale triedy 'GalleryEmbed'\r\n"
+"a/alebo 'GalleryCoreApi' stále nie sú dostupné."
+
+#: gallery_base.inc:159,220
+msgid ""
+"Error handling request (invalid request)<br />or the requested Gallery "
+"URL does not exist."
+msgstr ""
+"Chyba pri spracovaní požiadavky (neplatná požiadavka)<br />alebo "
+"vyžiadaná URL adresa Galérie neexistuje."
+
+#: gallery_base.inc:201,273
+msgid "Error retrieving theme list"
+msgstr "Chyba pri získavaní zoznamu tém vzhľadov"
+
+#: gallery_base.inc:212,284
+msgid "Error getting theme (:themeid) details"
+msgstr "Chyba pri získavaní datailov témy vzhľadu (:themeid)"
+
+#: gallery_base.inc:254,353
+msgid "Error: UrlGenerator not available"
+msgstr "Chyba: UrlGenerator nie je dostupný"
+
+#: gallery_base.inc:288,387
+msgid "Error fetching album tree"
+msgstr "Chyba pri prevádzaní stromu albumov"
+
+#: gallery_base.inc:306,405
+msgid "Error fetching item details (entityId: :id)"
+msgstr "Chyba pri prevádzaní datalov položky (ID entity: :id)"
+
+#: gallery_base.inc:516,688
+msgid "Error in function ':func()' (:file::line):<br />"
+msgstr "Chyba vo funkcii ':func()' (:file::line):<br />"
+
+#: gallery_base.inc:544,716
+msgid ""
+"Embedded Gallery2 is not available or requested Gallery URL does not "
+"exist."
+msgstr ""
+"Začlenená Gallery2 nie je dostupná alebo vyžiadaná URL adresa "
+"Galérie neexistuje."
+
+#: gallery_base.inc:571
+msgid "Gallery Debug: "
+msgstr "Ladenie Galérie: "
+
+#: gallery_base.inc:598,770
+msgid "Unable to get Gallery2 module status."
+msgstr "Nedá sa zistiť stav modulov Gallery2."
+
+#: gallery_base.inc:682,854
+msgid "Gallery2 API version"
+msgstr "Verzia API Gallery2"
+
+#: gallery_base.inc:549; gallery_user_admin.inc:330; gallery.module:0
+msgid "gallery"
+msgstr "galéria"
+
+#: gallery_block.inc:19,40,23,33
+msgid "Gallery Navigation"
+msgstr "Navigácia Galérie"
+
+#: gallery_block.inc:23
+msgid "Gallery Image Block @id"
+msgstr "Blok Obrázok Galérie @id"
+
+#: gallery_block.inc:29
+msgid "Gallery Grid Block @id"
+msgstr "Blok Mriežka Galérie @id"
+
+#: gallery_block.inc:75; gallery_profile/gallery_profile.module:115
+msgid "Recent image"
+msgstr "Nedávny obrázok"
+
+#: gallery_block.inc:76
+msgid "Viewed image"
+msgstr "Zobrazený obrázok"
+
+#: gallery_block.inc:77
+msgid "Random album"
+msgstr "Náhodný album"
+
+#: gallery_block.inc:78
+msgid "Recent album"
+msgstr "Nedávny album"
+
+#: gallery_block.inc:79
+msgid "Viewed album"
+msgstr "Zobrazený album"
+
+#: gallery_block.inc:80
+msgid "Daily image"
+msgstr "Obrázok dňa"
+
+#: gallery_block.inc:81
+msgid "Weekly image"
+msgstr "Obrázok týždňa"
+
+#: gallery_block.inc:82
+msgid "Monthly image"
+msgstr "Obrázok mesiaca"
+
+#: gallery_block.inc:83
+msgid "Daily album"
+msgstr "Album dňa"
+
+#: gallery_block.inc:84
+msgid "Weekly album"
+msgstr "Album týždňa"
+
+#: gallery_block.inc:85
+msgid "Monthly album"
+msgstr "Album mesiaca"
+
+#: gallery_block.inc:90,106
+msgid "View Count"
+msgstr "Počet zobrazení"
+
+#: gallery_block.inc:91,107
+msgid "Item owner"
+msgstr "Vlastník položky"
+
+#: gallery_block.inc:92,103
+msgid "Heading"
+msgstr "Nadpis"
+
+#: gallery_block.inc:117,171,205; gallery_search.inc:14; gallery.module:36,106; gallery.info:0
+msgid "Gallery"
+msgstr "Galéria"
+
+#: gallery_block.inc:161,192
+msgid "Block parameters"
+msgstr "Parametre bloku"
+
+#: gallery_block.inc:165; gallery_filter.inc:122
+msgid "Error trying to get image block."
+msgstr "Chyba pri pokuse o získanie bloku obrázka."
+
+#: gallery_filter.inc:118
+msgid "Filter parameters"
+msgstr "Parametre filtra"
+
+#: gallery_g2image.inc:32; gallery_g2image/gallery_g2image.module:114
+msgid "Click here to add images from Gallery2 albums"
+msgstr "Kliknite sem ak chcete pridať obrázky z albumov Gallery2"
+
+#: gallery_g2image.inc:34; gallery_g2image/gallery_g2image.module:116
+msgid "Add Gallery2 images"
+msgstr "Pridať obrázky Gallery2"
+
+#: gallery_groups.inc:23
+msgid "Error loading Gallery user from Drupal user id (:uid)"
+msgstr ""
+"Chyba pri načítaní používateľa Galérie z používateľa Drupalu "
+"(:uid)"
+
+#: gallery_groups.inc:30,231
+msgid "Error getting Gallery group info for user (:uid)"
+msgstr ""
+"Chyba pri získavaní informácií zo skupiny Galérie pre "
+"používateľa (:uid)"
+
+#: gallery_groups.inc:34,235
+msgid "G2 groups for G2 user (uid: :g2uid)"
+msgstr "Skupiny G2 pre používateľov G2 (uid: :g2uid)"
+
+#: gallery_groups.inc:39,243
+msgid "Drupal roles for Drupal user (uid: :uid)"
+msgstr "Kategória Drupalu pre používateľa Drupalu (uid: :uid)"
+
+#: gallery_groups.inc:43
+msgid "Drupal roles <> G2 groups map (for Drupal user)"
+msgstr ""
+"Kategória Drupalu <> priradenie skupiny G2 (pre používateľa "
+"Drupalu)"
+
+#: gallery_groups.inc:47
+msgid "Drupal roles <> G2 groups map (for G2 user)"
+msgstr "Kategória Drupalu <> priradenie skupiny G2 (pre používateľov G2)"
+
+#: gallery_groups.inc:51
+msgid "Remove user from these groups"
+msgstr "Vyňať používateľa z týchto skupín"
+
+#: gallery_groups.inc:55
+msgid "Error removing user from Gallery group (Gallery Group Id: :gid)"
+msgstr ""
+"Chyba pri odstraňovaní používateľa zo skupiny Galérie (ID "
+"skupiny Galérie: :gid)"
+
+#: gallery_groups.inc:63
+msgid "Add user to these groups"
+msgstr "Pridať používateľa do týchto skupín"
+
+#: gallery_groups.inc:67; gallery_user.inc:191,192
+msgid "Error adding user to Gallery group (:gid)"
+msgstr "Chyba pri pridávaní používateľa do skupiny Galérie (:gid)"
+
+#: gallery_groups.inc:96,265
+msgid "Error retrieving Gallery group Id for 'Everybody' group"
+msgstr "Chyba pri zostavovaní ID skupiny Galérie pre skupinu 'Ktokoľvek'"
+
+#: gallery_groups.inc:101
+msgid ""
+"Error creating Drupal role <> Gallery group mapping for 'anonymous "
+"user' role (Drupal Role Id: :rid, Gallery Group Id: :gid)"
+msgstr ""
+"Chyba pri vytváraní kategória Drupalu <> priradenie skupiny "
+"Galérie pre kategóriu 'neprihlásený používateľ' (ID kategórie "
+"Drupalu: :rid, ID skupiny Galérie: :gid)"
+
+#: gallery_groups.inc:109,270
+msgid "Error retrieving Gallery group Id for 'Registered Users' group"
+msgstr ""
+"Chyba pri zostavovaní ID skupiny Galérie pre skupinu 'Registrovaní "
+"používatelia'"
+
+#: gallery_groups.inc:114
+msgid ""
+"Error creating Drupal role <> Gallery group mapping for 'authenticated "
+"user' role (Drupal Role Id: :rid, Gallery Group Id: :gid)"
+msgstr ""
+"Chyba pri vytváraní kategória Drupalu <> priradenie skupiny "
+"Galérie pre kategóriu 'prihlásený používateľ' (ID kategórie "
+"Drupalu: :rid, ID skupiny Galérie: :gid)"
+
+#: gallery_groups.inc:125,278; gallery_user.inc:185,186
+msgid "Error getting 'adminGroup' id"
+msgstr "Chyba pri získavaní ID 'adminGroup'"
+
+#: gallery_groups.inc:130
+msgid ""
+"Error creating Drupal role <> Gallery 'Site Admin' group mapping "
+"(Drupal Role Id: :rid, Gallery Group Id: :gid)"
+msgstr ""
+"Chyba pri vytváraní kategória Drupalu <> priradenie skupiny "
+"Galérie pre kategóriu 'Administrátor webu' (ID kategórie Drupalu: "
+":rid, ID skupiny Galérie: :gid)"
+
+#: gallery_groups.inc:141
+msgid ""
+"Error creating Gallery group (Drupal Role Id: :rid, Drupal Role Name: "
+":rname)"
+msgstr ""
+"Chyba pri vytváraní skupiny Galérie (ID kategórie Drupalu: :rid, "
+"Meno kategórie Drupalu: :rname)"
+
+#: gallery_groups.inc:149
+msgid ""
+"Error creating Drupal role <> Gallery group mapping (Drupal Role Id: "
+":rid, Gallery Group Id: :gid)"
+msgstr ""
+"Chyba pri vytváraní kategória Drupalu <> priradenie skupiny "
+"Galérie (ID kategórie Drupalu: :rid, ID skupiny Galérie: :gid)"
+
+#: gallery_groups.inc:162
+msgid ""
+"Error retrieving Gallery Group Id from Drupal Role Id (Drupal Role Id: "
+":rid)"
+msgstr ""
+"Chyba pri zostavovaní ID skupiny Galérie z ID kategórie Drupalu (ID "
+"kategórie Drupalu: :rid)"
+
+#: gallery_groups.inc:169
+msgid ""
+"Error updating Gallery group (Drupal Role Id: :rid, Drupal Role Name: "
+":rname)"
+msgstr ""
+"Chyba pri aktualizovaní skupiny Galérie (ID kategórie Drupalu: "
+":rid, Meno kategórie Drupalu: :rname)"
+
+#: gallery_groups.inc:185
+msgid "Error deleting Gallery group (Gallery Group Id: :gid)"
+msgstr "Chyba pri odstraňovaní skupiny (ID skupiny Galérie: :gid)"
+
+#: gallery_groups.inc:211
+msgid "Error fetching 'GalleryGroup' entries from 'ExternalIdMap'"
+msgstr "Chyba pri prevádzaní záznamov 'GalleryGroup' z 'ExternalIdMap'"
+
+#: gallery_groups.inc:239
+msgid "Mapped Drupal roles for G2 user (uid: :g2uid)"
+msgstr "Priradené kategórie Drupalu pre používateľov G2 (uid: :g2uid)"
+
+#: gallery_groups.inc:259
+msgid "Error fetching Gallery Group names"
+msgstr "Chyba pri prevádzaní mien skupín Galérie"
+
+#: gallery_help.inc:19
+msgid ""
+"\n"
+"      <h3>Online Documentation</h3>\n"
+"      <p>Complete documentation can be found on the <a "
+"href=\"http://drupal.galleryembedded.com\">wiki</a>.</p>\n"
+"      <h3>Settings</h3>\n"
+"      <h4>Directory Settings</h4>\n"
+"      <p>\"URI of Gallery2\" is the URI of the Gallery2 standalone "
+"location. Path from docroot to the directory main.php is located. "
+"Protocol / host name are both optional. Examples: /gallery2/, "
+"/sub/gallery2/, http://photos.example.com/,\n"
+"      www.example.com/photos/main.php</p>\n"
+"      <p>\"Location of Gallery2\" is the path of your gallery2 "
+"installation, either absolute (starts with \"/\") or relative to your "
+"Drupal installation directory. Normally this is auto-detected, but in "
+"case this fails you can turn off auto-detection and manually enter a "
+"value.</p> \n"
+"      <p>\"Embed URI\" is the URI needed to access Gallery2 through "
+"Drupal. This will end in '?q=gallery' (non-clean URLs) or 'gallery' "
+"(clean URLs). Normally this is auto-detected, but in case this fails "
+"you can turn off auto-detection and manually enter a value.</p> \n"
+"      <p>Some examples:</p>\n"
+"      <p>Example 1: If your directory structure and website structure "
+"is \n"
+"      <ul>\n"
+"        <li>Drupal dir: /var/www/web/html/</li>\n"
+"        <li>Gallery dir: /var/www/web/html/gallery2/</li> \n"
+"        <li>Website URL: http://www.example.com</li>\n"
+"        <li>Standalone Gallery2 URL: "
+"http://www.example.com/gallery2/</li>\n"
+"        <li>Then<ul>\n"
+"          <li>\"URI of Gallery2\" = \"/gallery2/\" or "
+"\"http://www.example.com/gallery2/\"</li>\n"
+"          <li>\"Location of Gallery2\" = \"gallery2/\" or "
+"\"/var/www/web/html/gallery2/\"</li>        \n"
+"          <li>\"Embed URI\" = \"?q=gallery\" or "
+"\"http://www.example.com/?q=gallery\"</li>\n"
+"          </ul>\n"
+"      </ul>\n"
+"      </p><p>Example 2: If your directory structure and website "
+"structure is \n"
+"      <ul>\n"
+"        <li>Drupal dir: /var/www/web/html/drupal/</li>\n"
+"        <li>Gallery dir: /var/www/web/html/gallery2/</li> \n"
+"        <li>Website URL: http://www.example.com/drupal</li>\n"
+"        <li>Standalone Gallery2 URL: "
+"http://www.example.com/gallery2/</li>\n"
+"        <li>Then<ul>\n"
+"          <li>\"URI of Gallery2\" = \"/gallery2/\" or "
+"\"http://www.example.com/gallery2/\"</li>\n"
+"          <li>\"Location of Gallery2\" = \"../gallery2/\" or "
+"\"/var/www/web/html/gallery2/\"</li>\n"
+"          <li>\"Embed URI\" = \"/drupal/?q=gallery\" or "
+"\"http://www.example.com/drupal/?q=gallery\"</li>        \n"
+"          </ul>\n"
+"      </ul>\n"
+"      </p><p>Example 3: If your directory structure and website "
+"structure is \n"
+"      <ul>\n"
+"        <li>Drupal dir: /var/www/web/html/drupal/</li>\n"
+"        <li>Gallery dir: /var/www/web/html/someotherdir/gallery2/</li> "
+"\n"
+"        <li>Website URL: http://www.example.com/</li>\n"
+"        <li>Standalone Gallery2 URL: "
+"http://www.anotherexample.com/gallery2/</li>\n"
+"        <li>Then<ul>\n"
+"          <li>\"URI of Gallery2\" = "
+"\"http://www.anotherexample.com/gallery2/\"</li>\n"
+"          <li>\"Location of Gallery2\" = "
+"\"/var/www/web/html/someotherdir/gallery2/\"</li>\n"
+"          <li>\"Embed URI\" = \"/drupal/?q=gallery\" or "
+"\"http://www.example.com/drupal/?q=gallery\"</li>        \n"
+"          </ul>\n"
+"      </ul>\n"
+"      </p>\n"
+"      <h4>Full Name settings</h4>\n"
+"      <p>Drupal does not have in-built support for full names but "
+"Gallery 2 does. If you would like full names in both then you can "
+"install profile.module in Drupal and define a \"full name\" field. "
+"Include the name of that field here. You can enable/disable this "
+"functionality at will, but it may leave some users with different full "
+"names in their Drupal and Gallery users, so it is not "
+"recommended.</p>\n"
+"      <h4>Search settings</h4>\n"
+"      <p>You can select how many items are returned per Gallery2 "
+"module. You can also specify whether thumbnails should be returned, "
+"and if so, how they should be formatted.</p>\n"
+"      <h4>Error Logging settings</h4>\n"
+"      <p>You can choose whether errors occuring in this module are "
+"logged in the watchdog, displayed in the browser, or both.</p>\n"
+"      "
+msgstr ""
+"<h3>Online dokumentácia</h3>\r\n"
+"<p>Úplnú dokumentáciu nájdete na <a "
+"href=\"http://drupal.galleryembedded.com\">wiki</a>.</p>\r\n"
+"<h3>Nastavenia</h3>\r\n"
+"<h4>Nastavenia priečinkov</h4>\r\n"
+"<p>\"URI adresa Gallery2\" je URI adresa nezávislého umiestnenia "
+"Gallery2. Relatívna cesta od základnej cesty k priečinku, v ktorom "
+"sa nachádza main.php. Protokol a adresa počítača sú voliteľné. "
+"Príklady: /gallery2/, /sub/gallery2/, http://photos.example.com/,\r\n"
+"www.example.com/photos/main.php</p>\r\n"
+"<p>\"Umiestnenie Gallery2\" je cesta k inštalácii Gallery2, buď "
+"absolútna (začína \"/\") alebo relatívna k priečinku s "
+"inštaláciou Drupalu. Toto je normálne automaticky zistené, ale ak "
+"táto možnosť zlyhá, môžete automatickú detekciu vypnúť a "
+"zadať hodnoty ručne.</p> \r\n"
+"<p>\"Začlenená URI adresa\" je URI adresa potrebná na prístup do "
+"Gallery2 prostredníctvom Drupalu. Táto možnosť končí "
+"'?q=gallery' (bez čistých URL) alebo 'gallery' (s čistými URL). "
+"Toto je normálne automaticky zistené, ale ak táto možnosť zlyhá, "
+"môžete automatickú detekciu vypnúť a zadať hodnoty ručne.</p> "
+"\r\n"
+"<p>Príklady:</p>\r\n"
+"<p>Príklad 1: Ak je štruktúra vašich priečinkov a webu "
+"takáto\r\n"
+"</p><ul>\r\n"
+"<li>Priečinok Drupalu: /var/www/web/html/</li>\r\n"
+"<li>Priečinok Galérie: /var/www/web/html/gallery2/</li> \r\n"
+"<li>URL webu: http://www.priklad.sk</li>\r\n"
+"<li>Samostatná URL Gallery2: http://www.priklad.sk/gallery2/</li>\r\n"
+"<li>potom<ul>\r\n"
+"<li>\"URI adresa Gallery2\" = \"/gallery2/\" alebo "
+"\"http://www.priklad.sk/gallery2/\"</li>\r\n"
+"<li>\"Umiestnenie Gallery2\" = \"gallery2/\" alebo "
+"\"/var/www/web/html/gallery2/\"</li> \r\n"
+"<li>\"Začlenená URI adresa\" = \"?q=gallery\" alebo "
+"\"http://www.priklad.sk/?q=gallery\"</li>\r\n"
+"</ul>\r\n"
+"</li></ul>\r\n"
+"<p>Príklad 2: Ak je štruktúra vašich priečinkov a webu "
+"takáto\r\n"
+"</p><ul>\r\n"
+"<li>Priečinok Drupalu: /var/www/web/html/drupal/</li>\r\n"
+"<li>Priečinok Galérie: /var/www/web/html/gallery2/</li>\r\n"
+"<li>URL webu: http://www.priklad.sk/drupal</li>\r\n"
+"<li>Samostatná URL Gallery2: http://www.priklad.sk/gallery2/</li>\r\n"
+"<li>potom<ul>\r\n"
+"<li>\"URI adresa Gallery2\" = \"/gallery2/\" alebo "
+"\"http://www.priklad.sk/gallery2/\"</li>\r\n"
+"<li>\"Umiestnenie Gallery2\" = \"../gallery2/\" alebo "
+"\"/var/www/web/html/gallery2/\"</li>\r\n"
+"<li>\"Začlenená URI adresa\" = \"/drupal/?q=gallery\" alebo "
+"\"http://www.priklad.sk/drupal/?q=gallery\"</li>\r\n"
+"</ul>\r\n"
+"</li></ul>\r\n"
+"<p>Príklad 3: Ak je štruktúra vašich priečinkov a webu "
+"takáto\r\n"
+"</p><ul>\r\n"
+"<li>Priečinok Drupalu: /var/www/web/html/drupal/</li>\r\n"
+"<li>Priečinok Galérie: /var/www/web/html/nieco/gallery2/</li> \r\n"
+"<li>URL webu: http://www.priklad.sk/</li>\r\n"
+"<li>Samostatná URL Gallery2: "
+"http://www.niecoine.sk/gallery2/</li>\r\n"
+"<li>potom<ul>\r\n"
+"<li>\"URI adresa Gallery2\" = "
+"\"http://www.niecoine.sk/gallery2/\"</li>\r\n"
+"<li>\"Umiestnenie Gallery2\" = "
+"\"/var/www/web/html/nieco/gallery2/\"</li>\r\n"
+"<li>\"Začlenená URI adresa\" = \"/drupal/?q=gallery\" alebo "
+"\"http://www.priklad.sk/drupal/?q=gallery\"</li> \r\n"
+"</ul>\r\n"
+"</li></ul>\r\n"
+"<h4>Nastavenia celého mena</h4>\r\n"
+"<p>Drupal nemá zabudovanú podporu pre celé mená ale Gallery 2 má. "
+"Ak chcete použiť celé mená v oboch, môžete v Drupale "
+"nainštalovať modul Profile a definovať pole \"celé meno\". Vložte "
+"meno tohto poľa do nastavení a potom môžete túto túto funkicu "
+"zapnúť/vypnúť, ale môže spôsobiť, že celé mená "
+"používateľov budú rozdielne v Drupale a Galérii, preto to "
+"neodporúčame.</p>\r\n"
+"<h4>Nastavenia vyhľadávania</h4>\r\n"
+"<p>Môžete si zvoliť koľko položiek bude vyhľadaných modulom "
+"Gallery2. Tiež môžete určiť či majú byť vyhľadané miniatúry "
+"a ak áno ako majú byť formátované.</p>\r\n"
+"<h4>Nastavenia zaznamenávania chýb</h4>\r\n"
+"<p>Môžete vybrať či budú chyby, ktoré vzniknú v tomto module, "
+"zaznamenané Watchdogom, zobrazené prehliadačom alebo oboje.</p>"
+
+#: gallery_help.inc:87
+msgid ""
+"You may link to Gallery2 items on this site <a "
+"href=\"@explanation-url\">using a special syntax</a>."
+msgstr ""
+"Na tejto stránke môžete odkázať na položky Gallery2 <a "
+"href=\"@explanation-url\">použitím špeciálnej syntaxe</a>."
+
+#: gallery_help.inc:130
+msgid ""
+"\n"
+"    <h3>Gallery Image Assist (g2image)</h3>\n"
+"    <p>Support for <a "
+"href=\"http://g2image.steffensenfamily.com\">g2image</a> in either "
+"Standalone or TinyMCE is available to simplify adding images already "
+"in your Gallery2 albums into your Drupal nodes.</p>\n"
+"    <p>Caution: By default, Drupal uses the 'Filtered HTML' input "
+"format for adding content to the site and the default settings cause "
+"the &lt;img&gt; tags added by g2image to be removed. Check the TinyMCE "
+"documentation for instructions on how to avoid this.</p>"
+msgstr ""
+"<h3>Obrázkový asistent Galérie (g2image)</h3>\r\n"
+"<p>Podpora pre <a "
+"href=\"http://g2image.steffensenfamily.com\">g2image</a> a to buď "
+"samostatné alebo ako súčasť TinyMCE, ktoré umožňuje jednoduché "
+"vkladanie obrázkov z albumov Gallery2 do príspevkov Drupalu.</p>\r\n"
+"<p>Varovanie: Normálne Drupal používa pre vytváranie príspevkov "
+"vstupný formát 'Filtrované HTML' a toto predvolené nastavenie "
+"spôsobí, že značky &lt;img&gt; vložené pomocou g2image budú "
+"odstránené. Prezrite si dokumentáciu TinyMCE, aby ste zistili ako "
+"tomu predísť.</p>"
+
+#: gallery_help.inc:140
+msgid ""
+"<p><strong>A serious error has occured. This can happen due to an "
+"incorrect configuration or a bug in the gallery module. If you plan to "
+"submit a bug report to the issue queue at <a "
+"href=\"@gallery-issues\">drupal.org</a> consider to include the <a "
+"href=\"@report\">pre-generated report file</a>.</strong></p>"
+msgstr ""
+"<p><strong>Vyskytla sa vážna chyba. Môže to byť následok "
+"nesprávnej konfigurácie alebo chyby v module Galéria. Ak sa "
+"chystáte ohlásiť chybu do fronty problémov na stránke <a "
+"href=\"@gallery-issues\">drupal.org</a> nezabudnite pripojiť <a "
+"href=\"@report\">predgenerovaný súbor hlásenia</a>.</strong></p>"
+
+#: gallery_install.inc:65,96,205
+msgid "Install status"
+msgstr "Stav inštalácie"
+
+#: gallery_install.inc:68
+msgid ""
+"Correct configuration of the following items is essential for the "
+"embedded gallery to function properly."
+msgstr ""
+"Oprava konfigurácie nasledujúcich položiek je nevyhnutná k "
+"úspešnému začleneniu galérie do systému."
+
+#: gallery_install.inc:113,700,192,262
+msgid "Reset & Restart"
+msgstr "Zrušiť a reštartovať"
+
+#: gallery_install.inc:118,82,758
+msgid "Overall Status (Installation)"
+msgstr "Konečný stav inštalácie"
+
+#: gallery_install.inc:140
+msgid "Critical errors are present. Your Gallery is not available."
+msgstr "Vyskytujú sa kritické chyby. Galéria nie je dostupná."
+
+#: gallery_install.inc:160,307
+msgid "Until this is fixed your Gallery2 cannot be installed."
+msgstr "Pokiaľ toto neopravíte, Gallery2 nemôže byť nainštalovaná."
+
+#: gallery_install.inc:169,301
+msgid "Step 1: PHP Memory Test"
+msgstr "Krok 1: Test pamäte PHP"
+
+#: gallery_install.inc:169,219,464,538,610,301,330,534,571,703
+msgid "(OK)"
+msgstr "(OK)"
+
+#: gallery_install.inc:175,308
+msgid "Check PHP memory again"
+msgstr "Znova skontrolovať pamäť PHP"
+
+#: gallery_install.inc:199
+msgid "- Auto Configuration"
+msgstr "- Automaticka konfigurácia"
+
+#: gallery_install.inc:199
+msgid "- Manual Configuration"
+msgstr "- Manuálne nastavenie"
+
+#: gallery_install.inc:205
+msgid ""
+"Enter the 'Gallery2 URL or URI' and click 'Test location settings'\n"
+"        to automatically configure the settings needed for embedding "
+"Gallery2 into Drupal. Note that\n"
+"        the auto-config will not work for all host configurations. If "
+"you have tried it with a value \n"
+"        you know is correct and it did not work then just use the "
+"manual configuration instead."
+msgstr ""
+"Ak chcete automaticky nakonfigurovať nastavenia potrebné \r\n"
+"pre začlenenie Gallery2 do Drupalu zadajte 'URL alebo URI adresa "
+"Gallery2' a kliknite 'Test nastavení umiestnenia'.\r\n"
+"Automatická konfigurácia nefunguje pri všetkých konfiguráciách "
+"počítača. Ak ste ju skúšali s hodnotami,\r\n"
+"o ktorých ste si istí, že sú správne a oni nefungujú, použite "
+"manuálne nastavenie."
+
+#: gallery_install.inc:209
+msgid ""
+"Enter the 'Gallery2 URL or URI' and 'Gallery2 filesystem path' and "
+"then click \n"
+"        'Test location settings'. This will check and configure the "
+"settings needed for embedding\n"
+"        Gallery2 into Drupal."
+msgstr ""
+"Zadajte 'URL alebo URI adresa Gallery2' a 'Cesta ku Gallery2 v "
+"súborovom systéme', a potom kliknite \r\n"
+"na 'Test nastavení umiestnenia'. To skontroluje a nakonfiguruje "
+"nastavenia potrebné pre začlenenie\r\n"
+"Gallery2 do Drupalu."
+
+#: gallery_install.inc:219,318
+msgid "Step 2: Gallery2 location settings"
+msgstr "Krok 2: Nastavenia umiestnenia Gallery2"
+
+#: gallery_install.inc:241,291,129,352,413
+msgid "Gallery2 URL or URI"
+msgstr "URL alebo URI adresa Gallery2"
+
+#: gallery_install.inc:245,295
+msgid ""
+"URL or URI of the G2 standalone location. This can be either the "
+"full\n"
+"        URL to Gallery2 (e.g. http://www.example.com/gallery2) or the "
+"path from docroot to the\n"
+"        Gallery2 directory (e.g. /gallery2). If using a URI the "
+"protocol/hostname are both\n"
+"        optional."
+msgstr ""
+"URL alebo URI adrasa umiestnenia samostatnej G2. Toto môže byť buď "
+"celá\r\n"
+" URL adresa ku Gallery2 (napr.: http://www.priklad.sk/gallery2) alebo "
+"cesta od základnej adresy k priečinku Gallery2 (napr.: /gallery2). "
+"Ak použijete URI adresu protokol a adresa počítača \r\n"
+"sú voliteľné."
+
+#: gallery_install.inc:254,304,135,364,425
+msgid "Gallery2 filesystem path"
+msgstr "Cesta ku Gallery2 v súborovom systéme"
+
+#: gallery_install.inc:266,316,141,376,437
+msgid "Embed URI"
+msgstr "Začlenená URI adresa"
+
+#: gallery_install.inc:308
+msgid ""
+"The filesystem path of your Gallery2 directory. This can be either "
+"an\n"
+"        absolute path (e.g. /home/mysite/htdocs/gallery2) or relative "
+"to the root directory of your\n"
+"        Drupal installation (e.g. ../gallery2)."
+msgstr ""
+"Cesta k priečinku Gallery2 vrámci súborového systému. Toto môže "
+"byť buď \r\n"
+"absolútna cesta (napr.: /home/mysite/htdocs/gallery2) alebo "
+"relatívna cesta ku koreňovému priečinku \r\n"
+"inštalácie Drupalu (napr.: ../gallery2)."
+
+#: gallery_install.inc:320
+msgid ""
+"URI to access G2 via Drupal. Don't worry if you are using clean urls "
+"in Drupal and this still ends in 'index.php?q=gallery'. This is needed "
+"to get the Gallery2 URL rewrite module to work correctly and will not "
+"be visible."
+msgstr ""
+"URI adresa na prístup ku G2 prostredníctvom Drupalu. Nebojte sa o "
+"správnu funkciu čistých URL v Drupale ak sa adresa stále končí "
+"'index.php?q=gallery'. Bude potrebné správne spojazdniť "
+"rozšírenie Gallery2 s názvom URL rewrite a potom budú adresy "
+"čisté."
+
+#: gallery_install.inc:328,462
+msgid "Test location settings"
+msgstr "Test nastavení umiestnenia"
+
+#: gallery_install.inc:333,684,467
+msgid "Use Manual Configuration"
+msgstr "Použiť manuálne nastavenie"
+
+#: gallery_install.inc:339,688,467
+msgid "Use Auto Configuration"
+msgstr "Použiť automatické nakonfigurovanie"
+
+#: gallery_install.inc:352,534
+msgid "Step 3: Drupal Modules / Gallery2 Plugins"
+msgstr "Krok 3: Moduly Drupalu / Rozšírenia Gallery2"
+
+#: gallery_install.inc:378,1005
+msgid "Recommended Gallery2 plugins"
+msgstr "Odporúčané rozšírenia Gallery2"
+
+#: gallery_install.inc:382,1009
+msgid ""
+"These Gallery2 plugins support much of the functionality that the "
+"Drupal Gallery module provides.\n"
+"                         None of them are strictly required, but you "
+"will almost certainly want to activate at least some\n"
+"                         of them (particularly the Image Block "
+"plugin)."
+msgstr ""
+"Tieto rozšírenia Gallery2 podporujú väčšiu funkcionalitu, ktorú "
+"poskytuje modul Gallery Drupalu.\r\n"
+"Žiadne z nich nie je striktne vyžadované, ale takmer určite budete "
+"chcieť aktivovať aspoň niektoré \r\n"
+"z nich (najmä rozšírenie Image Block)."
+
+#: gallery_install.inc:406,1032
+msgid "Gallery2 plugins which should not be installed"
+msgstr "Rozšírenia Gallery2, ktoré by nemali byť nainštalované"
+
+#: gallery_install.inc:410,1036
+msgid ""
+"These Gallery2 plugins should not be used when Gallery2 is\n"
+"                         embedded into Drupal as they may cause "
+"problems."
+msgstr ""
+"Tieto rozšírenia Gallery2 by nemali byť použité ak je Gallery2 "
+"\r\n"
+"začlenená do Drupalu, pretože môžu spôsobiť problémy."
+
+#: gallery_install.inc:432,1058
+msgid "Optional Drupal modules"
+msgstr "Doplňujúce moduly Drupalu"
+
+#: gallery_install.inc:436,1062
+msgid ""
+"These Drupal modules can optionally be used to enhance the "
+"functionality of the Gallery module."
+msgstr ""
+"Tieto moduly Drupalu môžu byť voliteľne použité na vylepšenie "
+"funkcionality modulu Gallery."
+
+#: gallery_install.inc:451
+msgid ""
+"You may have some loss in functionality in your embedded Gallery2 (see "
+"below\n"
+"                                            for details). You should "
+"check the details and if the functionality is not\n"
+"                                            important for your site "
+"you can just ignore this."
+msgstr ""
+"Môžete stratiť niektoré funkcie vo vašej začlenenej Gallery2 "
+"(detaily sa \r\n"
+"dozviete  nižšie). Mali by ste si pozrieť detaily a ak funkcie nie "
+"sú\r\n"
+"podstatné pre vašu stránku môžete toto hlásenie ignorovať."
+
+#: gallery_install.inc:465
+msgid ""
+"The status of all Drupal modules and Gallery2 plugins\n"
+"                                            is optimal for your "
+"embedded Gallery2."
+msgstr ""
+"Stav všetkých modulov Drupalu a rozšírení Gallery2 \r\n"
+"je optimálny pre začlenenú Gallery2."
+
+#: gallery_install.inc:489
+msgid ""
+"There is a writable .htaccess file in your defined Drupal directory "
+"(@dir)."
+msgstr ""
+"Do súboru .htaccess vo vami zadanom priečinku Drupalu (@dir) sa dá "
+"zapisovať."
+
+#: gallery_install.inc:496
+msgid ""
+"Your 'Show Item' rule should start with 'gallery/'.\n"
+"                                         Make sure to change the URL "
+"Rewrite rule(s) accordingly."
+msgstr ""
+"Pravidlo 'Show Item' by malo začínať 'gallery/'.\r\n"
+"Nezabudnite v tomto zmysle zmeniť aj pravidlo(á) URL Rewrite."
+
+#: gallery_install.inc:503
+msgid ""
+"The .htaccess file in your defined Drupal directory (@dir) is not "
+"writable. Please CHMOD it to 644\n"
+"                       (or 666 if 644 does not work)."
+msgstr ""
+"Do súboru .htaccess vo vami zadanom priečinku Drupalu (@dir) sa "
+"nedá zapisovať. Prosím použite na neho CHMOD 644\r\n"
+"(alebo 666 ak 644 nefunguje)."
+
+#: gallery_install.inc:509
+msgid ""
+"There is no .htaccess file in your defined Drupal directory (@dir) or "
+"the directory does not exist."
+msgstr ""
+"Vo vami definovanom priečinku Drupalu (@dir) nie je súbor .htaccess "
+"alebo priečinok neexistuje."
+
+#: gallery_install.inc:515
+msgid ""
+"Clean URLs are enabled in Drupal, but the Gallery2 URL Rewrite plugin "
+"is unavailable."
+msgstr ""
+"Čisté URL adresy sú v Drupale zapnuté, ale rozšírenie Gallery2 s "
+"názvom URL Rewrite nie je dostupné."
+
+#: gallery_install.inc:520
+msgid ""
+"Clean URLs are disabled in Drupal and the URL Rewrite plugin will not "
+"be configured."
+msgstr ""
+"Čisté URL adresy sú v Drupale vypnuté a rozšírenie Gallery2 s "
+"názvom URL Rewrite sa nebude konfigurovať."
+
+#: gallery_install.inc:521
+msgid ""
+"Clean URLs are disabled in Drupal and the URL Rewrite plugin will not "
+"be configured.\n"
+"                                          If you want to use the URL "
+"Rewrite plugin please enable clean URLs in Drupal and\n"
+"                                          install and activate the "
+"plugin in Gallery2."
+msgstr ""
+"Čisté URL adresy sú v Drupale vypnuté a rozšírenie Gallery2 s "
+"názvom URL Rewrite sa nebude konfigurovať.\r\n"
+"Ak chcete použiť rozšírenie URL Rewrite, zapnite Čisté URL v "
+"Drupale a\r\n"
+"nainštalujte a aktivujte rozšírenie v Gallery2."
+
+#: gallery_install.inc:530,1095
+msgid "URL Rewrite has been disabled manually."
+msgstr "URL Rewrite bolo ručne vypnuté."
+
+#: gallery_install.inc:531,582
+msgid "'Reset & Restart' your configuration to change these settings."
+msgstr ""
+"Zrušiť a reštartovať vašu konfiguráciu aby sa zmenili tieto "
+"nastavenia."
+
+#: gallery_install.inc:538,571
+msgid "Step 4: Clean URLs / URL Rewrite settings"
+msgstr "Krok 4: Čisté URL / Nastavenia prepisovania URL"
+
+#: gallery_install.inc:544
+msgid ""
+"Clean URLs are enabled in Drupal, but the Gallery2 URL Rewrite plugin "
+"is unavailable\n"
+"                                            (!status)."
+msgstr ""
+"Čisté URL adresy sú zapnuté v Drupale, ale rozšírenie Gallery2 s "
+"názvom URL Rewrite nie je dostupné\r\n"
+"(!status)."
+
+#: gallery_install.inc:548,595,642
+msgid "Check URL Rewrite status again"
+msgstr "Skontrolujte stav URL Rewrite znova"
+
+#: gallery_install.inc:553,601
+msgid ""
+"Clean URLs are !clean_url_status in Drupal and the Gallery2 URL "
+"Rewrite plugin is\n"
+"                                            !rewrite_status. It is "
+"possible to automatically configure the URL Rewrite plugin.\n"
+"                                            The configuration assumes "
+"that the rules should be placed in your Drupal .htaccess\n"
+"                                            file (it will add them to "
+"the beginning) which works in most applications. If you\n"
+"                                            need a special "
+"configuration, enter the desired values manually."
+msgstr ""
+"Stav čistých URL v Drupale je !clean_url_status a stav rozšírenia "
+"URL Rewrite v Gallery2 \r\n"
+"je !rewrite_status. Rozšírenie URL Rewrite je možné "
+"nakonfigurovať automaticky.\r\n"
+"Konfigurácia predpokladá, že pravidlá budú umiestnené v súbore "
+".htaccess Drupalu\r\n"
+"(budú pridané na jeho začiatok), čo funguje pre väčšinu "
+"aplikácií. Ak\r\n"
+"vyžadujete špeciálnu konfiguráciu, zadajte príslušné hodnoty "
+"ručne."
+
+#: gallery_install.inc:567,166,615
+msgid "Public path to your .htaccess file"
+msgstr "Verejná cesta k vášmu .htaccess súboru"
+
+#: gallery_install.inc:571,619
+msgid ""
+"This is the location of your Drupal .htaccess file relative to your "
+"webserver document root."
+msgstr ""
+"Toto je relatívna cesta k priečinku Drupalu, v ktorom sa nachádza "
+"súbor  .htaccess, vzhľadom na koreňový priečinok vášho webu."
+
+#: gallery_install.inc:576,171,624
+msgid "Filesystem path to your .htaccess file"
+msgstr "Cesta k .htaccess súboru v rámci súborového systému"
+
+#: gallery_install.inc:580,628
+msgid "This is the absolute directory path of your Drupal .htaccess file."
+msgstr ""
+"Toto je absolútna cesta k priečinku Drupalu kde sa nachádza súbor  "
+".htaccess."
+
+#: gallery_install.inc:584,692,634
+msgid "Configure URL Rewrite plugin"
+msgstr "Konfigurovať rozšírenie URL Rewrite"
+
+#: gallery_install.inc:589,697,649
+msgid "Skip URL Rewrite Config"
+msgstr "Vynechať konfiguráciu URL Rewrite"
+
+#: gallery_install.inc:610,703
+msgid "Step 5: Initial User Synchronization"
+msgstr "Krok 5: Počiatočná synchronizácia používateľov"
+
+#: gallery_install.inc:617
+msgid ""
+"Your initial user synchronization has been\n"
+"        completed already.<br />If you want to resync all your users "
+"or you want to import users from an existing Gallery2\n"
+"        setup, you can always use the <a href= "
+"\"@gallery-usersync\">Advanced Sync</a> options in the Gallery user "
+"administration."
+msgstr ""
+"Počiatočná synchronizácia používateľov bola\r\n"
+"už dokončená.<br />Ak chcete znova zosynchronizovať všetkých "
+"používateľov alebo ich naimportovať z existujúcej Gallery2, \r\n"
+"môžete použiť možnosť <a href=\"@gallery-usersync\">Rozšírená "
+"synchronizácia</a> v ponuke Používatelia Galérie."
+
+#: gallery_install.inc:623
+msgid ""
+"User synchronization is essential for the\n"
+"        embedded Gallery to work correctly. Drupal users/groups are "
+"usually synced with their Gallery counterparts when a\n"
+"        user/group is modified in Drupal. Missing user mappings will "
+"cause errors in your embedded Gallery."
+msgstr ""
+"Synchronizácia používateľov je potrebná aby \r\n"
+"začlenená Galéria fungovala správne. Používatelia/skupiny "
+"Drupalu sú zvyčajne synchronizované s ich proťajškom v Galérii "
+"keď \r\n"
+"sa používateľ/skupina v Drupale zmení. Chýbajúce priradenie "
+"používateľa spôsobí v začlenenej Galérii problém."
+
+#: gallery_install.inc:626
+msgid ""
+"It is recommended that you sync your users now. However there\n"
+"        can be reasons to skip this step, e.g. if you have a working "
+"Gallery with many users and a fresh Drupal installation.\n"
+"        Note that the current user and the Drupal superuser (uid=1) "
+"will always be sync."
+msgstr ""
+"Odporúčame aby ste synchronizáciu používateľov vykonali teraz. "
+"Avšak existuje \r\n"
+"aj dôvod zalomenie riadku na vynechanie synchronizácie napríklad ak "
+"máte fungujúcu Galériu s veľkým počtom používateľov a "
+"čerstvú inštaláciu Drupalu. \r\n"
+"Aktuálny používateľ a prvý používateľ (uid=1) sa "
+"synchronizujú aj pri vynechaní tohto kroku."
+
+#: gallery_install.inc:630,640,730
+msgid "Sync users/groups"
+msgstr "Synchronizovať používateľov/skupiny"
+
+#: gallery_install.inc:631,641,677,735
+msgid "Skip sync"
+msgstr "Vynechať synchronizáciu"
+
+#: gallery_install.inc:744,120,491
+msgid "Errors in your current Gallery2 location settings:"
+msgstr "Chyba vo vašich súčasných nastaveniach umiestnenia Gallery 2:"
+
+#: gallery_install.inc:761,119,514
+msgid "The Gallery2 location settings appear to be correct."
+msgstr "Nastavenia umiestnenia Gallery2 sa zdajú byť správne."
+
+#: gallery_install.inc:762,515
+msgid ""
+"There is a problem with the Gallery2 location settings. Please check "
+"below and retest.\n"
+"       Remember that the auto-config will not work for all hosts."
+msgstr ""
+"V nastaveniach umiestnenia Gallery2 je problém. Prosím skontrolujte "
+"ich nižšie a znova spustite test.\r\n"
+"Nezabudnite, že automatická konfigurácia nemusí pracovať správne "
+"na všetkých počítačoch."
+
+#: gallery_install.inc:773,799
+msgid "URI of Gallery2"
+msgstr "URI adresa Gallery2"
+
+#: gallery_install.inc:777,803
+msgid "Location of Gallery2"
+msgstr "Umiestnenie Gallery2"
+
+#: gallery_install.inc:781,807
+msgid "Gallery Init"
+msgstr "Inicializácia Galérie"
+
+#: gallery_install.inc:882
+msgid ""
+"Everything seemed OK, but the Gallery could still not be "
+"initialised.\n"
+"                                   Perhaps a manually entered value is "
+"incorrect."
+msgstr ""
+"Všetko vyzerá OK, ale Galériu sa stále nepodarilo "
+"inicializovať.\r\n"
+"Možno sú nesprávne ručne zadané hodnoty."
+
+#: gallery_install.inc:931,962
+msgid ""
+"Your location settings are valid, but your Gallery2 is installed "
+"outside the Drupal\n"
+"                              root directory. It is highly advisable "
+"to move G2 into the Drupal folder or to create\n"
+"                              a symbolic link in the Drupal directory "
+"pointing to your G2 installation (see\n"
+"                              instructions on <a "
+"href=\"@codex\">codex.gallery2.org</a>)."
+msgstr ""
+"Nastavenie umiestnenia je platné, ale vaša Gallery2 je "
+"nainštalovaná mimo\r\n"
+" koreňového priečinka Drupalu. Je veľmi vhodné aby ste G2 "
+"presunuli do priečinka Drupalu alebo aby ste vytvorili \r\n"
+"symbolické prepojenie v priečinku Drupalu odkazujúce do priečinka "
+"s inštaláciou G2 (pozrite si \r\n"
+"inštrukcie na stránke  <a href=\"@codex\">codex.gallery2.org</a>)."
+
+#: gallery_install.inc:947,1161
+msgid "Error trying to create URL Rewrite plugin instance."
+msgstr "Chyba pri pokuse vytvorenia inštancie rozšírenia URL Rewrite"
+
+#: gallery_install.inc:949,1163
+msgid ""
+"URL Rewrite plugin could not be instantiated.\n"
+"                            Please check its configuration in "
+"standalone Gallery2."
+msgstr ""
+"Rozšírenie URL Rewrite nemôže byť nainštalované.\r\n"
+"Prosím skontrolujte nastavenia samostatnej Gallery2."
+
+#: gallery_install.inc:957,1171
+msgid "Error trying to fetch Embedded URL Rewrite configuration."
+msgstr "Chyba pri pokuse previesť konfiguráciu začleneného URL Rewrite"
+
+#: gallery_install.inc:995,1209
+msgid "Error trying to save Embedded URL Rewrite configuration."
+msgstr "Chyba pri pokuse o uloženie konfigurácie zašleneného URL Rewrite"
+
+#: gallery_install.inc:1000,1214
+msgid "The Gallery2 URL Rewrite plugin returned the following error:"
+msgstr "Rozšírenie URL Rewrite vrátilo nasledujúcu chybu:"
+
+#: gallery_report.inc:123
+msgid "Gallery module : Report Generator"
+msgstr "Modul Galéria : Generátor hlásení"
+
+#: gallery_search.inc:64
+msgid "Gallery item: Untitled"
+msgstr "Položka Galérie: Nepomenovaná"
+
+#: gallery_search.inc:119
+msgid "Error invoking search() method."
+msgstr "Chaba pri vyvolaní metódy search()."
+
+#: gallery_search.inc:145
+msgid "Only the following fields"
+msgstr "Iba nasledujúce polia"
+
+#: gallery_search.inc:186
+msgid ""
+"Error creating instance of GallerySearchInterface. Make sure the "
+"'Search' plugin is enabled in Gallery2."
+msgstr ""
+"Chyba pri vytváraní inštancie GallerySearchInterface. Uistite sa, "
+"či je rozšírenie 'Vyhľadávanie' v Gallery2 zapnuté."
+
+#: gallery_search.inc:192
+msgid "Error getting 'Search' module options."
+msgstr "Chyba pri získavaní nastavení modulu 'Search'."
+
+#: gallery_search.inc:213
+msgid "<p>Total Number of Matches: @count</p>"
+msgstr "<p>Celkový počet zhôd: @count</p>"
+
+#: gallery_settings.inc:37
+msgid "Theme settings"
+msgstr "Nastavenia témy"
+
+#: gallery_settings.inc:50,42
+msgid "Gallery page theme"
+msgstr "Téma vzhľadu stránky Galérie"
+
+#: gallery_settings.inc:53,45
+msgid "Drupal theme to be used for all gallery pages (gallery/*)."
+msgstr ""
+"Téma vzhľadu Drupalu, ktorá sa má použiť na všetkých "
+"stránkach Galérie (gallery/*)."
+
+#: gallery_settings.inc:59,64
+msgid "Gallery block settings"
+msgstr "Nastavenie blokov Galérie"
+
+#: gallery_settings.inc:62
+msgid ""
+"You can now have multiple image blocks and grid blocks. Use these "
+"settings to determine\n"
+"                         the number of available blocks.<br "
+"/><strong>Warning: If you decrease the number of blocks,\n"
+"                         always the last block (with the highest ID) "
+"will be removed.</strong>"
+msgstr ""
+"Teraz môžete mať viacero obrázkových a mriežkových blokov. "
+"Tieto nastavenia použite na určenie\r\n"
+"počtu dostupných blokov. <br> <strong>Upozornenie: Ak znížite "
+"počet blokov, \r\n"
+"vždy sa odstráni posledný blok (s najvyšším ID).</strong>"
+
+#: gallery_settings.inc:68
+msgid "Number of image blocks"
+msgstr "Počet blokov obrázkov"
+
+#: gallery_settings.inc:72
+msgid "Select how many image blocks should be available."
+msgstr "Vyberte koľko obrázkových blokov by malo byť dostupných."
+
+#: gallery_settings.inc:76
+msgid "Number of grid image blocks"
+msgstr "Počet blokov obrázkových mriežok"
+
+#: gallery_settings.inc:80
+msgid "Select how many grid image blocks should be available."
+msgstr "Vyberte koľko blokov obrázkových mriežok by malo byť dostupných."
+
+#: gallery_settings.inc:86,83
+msgid "Sidebar settings"
+msgstr "Nastavenia bočného panela"
+
+#: gallery_settings.inc:93,90
+msgid "Move Gallery2 sidebar to Drupal Gallery Navigation block"
+msgstr ""
+"Premiestni bočnú lištu Gallery2 do bloku Drupalu s názvom "
+"Navigácia Galérie"
+
+#: gallery_settings.inc:95,92
+msgid ""
+"When selected, the Gallery2 sidebar will be moved into\n"
+"                         the Drupal \"Gallery Navigation\" block. This "
+"typically allows\n"
+"                         for a much cleaner embedded gallery and is "
+"generally\n"
+"                         recommended. Note that you will need to "
+"enable the Gallery\n"
+"                         Navigation block."
+msgstr ""
+"Ak je pole zaškrtnuté, bočná lišta Gallery2 bude presunutá \r\n"
+"do bloku \"Navigácia Galérie\" Drupalu. Toto umožňuje \r\n"
+"oveľa čistejšie začlenenie galérie,  preto túto voľbu \r\n"
+"odporúčame. Blok s navigáciou galérie bude potrebné \r\n"
+"zapnúť osobitne."
+
+#: gallery_settings.inc:103,100
+msgid "Move Gallery2 Admin sidebar to Drupal Gallery Navigation block"
+msgstr ""
+"Premiestni administrátorskú bočnú lištu Gallery2 do bloku Drupalu "
+"s názvom Navigácia Galérie"
+
+#: gallery_settings.inc:105,102
+msgid ""
+"When selected, the Gallery2 Admin sidebar will be moved into\n"
+"                         the Drupal \"Gallery Navigation\" block. This "
+"is not normally\n"
+"                         recommended since the Admin Sitebar is very "
+"long and the\n"
+"                         formatting does not always fit with the rest "
+"of the block\n"
+"                         (but cannot be changed in the current "
+"Gallery2 versions)."
+msgstr ""
+"Ak je pole zaškrtnuté, administrátorská bočná lišta bude "
+"presunutá \r\n"
+"do bloku \"Navigácia Galérie\" Drupalu. Toto nie je za normálnych "
+"\r\n"
+"okolností odporúčané, pretože je veľmi dlhá a jej formátovanie "
+"by sa nemuselo zmestiť do bloku\r\n"
+" (a v súčasnej verzii Gallery2 sa nedá zmeniť)."
+
+#: gallery_settings.inc:120,117
+msgid ""
+"Allows the Gallery2 sitemap to be merged with the Drupal one so that "
+"only one URL needs to\n"
+"             be supplied to search engines. Requires the Drupal XML "
+"Sitemap module (!xmlsitemap_status) and\n"
+"             the Gallery2 sitemap module (!gallery2_sitemap_status) to "
+"be installed/activated."
+msgstr ""
+"Umožňuje mapu stránky Gallery2 zlúčiť s mapou stránky Drupalu, "
+"takže je potrebná\r\n"
+" iba jedna URL adresa, ktorá sa predá vyhľadávačom. Vyžaduje aby "
+"bol nainštalovaný/aktivovaný modul XML Sitemap z Drupalu "
+"(!xmlsitemap_status) a\r\n"
+"modul Sitemap z Gallery2 (!gallery2_sitemap_status)."
+
+#: gallery_settings.inc:131,128
+msgid "XML Sitemap settings"
+msgstr "Nastavenia XML Sitemap"
+
+#: gallery_settings.inc:139,136
+msgid "Enable merge of Gallery2 sitemap with Drupal sitemap"
+msgstr "Zapnúť zlúčenie mapy stránky Gallery2 s mapou stránky Drupalu"
+
+#: gallery_settings.inc:147,144
+msgid "Error logging / Debug settings"
+msgstr "Zaznamenávanie chýb / Ladiace nastavenia"
+
+#: gallery_settings.inc:154,151
+msgid "Error logging"
+msgstr "Zaznamenávanie chýb"
+
+#: gallery_settings.inc:157,154
+msgid "Output to the browser"
+msgstr "Výstup do prehliadača"
+
+#: gallery_settings.inc:158,155
+msgid "Verbose error messages"
+msgstr "Podrobné chybové správy"
+
+#: gallery_settings.inc:159,156
+msgid "Choose where errors are displayed and how detailed they are."
+msgstr "Zvoľte, ktoré chyby sa zobrazia a aké majú byť detailné."
+
+#: gallery_settings.inc:163,160
+msgid "Enable bug report assistant"
+msgstr "Zapnúť asistenta pre chybové hlásenia"
+
+#: gallery_settings.inc:165,162
+msgid ""
+"In case of errors the module can automatically assemble useful data "
+"(system info and debug\n"
+"                         traces) to help you with detailed bug "
+"reports. Only available to users with 'administer\n"
+"                         site configuration' permission."
+msgstr ""
+"V prípade vyskytnutia chýb modul môže automaticky zhromaždiť "
+"užitočné dáta (systémové a ladiace \r\n"
+"informácie) aby vám pomohol s vytvorením detailného hlásenia "
+"chýb. Dostupné iba pre používateľov \r\n"
+"s oprávnením 'administrácia nastavení webu'."
+
+#: gallery_settings.inc:172,169
+msgid "Redirect to Gallery search form for invalid paths"
+msgstr "Presmerovanie do vyhľadávacieho formulára pri nesprávnej ceste"
+
+#: gallery_settings.inc:174
+msgid ""
+"Instead of showing a message that the requested Gallery URL does not "
+"exist the user is redirected to the search form."
+msgstr ""
+"Miesto zobrazenia správy, že vyžiadaná URL adresa Galérie "
+"neexistuje, bude používateľ presmerovaný do vyhľadávacieho "
+"formulára."
+
+#: gallery_settings.inc:179,185
+msgid "Enable debug mode"
+msgstr "Zapnúť ladiaci mód"
+
+#: gallery_settings.inc:181
+msgid ""
+"Print out debug variables and verbose error messages. Only visible to "
+"users with 'administer site configuration' permission."
+msgstr ""
+"Vypíše ladiace premenné a zhromaždené chybové hlásenia. "
+"Dostupné iba pre používateľov s oprávnením 'administrácia "
+"nastavení webu'."
+
+#: gallery_settings.inc:187,201
+msgid "Links to the most relevant Drupal & Gallery2 pages"
+msgstr "Prepojenia na najrelavantnejšie stránky Drupalu a Gallery2"
+
+#: gallery_settings.inc:198,213
+msgid "Links to Drupal paths"
+msgstr "Prepojenia na cesty Drupalu"
+
+#: gallery_settings.inc:217,234
+msgid "Links to Gallery2 Site Admin sections"
+msgstr "Prepojenia do administrátorských častí Gallery2"
+
+#: gallery_settings.inc:238,255
+msgid "Number of image blocks must be a positiv integer greater zero."
+msgstr ""
+"Počet obrázkových blokov musí byť celé kladné číslo vyššie "
+"od nuly."
+
+#: gallery_settings.inc:241
+msgid "Number of grid blocks must be a positiv integer greater zero."
+msgstr ""
+"Počet blokov obrázkových mriežok musí byť celé kladné číslo "
+"vyššie od nuly."
+
+#: gallery_settings.inc:261
+msgid ""
+"The Gallery Image Block requires the Gallery2\n"
+"    Image Block plugin (!imageblock_status) and optionally the "
+"Gallery2 Image Frame \n"
+"    plugin (!imageframe_status)."
+msgstr ""
+"Blok Obrázok Galérie vyžaduje rozšírenie Gallery2 \r\n"
+"s názvom Blok obrázka (!imageblock_status) a voliteľne aj "
+"rozšírenie Rámček obrázkov\r\n"
+"(!imageframe_status)."
+
+#: gallery_settings.inc:271,428,612,846,1140,287,527; gallery_g2image/gallery_g2image_settings.inc:28
+msgid "<a href= \"@g2_plugins\">Gallery2 Plugins</a>"
+msgstr "<a href=\"@g2_plugins\">Rozšírenia Gallery2</a>"
+
+#: gallery_settings.inc:273,430,614,848,1142,289,529; gallery_g2image/gallery_g2image_settings.inc:30
+msgid "Gallery2 Site Admin -> Plugins"
+msgstr "Administrácia Gallery2 -> Zásuvné moduly"
+
+#: gallery_settings.inc:274,431
+msgid ""
+" However the Image Block plugin is unavailable, so this block is\n"
+"      not available and the settings are disabled. To use this block "
+"please go to\n"
+"      the !g2_plugins page and install/activate the Image Block "
+"plugin."
+msgstr ""
+"Kvôli tomu, že je rozšírenie Blok obrázku vypnuté, je tento "
+"blok\r\n"
+"nedostupný a jeho nastavenia sú vypnuté. Ak chcete použiť tento "
+"blok, choďte na \r\n"
+"stránku !g2_plugins  a nainštalujte/aktivujte rozšírenie Blok "
+"obrázku."
+
+#: gallery_settings.inc:284,441,622,1166,297,553; gallery_profile/gallery_profile.module:175; gallery_block_admin.inc:272
+msgid "Requires the Gallery2 Image Frame plugin (!imageframe_status)."
+msgstr ""
+"Vyžaduje rozšírenie Rámček obrázkov Gallery2 "
+"(!imageframe_status)."
+
+#: gallery_settings.inc:293,450; gallery_block_admin.inc:43
+msgid "Block Identifier [Block @id]"
+msgstr "Identifikátor bloku [Blok @id]"
+
+#: gallery_settings.inc:297,454; gallery_block_admin.inc:47
+msgid ""
+"A short identifier to distinguish blocks of the same type. (Blocks are "
+"numbered by default)"
+msgstr ""
+"Krátky identifikátor na rozlíšenie blokov rovnakého typu. (Ak "
+"nič nezadáte bloky budú očíslované)"
+
+#: gallery_settings.inc:306
+msgid "Number of images in block"
+msgstr "Počet obrázkov v bloku"
+
+#: gallery_settings.inc:309
+msgid ""
+"Choose the number of images to appear. You will need to submit the "
+"form if you have increased the number in order to choose the image "
+"types."
+msgstr ""
+"Vyberte počet obrázkov, ktoré sa majú objaviť. Aby ste mohli "
+"vybrať typy pridaných obrázkov, najskôr bude potrebné odoslať "
+"formulár."
+
+#: gallery_settings.inc:316; gallery_block_admin.inc:213
+msgid "Image types"
+msgstr "Typy obrázkov"
+
+#: gallery_settings.inc:320; gallery_block_admin.inc:217
+msgid ""
+"Pick the type of images you would like to see. You can select the same "
+"type more than once."
+msgstr ""
+"Vyberte typ obrázkov, ktoré chcete vidieť. Môžete vybrať "
+"rovnaký typ viackrát."
+
+#: gallery_settings.inc:333,485; gallery_block_admin.inc:231
+msgid "Album or Item ID"
+msgstr "ID albumu alebo položky"
+
+#: gallery_settings.inc:337,489
+msgid ""
+"Enter the Gallery image or album ID (or blank). If an album or item ID "
+"is specified, random\n"
+"                           images will only be selected from that "
+"album and its sub-albums. If 'user' (or 'user:123')\n"
+"                           is entered, items will be taken from the "
+"current (or specified) user's useralbum."
+msgstr ""
+"Zadajte ID obrázka alebo albumu Galérie (alebo nechajte prázdne). "
+"Ak je pole ID albumu alebo položky vyplnené,\r\n"
+"obrázky sa budú náhodne vyberať iba z albumu a podriadených "
+"albumov s daným ID. Ak zadáme 'user' (alebo 'user:123'),\r\n"
+"položky sa vyberú iba z aktuálnych (alebo zadaných) albumov "
+"používateľov."
+
+#: gallery_settings.inc:344,496,1222,609; gallery_profile/gallery_profile.module:144; gallery_block_admin.inc:242
+msgid "Image data"
+msgstr "Dáta obrázka"
+
+#: gallery_settings.inc:347,499,1225,612; gallery_profile/gallery_profile.module:147; gallery_block_admin.inc:245
+msgid "Choose the item metadata you would like to display."
+msgstr "Zvoľte položky metadát, ktoré chcete zobraziť."
+
+#: gallery_settings.inc:352,504,1230,617; gallery_profile/gallery_profile.module:152; gallery_block_admin.inc:250
+msgid "Image size method"
+msgstr "Metóda pre zmenu rozmerov obrázka"
+
+#: gallery_settings.inc:355,507,1233,620; gallery_profile/gallery_profile.module:155; gallery_block_admin.inc:253
+msgid "Max Size"
+msgstr "Maximálna veľkosť"
+
+#: gallery_settings.inc:356,508,1234,621; gallery_profile/gallery_profile.module:156; gallery_block_admin.inc:254
+msgid "Exact Size"
+msgstr "Presná veľkosť"
+
+#: gallery_settings.inc:358,510
+msgid ""
+"'Max Size' gives faster image downloading, but the image size \n"
+"                           may be smaller than the size defined below. "
+"<br />'Exact Size' may be slower\n"
+"                           (as a larger image is downloaded and then "
+"scaled by the browser) but the image\n"
+"                           will be guaranteed to be the size defined "
+"below. Only supported for G2.2+."
+msgstr ""
+"'Maximálna veľkosť' umožňuje rýchlejšie stiahnutie obrázka, "
+"ale veľkosť obrázka\r\n"
+"môže byť menšia ako veľkosť definovaná nižšie. <br />'Presná "
+"veľkosť' môže byť pomalšia\r\n"
+"(pretože je stiahnutý väčší obrázok, a potom je ešte "
+"prispôsobený prehliadačom), ale obrázok\r\n"
+"bude vždy presne s rozmermi definovanými nižšie. Podporované iba "
+"pre G2.2+."
+
+#: gallery_settings.inc:370; gallery_block_admin.inc:268
+msgid ""
+"Sets the size (in pixels) of the longest side of the image according "
+"to the method defined above."
+msgstr ""
+"Nastavte veľkosť najdlhšej strany obrázka (v pixeloch), ktorá sa "
+"použije s metódou definovanou vyššie."
+
+#: gallery_settings.inc:375,528,1254,641; gallery_profile/gallery_profile.module:182; gallery_block_admin.inc:279
+msgid "Album frame"
+msgstr "Rámik pre album"
+
+#: gallery_settings.inc:383,536,1262,649; gallery_profile/gallery_profile.module:190; gallery_block_admin.inc:287
+msgid "Item frame"
+msgstr "Rámik pre položku"
+
+#: gallery_settings.inc:391,544,1270,657; gallery_profile/gallery_profile.module:198; gallery_block_admin.inc:295
+msgid "Link target"
+msgstr "Cieľ prepojenia"
+
+#: gallery_settings.inc:395,548; gallery_profile/gallery_profile.module:202; gallery_block_admin.inc:299
+msgid "Enter a link target (e.g. '_blank' to open in a new window)."
+msgstr "Zadajte cieľ prepojenia (napr.: '_blank' otvorí odkaz v novom okne)"
+
+#: gallery_settings.inc:400,553,1279,666; gallery_profile/gallery_profile.module:207; gallery_block_admin.inc:304
+msgid "Image Link"
+msgstr "Prepojenie na obrázok"
+
+#: gallery_settings.inc:404,557,767,443
+msgid ""
+"By default the image has a link to the item in the Gallery. This\n"
+"        can be overridden here (or leave empty for the default). Use "
+"'none' for no link, or a URL\n"
+"        to link somewhere else instead."
+msgstr ""
+"Normálne je obrázok prepojený na položku v Galérii. Toto\r\n"
+"môže byť tu zmenené (alebo nechajte políčko prázdne, ak chcete "
+"použiť predvolenú hodnotu).\r\n"
+"Použite 'none', ak nechcete mať na obrázku prepojenie, alebo URL "
+"adresu ak chcete obrázok prepojiť inam."
+
+#: gallery_settings.inc:419
+msgid ""
+"The Gallery Grid Block requires the Gallery2\n"
+"    Image Block plugin (!imageblock_status) and optionally the "
+"Gallery2 Image Frame \n"
+"    plugin (!imageframe_status)."
+msgstr ""
+"Blok Mriežka Galérie vyžaduje rozšírenie Gallery2\r\n"
+"s názvom Blok obrázka (!imageblock_status) a voliteľne aj "
+"rozšírenie Rámček obrázkov \r\n"
+"(!imageframe_status)."
+
+#: gallery_settings.inc:464
+msgid "Enter the number of columns in the grid."
+msgstr "Zadajte počet stĺpcov v mriežke."
+
+#: gallery_settings.inc:469; gallery_profile/gallery_profile.module:128; gallery_block_admin.inc:204
+msgid "Number of rows"
+msgstr "Počet riadkov"
+
+#: gallery_settings.inc:472
+msgid "Enter the number of rows in the grid."
+msgstr "Zadajte počet riadkov v mriežke."
+
+#: gallery_settings.inc:522
+msgid ""
+"Sets the size (in pixels) of the longest side of the image according\n"
+"                          to the method defined above."
+msgstr ""
+"Nastavte veľkosť najdlhšej strany obrázka (v pixeloch), ktorá "
+"\r\n"
+"sa použije s metódou definovanou vyššie."
+
+#: gallery_settings.inc:574,580
+msgid ""
+"Image size must be a number greater than ten pixels. (The value has "
+"been updated to '10' for your convenience.)"
+msgstr ""
+"Rozmer obrázka musí byť číslo väčšie ako 10 pixelov. (Hodnota "
+"bude zmenená na '10'.)"
+
+#: gallery_settings.inc:601,276
+msgid ""
+"Note that changing the defaults here will change the all the gallery "
+"filter images\n"
+"    on the site, not just new images. "
+msgstr ""
+"Zmena základného nastavenia zmení všetky filtrované obrázky "
+"Galérie\r\n"
+"na stránke, a nielen nové obrázky."
+
+#: gallery_settings.inc:603,278
+msgid ""
+"The Gallery Filter requires the Gallery2 Image Block plugin "
+"(!imageblock_status) and\n"
+"              optionally the Gallery2 Image Frame plugin "
+"(!imageframe_status)."
+msgstr ""
+"Filter Galérie vyžaduje rozšírenie Gallery2 s názvom Blok "
+"obrázka (!imageblock_status) \r\n"
+"a voliteľne aj rozšírenie Rámček obrázkov (!imageframe_status)."
+
+#: gallery_settings.inc:615,290
+msgid ""
+" However the Image Block plugin is unavailable, so the Gallery Filter "
+"is\n"
+"      not available and the settings are disabled. To use the filter "
+"please go to\n"
+"      the !g2_plugins page and install/activate the Image Block "
+"plugin."
+msgstr ""
+"Kvôli tomu, že je rozšírenie Blok obrázku vypnuté, Filter "
+"Galérie je \r\n"
+"nedostupný a jeho nastavenia sú vypnuté. Ak chcete použiť filter, "
+"choďte na \r\n"
+"stránku !g2_plugins  a nainštalujte/aktivujte rozšírenie Blok "
+"obrázku."
+
+#: gallery_settings.inc:627,302
+msgid "Gallery Filter settings"
+msgstr "Nastavenia filtra Galérie"
+
+#: gallery_settings.inc:635,310
+msgid "Specific item"
+msgstr "Špecifická položka"
+
+#: gallery_settings.inc:640,315
+msgid "Filter prefix"
+msgstr "Predpona filtra"
+
+#: gallery_settings.inc:644,319
+msgid ""
+"Prefix to use with filter. Example: 'G2' means you use [G2: 999].\n"
+"        Be careful when changing this as any pages using the previous "
+"prefix will not be changed\n"
+"        and so will not be filtered correctly."
+msgstr ""
+"Predpona, ktorá sa má použiť s filtrom. Napríklad: pri zadaní "
+"'G2' sa použije [G2: 999].\r\n"
+"Buďte opatrní pri menení tohto nastavenia, pretože stránky, na "
+"ktorých je použitá predchádzajúca predpona, sa nezmenia\r\n"
+"a nebudú správne odfiltrované."
+
+#: gallery_settings.inc:651,326
+msgid "Default image type"
+msgstr "Predvolený typ obrázkov"
+
+#: gallery_settings.inc:654,329
+msgid "Pick the default type of image you would like to use."
+msgstr "Vyberte základný typ obrázka, ktorý chcete použiť."
+
+#: gallery_settings.inc:659,334
+msgid "Cache gallery filter pages"
+msgstr "Ukladať filtrované stránky do vyrovnávacej pamäte"
+
+#: gallery_settings.inc:661,336
+msgid ""
+"By default the gallery filter output is cached by Drupal to speed up "
+"page loading.\n"
+"                           However, it will not cache the css class "
+"info for the frames. The best approach is the\n"
+"                           make sure that the sidebar image block and "
+"the gallery filter images use the same frames.\n"
+"                           If you are unable to do this you will have "
+"to deselect this option to force Drupal not to\n"
+"                           cache the pages, or else your frames will "
+"not appear. If you change this option you will\n"
+"                           need to go to <a "
+"href=\"@link\">admin/settings/filters</a> and re-save the image "
+"formats\n"
+"                           that use gallery filter."
+msgstr ""
+"Normálne je výstup filtra Galérie Drupalom ukladaný do "
+"vyrovnávacej pamäte aby sa urýchlilo načítanie stránky.\r\n"
+"Avšak nie sú ukladané informácie css tried pre rámčeky.  "
+"Najlepší postup je \r\n"
+"ak sa presvedčíte, či blok obrázka v bočnej lište a obrázky "
+"filtra galérie používajú rovnaké rámčeky.\r\n"
+"Ak nie ste schopní to urobiť, bude lepšie ak túto možnosť "
+"odznačíte aby ste prinútili Drupal aby \r\n"
+"stránky neukladal, lebo inak sa rámčeky nebudú objavovať. Ak "
+"túto možnosť zmeníte budete \r\n"
+"potrebné isť na stránku <a "
+"href=\"@link\">admin/settings/filters</a> a znova uložiť formát "
+"obrázkov, ktoré používa filter Galérie."
+
+#: gallery_settings.inc:672,347
+msgid "Default number of images"
+msgstr "Predvolený počet obrázkov"
+
+#: gallery_settings.inc:676,351
+msgid ""
+"How many images you want the default block to show.  Best to keep at 1 "
+"and use the n parameter."
+msgstr ""
+"Predvolený počet obrázkov, ktorý chcete zobraziť v bloku. "
+"Najlepšie je nechať 1 a použiť parameter n."
+
+#: gallery_settings.inc:681,356
+msgid "Default image data"
+msgstr "Predvolené dáta obrázka"
+
+#: gallery_settings.inc:684
+msgid ""
+"Choose the item metadata you would like to display by default.  This "
+"will change all instances where show parameter was not specified."
+msgstr ""
+"Zvoľte predvolené položky metadát, ktoré chcete zobraziť. Toto "
+"nastavenie sa prejaví všade tam, kde parametre zobrazenia nebudú "
+"určené."
+
+#: gallery_settings.inc:697,705,373,381
+msgid "Default class"
+msgstr "Predvolená trieda"
+
+#: gallery_settings.inc:709,385
+msgid ""
+"left, right, or nowrap. (See gallery_filter.css to add more or modify "
+"these.)"
+msgstr ""
+"left, right, alebo nowrap. (Pozrite si gallery_filter.css ak chcete "
+"pridať ďalšie alebo ak chcete tieto zmeniť.)"
+
+#: gallery_settings.inc:715,391
+msgid "Default 'Max Size' thumbnail size"
+msgstr "Predvolená max. veľkosť náhľadu"
+
+#: gallery_settings.inc:723,399
+msgid "Default 'Exact Size' thumbnail size"
+msgstr "Predvolená presná veľkosť náhľadu"
+
+#: gallery_settings.inc:727,403
+msgid ""
+"If no size is specified when calling the filter, one of\n"
+"        these sizes (and implied method) will be used. <br />'Max "
+"Size' gives faster\n"
+"        image downloading, but the image size \n"
+"        may be smaller than the size defined. <br />'Exact Size' may "
+"be slower\n"
+"        (as a larger image is downloaded and then scaled by the "
+"browser) but the image\n"
+"        will be guaranteed to be the size defined. Only supported for "
+"G2.2+.\n"
+"        Only fill in one size box (not both) to set the default "
+"method."
+msgstr ""
+"AK nie je určená veľkosť, pri volaní filtra, použije sa jedna "
+"\r\n"
+"z nasledujúcich veľkostí (a spomínaných metód) 'Maximálna "
+"veľkosť' umožňuje \r\n"
+"rýchlejšie stiahnutie obrázka, ale veľkosť obrázka\r\n"
+"môže byť menšia ako veľkosť definovaná nižšie. <br />'Presná "
+"veľkosť' môže byť pomalšia\r\n"
+"(pretože je stiahnutý väčší obrázok, a potom je ešte "
+"prispôsobený prehliadačom), ale obrázok\r\n"
+"bude vždy presne s rozmermi definovanými nižšie. Podporované iba "
+"pre G2.2+.\r\n"
+"Ak chcete nastaviť predvolenú metódu, vyplňte iba jedno pole s "
+"rozmerom (nie obe)."
+
+#: gallery_settings.inc:738,414
+msgid "Default album frame"
+msgstr "Predvolený rámik pre album"
+
+#: gallery_settings.inc:746,422
+msgid "Default item frame"
+msgstr "Predvolený rámik pre položku"
+
+#: gallery_settings.inc:754,430
+msgid "Default link target"
+msgstr "Predvolený cieľ prepojenia"
+
+#: gallery_settings.inc:758,1274,434,661
+msgid "Enter a link target (e.g. \"_blank\", \"_new\")."
+msgstr "Zadajte cieľ prepojenia (napr.: \"_blank\", \"_new\")."
+
+#: gallery_settings.inc:763,439
+msgid "Default Image Link"
+msgstr "Predvolené prepojenie obrázka"
+
+#: gallery_settings.inc:790,465
+msgid "You must set either the Max Size or the Exact Size, not both."
+msgstr "Treba zadať buď maximálnu alebo presnú veľkosť. Nie obe."
+
+#: gallery_settings.inc:795,470
+msgid "You must set either the Max Size or the Exact Size."
+msgstr "Treba zadať buď maximálnu alebo presnú veľkosť."
+
+#: gallery_settings.inc:801,476
+msgid "Max Size must be a number greater than zero."
+msgstr "Maximálna veľkosť musí byť číslo väčšie ako 0."
+
+#: gallery_settings.inc:807,482
+msgid "Exact Size must be a number greater than zero."
+msgstr "Presná veľkosť musí byť číslo väčšie ako 0."
+
+#: gallery_settings.inc:813,488
+msgid "Number of images must be a number greater than zero."
+msgstr "Počet obrázkov musí byť číslo väčšie ako 0."
+
+#: gallery_settings.inc:840
+msgid ""
+"G2Image requires the Gallery2 Image Block plugin (!imageblock_status) "
+"and\n"
+"             the g2image application to be installed."
+msgstr ""
+"G2Image vyžaduje rozšírenie Blok obrázku (!imageblock_status) "
+"a\r\n"
+"nainštalovanie aplikácie G2Image."
+
+#: gallery_settings.inc:849
+msgid ""
+" However the Image Block plugin is unavailable, so G2Image is\n"
+"      not available and the settings are disabled. To use G2Image "
+"please go to\n"
+"      the !g2_plugins page and install/activate the Image Block "
+"plugin."
+msgstr ""
+"Kvôli tomu, že je rozšírenie Blok obrázku vypnuté, G2Image je "
+"\r\n"
+"nedostupné a jeho nastavenia sú vypnuté. Ak chcete použiť "
+"G2Image, choďte na \r\n"
+"stránku !g2_plugins  a nainštalujte/aktivujte rozšírenie Blok "
+"obrázku."
+
+#: gallery_settings.inc:857; gallery_g2image/gallery_g2image_settings.inc:43
+msgid "Gallery Image Assist (G2Image) settings"
+msgstr "Nastavenia Obrázkového asistenta Galérie (G2Image)"
+
+#: gallery_settings.inc:870,1021; gallery_g2image/gallery_g2image_settings.inc:56,209
+msgid "Standalone"
+msgstr "Samostatné"
+
+#: gallery_settings.inc:873
+msgid ""
+"Determines the mode of operation. For anything other than 'Disabled' "
+"the g2image\n"
+"                           application has to be installed. See the "
+"INSTALL.txt instructions. In 'Standalone'\n"
+"                           mode a button will be visible under "
+"textfields to launch the g2image window. In\n"
+"                           'TinyMCE' mode the g2image button can be "
+"used in the TinyMCE toolbar. Note that the\n"
+"                           TinyMCE version will NOT work wih Safari - "
+"use the standalone version instead."
+msgstr ""
+"Určuje mód operácie. Ak je niečo iné ako 'Vypnuté',  je  "
+"g2image\r\n"
+"nainštalované. Pozrite si inštrukcie v INSTALL.txt. V móde "
+"'Samostatné'\r\n"
+"bude tlačítko na vyvolanie okna g2image viditeľné pod textovým "
+"poľom. V móde\r\n"
+"'TinyMCE' bude tlačítko g2image umiestnené v nástrojovej lište "
+"TinyMCE. Upozornenie: \r\n"
+"TinyMCE verzia NEPRACUJE v Safari - v takomto prípade použite "
+"samostatnú verziu."
+
+#: gallery_settings.inc:882
+msgid "Show g2image link on specific pages (Standalone mode only)"
+msgstr ""
+"Zobrazí odkaz G2Image na určených stránkach (iba v samostatnom "
+"móde)"
+
+#: gallery_settings.inc:893; gallery_g2image/gallery_g2image_settings.inc:79
+msgid "Pages (Standalone mode only)"
+msgstr "Stránky (iba v samostatnom móde)"
+
+#: gallery_settings.inc:895
+msgid ""
+"Enter one page per line as Drupal paths. The '*' character is a "
+"wildcard. Example paths are\n"
+"                           '%blog' for the blog page and "
+"%blog-wildcard for every personal blog. %front is the front page."
+msgstr ""
+"Zadajte každú stránku na nový riadok vo forme Drupalovskej cesty. "
+"Znak '*' je zástupný znak. Napríklad pre stránku \r\n"
+"blogov zadajte '%blog' a %blog-wildcard pre všetky stránky s "
+"osobnými blogmi. %front je titulná strana."
+
+#: gallery_settings.inc:902; gallery_g2image/gallery_g2image_settings.inc:89
+msgid "Default Sort Order"
+msgstr "Predvolené triedenie"
+
+#: gallery_settings.inc:905; gallery_g2image/gallery_g2image_settings.inc:92
+msgid "Gallery2 Title (A-z)"
+msgstr "Gallery2 názov (A-z)"
+
+#: gallery_settings.inc:906; gallery_g2image/gallery_g2image_settings.inc:93
+msgid "Gallery2 Title (z-A)"
+msgstr "Gallery2 názov (z-A)"
+
+#: gallery_settings.inc:907; gallery_g2image/gallery_g2image_settings.inc:94
+msgid "Filename (A-z)"
+msgstr "Meno súboru (A-z)"
+
+#: gallery_settings.inc:908; gallery_g2image/gallery_g2image_settings.inc:95
+msgid "Filename (z-A)"
+msgstr "Meno súboru (z-A)"
+
+#: gallery_settings.inc:909; gallery_g2image/gallery_g2image_settings.inc:96
+msgid "Last Modification (newest first)"
+msgstr "Posledná zmena (najnovšie prvé)"
+
+#: gallery_settings.inc:910; gallery_g2image/gallery_g2image_settings.inc:97
+msgid "Last Modification (oldest first)"
+msgstr "Posledná zmena (najstaršie prvé)"
+
+#: gallery_settings.inc:912; gallery_g2image/gallery_g2image_settings.inc:99
+msgid "Determines the default sorting order."
+msgstr "Určuje základný smer usporiadania."
+
+#: gallery_settings.inc:917; gallery_g2image/gallery_g2image_settings.inc:104
+msgid "Default Number of images per page"
+msgstr "Predvolený počet obrázkov na stránke"
+
+#: gallery_settings.inc:920; gallery_g2image/gallery_g2image_settings.inc:107
+msgid "Choose the default number of images per page."
+msgstr "Zadajte základný počet obrázkov na stránke."
+
+#: gallery_settings.inc:925; gallery_g2image/gallery_g2image_settings.inc:112
+msgid "Default Display Options"
+msgstr "Predvolené nastavenie zobrazovania"
+
+#: gallery_settings.inc:928; gallery_g2image/gallery_g2image_settings.inc:115
+msgid "Thumbnails only"
+msgstr "Iba náhľady"
+
+#: gallery_settings.inc:929; gallery_g2image/gallery_g2image_settings.inc:116
+msgid "Thumbnails with title and filename"
+msgstr "Náhľady s názvom a menom súboru"
+
+#: gallery_settings.inc:931; gallery_g2image/gallery_g2image_settings.inc:118
+msgid "Choose the default display option for images."
+msgstr "Zvoľte predvolené nastavenie pre zobrazenie obrázkov."
+
+#: gallery_settings.inc:936; gallery_g2image/gallery_g2image_settings.inc:123
+msgid "Default Action"
+msgstr "Predvolená akcia"
+
+#: gallery_settings.inc:939; gallery_g2image/gallery_g2image_settings.inc:126
+msgid "Gallery Filter ID"
+msgstr "ID filtra Galérie"
+
+#: gallery_settings.inc:940; gallery_g2image/gallery_g2image_settings.inc:127
+msgid "Thumbnail with link to image"
+msgstr "Náhľad s linkou na obrázok"
+
+#: gallery_settings.inc:941; gallery_g2image/gallery_g2image_settings.inc:128
+msgid "Thumbnail with link to parent album"
+msgstr "Náhľad s linkou na nadradený adresár"
+
+#: gallery_settings.inc:942; gallery_g2image/gallery_g2image_settings.inc:129
+msgid "Thumbnail with link to custom URL"
+msgstr "Náhľad s používateľskou URL"
+
+#: gallery_settings.inc:943; gallery_g2image/gallery_g2image_settings.inc:130
+msgid "Thumbnail only"
+msgstr "Iba náhľad"
+
+#: gallery_settings.inc:944; gallery_g2image/gallery_g2image_settings.inc:131
+msgid "Text link to image"
+msgstr "Textová linka na obrázok"
+
+#: gallery_settings.inc:945; gallery_g2image/gallery_g2image_settings.inc:132
+msgid "Text link to parent album"
+msgstr "Textová linka na nadradený adresár"
+
+#: gallery_settings.inc:947; gallery_g2image/gallery_g2image_settings.inc:134
+msgid "Choose the default method of inserting the image info."
+msgstr "Vyberte základnú metódu pre vkladanie obrázkových informácii."
+
+#: gallery_settings.inc:952; gallery_g2image/gallery_g2image_settings.inc:139
+msgid "Default custom url"
+msgstr "Základná vlastná URL adresa"
+
+#: gallery_settings.inc:956; gallery_g2image/gallery_g2image_settings.inc:143
+msgid ""
+"The default custom url. Used with 'Thumbnail with link to custom URL' "
+"action setting"
+msgstr ""
+"Základná vlastná URL adresa. Používa sa nastavenie akcie "
+"'Miniatúra s odkazom na vlastnú URL adresu'"
+
+#: gallery_settings.inc:962; gallery_g2image/gallery_g2image_settings.inc:149
+msgid "Float Left"
+msgstr "Doľava"
+
+#: gallery_settings.inc:963; gallery_g2image/gallery_g2image_settings.inc:150
+msgid "Float Right"
+msgstr "Doprava"
+
+#: gallery_settings.inc:964; gallery_g2image/gallery_g2image_settings.inc:151
+msgid "Centered"
+msgstr "Na stred"
+
+#: gallery_settings.inc:973; gallery_g2image/gallery_g2image_settings.inc:160
+msgid "Default Alignment"
+msgstr "Predvolené zarovnanie"
+
+#: gallery_settings.inc:976; gallery_g2image/gallery_g2image_settings.inc:163
+msgid "Choose the default alignment of images."
+msgstr "Zvoľte základné zarovanie obrázkov."
+
+#: gallery_settings.inc:983; gallery_g2image/gallery_g2image_settings.inc:170
+msgid "Custom Class @index"
+msgstr "Vlastná trieda @index"
+
+#: gallery_settings.inc:989
+msgid ""
+"Additional css classes to be available for selection (must be defined "
+"in .css file)."
+msgstr ""
+"Dodatočné css triedy dostupné zalomenie riadku pre výber (musia "
+"byť definované v .css súbore)."
+
+#: gallery_settings.inc:993; gallery_g2image/gallery_g2image_settings.inc:181
+msgid "Alignment Class Insertion Point"
+msgstr "Miesto vloženia zarovnávacej triedy"
+
+#: gallery_settings.inc:996; gallery_g2image/gallery_g2image_settings.inc:184
+msgid "<img class=...>"
+msgstr "<IMG class=\"...\">"
+
+#: gallery_settings.inc:997; gallery_g2image/gallery_g2image_settings.inc:185
+msgid "<div class=...><img ...>"
+msgstr "<DIV class=\"...\"><IMG ...=\"\"></DIV>"
+
+#: gallery_settings.inc:999; gallery_g2image/gallery_g2image_settings.inc:187
+msgid ""
+"Determines where the alignment class will be inserted. If you choose "
+"'&lt;div\n"
+"                           class=...&gt;&lt;img ...&gt;', you will "
+"have to manually delete any &lt;div&gt; tags\n"
+"                           manually after deleting images from the "
+"TinyMCE window."
+msgstr ""
+"Určuje či sa má vkladať trieda pre zarovnanie. Ak je vybrané  "
+"'&lt;div\r\n"
+"class=...&gt;&lt;img ...&gt;', budete musieť dodatočne ručne "
+"vymazať všetky značky &lt;div&gt; \r\n"
+"po odstránení obrázkov v okne TinyMCE."
+
+#: gallery_settings.inc:1032; gallery_g2image/gallery_g2image_settings.inc:220
+msgid ""
+"G2Image does not seem to be installed for @mode mode in the required "
+"directory (@dir), or the\n"
+"                          directory is not writable. Please see the "
+"INSTALL.txt for instructions."
+msgstr ""
+"Nezdá sa, že by G2Image v @mode móde bolo nainštalované v "
+"požadovanom priečinku (@dir), alebo sa do priečinak nedá "
+"zapisovať. Prosím pozrite si inštrukcie v INSTALL.txt."
+
+#: gallery_settings.inc:1106,1112; gallery_g2image/gallery_g2image_settings.inc:284,290
+msgid ""
+"Could not write to G2Image config file. Please check the permissions "
+"for @filename."
+msgstr ""
+"Do konfiguračného súboru G2Image sa nedá zapisovať. Prosím "
+"skontrolujte oprávnenia pre @filename."
+
+#: gallery_settings.inc:1117; gallery_g2image/gallery_g2image_settings.inc:295
+msgid "G2Image configuration file successfully created."
+msgstr "Konfiguračný súbor G2Image bol úspešne vytvorený."
+
+#: gallery_settings.inc:1129
+msgid ""
+"The Gallery Search requires the Gallery2 Search plugin "
+"(!search_status) and\n"
+"    optionally the Gallery2 Image Block plugin (!imageblock_status) "
+"and Gallery2 Image Frame \n"
+"    plugin (!imageframe_status)."
+msgstr ""
+"Vyhľadávanie v Galérii vyžaduje rozšírenie Gallery2 s názvom "
+"Vyhľadávanie (!search_status) a\r\n"
+"voliteľne aj rozšírenia Gallery2 s názvami Blok obrázka "
+"(!imageblock_status) a Rámček obrázkov \r\n"
+"(!imageframe_status)."
+
+#: gallery_settings.inc:1145,532
+msgid ""
+" However the Search plugin is unavailable, so the search is\n"
+"      not available and these settings are disabled. To use the search "
+"feature please go to\n"
+"      the !g2_plugins page and install/activate the Image Block "
+"plugin."
+msgstr ""
+"Kvôli tomu, že je rozšírenie Vyhľadávanie vypnuté, hľadanie "
+"je\r\n"
+"nedostupné a jeho nastavenia sú vypnuté. Ak chcete použiť "
+"hľadanie, choďte na \r\n"
+"stránku !g2_plugins  a nainštalujte/aktivujte rozšírenie Blok "
+"obrázku."
+
+#: gallery_settings.inc:1151,538
+msgid ""
+"To display search results with thumbnail images requires the Gallery2 "
+"Image\n"
+"      Block plugin (!imageblock_status) and optionally the  and "
+"Gallery2 Image Frame \n"
+"      plugin (!imageframe_status)."
+msgstr ""
+"Pre zobrazenie výsledkov hľadania s miniatúrami obrázkov sa "
+"vyžaduje rozšírenie Gallery2 s názvom\r\n"
+"Blok obrázka (!imageblock_status) a voliteľne aj rozšírenie "
+"Rámček obrázkov\r\n"
+"(!imageframe_status)."
+
+#: gallery_settings.inc:1159,546
+msgid ""
+" However the Image Block plugin is unavailable, so the thumbnails "
+"are\n"
+"      not available and these settings are disabled. To use this "
+"feature please go to\n"
+"      the !g2_plugins page and install/activate the Image Block "
+"plugin."
+msgstr ""
+"Kvôli tomu, že je rozšírenie Vyhľadávanie vypnuté, miniatúry "
+"\r\n"
+"sú nedostupné a ich nastavenia sú vypnuté. Ak chcete použiť "
+"túto funkciu, choďte na \r\n"
+"stránku !g2_plugins  a nainštalujte/aktivujte rozšírenie Blok "
+"obrázku."
+
+#: gallery_settings.inc:1183,570
+msgid "Display advanced search options"
+msgstr "Zobraziť rozšírené možnosti vyhľadávania"
+
+#: gallery_settings.inc:1185,572
+msgid ""
+"Adds options to the search form to select which Gallery fields to "
+"search in."
+msgstr ""
+"Pridá možnosti do vyhľadávacieho formulára, aby sa dalo vybrať, "
+"v ktorých poliach Galérie sa má vyhľadávať."
+
+#: gallery_settings.inc:1190,577
+msgid "Number of search results per table row"
+msgstr "Počet výsledkov vyhľadávania v riadku"
+
+#: gallery_settings.inc:1193,580
+msgid "Select the number of search results per row in the paged table."
+msgstr ""
+"Vyberte počet výsledkov hľadania na riadok v stránkovanej "
+"tabuľke."
+
+#: gallery_settings.inc:1198,585
+msgid "Number of rows per page"
+msgstr "Počet riadkov na strane"
+
+#: gallery_settings.inc:1201,588
+msgid "Select the number of rows in the paged table."
+msgstr "Zvoľte počet riadkov v tabuľke na stránke."
+
+#: gallery_settings.inc:1206,593
+msgid "Search thumbnail settings"
+msgstr "Nastavenia vyhľadávania náhľadov"
+
+#: gallery_settings.inc:1215,602
+msgid "Display thumbnails"
+msgstr "Zobraziť náhľady"
+
+#: gallery_settings.inc:1217,604
+msgid "Display thumbnail images for the search results."
+msgstr "Zobrazí náhľady obrázkov vo výsledkoch hľadania."
+
+#: gallery_settings.inc:1236,623
+msgid ""
+"'Max Size' gives faster image downloading, but the image size \n"
+"          may be smaller than the size defined below. <br />'Exact "
+"Size' may be slower\n"
+"          (as a larger image is downloaded and then scaled by the "
+"browser) but the image\n"
+"          will be guaranteed to be the size defined below. Only "
+"supported for G2.2+."
+msgstr ""
+"'Maximálna veľkosť' umožňuje rýchlejšie stiahnutie obrázka, "
+"ale veľkosť obrázka\r\n"
+"môže byť menšia ako veľkosť definovaná nižšie. <br />'Presná "
+"veľkosť' môže byť pomalšia\r\n"
+"(pretože je stiahnutý väčší obrázok, a potom je ešte "
+"prispôsobený prehliadačom), ale obrázok\r\n"
+"bude vždy presne s rozmermi definovanými nižšie. Podporované iba "
+"pre G2.2+."
+
+#: gallery_settings.inc:1248,635
+msgid ""
+"Sets the size (in pixels) of the longest side of the image\n"
+"          according to the method defined above."
+msgstr ""
+"Nastavte veľkosť najdlhšej strany obrázka (v pixeloch), \r\n"
+"ktorá sa použije s metódou definovanou vyššie."
+
+#: gallery_settings.inc:1283,670
+msgid ""
+"By default the image has a link to the item in the Gallery. This\n"
+"          can be overridden here (or leave empty for the default). Use "
+"'none' for no link, or a\n"
+"          URL to link somewhere else instead."
+msgstr ""
+"Normálne je obrázok prepojený na položku v Galérii. Toto\r\n"
+"môže byť tu zmenené (alebo nechajte políčko prázdne, ak chcete "
+"použiť predvolenú hodnotu).\r\n"
+"Použite 'none', ak nechcete mať na obrázku prepojenie, alebo URL "
+"adresu ak chcete obrázok prepojiť inam."
+
+#: gallery_settings.inc:1301,689
+msgid "Image size must be a number greater than zero."
+msgstr "Rozmer obrázka musí byť číslo väčšie ako 0."
+
+#: gallery_settings.inc:1330,748
+msgid "There is no memory limit restricting your PHP installation."
+msgstr "Nemáte obmedzenú veľkosť pamäte pre PHP."
+
+#: gallery_settings.inc:1336,754
+msgid ""
+"Your PHP is configured to limit the memory to @mem_limit\n"
+"        (memory_limit parameter in php.ini). You must raise this limit "
+"\n"
+"        to at least @min_mem_limitM for proper embedded Gallery2 "
+"operation."
+msgstr ""
+"PHP je nakonfigurované s pamäťovým limitom na @mem_limit \r\n"
+"(parameter memory_limit v php.ini). Aby fungovali operácie "
+"začlenenej Gallery2, tento limit musíte zvýšiť aspoň na "
+"@min_mem_limitM."
+
+#: gallery_settings.inc:1349,767
+msgid ""
+"Your PHP is configured to limit the memory to @mem_limit\n"
+"        (memory_limit parameter in php.ini). This should be fine for "
+"embedded Gallery2 operation."
+msgstr ""
+"PHP je nakonfigurované s pamäťovým limitom na @mem_limit\r\n"
+"(parameter memory_limit v php.ini). To by malo postačovať pre "
+"operácie začlenenej Gallery2."
+
+#: gallery_settings.inc:1366,786
+msgid "Allows images to be included in the Drupal sidebar or in nodes."
+msgstr ""
+"Umožňuje začlenenie obrázkov do bočných líšt a príspevkov "
+"Drupalu."
+
+#: gallery_settings.inc:1372,792
+msgid "Provides a variety of frames around the images."
+msgstr "Poskytuje rôzne rámčeky k obrázkom."
+
+#: gallery_settings.inc:1378,798
+msgid "Allow the Drupal search to also search the Gallery."
+msgstr "Povoľuje Drupalu vyhľadávať aj v Galérii."
+
+#: gallery_settings.inc:1384,804
+msgid "Allow short URLs (clean URLs)."
+msgstr "Povoľuje krátke URL (čisté URL)."
+
+#: gallery_settings.inc:1398
+msgid ""
+"All user registration must take place via Drupal to ensure that the "
+"users\n"
+"        are synchronized between Drupal and Gallery2. This plugin "
+"would allow a user to register\n"
+"        only in Gallery2 and not in Drupal and so should not be used."
+msgstr ""
+"Registrácia všetkých používateľov sa musí udiať "
+"prostredníctvom Drupalu, aby bola istota, že používatelia\r\n"
+"v Drupale a Gallery2 budú synchronizovaný. Toto rozšírenie vykoná "
+"registráciu\r\n"
+"iba v Gallery2 a v Drupale nie, a preto by nemalo byť použité."
+
+#: gallery_settings.inc:1416
+msgid ""
+"Enables the Drupal and Gallery2 sitemaps to be merged which allows "
+"for\n"
+"                   a single sitemap to be sent to Google and other web "
+"search sites."
+msgstr ""
+"Zlúči mapy stránok Drupalu a Gallery2 čo umožní odoslať \r\n"
+"Googlu a ostatným vyhľadávačom len jednu mapu stránky."
+
+#: gallery_settings.inc:1423,833
+msgid "Allows support of the 'Full Name' field in Gallery2."
+msgstr "Zapne podporu poľa 'Celé meno' v Gallery2."
+
+#: gallery_settings.inc:1441,854
+msgid "Gallery2 plugin '@plugin' is not available"
+msgstr "Rozšírenie Gallery s názvom '@plugin' nie je dostupné"
+
+#: gallery_settings.inc:1468,881
+msgid "Status not available"
+msgstr "Stav nie je dostupný"
+
+#: gallery_settings.inc:1497,910
+msgid "Warning"
+msgstr "Varovanie"
+
+#: gallery_settings.inc:1499,912
+msgid "Advisory"
+msgstr "Upozornenia"
+
+#: gallery_settings.inc:1517,930
+msgid "activated"
+msgstr "aktivované"
+
+#: gallery_settings.inc:1521,934
+msgid "deactivated"
+msgstr "deaktivované"
+
+#: gallery_settings.inc:1523,936
+msgid "not installed"
+msgstr "nenainštalované"
+
+#: gallery_user.inc:111,112
+msgid "Error updating Gallery user (username changed)"
+msgstr ""
+"Chyba pri aktualizovaní používateľa Galérie (bolo zmenené "
+"používateľské meno)"
+
+#: gallery_user.inc:120,121
+msgid "Error determining user map state"
+msgstr "Chyba pri získavania stavu priradenia používateľa"
+
+#: gallery_user.inc:130,131
+msgid "Error creating map entry (ExternlIdMapEntry)"
+msgstr "Chyba pri vytvárani záznamu priradenia (ExternlIdMapEntry)"
+
+#: gallery_user.inc:143,144
+msgid "Error updating Gallery user"
+msgstr "Chyba pri aktualizovaní používateľa Galérie"
+
+#: gallery_user.inc:152,153
+msgid "Error removing map entry (ExternlIdMapEntry)"
+msgstr "Chyba pri odstraňovaní záznamu priradenia (ExternlIdMapEntry)"
+
+#: gallery_user.inc:167,168
+msgid "Error creating Gallery user"
+msgstr "Chyba pri vytváraní používateľa Galérie"
+
+#: gallery_user.inc:172,173
+msgid "Error loading newly created Gallery user"
+msgstr "Chyba pri nahrávaní novovytvoreného používateľa Galérie"
+
+#: gallery_user.inc:200,201
+msgid "Error deleting Gallery user"
+msgstr "Chyba pri odstraňovaní používateľa Galérie"
+
+#: gallery_user.inc:210,211
+msgid "Error loading Gallery user"
+msgstr "Chyba pri nahrávaní používateľa Galérie"
+
+#: gallery_user.inc:216,217
+msgid "Error acquiring write lock"
+msgstr "Chyba pri získavaní uzamknutia na zápis"
+
+#: gallery_user.inc:221,222
+msgid "Locking user account failed"
+msgstr "Uzamknutie konta používateľa zlyhalo."
+
+#: gallery_user.inc:251,259
+msgid "Album: @username"
+msgstr "Album: @username"
+
+#: gallery_user.inc:256,265
+msgid "User has not created an album yet"
+msgstr "Používateľ ešte nevytvoril žiaden album"
+
+#: gallery_user.inc:263,273
+msgid "Gallery2-Drupal Sync Status"
+msgstr "Stav synchronizácie Gallery2-Drupal"
+
+#: gallery_user.inc:270,253; gallery.info:0; gallery_menu/gallery_menu.info:0; gallery_profile/gallery_profile.info:0; gallery_g2image/gallery_g2image.info:0
+msgid "Gallery2"
+msgstr "Gallery2"
+
+#: gallery_user.inc:290,297
+msgid "Error fetching user album id"
+msgstr "Chyba pri prevádzaní ID albumu používateľa"
+
+#: gallery_user.inc:368,375
+msgid "Any Error"
+msgstr "Ľubovoľná chyba"
+
+#: gallery_user.inc:369,376
+msgid "Missing from G2"
+msgstr "Chýba v G2"
+
+#: gallery_user.inc:370,377
+msgid "Different Usernames"
+msgstr "Rozdielne používateľské meno"
+
+#: gallery_user.inc:371,378
+msgid "Different Full Names"
+msgstr "Rozdielne celé meno"
+
+#: gallery_user.inc:372,379
+msgid "G2 Full Name missing"
+msgstr "V G2 chýba celé meno"
+
+#: gallery_user.inc:373,380
+msgid "Different E-Mails"
+msgstr "Rozdielne emaily"
+
+#: gallery_user.inc:374,381
+msgid "Different Passwords"
+msgstr "Rozdielne heslá"
+
+#: gallery_user.inc:375,382
+msgid "Imported/Different hash method"
+msgstr "Importované/Rozdielna metóda hash"
+
+#: gallery_user.inc:376,383
+msgid "Roles <> Groups"
+msgstr "Kategórie <> Skupiny"
+
+#: gallery_user.inc:457,463
+msgid "G2 Users"
+msgstr "G2 Používatelia"
+
+#: gallery_user.inc:458,464
+msgid "G2 ExternalIdMap"
+msgstr "ExternalIdMap G2"
+
+#: gallery_user.inc:464,470
+msgid "Error fetching user by username (:name)"
+msgstr ""
+"Chyba pri prevádzaní používateľa podľa používateľského mena "
+"(:name)"
+
+#: gallery_user.inc:472,486,478,492
+msgid "G2 User Import (uid: :uid, name: ':name'): !error"
+msgstr "Import používateľa G2 (uid: :uid, meno: ':name'): !error"
+
+#: gallery_user.inc:498,504
+msgid ""
+"G2 User Import (uid: :uid, name: ':name'): The e-mail address :mail is "
+"already registered."
+msgstr ""
+"Import používateľa G2 (uid: :uid, meno: ':name'): Emailová adresa "
+":mail je už registrovaná."
+
+#: gallery_user.inc:508,514
+msgid "Error fetching groups for user (uid: :uid)"
+msgstr "Chyba pri prevádzaní skupín pre používateľa (uid: :uid)"
+
+#: gallery_user.inc:520,526
+msgid "Error calling isDisabledUsername() for ':name'"
+msgstr "Chyba pri volaní isDisabledUsername() pre ':name'"
+
+#: gallery_user.inc:530,536
+msgid "Error creating Drupal user for G2 user (uid: :uid)"
+msgstr ""
+"Chyba pri vytváraní používateľa Drupalu pre používateľa G2 "
+"(uid: :uid)"
+
+#: gallery_user.inc:560,566
+msgid "Error updating Gallery user (password)"
+msgstr "Chyba pri aktualizovaní používateľa Galérie (hesla)"
+
+#: gallery_user.inc:591,593
+msgid ""
+"G2 User Import (name: ':name'): e-mail address :oldmail changed to "
+":newmail."
+msgstr ""
+"Import používateľa G2 (uid: :uid, meno: ':name'): Emailová adresa "
+":oldmail bola zmenená na :newmail."
+
+#: gallery_user.inc:616,618
+msgid "Error fetching 'GalleryUser' entries from 'ExternalIdMap'"
+msgstr "Chyba pri prevádzaní záznamov 'GalleryUser' z 'ExternalIdMap'"
+
+#: gallery_user_admin.inc:27,21
+msgid "G2ID"
+msgstr "G2ID"
+
+#: gallery_user_admin.inc:30,24
+msgid "Sync Status"
+msgstr "Stav synchronizácie"
+
+#: gallery_user_admin.inc:44,38
+msgid "Error calling 'GalleryCoreApi::isUserInSiteAdminGroup'."
+msgstr "Chyba pri volaní 'GalleryCoreApi::isUserInSiteAdminGroup'."
+
+#: gallery_user_admin.inc:66,61
+msgid "edit G2"
+msgstr "upraviť G2"
+
+#: gallery_user_admin.inc:70,65
+msgid "sync"
+msgstr "synchronizácia"
+
+#: gallery_user_admin.inc:93,88
+msgid "There are no users with the selected status."
+msgstr "Nie sú žiadny používatelia s vybraným stavom."
+
+#: gallery_user_admin.inc:111,106
+msgid "Filter by status"
+msgstr "Filtrovať podľa stavu"
+
+#: gallery_user_admin.inc:119,114
+msgid "Show only users with status"
+msgstr "Zobraziť iba používateľov so stavom"
+
+#: gallery_user_admin.inc:150,167
+msgid "Advanced Sync (Batch operations)"
+msgstr "Rozšírená synchronizácia (Dávkové operácie)"
+
+#: gallery_user_admin.inc:156,173
+msgid "Import users from Gallery2"
+msgstr "Importovať používateľov z Gallery2"
+
+#: gallery_user_admin.inc:159,176
+msgid ""
+"Use this option to import users from an existing Gallery2 install into "
+"Drupal."
+msgstr ""
+"Túto možnosť použite na importovanie používateľov z už "
+"existujúcej inštalácie Gallery2 do Drupalu."
+
+#: gallery_user_admin.inc:163,180
+msgid "Synchronize (export) all existing users"
+msgstr "Synchronizovať (exportovať) všetkých existujúcich používateľov"
+
+#: gallery_user_admin.inc:166,183
+msgid "Use this option to sync all users between Drupal and Gallery2."
+msgstr ""
+"Túto možnosť použite na synchronizovanie používateľov medzi "
+"Drupalom a Gallery2."
+
+#: gallery_user_admin.inc:171,188
+msgid "Switch Drupal to 'offline mode' for operation"
+msgstr "Prepnúť Drupal počas operácie do 'offline módu'"
+
+#: gallery_user_admin.inc:188,206
+msgid "No option selected."
+msgstr "Nebola vybraná voľba."
+
+#: gallery_user_admin.inc:220,259
+msgid "Error getting number of G2 users"
+msgstr "Chyba pri získavaní počtu používateľov G2"
+
+#: gallery_user_admin.inc:235,273
+msgid "Error fetching G2 usernames"
+msgstr "Chyba pri prevádzaní používateľských mien G2"
+
+#: gallery_user_admin.inc:260,320
+msgid "Error emptying 'ExternalIdMap'"
+msgstr "Chaba pri vyprázdňovaní 'ExternalIdMap'"
+
+#: gallery_user_admin.inc:304
+msgid "Importing Gallery2 users into Drupal ..."
+msgstr "Importovanie používateľov Gallery2 do Drupalu ..."
+
+#: gallery_user_admin.inc:308
+msgid "Synchronizing Drupal and Gallery2 users ..."
+msgstr "Synchronizovanie používateľov Drupalu a Gallery2 ..."
+
+#: gallery_user_admin.inc:312
+msgid "Performing batch operation ..."
+msgstr "Vykonávanie dávkovej operácie ..."
+
+#: gallery_user_admin.inc:328,330,358,360
+msgid "The following messages occured:"
+msgstr "Vyskytlo sa nasledujúce hlásenie:"
+
+#: gallery_user_admin.inc:329,359
+msgid "Invalid user items were skipped."
+msgstr "Neplatné používateľské položky boli vynechané."
+
+#: gallery_user_admin.inc:336,363
+msgid "User synchronization successfully completed."
+msgstr "Synchronizácia používateľov bola úspešne dokončená."
+
+#: gallery_user_admin.inc:339,354
+msgid "User synchronization (partially) failed."
+msgstr "Synchronizácia používateľov (čiastočne) zlyhala."
+
+#: gallery_user_admin.inc:401; gallery_profile/gallery_profile.module:93,27
+msgid "User Profile"
+msgstr "Profil používateľa"
+
+#: gallery_user_admin.inc:407,389; gallery_profile/gallery_profile.module:100
+msgid "Hide Gallery2 section in profiles"
+msgstr "Skryť  časť Gallery2 v profiloch"
+
+#: gallery_user_admin.inc:409,391; gallery_profile/gallery_profile.module:102
+msgid ""
+"Hide the Gallery2 section (i.e. Gallery2-Drupal Sync Status) on the "
+"user profile pages."
+msgstr ""
+"Skryť časť Gallery2 (napr. Stav synchronizácie Gallery2-Drupal) na "
+"stránkach používateľských profilov."
+
+#: gallery_user_admin.inc:415,228,397
+msgid "User Synchronization"
+msgstr "Synchronizácia používateľov"
+
+#: gallery_user_admin.inc:425,407
+msgid "Drupal 'admin' role"
+msgstr "Kategória 'adminov' Drupalu"
+
+#: gallery_user_admin.inc:428,410
+msgid ""
+"Select the Drupal role equivalent to Gallery2's 'Site Admin' group (or "
+"'none' to disable this\n"
+"                         feature). The roles 'anonymous' and "
+"'authenticated' are not available for selection."
+msgstr ""
+"Vyberte kategóriu používateľov Drupalu ekvivalentnú skupine "
+"'Spravcovia' v Gallery2 (alebo 'žiadne', ak chcete \r\n"
+"túto funkciu vypnúť). Kategórie 'neprihlásený používateľ' a "
+"'prihlásený používateľ' nie sú vo výbere k dispozícii."
+
+#: gallery_user_admin.inc:434,416
+msgid "Lock G2 accounts"
+msgstr "Uzamknúť G2 kontá"
+
+#: gallery_user_admin.inc:436,418
+msgid ""
+"Locking G2 account prevents users from changing their details "
+"(password, email, ...) in G2."
+msgstr ""
+"Uzamknutím G2 účtov, zabránite používateľom v G2 meniť ich "
+"nastavenia (heslo, email, ...)."
+
+#: gallery_user_admin.inc:442,424
+msgid ""
+"Full names in Gallery2 can be supported by using the profile module\n"
+"            (!profile_status) with a 'Full Name' profile field as "
+"defined below."
+msgstr ""
+"Celé mená môžu byť v Gallery2 povolené použitím modulu "
+"Profily\r\n"
+"(!profile_status) s poľom 'Celé meno' definovaným nižšie."
+
+#: gallery_user_admin.inc:447,429
+msgid ""
+" However the profile module is disabled, so this functionality is\n"
+"      not available and the options are disabled."
+msgstr ""
+"Kvôli tomu, že je modul Profile vypnutý, táto funkcia \r\n"
+"je nedostupná a jej nastavenia sú vypnuté."
+
+#: gallery_user_admin.inc:452,434
+msgid "Full Name settings"
+msgstr "Nastavenia pre celé meno"
+
+#: gallery_user_admin.inc:461,443
+msgid "Enable Full Name support"
+msgstr "Zapnúť podoru celého mena"
+
+#: gallery_user_admin.inc:465,447
+msgid ""
+"Use full name from profile module in Gallery2 user data. Note that\n"
+"                           enabling/disabling this only updates "
+"Gallery2 user data when the\n"
+"                           Drupal user is updated or if a user sync is "
+"performed."
+msgstr ""
+"Použije celé mená z modulu Profily v používateľských dátach "
+"Gallery2. Všimnite si že\r\n"
+"zapnutie/vypnutie tejto možnosti aktualizuje používateľské dáta "
+"iba keď je aktualizovaný\r\n"
+"používateľ Drupalu alebo ak je vykonaná synchronizácia."
+
+#: gallery_user_admin.inc:479,461
+msgid "Full name profile category"
+msgstr "Kategória profilu, v ktorom je celé meno"
+
+#: gallery_user_admin.inc:482,464
+msgid ""
+"Name of the category containing the 'Full Name' field in profile "
+"module."
+msgstr "Meno kategórie obsahujúce pole 'Celé meno' v module Profily."
+
+#: gallery_user_admin.inc:491,473
+msgid "Full name profile field"
+msgstr "Pole profilu obsahujúce celé meno"
+
+#: gallery_user_admin.inc:494,476
+msgid "Name of 'Full Name' field in profile module."
+msgstr "Meno poľa 'Celé meno' v module Profily."
+
+#: gallery_user_admin.inc:502,484
+msgid "Advanced Sync - Import"
+msgstr "Rozšírená synchronizácia - Import"
+
+#: gallery_user_admin.inc:509,491
+msgid "Import Gallery2 groups"
+msgstr "Importovať skupiny z Gallery2"
+
+#: gallery_user_admin.inc:511,493
+msgid "Import Gallery2 groups into Drupal roles (in addition to users)."
+msgstr ""
+"Importovať skupiny Gallery2 do kategórií Drupalu (okrem "
+"používateľov)"
+
+#: gallery_user_admin.inc:516,498
+msgid "Override existing Drupal users"
+msgstr "Nahradiť existujúcich používateľov Drupalu"
+
+#: gallery_user_admin.inc:518,500
+msgid ""
+"Replaces user details (password, email, groups, ...) of existing "
+"Drupal users with Gallery2 imported values."
+msgstr ""
+"Nahradí položky existujúcich používateľov (heslo, email, "
+"skupinu, ...) Drupalu importovanými hodnotami používateľov "
+"Gallery2."
+
+#: gallery_user_admin.inc:523,505
+msgid "Auto-resolve email address conflicts"
+msgstr "Automaticky vyriešiť nesúlad emailových adries"
+
+#: gallery_user_admin.inc:526,508
+msgid "Duplicate e-mail addresses"
+msgstr "Duplicitné emailové adresy"
+
+#: gallery_user_admin.inc:527,509
+msgid "Invalide e-mail addresses"
+msgstr "Nesprávne emailové adresy"
+
+#: gallery_user_admin.inc:529,511
+msgid ""
+"Renames duplicate/invalid e-mail addresses to username@drupaldomain.\n"
+"                         If this option is disabled you get a list of "
+"users to handle conflicts yourself."
+msgstr ""
+"Premenuje duplicitné/neplatné emailové adresy na "
+"pouzivatel@domenadrupalu.\r\n"
+"Ak sú tieto možnosti vypnuté, zobrazí sa zoznam používateľov, "
+"pri ktorých môžete problém vyriešiť ručne."
+
+#: gallery_user_admin.inc:536,518
+msgid "Advanced Sync - Export (Synchronize)"
+msgstr "Rozšírená synchronizácia - Export"
+
+#: gallery_user_admin.inc:543,525
+msgid "Remap all users"
+msgstr "Znova priradiť všetkých používateľov"
+
+#: gallery_user_admin.inc:545,527
+msgid ""
+"Remaps all users instead of missing or mismatching ones only.\n"
+"                         This will completely flush Gallery2's "
+"'externalIdMap'."
+msgstr ""
+"Znova priradí všetkých používateľov, miesto toho aby opravoval "
+"chýbajúcich alebo nesúhlasiacich jedincov. \r\n"
+"Táto možnosť vyprázdni 'externalIdMap' z Gallery2."
+
+#: gallery_user_admin.inc:565,548
+msgid ""
+"Full Name settings have changed. You should now synchronize\n"
+"                            your users on the <a "
+"href=\"@user-admin\">Gallery users</a> page."
+msgstr ""
+"Nastavenia celého mena boli zmenené. Teraz by ste mali "
+"synchronizovať\r\n"
+"používateľov na stránke<a href=\"@user-admin\">Používatelia "
+"Galérie</a>."
+
+#: gallery.module:37,107
+msgid "Visit your embedded Gallery2."
+msgstr "Navštívte začlenenú Gallery2."
+
+#: gallery.module:48,116
+msgid "Configure settings for embedding Gallery2 into Drupal."
+msgstr "Nastavenie parametrov pre začlenenie Gallery2 do Drupalu."
+
+#: gallery.module:53,124
+msgid "Install"
+msgstr "Inštalácia"
+
+#: gallery.module:79; gallery_g2image/gallery_g2image.module:33
+msgid "G2Image"
+msgstr "G2Image"
+
+#: gallery.module:106,179
+msgid "Gallery users"
+msgstr "Používatelia Galérie"
+
+#: gallery.module:107
+msgid "Gallery2 user integration and synchronization"
+msgstr "Integrovanie a synchronizácia používateľov Gallery2"
+
+#: gallery.module:113,187
+msgid "User Status"
+msgstr "Stav používateľov"
+
+#: gallery.module:120,192
+msgid "Advanced Sync"
+msgstr "Rozšírená synchronizácia"
+
+#: gallery.module:129,202
+msgid "User Settings"
+msgstr "Nastavenia používateľov"
+
+#: gallery.module:313,410
+msgid "Gallery2 filter"
+msgstr "Filter Gallery2"
+
+#: gallery.module:315,412
+msgid "Allow users to easily reference Gallery2 items from nodes."
+msgstr ""
+"Umožňuje používateľom jednoducho odkázať na položky Gallery2 z "
+"uzlov."
+
+#: gallery.module:463,516
+msgid ""
+"Error loading the Gallery2 Sitemap. Make sure the 'Sitemap' plugin is "
+"enabled in Gallery2."
+msgstr ""
+"Chyba pri načítavaní mapy stránky Gallery2. Presvedčte sa či je "
+"v Gallery2 zapnuté rozšírenie Sitemap."
+
+#: gallery.module:468,521; gallery_menu/gallery_menu.module:83,136
+msgid "Error calling getDefaultAlbumId()"
+msgstr "Chyba pri volaní getDefaultAlbumId()"
+
+#: gallery.module:479,532
+msgid "Error getting sitemap from Gallery2."
+msgstr "Chyba pri získavaní mapy stránky z Gallery2."
+
+#: gallery.module:22,56
+msgid "administer gallery settings"
+msgstr "administrácia nastavení Galérie"
+
+#: gallery.module:22,56
+msgid "access gallery"
+msgstr "prístup ku Galérii"
+
+#: gallery.module:22; gallery_g2image/gallery_g2image.module:23
+msgid "access standalone g2image"
+msgstr "prístup k samostatnému G2Image"
+
+#: gallery.info:0
+msgid "Embeds Gallery2 into Drupal."
+msgstr "Začlení Gallery2 do Drupalu."
+
+#: gallery_menu/gallery_menu.module:73,126
+msgid "Error fetching item parents"
+msgstr "Chyba pri prevádzaní parametrov položky"
+
+#: gallery_menu/gallery_menu.module:178,264
+msgid "Gallery menu settings"
+msgstr "Nastavenia menu Galérie"
+
+#: gallery_menu/gallery_menu.module:185
+msgid "Enable URL Rewrite mode"
+msgstr "Povoliť mód prepisovania URL"
+
+#: gallery_menu/gallery_menu.module:187
+msgid ""
+"By default gallery menu paths look like "
+"'gallery/album_id/subalbum_id'. However if URL Rewrite\n"
+"                         plugin is enabled in G2 you can force the "
+"module to use the same paths as generated by G2 internally\n"
+"                         (i.e. 'gallery/v/album/subalbum')."
+msgstr ""
+"Normálne cesty menu Galérie vyzerajú takto: "
+"'gallery/album_id/subalbum_id'. Avšak ak je v G2 zapnuté "
+"rozšírenie URL Rewrite\r\n"
+"môžete modul prinútiť používať rovnaké cesty ako generuje G2 "
+"\r\n"
+"(napr.: 'gallery/v/album/subalbum')."
+
+#: gallery_menu/gallery_menu.module:194,288
+msgid "Depth of Gallery albums"
+msgstr "Hĺbka albumov Galérie"
+
+#: gallery_menu/gallery_menu.module:203
+msgid "Menu Items"
+msgstr "Položky menu"
+
+#: gallery_menu/gallery_menu.module:278
+msgid "Album"
+msgstr "Album"
+
+#: gallery_menu/gallery_menu.module:0
+msgid "gallery_menu"
+msgstr "gallery_menu"
+
+#: gallery_menu/gallery_menu.info:0
+msgid "Gallery Menu"
+msgstr "Menu Galérie"
+
+#: gallery_menu/gallery_menu.info:0
+msgid "Gallery2 albums => Drupal menu items"
+msgstr "Albumy Gallery2 => Položky v Drupal menu"
+
+#: gallery_profile/gallery_profile.module:29,58
+msgid "Album: %username"
+msgstr "Album: %username"
+
+#: gallery_profile/gallery_profile.module:54,107
+msgid "Title of Gallery2 profile section"
+msgstr "Názov časti profilu Gallery2"
+
+#: gallery_profile/gallery_profile.module:58,111
+msgid "Title of the Gallery2 section on profile pages."
+msgstr "Názov časti Gallery2 na stránkach profilov."
+
+#: gallery_profile/gallery_profile.module:63,116
+msgid "Hide sync status message"
+msgstr "Skryť správu o stave synchronizácie"
+
+#: gallery_profile/gallery_profile.module:65,118
+msgid "Hide 'Gallery2-Drupal Sync Status' message in the profile."
+msgstr "Skryť správu 'Stav synchronizácie Gallery2-Drupal' v profile."
+
+#: gallery_profile/gallery_profile.module:71
+msgid "Useralbum mode"
+msgstr "Mód používateľského albumu"
+
+#: gallery_profile/gallery_profile.module:74,127
+msgid "Show link to useralbum"
+msgstr "Zobraziť odkaz na album používateľa"
+
+#: gallery_profile/gallery_profile.module:75
+msgid "Show useralbum gallery/images"
+msgstr "Zobraziť galériu/obrázky albumu používateľa"
+
+#: gallery_profile/gallery_profile.module:77
+msgid ""
+"By default a link to the useralbum is shown. But you may also insert a "
+"gallery of\n"
+"                           random/recent images from the useralbum "
+"into the user profile."
+msgstr ""
+"Normálne je prepojenie na album používateľa zobrazené, ale "
+"môžete chcieť vložiť aj galériu \r\n"
+"náhodných/nedávnych obrázkov z albumu používateľa do "
+"používateľského profilu."
+
+#: gallery_profile/gallery_profile.module:98
+msgid "Useralbum"
+msgstr "Album používateľa"
+
+#: gallery_profile/gallery_profile.module:101
+msgid ""
+"The profile useralbum requires the Gallery2 Image Block plugin "
+"(!imageblock_status)\n"
+"                         and optionally the Gallery2 Image Frame "
+"plugin (!imageframe_status)."
+msgstr ""
+"Profil používateľského albumu vyžaduje rozšírenie Gallery2 s "
+"názvom Blok obrázka (!imageblock_status)\r\n"
+"a voliteľne aj rozšírenie Rámček obrázkov (!imageframe_status)."
+
+#: gallery_profile/gallery_profile.module:108; gallery_block_admin.inc:183
+msgid " However the Image Block plugin is unavailable."
+msgstr " Kvôli tomu, že rozšírenie Blok obrázku nie je dostupné."
+
+#: gallery_profile/gallery_profile.module:123
+msgid "Enter the number of columns in the useralbum."
+msgstr "Vložte počet stĺpcov v albume."
+
+#: gallery_profile/gallery_profile.module:131
+msgid "Enter the number of rows in the useralbum."
+msgstr "Vložte počet riadkov v albume."
+
+#: gallery_profile/gallery_profile.module:158
+msgid ""
+"'Max Size' gives faster image downloading, but the image size\n"
+"                         may be smaller than the size defined below. "
+"<br />'Exact Size' may be slower\n"
+"                         (as a larger image is downloaded and then "
+"scaled by the browser) but the image\n"
+"                         will be guaranteed to be the size defined "
+"below. Only supported for G2.2+."
+msgstr ""
+"'Maximálna veľkosť' umožňuje rýchlejšie stiahnutie obrázka, "
+"ale veľkosť obrázka\r\n"
+"môže byť menšia ako veľkosť definovaná nižšie. <br />'Presná "
+"veľkosť' môže byť pomalšia\r\n"
+"(pretože je stiahnutý väčší obrázok, a potom je ešte "
+"prispôsobený prehliadačom), ale obrázok\r\n"
+"bude vždy presne s rozmermi definovanými nižšie. Podporované iba "
+"pre G2.2+."
+
+#: gallery_profile/gallery_profile.module:170
+msgid ""
+"Sets the size (in pixels) of the longest side of the image according\n"
+"                        to the method defined above."
+msgstr ""
+"Nastavte veľkosť najdlhšej strany obrázka (v pixeloch), ktorá sa "
+"použije \r\n"
+"s metódou definovanou vyššie."
+
+#: gallery_profile/gallery_profile.module:211; gallery_block_admin.inc:308
+msgid ""
+"By default the image has a link to the item in the Gallery. This\n"
+"      can be overridden here (or leave empty for the default). Use "
+"'none' for no link, or a URL\n"
+"      to link somewhere else instead."
+msgstr ""
+"Normálne je obrázok prepojený na položku v Galérii. Toto\r\n"
+"môže byť tu zmenené (alebo nechajte políčko prázdne, ak chcete "
+"použiť predvolenú hodnotu).\r\n"
+"Použite 'none', ak nechcete mať na obrázku prepojenie, alebo URL "
+"adresu ak chcete obrázok prepojiť inam."
+
+#: gallery_profile/gallery_profile.module:0
+msgid "gallery_profile"
+msgstr "gallery_profile"
+
+#: gallery_profile/gallery_profile.info:0
+msgid "Gallery Profile"
+msgstr "Profil Galérie"
+
+#: gallery_profile/gallery_profile.info:0
+msgid ""
+"Customize user profiles to include Gallery2 content (e.g. useralbum "
+"images)."
+msgstr ""
+"Prispôsobí používateľské profily aby obsahovali obsah z Gallery2 "
+"(napr. obrázky používateľských albumov)"
+
+#: gallery_base.inc:119
+msgid "Init parameters"
+msgstr "Inicializačné parametre"
+
+#: gallery_base.inc:171
+msgid "Failed to register event listeners."
+msgstr "Zlyhala registrácia načúvačov udalostí."
+
+#: gallery_base.inc:239
+msgid "G2 Debug Buffer"
+msgstr "Pamäť pre ladenie G2"
+
+#: gallery_base.inc:439
+msgid "Error calling hasItemPermission()"
+msgstr "Chyba pri volaní hasItemPermission()"
+
+#: gallery_base.inc:509
+msgid "Head [Meta]"
+msgstr "Head [Meta]"
+
+#: gallery_base.inc:531
+msgid "Head [CSS]"
+msgstr "Head [CSS]"
+
+#: gallery_base.inc:551
+msgid "Head [Javascript]"
+msgstr "Head [Javascript]"
+
+#: gallery_base.inc:578
+msgid "Context cache"
+msgstr "Kontextová vyrovnávacia pamäť"
+
+#: gallery_base.inc:614
+msgid "Error retrieving available blocks list"
+msgstr "Chyba pri prevádzaní zoznamu dostupných blokov"
+
+#: gallery_base.inc:743
+msgid "Gallery Debug"
+msgstr "Ladenie Galérie"
+
+#: gallery_block.inc:22
+msgid "Gallery Block @id"
+msgstr "Blok Glalérie @id"
+
+#: gallery_block.inc:196
+msgid "Error trying to get block."
+msgstr "Chyba pri pokuse získať blok."
+
+#: gallery_block_admin.inc:20,50
+msgid "Cache disabled"
+msgstr "Pamäť vypnutá"
+
+#: gallery_block_admin.inc:21,51
+msgid "Cache per user and page"
+msgstr "Pamäť na používateľa a stránku"
+
+#: gallery_block_admin.inc:22,52
+msgid "Cache per role and page"
+msgstr "Pamäť na kategóriu používateľov a stránku"
+
+#: gallery_block_admin.inc:24
+msgid ""
+"Configure cache settings for this block. It's usually safe to set this "
+"to 'Cache per user and page'."
+msgstr ""
+"Konfiguruje možnosti vyrovnávacej pamäte pre tento blok. Túto "
+"možnosť je zvyčajne bezpečné nastaviť na možnosť 'Pamäť na "
+"používateľa a stránku'."
+
+#: gallery_block_admin.inc:53
+msgid "Cache per user"
+msgstr "Pamäť na používateľa"
+
+#: gallery_block_admin.inc:54
+msgid "Cache per role"
+msgstr "Pamäť na kategóriu používateľov"
+
+#: gallery_block_admin.inc:55
+msgid "Cache globally (use carefully)"
+msgstr "Globálna pamäť (používať opatrne)"
+
+#: gallery_block_admin.inc:83
+msgid ""
+"Select the Gallery2 block to be displayed in this Drupal block. In "
+"previous versions only\n"
+"                         'ImageBlock' was available, but now you can "
+"embed any Gallery2 block in Drupal."
+msgstr ""
+"Vyberte blok Gallery2, ktorý sa má zobraziť v tomto bloku Drupalu. "
+"V predchádzajúcej verzii\r\n"
+"bol dostupný len 'ImageBlock', ale teraz už môžete začleniť "
+"ktorýkoľvek blok z Gallery 2 do Drupalu."
+
+#: gallery_block_admin.inc:91
+msgid "@block settings"
+msgstr "Nastavenia @block"
+
+#: gallery_block_admin.inc:102
+msgid "Save and Edit"
+msgstr "Uložiť a upraviť"
+
+#: gallery_block_admin.inc:115
+msgid ""
+"Configure cache settings for this block. Unless random images are used "
+"you can safely keep this to\n"
+"                'Cache per user and page'. If you dont have per-user "
+"permissions configured in your gallery you\n"
+"                can improve performance by setting to 'Cache per role "
+"and page'."
+msgstr ""
+"Konfiguruje možnosti vyrovnávacej pamäte pre tento blok. Ak "
+"nepoužijete náhodné obrázky, tak môžete bezpečne použiť\r\n"
+"'Pamäť na používateľa a stránku'. Ak nemáte v Galérii "
+"nastavené oprávnenia podľa používateľov, môžete výkon "
+"zlepšiť\r\n"
+"nastavením 'Pamäť na kategóriu používateľov a stránku'."
+
+#: gallery_block_admin.inc:175
+msgid ""
+"The @title requires the Gallery2 Image Block plugin "
+"(!imageblock_status) and optionally\n"
+"                             the Gallery2 Image Frame plugin "
+"(!imageframe_status)."
+msgstr ""
+"@title vyžaduje rozšírenie Gallery2 s názvom Blok obrázka "
+"(!imageblock_status) \r\n"
+"a voliteľne aj rozšírenie Rámček obrázkov (!imageframe_status)."
+
+#: gallery_block_admin.inc:199
+msgid "Select the number of columns in the grid."
+msgstr "Vyberte počet stĺpcov v mriežke."
+
+#: gallery_block_admin.inc:207
+msgid "Select the number of rows in the grid."
+msgstr "Vyberte počet riadkov v mriežke."
+
+#: gallery_block_admin.inc:235
+msgid ""
+"Enter the Gallery image or album ID (or blank). If an album or item ID "
+"is specified, random\n"
+"                         images will only be selected from that album "
+"and its sub-albums. If 'user' (or 'user:123')\n"
+"                         is entered, items will be taken from the "
+"current (or specified) user's useralbum."
+msgstr ""
+"Zadajte ID obrázka alebo albumu Galérie (alebo nechajte prázdne). "
+"Ak je pole ID albumu alebo položky vyplnené,\r\n"
+"obrázky sa budú náhodne vyberať iba z albumu a podriadených "
+"albumov s daným ID. Ak zadáme 'user' (alebo 'user:123'),\r\n"
+"položky sa vyberú iba z aktuálnych (alebo zadaných) albumov "
+"používateľov."
+
+#: gallery_block_admin.inc:256
+msgid ""
+"'Max Size' gives faster image downloading, but the image size\n"
+"                         may be smaller than the size defined below. "
+"<br />'Exact Size' may be slower\n"
+"                         (as a larger image is downloaded and then "
+"scaled by the browser) but the image\n"
+"                         will be guaranteed to be the size defined "
+"below."
+msgstr ""
+"'Maximálna veľkosť' umožňuje rýchlejšie stiahnutie obrázka, "
+"ale veľkosť obrázka\r\n"
+"môže byť menšia ako veľkosť definovaná nižšie. <br />'Presná "
+"veľkosť' môže byť pomalšia\r\n"
+"(pretože je stiahnutý väčší obrázok, a potom je ešte "
+"prispôsobený prehliadačom), ale obrázok\r\n"
+"bude vždy presne s rozmermi definovanými nižšie."
+
+#: gallery_block_admin.inc:341
+msgid ""
+"Image size must be a number greater than ten pixels.\n"
+"                              (The value has been updated to '10' for "
+"your convenience.)"
+msgstr ""
+"Rozmer obrázka musí byť číslo väčšie ako 10 pixelov.\r\n"
+"(Hodnota bude zmenená na '10'.)"
+
+#: gallery_help.inc:27
+msgid ""
+"You may link to Gallery2 items on this site <a href=\"@url\">using a "
+"special syntax</a>."
+msgstr ""
+"Na tejto stránke môžete odkázať na položky Gallery2 <a "
+"href=\"@url\">použitím špeciálnej syntaxe</a>."
+
+#: gallery_help.inc:48
+msgid ""
+"<p><strong>A serious error has occured. This can happen due to an "
+"incorrect configuration or a bug in the\n"
+"            gallery module. If you plan to submit a bug report to the "
+"issue queue at <a href=\"@gallery-issues\">drupal.org</a>\n"
+"            consider to include the <a href=\"@report\">pre-generated "
+"report file</a>.</strong></p>"
+msgstr ""
+"<p><strong>Vyskytla sa vážna chyba. Môže to byť následok "
+"nesprávnej konfigurácie alebo chyby \r\n"
+"v module Galéria. Ak sa chystáte ohlásiť chybu do fronty "
+"problémov na stránke <a href=\"@gallery-issues\">drupal.org</a> \r\n"
+"nezabudnite pripojiť <a href=\"@report\">predgenerovaný súbor "
+"hlásenia</a>.</strong></p>"
+
+#: gallery_install.inc:23
+msgid "PHP Memory Limit"
+msgstr "Obmedzenie pamäte PHP"
+
+#: gallery_install.inc:28
+msgid "Gallery2 locations"
+msgstr "Umiestnenie Gallery2"
+
+#: gallery_install.inc:33,978
+msgid "Drupal Modules / Gallery2 Plugins"
+msgstr "Moduly Drupalu / Rozšírenia Gallery2"
+
+#: gallery_install.inc:38
+msgid "Clean URL / URL Rewrite"
+msgstr "Čisté URL / Prepisovanie URL"
+
+#: gallery_install.inc:43,781
+msgid "Initial User Synchronization"
+msgstr "Počiatočná synchronizácia používateľov"
+
+#: gallery_install.inc:72
+msgid "Critical errors are present."
+msgstr "Vyskytujú sa kritické chyby."
+
+#: gallery_install.inc:87
+msgid "Step"
+msgstr "Krok"
+
+#: gallery_install.inc:99
+msgid ""
+"Correct configuration of the following items is essential for the\n"
+"                         embedded gallery to function properly."
+msgstr ""
+"Oprava konfigurácie nasledujúcich položiek je nevyhnutná \r\n"
+"k úspešnému začleneniu Galérie do systému."
+
+#: gallery_install.inc:123
+msgid "Gallery2 location settings"
+msgstr "Nastavenia umiestnenia Gallery2"
+
+#: gallery_install.inc:123,318
+msgid "Auto Configuration"
+msgstr "Automatická konfigurácia"
+
+#: gallery_install.inc:123,318
+msgid "Manual Configuration"
+msgstr "Manuálne nastavenie"
+
+#: gallery_install.inc:126
+msgid ""
+"Overview of your Gallery2 location settings as specified or "
+"autodetected during install."
+msgstr ""
+"Prehľad nastavených ciest Gallery2 tak ako boli zadané alebo "
+"automaticky zistené počas inštalácie."
+
+#: gallery_install.inc:146
+msgid "Gallery base"
+msgstr "Základná adresa pre Galériu"
+
+#: gallery_install.inc:160
+msgid "Clean URLs / URL Rewrite settings"
+msgstr "Čisté URL / Nastavenia prepisovania URL"
+
+#: gallery_install.inc:163
+msgid "Overview of your URL Rewrite settings as specified during install."
+msgstr ""
+"Prehľad nastavených ciest pre prepisovanie URL  tak ako boli zadané "
+"počas inštalácie."
+
+#: gallery_install.inc:180
+msgid ""
+"Your initial user synchronization has been completed already.<br /> If "
+"you\n"
+"                                           want to resync all your "
+"users or you want to import users from an existing\n"
+"                                           Gallery2 setup, you can "
+"always use the <a href= \"@gallery-usersync\">Advanced\n"
+"                                           Sync</a> options in the "
+"Gallery user administration."
+msgstr ""
+"Počiatočná synchronizácia používateľov bola už dokončená.<br "
+"/>Ak \r\n"
+"chcete znova zosynchronizovať všetkých používateľov alebo ich "
+"naimportovať z existujúcej \r\n"
+"Gallery2, môžete použiť možnosť <a "
+"href=\"@gallery-usersync\">Rozšírená\r\n"
+"synchronizácia</a> v ponuke Používatelia Galérie."
+
+#: gallery_install.inc:216
+msgid ""
+"If you install the <a href=\"@url\">advanced help</a> module, Gallery "
+"module will provide more\n"
+"                            and better help."
+msgstr ""
+"Ak nainštalujete modul<a href=\"@url\">Advanced help</a>, modul "
+"Galérie vám poskytne \r\n"
+"väčšiu a lepšiu pomoc."
+
+#: gallery_install.inc:220
+msgid "Install Tutorial"
+msgstr "Návod na inštaláciu"
+
+#: gallery_install.inc:221
+msgid "Dont know where to start? Try the \"!install-help\" page."
+msgstr "Neviete kde začať? Pozrite si stránku \"!install-help\"."
+
+#: gallery_install.inc:320
+msgid ""
+"Enter the 'Gallery2 URL or URI' and click 'Test location settings'\n"
+"         to automatically configure the settings needed for embedding "
+"Gallery2 into Drupal. Note that\n"
+"         the auto-config will not work for all host configurations. If "
+"you have tried it with a value\n"
+"         you know is correct and it did not work then just use the "
+"manual configuration instead."
+msgstr ""
+"Ak chcete automaticky nakonfigurovať nastavenia potrebné \r\n"
+"pre začlenenie Gallery2 do Drupalu zadajte 'URL alebo URI adresa "
+"Gallery2' a kliknite 'Test nastavení umiestnenia'.\r\n"
+"Automatická konfigurácia nefunguje pri všetkých konfiguráciách "
+"počítača. Ak ste ju skúšali s hodnotami,\r\n"
+"o ktorých ste si istí, že sú správne a oni nefungujú, použite "
+"manuálne nastavenie."
+
+#: gallery_install.inc:324
+msgid ""
+"Enter the 'Gallery2 URL or URI' and 'Gallery2 filesystem path' and "
+"then click\n"
+"         'Test location settings'. This will check and configure the "
+"settings needed for embedding\n"
+"         Gallery2 into Drupal."
+msgstr ""
+"Zadajte 'URL alebo URI adresa Gallery2' a 'Cesta ku Gallery2 v "
+"súborovom systéme', a potom kliknite \r\n"
+"na 'Test nastavení umiestnenia'. To skontroluje a nakonfiguruje "
+"nastavenia potrebné pre začlenenie\r\n"
+"Gallery2 do Drupalu."
+
+#: gallery_install.inc:356,417
+msgid ""
+"URL or URI of the G2 standalone location. This can be either the full "
+"URL to Gallery2\n"
+"                           (e.g. http://www.example.com/gallery2) or "
+"the path from docroot to the Gallery2 directory\n"
+"                           (e.g. /gallery2). If using a URI the "
+"protocol/hostname are both optional."
+msgstr ""
+"URL alebo URI adrasa umiestnenia samostatnej G2. Toto môže byť buď "
+"celá URL adresa ku Gallery2 \r\n"
+"(napr.: http://www.priklad.sk/gallery2) alebo cesta od základnej "
+"adresy k priečinku \r\n"
+"Gallery2 (napr.: /gallery2). Ak použijete URI adresu protokol a "
+"adresa počítača sú voliteľné."
+
+#: gallery_install.inc:388,449
+msgid "Gallery base (optional)"
+msgstr "Základná adresa pre Galériu (voliteľne)"
+
+#: gallery_install.inc:392,453
+msgid ""
+"Drupal path to embedded Gallery. This option defaults to 'gallery' and "
+"the embedded gallery\n"
+"                           will be located at '@default-base'."
+msgstr ""
+"Drupal cesta k začlenenej Galérii. Táto voľba je normálne "
+"'gallery' a bude umiestnená do '@default-base'."
+
+#: gallery_install.inc:429
+msgid ""
+"The filesystem path of your Gallery2 directory. This can be either an "
+"absolute path\n"
+"                           (e.g. /home/mysite/htdocs/gallery2) or "
+"relative to the root directory of your Drupal\n"
+"                           installation (e.g. ../gallery2)."
+msgstr ""
+"Cesta k priečinku Gallery2 vrámci súborového systému. Toto môže "
+"byť buď absolútna cesta \r\n"
+"(napr.: /home/mysite/htdocs/gallery2) alebo relatívna cesta ku "
+"koreňovému priečinku \r\n"
+"inštalácie Drupalu (napr.: ../gallery2)."
+
+#: gallery_install.inc:441
+msgid ""
+"URI to access G2 via Drupal. Don't worry if you are using clean urls "
+"in Drupal and this\n"
+"                           still ends in 'index.php?q=gallery'. This "
+"is needed to get the Gallery2 URL rewrite module\n"
+"                           to work correctly and will not be visible."
+msgstr ""
+"URI adresa na prístup ku G2 prostredníctvom Drupalu. Nebojte sa o "
+"správnu funkciu čistých URL v Drupale \r\n"
+"ak sa adresa stále končí 'index.php?q=gallery'. Bude potrebné "
+"správne spojazdniť rozšírenie \r\n"
+"Gallery2 s názvom URL rewrite a potom budú adresy čisté."
+
+#: gallery_install.inc:545
+msgid ""
+"There are errors in your plugin configuration. Enable/Disable the\n"
+"                       respective plugins to meet the requirements."
+msgstr ""
+"V konfigurácii rozšírení sú chyby. Zapnite/Vypnite príslušné "
+"rozšírenia aby ste zistili požiadavky."
+
+#: gallery_install.inc:550
+msgid "Check Plugins status again"
+msgstr "Znovu skontrolovať stav pluginov"
+
+#: gallery_install.inc:591
+msgid ""
+"Clean URLs are enabled in Drupal, but the Gallery2 URL Rewrite plugin "
+"is unavailable (!status)."
+msgstr ""
+"Čisté URL adresy sú v Drupale zapnuté, ale rozšírenie Gallery2 s "
+"názvom URL Rewrite nie je dostupné (!status)."
+
+#: gallery_install.inc:712
+msgid ""
+"Your initial user synchronization has been completed already.<br />\n"
+"                                           If you want to resync all "
+"your users or you want to import users from an existing\n"
+"                                           Gallery2 setup, you can "
+"always use the <a href= \"@gallery-usersync\">Advanced Sync\n"
+"                                           </a> options in the Gallery "
+"user administration."
+msgstr ""
+"Počiatočná synchronizácia používateľov bola už dokončená.<br "
+"/>\r\n"
+"Ak chcete znova zosynchronizovať všetkých používateľov alebo ich "
+"naimportovať z existujúcej \r\n"
+"Gallery2, môžete použiť možnosť <a "
+"href=\"@gallery-usersync\">Rozšírená synchronizácia\r\n"
+"</a> v ponuke Používatelia Galérie."
+
+#: gallery_install.inc:719
+msgid ""
+"User synchronization is essential for the embedded Gallery to work "
+"correctly.\n"
+"                                           Drupal users/groups are "
+"usually synced with their Gallery counterparts when a\n"
+"                                           user/group is modified in "
+"Drupal. Missing user mappings will cause errors in your\n"
+"                                           embedded Gallery.<br /><br "
+"/>\n"
+"                                           It is recommended that you "
+"sync your users now. However there can be reasons to\n"
+"                                           skip this step, e.g. if you "
+"have a working Gallery with many users and a fresh\n"
+"                                           Drupal installation. Note "
+"that the current user and the Drupal superuser (uid=1)\n"
+"                                           will always be sync."
+msgstr ""
+"Synchronizácia používateľov je potrebná aby začlenená Galéria "
+"fungovala správne.\r\n"
+"Používatelia/skupiny Drupalu sú zvyčajne synchronizované s ich "
+"proťajškom v Galérii keď \r\n"
+"sa používateľ/skupina v Drupale zmení. Chýbajúce priradenie "
+"používateľa spôsobí v začlenenej\r\n"
+"Galérii problém.<br /><br />\r\n"
+"Odporúčame aby ste synchronizáciu používateľov vykonali teraz. "
+"Avšak existuje aj dôvod\r\n"
+"na vynechanie synchronizácie napríklad ak máte fungujúcu Galériu "
+"s veľkým počtom používateľov a čerstvú\r\n"
+"inštaláciu Drupalu. Aktuálny používateľ a prvý používateľ "
+"(uid=1)\r\n"
+"sa synchronizujú aj pri vynechaní tohto kroku."
+
+#: gallery_install.inc:913
+msgid ""
+"Everything seemed OK, but the Gallery could still not be "
+"initialised.\n"
+"                                           Perhaps a manually entered "
+"value is incorrect."
+msgstr ""
+"Všetko vyzerá OK, ale Galériu sa stále nepodarilo inicializovať. "
+"\r\n"
+"Možno sú nesprávne ručne zadané hodnoty."
+
+#: gallery_install.inc:1073
+msgid ""
+"You may have some loss in functionality in your embedded Gallery2 (see "
+"below for details). You should check\n"
+"       the details and if the functionality is not important for your "
+"site you can just ignore this."
+msgstr ""
+"Môžete stratiť niektoré funkcie vo vašej začlenenej Gallery2 "
+"(detaily sa dozviete  nižšie). Mali by ste si pozrieť detaily \r\n"
+"a ak funkcie nie sú podstatné pre vašu stránku môžete toto "
+"hlásenie ignorovať."
+
+#: gallery_install.inc:1075
+msgid ""
+"The status of all Drupal modules and Gallery2 plugins is optimal for "
+"your embedded Gallery2."
+msgstr ""
+"Stav všetkých modulov Drupalu a rozšírení Gallery2 je optimálny "
+"pre začlenenú Gallery2."
+
+#: gallery_install.inc:1081
+msgid ""
+"Due to errors in your location settings status information is\n"
+"                                            not available for your G2 "
+"plugins."
+msgstr ""
+"Kvôli chybám v nastaveniach umiestnenia, informácie o stave \r\n"
+"rozšírení G2 nie sú dostupné."
+
+#: gallery_install.inc:1102
+msgid ""
+"Due to errors in your location settings the URL Rewrite\n"
+"                                               status could not be "
+"obtained."
+msgstr ""
+"Kvôli chybám v nastaveniach umiestnenia pre prepisovanie URL, \r\n"
+"sa nedajú získať informácie o stave."
+
+#: gallery_install.inc:1114
+msgid ""
+"There is a writable .htaccess file in your defined Drupal directory\n"
+"                                                    (@dir)."
+msgstr ""
+"Vo vami definovanom priečinku Drupalu(@dir) je \r\n"
+"zapisovateľný súbor .htaccess."
+
+#: gallery_install.inc:1119
+msgid ""
+"The .htaccess file in your defined Drupal directory (@dir) is not\n"
+"                                                    writable. Please "
+"CHMOD it to 644 (or 666 if 644 does not work)."
+msgstr ""
+"Do súboru .htaccess vo vami zadanom priečinku Drupalu (@dir) sa \r\n"
+"nedá zapisovať. Prosím použite na neho CHMOD 644 (alebo 666 ak 644 "
+"nefunguje)."
+
+#: gallery_install.inc:1126
+msgid ""
+"There is no .htaccess file in your defined Drupal directory (@dir) "
+"or\n"
+"                                                  the directory does "
+"not exist."
+msgstr ""
+"Vo vami definovanom priečinku Drupalu (@dir) nie je súbor .htaccess "
+"alebo\r\n"
+"priečinok neexistuje."
+
+#: gallery_install.inc:1132
+msgid ""
+"Clean URLs are enabled in Drupal, but the Gallery2 URL Rewrite "
+"plugin\n"
+"                                                is unavailable."
+msgstr ""
+"Čisté URL adresy sú v Drupale zapnuté, ale rozšírenie Gallery2 s "
+"názvom URL Rewrite\r\n"
+"nie je dostupné."
+
+#: gallery_install.inc:1138
+msgid ""
+"Clean URLs are disabled in Drupal and the URL Rewrite plugin will "
+"not\n"
+"                                              be configured."
+msgstr ""
+"Čisté URL adresy sú v Drupale vypnuté a rozšírenie Gallery2 s "
+"názvom URL Rewrite sa nebude konfigurovať."
+
+#: gallery_install.inc:1148
+msgid ""
+"Your 'Show Item' rule should start with '@gallery-base/'.\n"
+"                                                               Make "
+"sure to change the URL Rewrite rule(s) accordingly."
+msgstr ""
+"Pravidlo 'Show Item' by malo začínať '@gallery-base/'.\r\n"
+"Nezabudnite v tomto zmysle zmeniť aj pravidlo(á) URL Rewrite."
+
+#: gallery_settings.inc:29
+msgid "Theme and Display settings"
+msgstr "Nastavenia témy a vzhľadu"
+
+#: gallery_settings.inc:49
+msgid "Gallery embedded theme"
+msgstr "Téma vzhľadu začlenenej Galérie"
+
+#: gallery_settings.inc:51
+msgid "Gallery default"
+msgstr "Predvolené Galériou"
+
+#: gallery_settings.inc:52
+msgid "Gallery2 theme to be used for embedded gallery."
+msgstr "Téma vzhľadu Gallery2, ktorá sa použije v začlenenej Galérii."
+
+#: gallery_settings.inc:55
+msgid "Default root album"
+msgstr "Predvolený hlavný album"
+
+#: gallery_settings.inc:57
+msgid ""
+"Default root album to use on gallery pages. If you have a separate "
+"album for use with nodes (Filter, G2Image, ...)\n"
+"       it can be helpful to move the root album to hide that album "
+"from the browseable gallery."
+msgstr ""
+"Predvolený hlavný album, ktorí sa použije na stránkach Galérie. "
+"Ak máte osobitný album pre použitie s uzlami (Filter, G2Image, "
+"...),\r\n"
+"môže byť užitočné zmeniť hlavný album, aby sa ostatné albumy "
+"skryli pred prehliadaním v Galérii."
+
+#: gallery_settings.inc:67
+msgid ""
+"Use these settings to determine the number of available blocks.<br "
+"/>\n"
+"                         <strong>Warning: If you decrease the number "
+"of blocks, always the last\n"
+"                         block (with the highest ID) will be "
+"removed.</strong>"
+msgstr ""
+"Tieto nastavenia použite na určenie počtu dostupných blokov. <br "
+"/>\r\n"
+"<strong>Upozornenie: Ak znížite počet blokov, vždy sa "
+"odstráni\r\n"
+"posledný blok (s najvyšším ID).</strong>"
+
+#: gallery_settings.inc:73
+msgid "Number of blocks"
+msgstr "Počet blokov"
+
+#: gallery_settings.inc:77
+msgid "Select how many blocks should be available."
+msgstr "Zvoľte počet blokov, ktoré budú k dispozícii."
+
+#: gallery_settings.inc:171
+msgid ""
+"Instead of showing a message that the requested Gallery URL does not "
+"exist the\n"
+"                         user is redirected to the search form."
+msgstr ""
+"Miesto zobrazenia správy, že vyžiadaná URL adresa Galérie "
+"neexistuje,\r\n"
+"bude používateľ presmerovaný do vyhľadávacieho formulára."
+
+#: gallery_settings.inc:177
+msgid "Debug settings"
+msgstr "Ladiace nastavenia"
+
+#: gallery_settings.inc:187
+msgid ""
+"Print out debug variables and verbose error messages. Only visible to "
+"users\n"
+"                         with 'administer site configuration' "
+"permission."
+msgstr ""
+"Vypíše ladiace premenné a zhromaždené chybové hlásenia. "
+"Dostupné iba pre používateľov  \r\n"
+"s oprávnením 'administrácia nastavení webu'."
+
+#: gallery_settings.inc:192
+msgid "Enable G2 debug output"
+msgstr "Zapnúť výstup ladenia G2"
+
+#: gallery_settings.inc:194
+msgid "Enables Gallery2's buffered debug output to be displayed."
+msgstr "Zapne zobrazenie zachytených ladiacich informácii z Gallery2."
+
+#: gallery_settings.inc:359
+msgid ""
+"Choose the item metadata you would like to display by default.\n"
+"                           This will change all instances where show "
+"parameter was not specified."
+msgstr ""
+"Zvoľte predvolené položky metadát, ktoré chcete zobraziť.\r\n"
+"Toto nastavenie sa prejaví všade tam, kde parametre zobrazenia "
+"nebudú určené."
+
+#: gallery_settings.inc:516
+msgid ""
+"The Gallery Search requires the Gallery2 Search plugin "
+"(!search_status) and\n"
+"    optionally the Gallery2 Image Block plugin (!imageblock_status) "
+"and Gallery2 Image Frame\n"
+"    plugin (!imageframe_status)."
+msgstr ""
+"Vyhľadávanie v Galérii vyžaduje rozšírenie Gallery2 s názvom "
+"Vyhľadávanie (!search_status) a\r\n"
+"voliteľne aj rozšírenia Gallery2 s názvami Blok obrázka "
+"(!imageblock_status) a Rámček obrázkov \r\n"
+"(!imageframe_status)."
+
+#: gallery_settings.inc:813
+msgid ""
+"All user registration must take place via Drupal to ensure that the "
+"users\n"
+"            are synchronized between Drupal and Gallery2. This plugin "
+"would allow a user to register\n"
+"            only in Gallery2 and not in Drupal and so should not be "
+"used."
+msgstr ""
+"Registrácia všetkých používateľov sa musí udiať "
+"prostredníctvom Drupalu, aby bola istota, že používatelia\r\n"
+"v Drupale a Gallery2 budú synchronizovaný. Toto rozšírenie vykoná "
+"registráciu\r\n"
+"iba v Gallery2 a v Drupale nie, a preto by nemalo byť použité."
+
+#: gallery_settings.inc:826
+msgid ""
+"Enables the Drupal and Gallery2 sitemaps to be merged which allows "
+"for\n"
+"                       a single sitemap to be sent to Google and other "
+"web search sites."
+msgstr ""
+"Zlúči mapy stránok Drupalu a Gallery2 čo umožní odoslať \r\n"
+"Googlu a ostatným vyhľadávačom len jednu mapu stránky."
+
+#: gallery_user_admin.inc:369
+msgid "An error occurred while processing @operation"
+msgstr "Vyskytla sa chyba počas procesu @operation"
+
+#: gallery.module:180
+msgid "Gallery2 user integration and synchronization."
+msgstr "Integrovanie a synchronizácia používateľov Gallery2."
+
+#: gallery_g2image/gallery_g2image_settings.inc:18
+msgid ""
+"G2Image requires the Gallery2 Image Block plugin (!imageblock_status) "
+"and\n"
+"             the G2Image application (!g2image_status) to be "
+"installed."
+msgstr ""
+"G2Image vyžaduje rozšírenie Blok obrázku (!imageblock_status) "
+"a\r\n"
+"nainštalovanie aplikácie G2Image (!g2image_status)."
+
+#: gallery_g2image/gallery_g2image_settings.inc:31
+msgid ""
+"<br />However, the Image Block plugin is unavailable. To use G2Image "
+"please go to\n"
+"                the !g2_plugins page and install/activate the Image "
+"Block plugin."
+msgstr ""
+"<br />Kvôli tomu, že je rozšírenie Blok obrázku vypnuté. Ak "
+"chcete použiť G2Image, choďte \r\n"
+"na stránku !g2_plugins a nainštalujte rozšírenie Blok obrázku."
+
+#: gallery_g2image/gallery_g2image_settings.inc:36
+msgid ""
+"<br />However, the G2Image application is unavailable. Please <a "
+"href=\"@g2image_url\">download\n"
+"                G2Image</a> and install it as outlined in README.TXT."
+msgstr ""
+"<br />Kvôli tomu, že je aplikácia G2Image nedostupná. Prosím <a "
+"href=\"@g2image_url\">stiahnite\r\n"
+"G2Image</a> a nainštalujte podľa pokynov v README.TXT."
+
+#: gallery_g2image/gallery_g2image_settings.inc:59
+msgid ""
+"Determines the mode of operation. For anything other than 'Disabled' "
+"the G2Image\n"
+"                           application has to be installed. See the "
+"README.txt instructions. In 'Standalone'\n"
+"                           mode a button will be visible under "
+"textfields to launch the g2image window. In\n"
+"                           'TinyMCE' mode the g2image button can be "
+"used in the TinyMCE toolbar. Note that the\n"
+"                           TinyMCE version will NOT work wih Safari - "
+"use the standalone version instead."
+msgstr ""
+"Určuje mód operácie. Ak je niečo iné ako 'Vypnuté',  je  "
+"g2image\r\n"
+"nainštalované. Pozrite si inštrukcie v INSTALL.txt. V móde "
+"'Samostatné'\r\n"
+"bude tlačítko na vyvolanie okna g2image viditeľné pod textovým "
+"poľom. V móde\r\n"
+"'TinyMCE' bude tlačítko g2image umiestnené v nástrojovej lište "
+"TinyMCE. Upozornenie: \r\n"
+"TinyMCE verzia NEPRACUJE v Safari - v takomto prípade použite "
+"samostatnú verziu."
+
+#: gallery_g2image/gallery_g2image_settings.inc:69
+msgid "Show G2Image link on specific pages (Standalone mode)"
+msgstr "Zobrazí odkaz G2Image na určených stránkach (samostatný mód)"
+
+#: gallery_g2image/gallery_g2image_settings.inc:81
+msgid ""
+"Enter one page per line as Drupal paths. The '*' character is a "
+"wildcard. Example paths are\n"
+"                             '%blog' for the blog page and "
+"%blog-wildcard for every personal blog. %front is the front page."
+msgstr ""
+"Zadajte každú stránku na nový riadok vo forme Drupalovskej cesty. "
+"Znak '*' je zástupný znak. Napríklad pre stránku \r\n"
+"blogov zadajte '%blog' a %blog-wildcard pre všetky stránky s "
+"osobnými blogmi. %front je titulná strana."
+
+#: gallery_g2image/gallery_g2image_settings.inc:176
+msgid ""
+"Additional css classes to be available\n"
+"                                                                       "
+"         for selection (must be defined in .css file)."
+msgstr ""
+"Dodatočné css triedy dostupné\r\n"
+"pre výber (musia byť definované v .css súbore)."
+
+#: gallery_g2image/gallery_g2image.module:0
+msgid "gallery_g2image"
+msgstr "gallery_g2image"
+
+#: gallery_g2image/gallery_g2image.info:0
+msgid "Gallery G2Image"
+msgstr "G2Image Galérie"
+
+#: gallery_g2image/gallery_g2image.info:0
+msgid "Integrates G2Image with Gallery module."
+msgstr "Integruje G2Image s modulom Gallery."
+
+#: gallery_menu/gallery_menu.module:281
+msgid ""
+"The maximum depth for an item and all its children is fixed at "
+"!maxdepth. Some menu\n"
+"                         items may not be available as parents if "
+"selecting them would exceed this limit."
+msgstr ""
+"Maximálna hĺbka pre položky a všetkých ich potomkov je obmedzená "
+"na !maxdepth. Niektoré položky \r\n"
+"menu nebudú dostupné ako rodičovské, ak by sa pri ich označení "
+"prekročil limit."
+
+#: gallery_menu/gallery_menu.module:295
+msgid "Rebuild menu"
+msgstr "Obnoviť menu"
+
+#: gallery_menu/gallery_menu.module:311
+msgid "Gallery link items have been rebuild."
+msgstr "Prepojenia na položky Galérie boli obnovené."
+
+#: gallery_menu/gallery_menu.module:44
+msgid "My Album"
+msgstr "Môj album"
+
+#: gallery_menu/gallery_menu.module:45
+msgid "Go to your Gallery2 useralbum."
+msgstr "Prejdite do vášho používateľského albumu Gallery2"
+
+#: gallery_menu/gallery_menu.info:0
+msgid "Adds Drupal menu items for Gallery2 albums."
+msgstr "Pridá položky z menu Drupalu do albumov Gallery2."
+
+#: gallery_profile/gallery_profile.module:124
+msgid "Profile gallery mode"
+msgstr "Mód profilu Galérie"
+
+#: gallery_profile/gallery_profile.module:128
+msgid "Show (useralbum) gallery/images"
+msgstr "Zobraziť galeriu/obrázky (z používateľského albumu)"
+
+#: gallery_profile/gallery_profile.module:130
+msgid ""
+"By default a link to the useralbum is shown. But you may also insert a "
+"gallery of\n"
+"                         random/recent images from the useralbum into "
+"the user profile."
+msgstr ""
+"Normálne je prepojenie na album používateľa zobrazené, ale "
+"môžete chcieť vložiť aj galériu \r\n"
+"náhodných/nedávnych obrázkov z albumu používateľa do "
+"používateľského profilu."
+
+#: gallery_profile/gallery_profile.module:138
+msgid "Useralbum settings"
+msgstr "Nastavenia albumu používateľa"
+
+#: gallery_profile/gallery_profile.module:143
+msgid "profile useralbum"
+msgstr "profil používateľského albumu"
+

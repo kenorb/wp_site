@@ -1,0 +1,13 @@
+;$Id: ulink_gallery.info,v 1.2 2008/03/08 10:26:36 garthee Exp $
+name = ulink - Image Gallery Extension
+description = Automates the generation of ulink image links by passing in a directory
+package = "Input filters"
+requirements[] = ulink
+project = "ulink-extensions"
+core = 6.x
+; Information added by drupal.org packaging script on 2008-03-08
+version = "6.x-1.1"
+core = "6.x"
+project = "ulink6"
+datestamp = "1204973110"
+

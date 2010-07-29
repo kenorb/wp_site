@@ -1,0 +1,866 @@
+<?php
+// $Id: textlinkads.module,v 1.8.2.1 2008/07/15 23:44:12 mikejoconnor Exp $
+
+define('TEXTLINKADS_VERSION', '$Id: textlinkads.module,v 1.8.2.1 2008/07/15 23:44:12 mikejoconnor Exp $');
+//define('TEXTLINKADS_MODULE_PATH', drupal_get_path('module', 'textlinkads'));
+
+function textlinkads_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#textlinkads':
+      $output = '<p>'. t('The Text-Link-Ads module allows you to sell advertising space on your site via %tla', array('%tla' => '<a href="http://www.text-link-ads.com/">Text-Link-Ads.com</a>')) .'</p>';
+      $output .= '<p>'. t('With the Text-Link-Ads module: <blockquote><p>YOU can choose to approve or deny any Text Link Ads sold prior to the links being published on your website. This ensures that only quality and relevant links appear on your website.</p><p>You make money. Sales, invoicing, and customer service are all handled by TLA. You can receive payment via check or PayPal. Payments are sent to publishers the first of every month with a $25 minimum payout.</p></blockquote>') .'</p>';
+      $output .= '<p>'. t('For more information see the Text-Link-Ads.com <a href="http://www.text-link-ads.com/publisher_program.php">Publisher Program page</a>.') .'</p>';
+      $output .= '<h2>'. t('Module features') .'</h2>';
+      $output .= '<ul><li>'. t('%Simplified_setup right on your site. All you need is your Website XML Key from Text-Link-Ads.com and you\'re ready to start publishing ads.', array('%Simplified_setup' => l(t('Simplified setup'), 'admin/settings/textlinkads'))) .'</li>';
+      $output .= '<li>'. t('A %built_in_tool to customize the looks of the ads, including borders, background color, link color and font size.', array('%built_in_tool' => l(t('built-in tool'), 'admin/settings/textlinkads'))) .'</li>';
+      $output .= '<li>'. t('Access to your %publisher_statistics from within your website. See your site details, including how much money you\'ve earned and how many links are being served.', array('%publisher_statistics' => l(t('publisher statistics'), 'textlinkads/stats'))) .'</li>';
+      $output .= '<li>'. t('Cron-based updates of your ads. The ad links are kept up to date via Drupal\'s cron functionality.') .'</li></ul>';
+      $output .= '<h2>'. t('Getting started') .'</h2>';
+      $output .= '<ol>';
+      $output .= '<li>'. t('Install the module by placing it in the modules directory and enabling it from the %admin_modules page. No database changes are necessary.', array('%admin_modules page' => l('admin/modules', 'admin/modules'))) .'</li>';
+      $output .= '<li>'. t('Sign up for a <a href="http://www.text-link-ads.com/log.php?logfunc=login&action=create_account">Text-Link-Ads.com publisher account</a> and make note of your <a href="http://www.text-link-ads.com/my_account.php?view=my_sites">Website XML Key</a>.') .'</li>';
+      $output .= '<li>'. t('Browse to the %admin_settings_textlinkads page on your site. Enter the <strong>Website XML Key</strong> in the field of the same name.', array('%admin_settings_textlinkads' => l('admin/settings/textlinkads', 'admin/settings/textlinkads'))) .'</li>';
+      $output .= '<li>'. t('On the same page, enter the <strong>Ad Block Heading</strong>. Your links will be available as a block. The value you enter will be the title of the block. You may leave this field blank.') .'</li>';
+      $output .= '<li>'. t('On the same page, use the <strong>Textlinkads Appearance Settings</strong> settings to customize the way your ad links look. Press <strong>Submit</strong> to save all of the settings for this page.') .'</li>';
+      $output .= '<li>'. t('Now you must enable the block that will show your ad links. Browse to the %blocks_administration_page and enable the block entitled <strong>text link ads advertisments</strong>', array('%blocks_administration_page' => l(t('blocks administration page'), 'admin/block'))) .'</li>';
+      $output .= '<li>'. t('Your site will communicate with the Text-Link-Ads.com site every time cron.php is run. If you have already configured cron jobs for your site ads will start appearing in the block as soon as the next cron run completes (note that Text-Link-Ads.com must sell some links for your site first). If you don\'t have cron tasks enabled follow the <a href="http://drupal.org/cron">directions found on Drupal.org</a> for doing so. You may also consider installing the <a href="http://drupal.org/project/poormanscron">Poormanscron module</a> to help. As a last resort, you can manually trigger cron by %clicking_this_link (will result in the screen going blank... that\'s normal).', array('%clicking_this_link' => l(t('clicking this link'), 'cron.php'))) .'</li>';
+      $output .= '<li>'. t('Once you have set everything up properly and Text-Link-Ads.com has sold some links on your site, you can %monitor_your_statistics_and_earnings from your Drupal site. All that is required is the same password that you use to log onto the Text-Link-Ads.com site. Enjoy!', array('%monitor_your_statistics_and_earnings' => l('monitor your statistics and earnings', 'textlinkads/stats'))) .'</li>';
+      $output .= '</ol>';
+      return $output;
+
+    case 'admin/settings/textlinkads':
+      return '<p>'. t('You are using version %version of the Text-Link-Ads module.', array('%version' => TEXTLINKADS_VERSION)) .'</p><p>'. t('For complete instructions on configuring this module, refer to the %help_pages.', array('%help_pages' => l(t('Help pages'), 'admin/help/textlinkads'))) .'</p>';
+  }
+}
+
+function textlinkads_perm() {
+  return array('administer text link ads', 'administer inlinks by node');
+}
+
+function textlinkads_cron() {
+  if ( variable_get('textlinkads_last_update', 0) < (time() - 3600) || strlen(textlinkads_get_links('text')) < 20) {
+    textlinkads_check_update();
+  }
+}
+
+function textlinkads_menu() {
+  $items = array();
+  $items['textlinkads/stats'] = array(
+    'title'    => t('TextLinkAds stats'),
+    'page callback' => 'textlinkads_stats_page',
+    'access arguments'   => array('administer text link ads'),
+    'type'     => MENU_NORMAL_ITEM,
+    );
+
+  $items['textlinkads/update_now'] = array(
+    'page callback' => 'textlinkads_check_update',
+    'type'     => MENU_NORMAL_ITEM,
+    'access arguments'   => array('administer text link ads'),
+    );
+
+  $items['admin/settings/textlinkads'] = array(
+    'title' => t('TextLinkAds Settings'),
+    'description' => t('Settings for the TextLinkAds module'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('textlinkads_admin_settings'),
+    'access arguments' => array('administer site configuration'),
+  );
+    $items['textlinkads/sync'] = array(
+    'title' => 'Textlinkads Sync',
+    'page callback' => 'textlinkads_inlinks_sync',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  return $items;
+}
+
+function textlinkads_block($op = 'list', $delta = 0, $edit = array()) {
+  switch ($op) {
+    case 'list':
+      $blocks[0]['info'] = t('text link ads advertisments');
+      return $blocks;
+    case 'view':
+      switch ($delta) {
+        case 0:
+          $block = textlinkads_get_block();
+          break;
+      }
+      return $block;
+  }
+}
+
+function textlinkads_get_block() {
+  $block['content'] = textlinkads_content();
+  if (!empty($block['content'])) {
+    $block['subject'] = t(variable_get('textlinkads_ad_block_title', 'Advertisments'));
+    return $block;
+  }
+}
+function textlinkads_theme() {
+  return array(
+    'textlinkads_rss_ad' => array(
+      'arguments' => array('link'),
+    ),
+    'textlinkads_ads' => array(
+      'arguments' => array('link'),
+    ),
+    'textlinkads_stats' => array(
+      'arguments' => array('stats_data'),
+    ),
+    'textlinkads_themer_colors' => array(
+      'arguemnts' => array('form'),
+    ),
+  );
+}
+
+function textlinkads_content() {
+  $output = theme('textlinkads_ads', textlinkads_get_links('text'));
+  return $output;
+}
+
+function textlinkads_admin_settings() {
+
+  if (!empty($_POST)) {
+    variable_set('textlinkads_last_update', 0);
+  }
+  $types_enabled = variable_get('textlinkads_inlinks_nodes_enabled', array());
+  $types = array();
+  foreach(node_get_types() as $key => $value) {
+    $types[$key] = $value->name;
+  }
+  $form['textlinkads_inlinks'] =  array (
+    '#type' => 'fieldset',
+    '#access' => true,
+    '#title' => t('Text-Link-Ads Inlink'),
+    '#collapsible' => true,
+    '#collapsed' => true,
+    'textlinkads_inlinks_nodes_enabled' => 
+      array (
+        '#type' => 'checkboxes',
+        '#title' => t('Enable Inlinks'),
+        '#default_value' => $types_enabled,
+        '#options' => $types,
+      ),
+    );
+  $form['textlinkads_website_xml_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Website XML Key'),
+    '#default_value' => variable_get('textlinkads_website_xml_key', ''),
+    '#description' => t('You get your XML Site Key from the <a href="http://www.text-link-ads.com/my_account.php?view=my_sites">Get Ad Code page</a> on Text-Link-Ads.com. Each of your sites has its own code that looks something like this: <code>A4WWSAAOULU1XGHWU78G</code>.'),
+  );
+  $form['textlinkads_ad_block_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Ad block Heading'),
+    '#default_value' => variable_get('textlinkads_ad_block_title', 'Advertisments'),
+    '#description' => t('Enter a heading for the Ad block. It is alright to leave it blank.'),
+  );
+
+  drupal_set_html_head(textlinkads_get_js());
+  drupal_add_js(drupal_get_path('module', 'textlinkads') .'/textlinkads.js');
+  $total_options = drupal_map_assoc(array(4, 6, 8, 10));
+  $row_options = drupal_map_assoc(array(1, 2, 3, 4, 8, 10));
+  $font_options = drupal_map_assoc(array(6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18));
+
+  $form['textlinkads_themer'] = array('#type' => 'fieldset', '#title' => t('Textlinkads Appearance Settings'));
+  $form['textlinkads_themer']['textlinkads_total']  = array(
+    '#type' => 'select',
+    '#options' => $total_options,
+    '#title' => t('Number of Ads'),
+    '#default_value' => variable_get('textlinkads_total', 4),
+    );
+  $form['textlinkads_themer']['textlinkads_rows']  = array(
+    '#type' => 'select',
+    '#options' => $row_options,
+    '#title' => t('Number of Rows of Ads'),
+    '#default_value' => variable_get('textlinkads_rows', 4),
+    );
+  $form['textlinkads_themer']['textlinkads_font']  = array(
+    '#type' => 'select',
+    '#options' => $font_options,
+    '#title' => t('Font Size'),
+    '#default_value' => variable_get('textlinkads_font', 12),
+    );
+
+  $form['textlinkads_themer']['textlinkads_colors'] = array('#type' => 'fieldset', '#title' => t('Colors'), '#theme' => 'textlinkads_themer_colors');
+  $form['textlinkads_themer']['textlinkads_colors']['textlinkads_border_color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Border'),
+    '#size' => 8,
+    '#maxlength' => 7,
+    '#default_value' => variable_get('textlinkads_border_color', '#000000'),
+    '#suffix' => '<a href="#" onclick="cp2.select(document.getElementById(\'edit-textlinkads-border-color\'),\'border_color_picker\');return false;" id="border_color_picker" name="border_color_picker">Pick Color</a>',
+    );
+  $form['textlinkads_themer']['textlinkads_colors']['textlinkads_no_border'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('No Border'),
+    '#default_value' => variable_get('textlinkads_no_border', 0),
+    '#attributes' => array('onclick' => 'update_border_color()')
+    );
+  $form['textlinkads_themer']['textlinkads_colors']['textlinkads_bg_color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Background'),
+    '#size' => 8,
+    '#maxlength' => 7,
+    '#default_value' =>  variable_get('textlinkads_bg_color', '#ffffff'),
+    '#suffix' => '<a href="#" onclick="cp2.select(document.getElementById(\'edit-textlinkads-bg-color\'),\'bg_color_picker\');return false;" id="bg_color_picker" name="bg_color_picker">Pick Color</a>',
+    );
+  $form['textlinkads_themer']['textlinkads_colors']['textlinkads_no_bg'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Transparent Background'),
+    '#default_value' => variable_get('textlinkads_no_bg', 0),
+    '#attributes' => array('onclick' => 'update_bg_color()')
+    );
+  $form['textlinkads_themer']['textlinkads_colors']['textlinkads_link_color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Link Color'),
+    '#size' => 8,
+    '#maxlength' => 7,
+    '#default_value' =>  variable_get('textlinkads_link_color', '#0000ff'),
+    '#suffix' => '<a href="#" onclick="cp2.select(document.getElementById(\'edit-textlinkads-link-color\'),\'link_color_picker\');return false;" id="link_color_picker" name="link_color_picker">Pick Color</a>',
+    );
+
+  $form['textlinkads_themer']['textlinkads_preview'] = array('#type' => 'fieldset', '#title' => t('Example'));
+  $form['textlinkads_themer']['textlinkads_preview']['preview_div'] = array('#value' => '<div id="preview"></div><script type="text/javascript">cp2.writeDiv();</script>');
+
+  return system_settings_form($form);
+}
+
+function textlinkads_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
+  switch ($op) {
+    case 'load':
+      $q = $_GET['q'];
+      if ($q == 'rss.xml' || $q == 'node/feed') {
+        $link = theme('textlinkads_rss_ad', textlinkads_next_rss_ad());
+        $node->teaser .= $link;
+      }
+      $node->textlinkads_inlinks = db_result(db_query("SELECT status FROM {textlinkads_inlinks} WHERE nid = %d", $node->nid));
+    break;
+    case 'view':
+      if(textlinkads_inlinks_allow_links($node)) {
+        $node->content['body']['#value'] = textlinkads_inlinks_add_links($node->content['body']['#value'], $node->nid);
+      }
+    break;
+    case 'update':
+    case 'insert':
+      textlinkads_inlinks_notify_tla('add', $node->nid);
+      if($node->textlinkads_inlinks_status === 0) {
+        db_query("DELETE FROM {textlinkads_inlinks} WHERE nid = %d", $node->nid);
+      }
+      else {
+        db_query("DELETE FROM {textlinkads_inlinks} WHERE nid = %d", $node->nid);
+        db_query("INSERT INTO {textlinkads_inlinks} (nid, status) VALUES (%d, %d)", $node->nid, $node->textlinkads_inlinks_status);
+      }
+    break;
+  }
+
+}
+
+function textlinkads_stats_page() {
+  if (!$key = variable_get('textlinkads_website_xml_key', '')) {
+    drupal_set_message(t('You need to enter your Customer ID on the <a href="%admin">administration page</a> before you can view your statistics here.', array('%admin' => url('admin/settings/textlinkads'))), 'error');
+    drupal_goto('admin/settings/textlinkads');
+  }
+
+  if ($_SESSION['textlinkads_password']) {
+    textlinkads_stats_page_show();
+  }
+  else {
+    return drupal_get_form('textlinkads_stats_page_form');
+  }
+}
+
+function textlinkads_stats_page_form($form_state) {
+  $form['textlinkads_password'] = array(
+    '#type'       => 'password',
+    '#title'      => t('Password'),
+    '#size'       => 30,
+    '#max_length' => 64,
+    );
+  $form['textlinkads_xml_key'] = array(
+    '#type'  => 'value',
+    '#value' => variable_get('textlinkads_website_xml_key', ''),
+    );
+  $form['values']['op'] = array(
+    '#type'  => 'submit',
+    '#value' => t('Submit Settings')
+    );
+  $form['#submit'][] = 'textlinkads_stats_page_submit';
+  $form['#validate'][] = 'textlinkads_stats_page_validate';
+  return $form;
+}
+
+function textlinkads_stats_page_validate($form, &$form_state) {
+  if (!$form_state['values']['textlinkads_password'] && !$_SESSION['textlinkads_password']) {
+    form_set_error('textlinkads_password', t('Please enter your password'));
+    return;
+  }
+  $_SESSION['textlinkads_xml'] = file_get_contents('http://www.text-link-ads.com/publisher_stats_xml.php?xml_key='
+    . $form_state['values']['textlinkads_xml_key']
+    .'&password='
+    . ($_SESSION['textlinkads_password'] ? $_SESSION['textlinkads_password'] : $_SESSION['textlinkads_password'] = md5($form_state['values']['textlinkads_password'])));
+
+  if ((strpos('<?xml version="1.0" ?>', $_SESSION['textlinkads_xml']) !== 0) && (strpos('invalid password', strtolower($_SESSION['textlinkads_xml'])) !== false)) {
+    drupal_set_message(t('Invalid password'), 'error');
+    unset($_SESSION['textlinkads_password']);
+  }
+}
+
+function textlinkads_stats_page_submit($form, $form_state) {
+  if (!form_get_errors() && $_SESSION['textlinkads_password']) {
+    textlinkads_stats_page_show();
+  }
+}
+
+function textlinkads_stats_page_show() {
+  $parser = new xml2array();
+  $data = $parser->parseXMLintoarray($_SESSION['textlinkads_xml']);
+  print theme('page', theme('textlinkads_stats', $data));
+}
+
+/******************
+ * theme functions
+ */
+
+function theme_textlinkads_rss_ad($link) {
+  $advertisement = variable_get('textlinkads_advertisement_word', t('Advertisement'));
+  return "\n\n$advertisement: {$link['rssbeforetext']} <a href='{$link['url']}'>{$link['rsstext']}</a> {$link['rssaftertext']}";
+}
+
+
+function theme_textlinkads_ads($links) {
+  $output = '';
+  if(count($links) > 0) {
+
+    $font_size = variable_get('textlinkads_font', 12);
+    $rows = variable_get('textlinkads_rows', 4);
+    $columns = ceil(count($links) / $rows);
+    $link_color = variable_get('textlinkads_link_color', '#0000ff');
+    $bg_color = variable_get('textlinkads_bg_color', '#0000ff');
+    $border_color = variable_get('textlinkads_border_color', '#0000ff');
+    $no_border = variable_get('textlinkads_no_border', 0);
+    $no_bg = variable_get('textlinkads_no_bg', 0);
+  
+    $output =  '<table style="width: 100%; margin: 5px auto;border: '. ($no_border ? 'none' : "1px solid $border_color") .'; border-spacing: 0px;background: '. ($no_bg ? 'transparent' : $bg_color) .';" cellpadding="5" cellspacing="0"><tbody>';
+  
+    while (count($links) > 0) {
+      $output .= "<tr>";
+      for ($j = 0; $j < $columns; $j++) {
+        if ($link = array_pop($links)) {
+          $output .= "<td align='center'><span style='font-size:{$font_size}px; color=#000000;'>{$link['beforetext']} <a href='{$link['url']}' style='font-size:{$font_size}px; color:{$link_color}'>{$link['text']}</a> {$link['aftertext'][$i]}</span></td>";
+        }
+        else {
+          $output .= "<td></td>";
+        }
+      }
+        $output .= "</tr>";
+    }
+    $output .= "</tbody></table>";
+  }
+  return $output;
+}
+
+
+function theme_textlinkads_stats($stats_data) {
+  $last_update = format_date(variable_get('textlinkads_last_update', 0), 'custom', 'Y-m-d G:i:s') .
+    ' '. l(t('Update now'), 'textlinkads/update_now');
+  $header = array('', '');
+  $rows[] = array("domain:", $stats_data['WEBSITE']['STATS']['DOMAIN']);
+  $rows[] = array("description:", $stats_data['WEBSITE']['STATS']['DESCRIPTION']);
+  $rows[] = array("alexa rank:", $stats_data['WEBSITE']['STATS']['ALEXA_RANK']);
+  $rows[] = array("date created:", $stats_data['WEBSITE']['STATS']['CREATE_DATE']);
+  $rows[] = array("earnings this month:", $stats_data['WEBSITE']['STATS']['CURRENT_MONTHS_EARNINGS']);
+  $rows[] = array("last update of ads:", $last_update);
+
+  $output = theme('table', $header, $rows);
+
+  if (!empty($stats_data['WEBSITE']['ACTIVELINKS']['ACTIVELINK'])) {
+    $rows = array();
+    $output .= t('<h3>Currently Active Links:</h3>');
+    if (!$stats_data['WEBSITE']['ACTIVELINKS']['ACTIVELINK']['URL'] && is_array($stats_data['WEBSITE']['ACTIVELINKS']['ACTIVELINK'])) {
+      foreach ($stats_data['WEBSITE']['ACTIVELINKS']['ACTIVELINK'] as $activelink) {
+        $rows[] = array("<a href=\"$activelink[URL]\">$activelink[TEXT]</a>", "<b>({$activelink[CURRENT_MONTHS_EARNINGS]})</b>");
+      }
+    }
+    else {
+      $rows[] = array("<a href=\"{$stats_data[WEBSITE][ACTIVELINKS][ACTIVELINK][URL]}\">{$stats_data[WEBSITE][ACTIVELINKS][ACTIVELINK][TEXT]}</a>", "<b>({$stats_data[WEBSITE][ACTIVELINKS][ACTIVELINK][CURRENT_MONTHS_EARNINGS]})</b>");
+    }
+    $output .= theme('table', $header, $rows);
+  }
+
+  return $output;
+}
+
+function theme_textlinkads_themer_colors($form) {
+
+  $output .= '<table>';
+  $output .= '<tr><td>'. drupal_render($form['textlinkads_border_color']) .'</td><td>'. drupal_render($form['textlinkads_no_border']) .'</td></tr>';
+  $output .= '<tr><td>'. drupal_render($form['textlinkads_bg_color']) .'</td><td>'. drupal_render($form['textlinkads_no_bg']) .'</td></tr>';
+  $output .= '</table>';
+  $output .= drupal_render($form);
+
+  return $output;
+}
+
+/*
+ *
+ * Helper functions from text-link-ads file
+ *
+ */
+function textlinkads_check_update() {
+  $CONNECTION_TIMEOUT = 10;
+  $url = 'http://www.text-link-ads.com/xml.php?inventory_key='. check_plain(variable_get(textlinkads_website_xml_key, ''))
+    .'&referer='. urlencode(request_uri())
+    .'&user_agent='. urlencode($_SERVER['HTTP_USER_AGENT'])
+    .'&drupal_module_version='. urlencode(TEXTLINKADS_VERSION);
+  textlinkads_update_links($url, $CONNECTION_TIMEOUT);
+}
+
+function textlinkads_update_links($url, $time_out) {
+  $xml = textlinkads_file_get_contents($url, $time_out);
+  $xml = substr($xml, strpos($xml, '<?'));
+
+  db_query("DELETE FROM {textlinkads}");
+  $parser = new xml2array();
+  if ($data = $parser->parseXMLintoarray($xml)) {
+    // there are no links or just one link
+    if (is_array($data['LINKS']) && $data['LINKS']['LINK']['URL']) {
+      $links = array($data['LINKS']['LINK']);
+    }
+    else {
+      $links = $data['LINKS']['LINK'];
+      if (!is_array($links)) {
+        /* When no ads for site, $data looks like this:
+             <?xml version="1.0" ?> <Links> </Links>
+           And $links = ' '
+           Subsequent code assumes we have an array - when no ads available,
+           $links is a string containing only spaces.  So, let's force
+           $links to be an array so the code will work.
+        */
+        $links = array();
+      }
+    }
+    foreach ($links as $key => $values) {
+      db_query("INSERT INTO {textlinkads} (url, text, beforetext, aftertext, rsstext, rssbeforetext, rssaftertext, nid) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', %d)", $values['URL'], $values['TEXT'], $values['BEFORETEXT'], $values['AFTERTEXT'], $values['RSSTEXT'], $values['RSSBEFORETEXT'], $values['RSSAFTERTEXT'], $values['POSTID']);
+    }
+  }
+  $count=count($links);
+  watchdog('TextLinkAds', "update_links: $count ads found" );
+  variable_set('textlinkads_last_update', time());
+}
+
+/**
+ * returns a single $link
+ *
+ */
+function textlinkads_next_rss_ad() {
+  static $links = NULL;
+
+  if (!is_array($links)) {
+    $links = textlinkads_get_links('rss');
+    shuffle($links);
+  }
+
+  return array_pop($links);
+}
+
+/**
+ * Builds an array with the information needed to render ads on the site or in RSS
+ *
+ * @param string $type
+ *   'text' or 'rss'
+ * @return Array
+ */
+function textlinkads_get_links($type = 'text') {
+
+  $links = array();
+  $limit = ($type == 'text') ? variable_get('textlinkads_total', 4) : variable_get('feed_default_items', 10);
+  $where = ($type == 'text') ? 'text IS NOT NULL && beforetext IS NOT NULL && aftertext IS NOT NULL' : 'rsstext IS NOT NULL';
+  $result = db_query("SELECT * FROM {textlinkads}  WHERE $where AND nid = 0 LIMIT %d", $limit);
+  while ($row = db_fetch_array($result)) {
+
+    $links[] = $row;
+  }
+
+  return $links;
+}
+
+function textlinkads_file_get_contents($url, $time_out) {
+  $url = parse_url($url);
+
+  if ($handle = @fsockopen ($url["host"], 80)) {
+    if(function_exists(socket_set_timeout)) {
+      socket_set_timeout($handle,$time_out,0);
+    }
+    else if(function_exists('stream_set_timeout')) {
+      stream_set_timeout($handle,$time_out,0);
+    }
+
+    fwrite ($handle, "GET $url[path]?$url[query] HTTP/1.0\r\nHost: $url[host]\r\nConnection: Close\r\n\r\n");
+    while (!feof($handle)) {
+      $string .= @fread($handle, 40960);
+    }
+    fclose($handle);
+  }
+
+  return $string;
+}
+
+class xml2array {
+   function parseXMLintoarray ($xmldata){ // starts the process and returns the final array
+     $xmlparser = xml_parser_create();
+     xml_parse_into_struct($xmlparser, $xmldata, $arraydat);
+     xml_parser_free($xmlparser);
+     $semicomplete = $this->subdivide($arraydat);
+     $complete = $this->correctentries($semicomplete);
+     return $complete;
+   }
+
+   function subdivide ($dataarray, $level = 1){
+     foreach ($dataarray as $key => $dat){
+       if ($dat[level] === $level && $dat[type] === "open"){
+         $toplvltag = $dat[tag];
+       }
+       elseif ($dat[level] === $level && $dat[type] === "close" && $dat[tag]=== $toplvltag) {
+         $newarray[$toplvltag][] = $this->subdivide($temparray,($level +1));
+         unset($temparray,$nextlvl);
+       }
+       elseif ($dat[level] === $level && $dat[type] === "complete"){
+         if (isset($newarray[$dat['tag']]) && is_array($newarray[$dat['tag']])){
+             $newarray[$dat['tag']][] = $dat['value'];
+         }
+         elseif (isset($newarray[$dat['tag']]) && !is_array($newarray[$dat['tag']])){
+             $newarray[$dat['tag']] = array($newarray[$dat['tag']], $dat['value']);
+         }
+         else {
+             $newarray[$dat['tag']]=$dat['value'];
+         }
+       }
+       elseif ($dat[type] === "complete"||$dat[type] === "close"||$dat[type] === "open"){
+         $temparray[]=$dat;
+       }
+     }
+     return $newarray;
+   }
+
+   function correctentries($dataarray){
+     if (is_array($dataarray)){
+       $keys =  array_keys($dataarray);
+       if (count($keys)== 1 && is_int($keys[0])){
+         $tmp = $dataarray[0];
+         unset($dataarray[0]);
+         $dataarray = $tmp;
+       }
+       $keys2 = array_keys($dataarray);
+       foreach($keys2 as $key){
+         $tmp2 = $dataarray[$key];
+         unset($dataarray[$key]);
+         $dataarray[$key] = $this->correctentries($tmp2);
+         unset($tmp2);
+       }
+     }
+     return $dataarray;
+   }
+}
+
+
+function textlinkads_get_js() {
+  $path = drupal_get_path('module', 'textlinkads');
+  $default_font_size = variable_get('textlinkads_font', 12);
+  $default_rows = variable_get('textlinkads_rows', 4);
+  $default_total_number = variable_get('textlinkads_total', 4);
+  $default_link_color = variable_get('textlinkads_link_color', '#0000ff');
+  $default_bg_color = variable_get('textlinkads_bg_color', '#0000ff');
+  $default_border_color = variable_get('textlinkads_border_color', '#0000ff');
+  $default_no_border = variable_get('textlinkads_no_border', 0);
+  $default_no_bg = variable_get('textlinkads_no_bg', 0);
+  $js =<<<__END__
+<script type="text/javascript" src="/$path/colorpicker2.js"></script>
+<script type="text/javascript">//<![CDATA[
+var cp2 = new ColorPicker();
+var table_total_ads = $default_total_number;
+var table_rows = $default_rows;
+var font_size = $default_font_size;
+var link_color = '$default_link_color';
+var bg_color = '$default_bg_color';
+var border_color = '$default_border_color';
+var no_border = $default_no_border;
+var no_bg = $default_no_bg;
+var example_link = 'Example Link';
+var link_color_txt = 'link_color';
+//]]>
+</script>
+<script type="text/javascript" src="/$path/textlinkads.js"></script>
+
+__END__;
+  return $js;
+}
+
+/**
+ * function textlinkads_inlinks_add_links()
+ * @param string $data The text to be searched for keyword/links
+ * @param array $links An array of keyword => link entries to be replaced
+ *
+ * @return string The text after link replacement
+ */
+function textlinkads_inlinks_add_links($data = NULL, $nid = NULL) {
+  $split = array("'(<script[^>]*?>.*?</script>)'", // strip out javascript
+    "'<style[^>]*?>.*?</style>'", // strip out styelsheets
+    "'(<a[\/\!]*?[^<>]*?/a>)'", // strip out html tags
+    "'(<[\/\!]--*?[^<>]*?-->)'", // strip out html comments
+    "'(<[\/\!]*?[^<>]*?>)'si", // strip out html tags
+  );
+  global $textlinkads_inlinks_links;
+  if (is_numeric($nid)) {
+    $results = db_query("SELECT text, url FROM {textlinkads} WHERE nid = %d", $nid);
+    $links = array();
+    while($link = db_fetch_object($results)) {
+      $links[$link->text] = $link->url;
+    }
+    $textlinkads_inlinks_links = $links;
+    $return = _textlinkads_inlinks_add_links($data, $split);
+    unset($textlinkads_inlinks_links);
+    return $return;
+  }
+}
+
+/**
+ * function _textlinkads_inlinks_add_links()
+ * @param $data string The string to be parsed for links
+ * @param array split The the regex to avoid replaceing unwanted items
+ *
+ * @return string The string after link replacement as occured
+ */
+
+function _textlinkads_inlinks_add_links($data, $split) {
+  if(count($split) >= 1) {
+    $data2 = preg_split($split[0], $data, NULL, PREG_SPLIT_DELIM_CAPTURE);
+    array_shift($split);
+    if($data2) {
+      foreach($data2 as $key => $value) {
+        $return .= _textlinkads_inlinks_add_links($value, $split, $return);
+      }
+      return $return;
+    }
+    else {
+      return _textlinkads_inlinks_add_links_helper($data);
+    }
+  }
+  else {
+    return _textlinkads_inlinks_add_links_helper($data);
+  }
+}
+
+/**
+ * Function _textlinkads_inlinks_add_links_helper()
+ * A helper function for replacing keywords with links
+ * @param string $data The string to be searched for keywords
+ *
+ * @return string the data after keyword search/replace
+ */
+
+function _textlinkads_inlinks_add_links_helper($data) {
+  global $textlinkads_inlinks_links;
+  //Don't replace anything within tags
+  if(substr($data, 0, 1) == '<') {
+    return $data;
+  }
+  
+  elseif(is_array($textlinkads_inlinks_links)) {
+    $lower_data = strtolower($data);
+    //replace any keyword once
+    foreach ($textlinkads_inlinks_links as $keyword => $link) {
+      if (strpos(strtolower($lower_data), strtolower($keyword)) !== FALSE) {
+        $start = strpos(strtolower($lower_data), strtolower($keyword));
+        $length = strlen($keyword);
+        $link_text = substr($data, $start, $length);
+        $link = '<a href="'. $link .'">'. $link_text .'</a>';
+        $replace_count = 1; // replace count can only be a variable??
+        $data = str_replace($link_text, $link, $data, $replace_count);
+        unset($textlinkads_inlinks_links[$keyword]);
+      }
+    }
+    return $data;
+  }
+}
+/**
+ * Function textlinkads_inlinks_sync()
+ * This funciton enables the tla servers to sync with our database
+ */
+function textlinkads_inlinks_sync() {
+  header('Content-type: application/xml; charset="utf-8"',true);
+  $options = array();
+  $options['textlinkads_key'] = $_GET['textlinkads_key'];
+  $options['textlinkads_action'] = $_GET['textlinkads_action'];
+  $opitons['post_id'] = $_GET['post_id'];
+  watchdog('TextLinkAds', 'Textlinks sync initiated<br /><pre>'. var_export($options, true) .'</pre>');
+  $key = variable_get('textlinkads_website_xml_key', '');
+  if (!empty($_GET['textlinkads_key']) && $_GET['textlinkads_key'] == $key) {
+    $op = check_plain($_GET['textlinkads_action']);
+    switch ($op) {
+      case 'debug':
+        //perform debugging
+      break;
+      case 'sync_posts':
+        print textlinkads_inlinks_sync_posts();
+        exit;
+      break;
+      case 'rest_sync_limit':
+        textlinkads_inlinks_set_max_post_id();
+      break;
+      case 'reset_syncing':
+        variable_set('textlinkads_inlinks_last_sync_post_id', 0);
+      break;
+    }
+  }
+  else {
+    return false;
+  }
+}
+
+/**
+ * function textlinkads_inlinks_sync_posts()
+ * Format xml for the tla inlinks service.
+ *
+ * @return string xml of each post, formated for the tla inlinks service
+ */
+function textlinkads_inlinks_sync_posts() {
+  $xml = '<?xml version="1.0" encoding="utf-8"?>';
+  $xml .= "  <posts>\n";
+  if (is_numeric($_GET['post_id'])) {
+    $xml .= textlinkads_inlinks_prepare_node($_GET['post_id']);
+  }
+  else {
+    $last_post = variable_get('textlinkads_inlinks_last_sync_post_id', 0);
+    $results = db_query("SELECT nid FROM {node} WHERE nid > %d ORDER BY nid ASC LIMIT 100", $last_post);
+    while ($node = db_fetch_object($results)) {
+      $xml .= textlinkads_inlinks_prepare_node($node->nid);
+    }
+  }
+  $xml .= "</posts>\n";
+  return $xml;
+}
+
+/**
+ * function textlinkads_inlinks_prepare_node()
+ * This function should verify the node is allowed to have inlinks.  If so it should
+ * update the last sync post id, and return the formated xml to send to inlinks.
+ * @param int nid the nid to prepare
+ *
+ * @return string Formatted xml for a single post
+ */
+function textlinkads_inlinks_prepare_node($nid) {
+  $node = node_load($nid);
+  $last_post = variable_get('textlinkads_inlinks_last_sync_post_id', 0);
+  
+  if($last_post < $nid) {
+    variable_set('textlinkads_inlinks_last_sync_post_id', $nid);
+  }
+  $body = urlencode(strip_tags($node->body));
+  $title = urlencode($node->title);
+  $post = "    <post>\n";
+  $post .= '      <id>'. check_plain($node->nid) ."</id>\n";
+  $post .= '      <title>'. $title ."</title>\n";
+  $post .= '      <date>'. date('Y-m-d H:i:s', $node->created) ."</date>\n";
+  $post .= '      <url>'. url('node/'. $node->nid, array('absolute' => TRUE)) ."</url>\n";
+  $post .= '      <body>'. $body ."</body>\n";
+  $post .= "    </post>\n";
+  return $post;
+}
+
+/**
+ * Function textlinkads_inlinks_notify_tla()
+ *
+ * @param string op The operation being performed.  'install' or 'add'
+ * @param int pid The id of the node being added.
+ */
+function textlinkads_inlinks_notify_tla($op = NULL, $pid = NULL) {
+  $params = array( 'op' => $op, 'pid' => $pid);
+  
+  switch ($op) {
+    case 'install':
+      $key = variable_get('textlinkads_website_xml_key', '');
+      $site_url = url('textlinkads/sync', array('absolute' => TRUE));
+      if ($key && $site_url) {
+        $url = 'http://www.text-link-ads.com/post_level_sync.php?'.
+          'action=install&inlinks=true&'.
+          'inventory_key='. $key .
+          '&site_url='.$site_url;
+        $file = file_get_contents($url);
+        if ($file) {
+          variable_set('textlinkads_inlinks_install', true);
+        }
+      }
+      $options['url'] = $url;
+      $options['key'] = $key;
+      watchdog('TextLinkAds', 'Notified Textlink ads<br /><pre>'. var_export($options, true) .'</pre>');
+    break;
+    case 'add':
+      $key = variable_get('textlinkads_website_xml_key', '');
+      if ($pid && $key) {
+        $url = 'http://www.text-link-ads.com/post_level_sync.php?'.
+          'action=add&'.
+          'inventory_key='. $key .
+          '&post_id='.$pid;
+        $file = file_get_contents($url);
+      }
+      $options['url'] = $url;
+      watchdog('TextLinkAds', 'Notified Textlink ads<br /><pre>'. var_export($options, true) .'</pre>');
+    break;
+  }
+}
+
+/**
+ * Function textlinkads_inlinks_set_max_post_id()
+ * Reset the textlinkads_inlinks_max_sync_post_id varialbe to the most recent nid
+ */
+function textlinkads_inlinks_set_max_post_id() {
+  $max_nid = db_result(db_query("SELECT MAX(nid) FROM {node};"));
+  if ($max_nid) {
+    variable_set('textlinkads_inlinks_max_sync_post_id', $max_node);
+  }
+  else {
+    variable_set('textlinkads_inlinks_max_sync_post_id', 0);
+  }
+}
+
+function textlinkads_form_alter(&$form, $form_state, $form_id) {
+  if ($form['#id'] == 'node-form') {
+    if (user_access('administer inlinks by node')) {
+      $form['textlinkads_inlinks'] = array (
+      '#type' => 'fieldset',
+      '#access' => true,
+      '#title' => t('Text-Link-Ads Inlink'),
+      '#collapsible' => true,
+      '#collapsed' => true,
+      '#weight' => 25,
+      'textlinkads_inlinks_status' => 
+        array (
+          '#type' => 'radios',
+          '#title' => t('Allow Inlinks'),
+          '#default_value' => $form['#node']->textlinkads_inlinks,
+          '#options' => array(
+            0 => t('Default'),
+            1 => t('Allow'),
+            2 => t('Deny'),
+          )
+        ),
+      );
+    }
+  }
+}
+
+/**
+ * function textlinkads_inlink_allow_links()
+ * @param object node The node object
+ *
+ * @return boolean True if links are allowed, otherwise false
+ */
+function textlinkads_inlinks_allow_links($node) {
+  $types = variable_get('textlinkads_inlinks_nodes_enabled', array());
+  if($node->textlinkads_inlinks == 2) {
+    return FALSE;
+  }
+  elseif ($types[$node->type] || $node->textlinkads_inlinks == 1) {
+    return TRUE;
+  }
+}

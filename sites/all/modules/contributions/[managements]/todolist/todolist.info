@@ -1,0 +1,13 @@
+; $Id: todolist.info,v 1.2.2.1 2009/01/10 08:52:33 marvil07 Exp $
+name = Todolist
+description = Allows users to create Todolist nodes.
+dependencies[] = jquery_update
+dependencies[] = jquery_ui
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-01-10
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "todolist"
+datestamp = "1231589788"
+

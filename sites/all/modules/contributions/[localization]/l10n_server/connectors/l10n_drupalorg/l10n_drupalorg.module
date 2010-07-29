@@ -1,0 +1,66 @@
+<?php
+// $Id: l10n_drupalorg.module,v 1.1.2.8.2.5 2008/12/29 14:44:45 goba Exp $
+
+/**
+ * @file
+ *   Localization community for drupal.org.
+ *
+ *   Maintains a copy of project and release listings, extracts translatable 
+ *   strings from project files.
+ */
+
+// = Core hooks ================================================================
+
+/**
+ * Implementation of hook_help().
+ */
+function l10n_drupalorg_help($path, $arg) {
+  switch ($path) {
+    case 'admin/l10n_server/l10n_drupalorg':
+      return '<p>'. t('The drupal.org localization community connector watches for new releases of projects at drupal.org, downloads the new packages and extracts their translatable strings. Here you can set up the limits of how these operations are performed. The <a href="@scan_link">Scan tab</a> allows you to initiate a manual scan.', array('@scan_link' => url('admin/l10n_server/l10n_drupalorg/scan'))) .'</p>';
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function l10n_drupalorg_menu() {
+  $items = array();
+  $items['admin/l10n_server/l10n_drupalorg'] = array(
+    'title' => 'Connector for drupal.org',
+    'description' => 'Configure the drupal.org connector.',
+    'access arguments' => array('administer localization community for drupal.org'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('l10n_drupalorg_settings_form'),
+    'file' => 'l10n_drupalorg.admin.inc',
+  );
+  $items['admin/l10n_server/l10n_drupalorg/configure'] = array(
+    'title' => 'Configure',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['admin/l10n_server/l10n_drupalorg/scan'] = array(
+    'title' => 'Scan',
+    'access arguments' => array('administer localization community for drupal.org'),
+    'page callback' => 'l10n_drupalorg_scan',
+    'file' => 'l10n_drupalorg.admin.inc',
+    'type' => MENU_LOCAL_TASK
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function l10n_drupalorg_perm() {
+  return array('administer localization community for drupal.org');
+}
+
+/**
+ * Implementation of hook_cron().
+ */
+function l10n_drupalorg_cron() {
+  if (variable_get('l10n_drupalorg_cron', FALSE)) {
+    module_load_include('inc', 'l10n_drupalorg', 'l10n_drupalorg.admin');
+    l10n_drupalorg_scan(TRUE);
+  }
+}

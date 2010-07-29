@@ -1,0 +1,176 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * A CCK implementation of the colorpicker field.
+ *
+ * This add-on module for the Colorpicker package is currently experimental.
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function colorpicker_cck_help($path, $arg) {
+  switch ($path) {
+    case 'admin/modules#description':
+    return t('Defines a field type for colorpicking.');
+  }
+}
+
+
+/**
+ * Implementation of hook_field_info().
+ */
+function colorpicker_cck_field_info() {
+  return array(
+    'colorpicker' => array('label' => 'Color picker'),
+    'colorpicker_textfield' => array('label' => 'Color textfield'),
+  );
+}
+
+
+/**
+ * Implementation of hook_field_settings().
+ */
+function colorpicker_cck_field_settings($op, $field) {
+  switch ($op) {
+    case 'form':
+      $form = array();
+    // add settings here later
+    // maybe this is the way to associate different textfields?
+      return $form;
+
+    case 'database columns':
+      if ($field['type'] == 'colorpicker_textfield') {
+        return array(
+          'value' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE),
+        );
+      }
+  }
+}
+
+
+/**
+ * Implementation of hook_field().
+ */
+function colorpicker_cck_field($op, &$node, $field, &$node_field, $teaser, $page) {
+  switch ($op) {
+    case 'validate':
+      if (is_array($items)) {
+        foreach ($items as $delta => $item) {
+      $error_field = $field['field_name'] .']['. $delta .'][value';
+          if ($item['value'] != '') {
+            if (!preg_match('/^#(?:(?:[a-f\d]{3}){1,2})$/i', $item['value'])) {
+              form_error($error_field, "'". check_plain($item['value']) ."'". t(' is not a valid hex color'));
+            }
+          }
+        }
+      }
+    break;
+    case 'view':
+      foreach ($node_field as $delta => $item) {
+        $node_field[$delta]['view'] = content_format($field, $item, 'colorpicker_cck', $node);
+      }
+      return theme('field', $node, $field, $node_field, $teaser, $page);
+  }
+}
+
+/**
+ * Implementation of hook_field_formatter_info().
+ *
+ */
+function colorpicker_cck_field_formatter_info() {
+  return array(
+    'default' => array(
+      'label' => 'Colorpicker field',
+      'field types' => array('colorpicker'),
+    )
+  );
+}
+
+function colorpicker_cck_field_formatter($field, $item, $formatter, $node) {
+  if (empty($item['value'])) {
+    return '';
+  }
+  return check_plain($item['value']);
+}
+
+
+/**
+ * Implementation of hook_widget_info().
+ */
+function colorpicker_cck_widget_info() {
+  return array(
+    'colorpicker' => array(
+      'label' => t('Color picker'),
+      'field types' => array('colorpicker'),
+    ),
+  'colorpicker_textfield' => array(
+    'label' => t('Color textfield'),
+    'field types' => array('colorpicker_textfield'),
+  ),
+  );
+}
+
+/**
+ * Implementation of hook_widget_settings().
+ */
+function colorpicker_widget_settings($op, $widget) {
+  switch ($op) {
+    case 'form':
+      $form = array();
+
+      return $form;
+
+    case 'validate':
+
+      break;
+
+    case 'save':
+      return;
+  }
+}
+
+
+/**
+ * Implementation of hook_widget().
+ */
+function colorpicker_cck_widget($op, &$node, $field, &$items) {
+  switch ($op) {
+    case 'form':
+      $form = array();
+    if ($field['type'] == 'colorpicker_textfield') {
+        $form[$field['field_name']] = array('#tree' => TRUE);
+        $form[$field['field_name']][0]['value'] = array(
+          '#type' => 'colorpicker_textfield',
+          '#title' => t($field['widget']['label']),
+          '#default_value' => isset($items[0]['value']) ? $items[0]['value'] : '#ffffff',
+          '#required' => $field['required'],
+          '#description' => t($field['widget']['description']),
+          '#weight' => $field['widget']['weight'],
+        );
+    }
+    else {
+        $form[$field['field_name']] = array('#tree' => TRUE);
+        $form[$field['field_name']][0]['value'] = array(
+          '#type' => 'colorpicker',
+          '#title' => t($field['widget']['label']),
+          '#required' => $field['required'],
+          '#description' => t($field['widget']['description']),
+          '#weight' => $field['widget']['weight'],
+        );
+    }
+    return $form;
+    case 'process form values':
+      foreach ($items as $delta => $item) {
+        if ($item['value'] == '' && $delta > 0) {
+          unset($items[$delta]);
+        }
+      }
+      break;
+    default:
+      break;
+  }
+}
+

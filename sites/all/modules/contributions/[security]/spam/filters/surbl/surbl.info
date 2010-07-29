@@ -1,0 +1,12 @@
+; $Id: surbl.info,v 1.1.2.1.2.1 2008/12/25 05:42:10 jeremy Exp $
+name = Spam Surbl filter
+description = A Surbl filter plug-in for the spam module.
+package = Spam
+dependencies[] = spam
+core = 6.x
+; Information added by drupal.org packaging script on 2008-12-25
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "spam"
+datestamp = "1230207249"
+

@@ -1,0 +1,202 @@
+<?php
+// $Id: 
+/**
+ * @file
+ * Enables the use of a block bar container.
+ */
+
+function moneypl_help($section='') {
+
+}
+
+
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the onthisdate module
+*/
+
+
+function moneypl_perm() {
+
+return array('access moneypl content', 'administer moneypl');
+
+} // function moneypl_perm
+
+
+
+
+
+
+
+/**
+* Generate HTML for the moneypl block
+* @param op the operation from the URL
+* @param delta offset
+* @returns block HTML 
+*/
+
+
+
+function moneypl_block($op = 'list', $delta = 0, $edit = array()) { 
+
+
+
+	define('_CW_DOMAIN_', 'http://cw.money.pl/');
+
+
+	$sources = array(
+	
+		array('wiadomosci_kraj', 'Wiadomości z kraju'),
+		array('wiadomosci_swiat', ' Wiadomości ze świata'),
+		array('wiadomosci_pieniadze', 'Pieniądze'),
+		array('wiadomosci_gielda', 'Giełda'),
+		array('wiadomosci_banki', 'Banki'),
+		array('wiadomosci_fundusze', 'Fundusze'),
+		array('wiadomosci_emerytury', 'Emerytury'),
+		array('wiadomosci_podatki', 'Podatki'),
+		array('wiadomosci_ubezpieczenia', 'Ubezpieczenia'),
+		array('wiadomosci_poradniki', 'Poradniki'),
+		array('wiadomosci_raporty', 'Raporty'),
+		array('indeksy_gpw', 'Indeksy GPW'),
+		array('kursy_nbp', 'Kursy NBP'),
+		array('tabelka_skala_podatkowa', 'Skala podatkowa'),
+		array('depozyty', 'Depozyty'),
+		array('fund_inwestycji_zagr', 'Fundusze inwestycji zagranicznych'),
+		array('fund_papierow_dluznych', 'Fundusze papierów dłużnych'),
+		array('fund_rynku_pien', 'Fundusze rynku pieniężnego'),
+		array('fund_stabilnego_wzr', 'Fundusze stabilnego wzrostu'),
+		array('fundusze_akcji', 'Fundusze akcji'),
+		array('fund_zrownowaznone', 'Fundusze zrównoważone'),
+
+	);
+
+
+
+
+
+
+  if ($op == 'list') {
+
+		foreach($sources as $key => $value) {
+
+			$module_name = 'Money.pl - '.$sources[$key][1];
+
+			$blocks[$key] = array('info' => t($module_name), 
+      	'weight' => 0, 'enabled' => 1, 'region' => 'left'); 
+
+		}
+		
+
+    return $blocks; 
+  }
+
+
+
+
+
+/*
+  else if ($op == 'configure' && $delta == 0) { 
+  
+  
+    $form['items'] = array( 
+      '#type' => 'select', 
+      '#title' => t('Number of items'), 
+      '#default_value' => variable_get('mymodule_block_items', 0), 
+      '#options' => array('1', '2', '3'), 
+    ); 
+    return $form; 
+    
+    
+  } 
+*/
+  
+  
+  
+  else if ($op == 'save' && $delta == 0) { 
+    variable_set('mymodule_block_items', $edit['items']); 
+  } 
+  
+  
+  
+  
+  
+  else if ($op == 'view') {
+  
+  			$module_name = 'Money.pl - '.$sources[$delta][1];
+  			
+				if($block_content = file_get_contents(_CW_DOMAIN_.$sources[$delta][0].'.html')) {
+	      
+	      $block_content = iconv("ISO-8859-2", "UTF-8", $block_content);
+
+   			//	$block_content = preg_replace('/style="(.*)"/', '', $block_content);
+				//	$block_content = preg_replace('/bgcolor="(.*)"/', '', $block_content);
+
+				$block = array('subject' => t($module_name), 'content' => $block_content); 
+	      
+	      
+				  
+	      }
+
+    return $block; 
+  } 
+  
+  
+  
+  
+  
+  
+}
+
+
+
+function moneypl_admin() {
+}
+
+/*
+
+function moneypl_admin() {
+
+  $form['moneypl_css_enabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Włączone'),
+    '#default_value' => variable_get('moneypl_css_enabled', 1),
+    '#size' => 64,
+    '#maxlength' => 128,
+    '#description' => t("Włącza możliwość użycia swojego arkuszu styli (CSS) do opisania wyglądu bloków.")
+  );
+
+  $form['moneypl_css_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Ścieżka do pliku .css'),
+    '#default_value' => variable_get('moneypl_css_path', ''),
+    '#size' => 64,
+    '#maxlength' => 128,
+    '#description' => t("Włącza możliwość użycia swojego arkuszu styli (CSS) do opisania wyglądu bloków.")
+  );
+
+  return system_settings_form($form);
+}
+
+
+
+function moneypl_menu() {
+
+  $items = array();
+
+  $items[] = array(
+    'path' => 'admin/settings/moneypl',
+    'title' => t('Money.pl module settings'),
+    'description' => t(''),
+    'callback' => 'drupal_get_form',
+    'callback arguments' => 'moneypl_admin',
+    'access' => user_access('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+   );
+
+  return $items;
+}
+*/
+
+
+?>

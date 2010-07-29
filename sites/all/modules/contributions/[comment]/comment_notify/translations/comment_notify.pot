@@ -1,0 +1,216 @@
+# $Id: comment_notify.pot,v 1.2 2008/12/22 23:43:57 goofyx Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  comment_notify.module,v 1.43 2008/12/16 13:15:57 greggles
+#  comment_notify.install,v 1.8 2008/12/16 12:42:34 greggles
+#  comment_notify.info,v 1.3 2008/08/06 23:27:08 greggles
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-12-23 01:43+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: comment_notify.module:61
+msgid "Comment follow-up e-mail notification for anonymous and registered users."
+msgstr ""
+
+#: comment_notify.module:85;274;510
+msgid "No notifications"
+msgstr ""
+
+#: comment_notify.module:86;275;511
+msgid "For all comments on this post"
+msgstr ""
+
+#: comment_notify.module:87;276;512
+msgid "Just for replies to my comment"
+msgstr ""
+
+#: comment_notify.module:106
+msgid "Notify me of follow-up comments posted here"
+msgstr ""
+
+#: comment_notify.module:115
+msgid "Notify me of follow-up comments posted here."
+msgstr ""
+
+#: comment_notify.module:194
+msgid "Your comment follow-up notification for this post was disabled. Thanks."
+msgstr ""
+
+#: comment_notify.module:195
+msgid "Disabled comment follow-up notification feature for this post."
+msgstr ""
+
+#: comment_notify.module:198;139
+msgid "Comment notify"
+msgstr ""
+
+#: comment_notify.module:217
+msgid "If you want to subscribe to comments you must supply a valid e-mail address."
+msgstr ""
+
+#: comment_notify.module:232
+msgid "You can change the default for this field in \"Comment follow-up notification settings\" on <a href=\"!uri\">your account edit page</a>."
+msgstr ""
+
+#: comment_notify.module:257
+msgid "Comment follow-up notification settings"
+msgstr ""
+
+#: comment_notify.module:264
+msgid "Receive node follow-up notification e-mails"
+msgstr ""
+
+#: comment_notify.module:266
+msgid "Check this box to receive an e-mail notification for follow-ups on your nodes (pages, forum topics, etc). You can not disable notifications for individual threads."
+msgstr ""
+
+#: comment_notify.module:271
+msgid "Receive comment follow-up notification e-mails"
+msgstr ""
+
+#: comment_notify.module:278
+msgid "Check this box to receive e-mail notification for follow-up comments to comments you posted. You can later disable this on a post-by-post basis... so if you leave this to YES, you can still disable follow-up notifications for comments you don't want follow-up mails anymore - i.e. for very popular posts."
+msgstr ""
+
+#: comment_notify.module:323;373
+msgid "!site :: new comment for your post."
+msgstr ""
+
+#: comment_notify.module:406
+msgid "source comment"
+msgstr ""
+
+#: comment_notify.module:429
+msgid "Email to unsubscribe"
+msgstr ""
+
+#: comment_notify.module:433
+msgid "Unsubscribe this e-mail"
+msgstr ""
+
+#: comment_notify.module:455
+msgid "There were no active comment notifications for that email."
+msgstr ""
+
+#: comment_notify.module:480
+msgid "@content-type"
+msgstr ""
+
+#: comment_notify.module:486
+msgid "Anonymous commenters have the permission to subscribe to comments but cannot leave their contact infromation on the following content types: !types.  You should either disable subscriptions on those types here, revoke the permission for anonymous users, or enable anonymous users to leave their contact information in the comment settings."
+msgstr ""
+
+#: comment_notify.module:491
+msgid "Content types to enable for comment notification"
+msgstr ""
+
+#: comment_notify.module:494
+msgid "Comments on content types enabled here will have the option of comment notification."
+msgstr ""
+
+#: comment_notify.module:499
+msgid "Available subscription modes"
+msgstr ""
+
+#: comment_notify.module:502
+msgid "Choose which notification subscription styles are available for users"
+msgstr ""
+
+#: comment_notify.module:504
+msgid "For all comments on a post"
+msgstr ""
+
+#: comment_notify.module:505
+msgid "Just for replies to a comment"
+msgstr ""
+
+#: comment_notify.module:517
+msgid "Default state for the notification selection box for anonymous users"
+msgstr ""
+
+#: comment_notify.module:525
+msgid "Default state for the notification selection box for registered users."
+msgstr ""
+
+#: comment_notify.module:528
+msgid "This flag presets the flag for the follow-up notification on the form that anon users will see when posting a comment"
+msgstr ""
+
+#: comment_notify.module:535
+msgid "Default mail text for sending out notifications to commenters"
+msgstr ""
+
+#: comment_notify.module:536
+msgid "You can use the following variables to be replaced:\n      <ul>\n      <li>!commname = the username who posted the comment\n      <li>!commtext = the text of the posted comment\n      <li>!commsubj = the subject of the posted comment\n      <li>!comment_url = the full url of the post and comment - note: if you have paging enabled, this does not work correct - set your max comments per page so that all fit on one page or reverse order them\n      <li>!node_title = the title of the node that was commented on\n      <li>!node_teaser = the teaser of the node that was commented on\n      <li>!node_body = the body of the node that was commented on\n      <li>!mission = site_mission text\n      <li>!name = username receiving the alert\n      <li>!site = your site\n      <li>!uri = base_url of site\n      <li>!uri_brief = base_url of site w/o http\n      <li>!date = the current time\n      <li>!login_uri  uri to login the user\n      <li>!edit_uri = uri to edit user profile\n      <li>!link1 the QUICKLINK to disable future follow-up otifications for the user\n      </ul>"
+msgstr ""
+
+#: comment_notify.module:565
+msgid "Default mail text for sending out the notifications to node authors"
+msgstr ""
+
+#: comment_notify.module:566
+msgid "You can use the following variables to be replaced:\n      <ul>\n      <li>!commname = the username who posted the comment\n      <li>!commtext = the text of the posted comment\n      <li>!commsubj = the subject of the posted comment\n      <li>!comment_url = the full url of the post and comment - note: if you have paging enabled, this does not work correct - set your max comments per page so that all fit on one page or reverse order them\n      <li>!node_title = the title of the node that was commented on\n      <li>!node_teaser = the teaser of the node that was commented on\n      <li>!node_body = the body of the node that was commented on\n      <li>!mission = site_mission text\n      <li>!name = username receiving the alert\n      <li>!site = your site\n      <li>!uri = base_url of site\n      <li>!uri_brief = base_url of site w/o http\n      <li>!date = the current time\n      <li>!login_uri  uri to login the user\n      <li>!edit_uri = uri to edit user profile\n      </ul>"
+msgstr ""
+
+#: comment_notify.module:458
+msgid "Email unsubscribed from 1 comment notification."
+msgid_plural "Email unsubscribed from @count comment notifications."
+msgstr[0] ""
+msgstr[1] ""
+
+#: comment_notify.module:130
+msgid "administer comment notify"
+msgstr ""
+
+#: comment_notify.module:130
+msgid "subscribe to comments"
+msgstr ""
+
+#: comment_notify.module:140;148
+msgid "Configure settings for e-mails about new comments."
+msgstr ""
+
+#: comment_notify.module:147
+msgid "Settings"
+msgstr ""
+
+#: comment_notify.module:156
+msgid "Unsubscribe"
+msgstr ""
+
+#: comment_notify.module:157
+msgid "Unsubscribe an email from all notifications."
+msgstr ""
+
+#: comment_notify.module:165
+msgid "comment notify"
+msgstr ""
+
+#: comment_notify.module:0
+msgid "comment_notify"
+msgstr ""
+
+#: comment_notify.install:36
+msgid "Stores information about which commenters on the site have subscriped to followup emails."
+msgstr ""
+
+#: comment_notify.info:0
+msgid "Comment Notify"
+msgstr ""
+
+#: comment_notify.info:0
+msgid "Comment follow-up e-mail notification for anonymous as well as registered users."
+msgstr ""
+

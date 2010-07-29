@@ -1,0 +1,116 @@
+<?php
+// $Id: activemenu.module,v 1.4 2008/12/29 22:38:47 nedjo Exp $
+
+/**
+ * @file
+ * Add AJAX-based tree menu to navigation menu.
+ */
+
+/**
+ * Implementation of hook_init().
+ */
+function activemenu_init() {
+  jstools_modules_includes('activemenu');
+  activemenu_load();
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function activemenu_menu() {
+  $items = array();
+
+  $items['activemenu/menu'] = array(
+    'title' => 'activemenu',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'page callback' => 'activemenu_js'
+  );
+
+  $items = array_merge($items, module_invoke_all('activemenu_menu'));
+  return $items;
+}
+
+/**
+ * Load needed files.
+ */
+function activemenu_load() {
+  static $loaded = FALSE;
+  if (!$loaded) {
+    $path = drupal_get_path('module', 'activemenu');
+    jstools_add_js($path . '/activemenu.js');
+    $activemenu = module_invoke_all('activemenu');
+    if (count($activemenu)) {
+      drupal_add_js(array('activemenu' => $activemenu), 'setting');
+    }
+    activemenu_theme_css();
+    $loaded = TRUE;
+  }
+}
+
+/**
+ * Menu callback. Output a themed menu tree for a requested menu item.
+ */
+function activemenu_js() {
+  if ($path = activemenu_get_request_path()) {
+    if ($plid = db_result(db_query("SELECT mlid FROM {menu_links} WHERE link_path = '%s'", $path))) {
+      $item = menu_link_load($plid);
+      // Retrieve the access checked tree
+      $tree = menu_tree_all_data($item['menu_name'], $item);
+
+      print drupal_to_js(array('status' => TRUE, 'content' => menu_tree_output($tree)));
+    }
+  }
+
+  exit();
+}
+
+/**
+ * Implementation of hook_footer().
+ *
+ * Add a theme-specific css file if needed. Pass Javascript data to the browser.
+ */
+function activemenu_theme_css() {
+  global $custom_theme, $theme, $user;
+ 
+  if (isset($user->theme) && $user->theme != '') {
+    $current_theme = $user->theme;
+  }
+  elseif (!empty($custom_theme)) {
+    $current_theme = $custom_theme;
+  }
+  else {
+    $current_theme = $theme ? $theme : variable_get('theme_default', 'garland');
+  }
+ 
+  $path = drupal_get_path('module', 'activemenu');
+  $file = $path .'/theme/'. $current_theme .'.css';
+  if (file_exists($file)) {
+    drupal_add_css($file);
+  }
+  else {
+    drupal_add_css($path .'/activemenu.css', 'theme');
+  }
+}
+
+/**
+ * Read the incoming request and return the correct path.
+ */
+function activemenu_get_request_path(){
+  global $language;
+
+  // Handle path prefixing.
+  $langcode = '';
+  if (module_exists('locale') && isset($_POST['path'])) {
+    $_GET['q'] = $_POST['path'];
+    // $language_initialize will remove a language prefix from $_GET['q'], if present.
+    if (variable_get('language_count', 1) != 1) {
+      $language = language_initialize();
+    }
+
+    // We can now use the correct path without a prefix.
+    $_POST['path'] = $_GET['q'];
+    $langcode = ($language != language_default()) ? $language->language : '';
+  }
+  return isset($_POST['path']) ? drupal_get_normal_path($_POST['path'], $langcode) : FALSE;
+}

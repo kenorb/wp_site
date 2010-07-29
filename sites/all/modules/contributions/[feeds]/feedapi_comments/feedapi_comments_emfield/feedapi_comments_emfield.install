@@ -1,0 +1,10 @@
+<?php
+// $Id: feedapi_comments_emfield.install,v 1.1 2008/12/01 14:58:54 alexb Exp $
+
+/**
+ * Implementation of hook_enable().
+ */
+function feedapi_comments_emfield_enable() {
+  // This module needs to be heavier than feedapi.module so that we can do form_alter() manipulations on feedapi data.
+  db_query("UPDATE {system} SET weight = 6 WHERE type = 'module' AND name = 'feedapi_comments_emfield'");
+}

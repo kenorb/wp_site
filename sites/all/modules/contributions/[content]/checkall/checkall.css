@@ -1,0 +1,6 @@
+/* $Id: checkall.css,v 1.1.2.2 2008/11/19 08:18:15 markuspetrux Exp $ */
+
+/* Allow themers style the "check all" / "uncheck all" actions. */
+.checkall-action a {
+  font-size: .85em;
+}

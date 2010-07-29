@@ -1,0 +1,15 @@
+<?php
+// $Id: watchlist.install,v 1.1.2.3 2008/10/15 17:50:58 btmash Exp $
+
+/**
+ * @file
+ * Install/Uninstall Procedures of the watchlist module
+ */
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function watchlist_uninstall() {
+  db_query("DELETE FROM {variable} WHERE name LIKE 'watchlist_%'");
+}
+

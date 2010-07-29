@@ -1,0 +1,337 @@
+<?php
+
+// $Id: invaders.module,v 1.3 2009/01/25 00:56:03 skinhat Exp $
+
+/*
+ * Drupal Module: Invaders
+ *
+ * @author: Glenn Linde <www.skinhat.com/contact>
+ */
+
+function invaders_menu() {
+  $items = array();
+
+
+    $items['admin/settings/invaders'] = array(
+      'title' => t('Invaders Configuration'),
+      'description' => t('Configure the game.'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('invaders_admin_settings'),
+      'access arguments' => array('administer site configuration'),	  
+      'type' => MENU_NORMAL_ITEM,// optional
+    );
+
+    $items['invaders/win'] = array(
+      'title' => '',
+      'page callback' => 'invaders_win',
+      'access callback' => TRUE,
+      'type' => MENU_CALLBACK,
+	  'access' => TRUE
+    );
+  return $items;
+}
+
+/**
+* Display help and module information
+* @param section which section of the site we're displaying help
+* @return help text for section
+*/
+function invaders_help($path,$arg) {
+
+  $output = '';
+
+  switch ($path) {
+    case "admin/modules#description":
+      $output = t("Displays links to nodes created on this date");
+      break;
+  }
+
+  return $output;
+} // function invaders_help
+
+
+function invaders_strip($val) 
+{
+	return str_replace("'","",$val);
+}
+
+/**
+/* Generate HTML for the invaders block
+* @param op the operation from the URL
+* @param delta offset
+* @returns block HTML
+*/
+function invaders_block($op='list', $delta=0) {
+  if ($op == "list") {
+    $block[0]["info"] = t('Invaders');
+    return $block;
+  } else if ($op == 'view') {
+    $block['subject'] = 'Invaders';
+	drupal_add_js(drupal_get_path('module', 'invaders') .'/invaders.js');
+
+    $content='';
+
+	if (!variable_get('invaders_keyboard', true))
+		$mousemove='onmousemove="mousemoveHandler(event)" onmousedown="mousedownHandler(event)"';
+	else
+		$mousemove='';
+    $content.=  '<div  style="height:'.(variable_get('invaders_scale', '0.5')*(4*variable_get('invaders_your_ship_height', 16)+variable_get('invaders_height', 350))).'px; cursor:crosshair; position:relative" '.$mousemove.'>';
+    $content.=' <img id="invaders_background_image"   hspace="0" vspace="0"/>';	
+    $content.=  '<p id="invaders_loading" style="visibility:visible"  >Loading<p>';
+    $content.='<script language=\'javascript\' >';
+    if (variable_get('invaders_bestscore', '')!='')
+      $content.='invaders_bestscore='.invaders_strip(variable_get('invaders_bestscore', '')).'; ';
+    $content.=  'invaders_start_message=\''.invaders_strip(variable_get('invaders_start_message', 'Click New Game to begin<br/>Z key left, X key right , M key fire')).'\'; ';
+    $content.=  'invaders_gameover_message=\''.invaders_strip(variable_get('invaders_gameover_message', 'Game over.')).'\'; ';
+    $content.=  'invaders_keyboard='.invaders_strip(variable_get('invaders_keyboard', true)).'; ';
+    $content.=  'invaders_width='.invaders_strip(variable_get('invaders_width', 350)).'; ';
+    $content.=  'invaders_height='.invaders_strip(variable_get('invaders_height', 350)).'; ';
+    $content.=  'invaders_leftkey='.invaders_strip(variable_get('invaders_leftkey', '90')).'; ';	
+    $content.=  'invaders_rightkey='.invaders_strip(variable_get('invaders_rightkey', '88')).'; ';	
+    $content.=  'invaders_firekey='.invaders_strip(variable_get('invaders_firekey', '77')).'; ';	
+	
+    $content.=  'invaders_gamespeed=\''.invaders_strip(variable_get('invaders_gamespeed', 4)).'\'; ';
+    $content.=  'invaders_your_ship_width='.invaders_strip(variable_get('invaders_your_ship_width', 26)).'; ';		
+    $content.=  'invaders_your_ship_height='.invaders_strip(variable_get('invaders_your_ship_height', 16)).'; ';		
+    $content.=  'invaders_your_ship_move_dist='.invaders_strip(variable_get('invaders_your_ship_move_dist', 5)).'; ';		
+	$content.=  'invaders_image_path=\''.invaders_strip(variable_get('invaders_image_path', '/'.drupal_get_path('module', 'invaders').'/img/')).'\'; ';	
+    $content.=  'invaders_columns='.invaders_strip(variable_get('invaders_columns', 9)).'; ';		
+    $content.=  'invaders_rows='.invaders_strip(variable_get('invaders_rows', 5)).'; ';		
+		
+    $content.=  'invaders_scale='.invaders_strip(variable_get('invaders_scale', 0.5)).'; ';		
+    $content.=  'invaders_lives='.invaders_strip(variable_get('invaders_lives', 3)).'; ';	
+    $content.=  'invaders_your_ship_bullet_speed='.invaders_strip(variable_get('invaders_your_ship_bullet_speed', 20)).'; ';	
+    $content.=  'invaders_bullet_speed='.invaders_strip(variable_get('invaders_bullet_speed', 3)).'; ';	
+	$content.=  'invaders_background=\''.invaders_strip(variable_get('invaders_background', '/'.drupal_get_path('module', 'invaders').'/img/drupal.jpg')).'\'; ';	
+    $content.=  'invaders_background_transparency=\''.invaders_strip(variable_get('invaders_background_transparency', 0.2)).'\'; ';	
+	
+	$content.=  'Init();  GetSpeed(); StartTimer(); ';
+    $content.=  '</script>';
+    $content.=  '</div>';
+     $content.='<input type="button" value="New game" onClick="blur(); RestartGame()" />';
+    $content.='&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    $content.='<span align=\'right\' style=\'font-size:0.6em\'><a href=\'http://www.skinhat.com/drupal\'>Skinhat</a></span>';
+
+ 
+
+    $content.='<form id=\'invaders_winform\' method=\'POST\' action=\'/invaders/win\' > ';
+    $content.='<input type=\'hidden\' id=\'invaders_win_message\' name=\'invaders_win_message\'/>';
+    $content.='<input type=\'hidden\' id=\'invaders_ticker\' name=\'invaders_ticker\'/>';
+    $content.='<input type=\'hidden\' id=\'invaders_win\'/>';
+    $content.='</form>';
+    if (variable_get('invaders_bestscore', -1)>0)
+      $content.='Best: '.variable_get('invaders_bestscore', -1).' by <b>'.variable_get('invaders_bestuser', 'anon').'</b>';
+
+    $block['content'] = $content;
+    return $block;
+  }
+
+} // end invaders_block
+
+/**
+ * Implementation of hook_settings()
+ */
+function invaders_admin_settings() {
+  $form = array();
+  $form['invaders_start_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Start Message'),
+    '#default_value' => variable_get('invaders_start_message', 'Click New Game to begin<br/>Z key left, X key right , M key fire'),
+    '#description' => t('When a player first starts what is the message?'), 
+    '#required' => TRUE,
+  );
+
+  $form['invaders_gameover_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Message when game over'),
+    '#default_value' => variable_get('invaders_gameover_message', 'Game over'),
+    '#description' => t('Message when the game is over.'), 
+    '#required' => TRUE,
+  );  
+  
+  $form['invaders_keyboard'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Used keyboard (uncheck for mouse).'),
+    '#default_value' => variable_get('invaders_keyboard', true),
+    '#description' => t('If mouse then mouse click to fire.')
+  );    
+
+  $form['invaders_gamespeed'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Initial game speed'),
+    '#default_value' => variable_get('invaders_gamespeed', 4),
+    '#description' => t('Initial game speed - 0 is very fast, 4 average, 8 slower'), 
+    '#required' => TRUE,
+  );  
+   
+  $form['invaders_scale'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Scale of invaders'),
+    '#default_value' => variable_get('invaders_scale', 0.5),
+    '#description' => t('Scale factor of invaders - 1=normal size 0.5=half size 2= 2 x bigger')
+  ); 
+  
+  $form['invaders_width'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Width of invaders area in pixels'),
+    '#default_value' => variable_get('invaders_width', 350),
+    '#description' => t('Width of invaders area is scaled by scale factor => if scale is 0.5 then 350 will be 175.'), 
+  ); 
+
+  $form['invaders_height'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Height of invaders area in pixels'),
+    '#default_value' => variable_get('invaders_height', 350),
+    '#description' => t('Width of invaders area is scaled by scale factor'), 
+  );    
+
+  $form['invaders_background'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Background Image'),
+    '#default_value' => variable_get('invaders_background', '/'.drupal_get_path('module', 'invaders').'/img/drupal.jpg'),
+    '#description' => t('URL of image to use as background. Leave blank if no image.')
+  );
+    
+  $form['invaders_background_transparency'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Transparency of background image'),
+    '#default_value' => variable_get('invaders_background_transparency', 0.2),
+    '#description' => t('Transparency of background on page. 1 is no transparency. 0 is completely transparent.'), 
+    '#required' => TRUE,
+  );  
+	
+    
+  $form['invaders_image_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Path for invader images'),
+    '#default_value' => variable_get('invaders_image_path', '/'.drupal_get_path('module', 'invaders').'/img/'),
+    '#description' => t('Path for invader images. Must be of filenames ship1.png for your ship, i1a.png - i3b.png for invader ships, sexp0.png - sexp3.png for your exploding ship, iexp.png for exploding invader, bship.png for mystery ship, b0.png - b11.png for invader missile')
+  );
+  
+  $form['invaders_lives'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of player lives'),
+    '#default_value' => variable_get('invaders_lives', 3),
+    '#description' => t('Number of lives'), 
+    '#required' => TRUE,
+  );    
+  
+  $form['invaders_your_ship_width'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Width of your ship in pixels'),
+    '#default_value' => variable_get('invaders_your_ship_width', 26),
+    '#description' => t('Width of your ship - effected by scale')
+  ); 
+
+  $form['invaders_your_ship_height'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Height of your ship in pixels'),
+    '#default_value' => variable_get('invaders_your_ship_height', 16),
+    '#description' => t('Height of your ship - effected by scale')
+  ); 
+  
+  $form['invaders_your_ship_move_dist'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Movement of your ship per key press'),
+    '#default_value' => variable_get('invaders_your_ship_move_dist', 5),
+    '#description' => t('How many pixels does your ship move when you press key - effected by scale')
+  ); 
+  
+  $form['invaders_columns'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of invader columns'),
+    '#default_value' => variable_get('invaders_columns', 9),
+    '#description' => t('How many columns of invaders.')
+  ); 
+   
+  $form['invaders_rows'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of invader rows'),
+    '#default_value' => variable_get('invaders_rows', 5),
+    '#description' => t('How many rows of invaders.')
+  ); 
+
+  $form['invaders_your_ship_bullet_speed'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Speed of your ships missile'),
+    '#default_value' => variable_get('invaders_your_ship_bullet_speed', 20),
+    '#description' => t('Speed of your ships missile. Is factored by scale')
+  );   
+
+  $form['invaders_bullet_speed'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Speed of invader missile'),
+    '#default_value' => variable_get('invaders_bullet_speed', 3),
+    '#description' => t('Speed of invader missile. Is factored by scale')
+  );   
+  
+  $form['invaders_leftkey'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Ascii keycode to press to move left'),
+    '#default_value' => variable_get('invaders_leftkey', '90'),
+    '#description' => t('Ascii keycode to move spaceship left. Eg 90 for z or 37 left arrow')
+  );  
+ 
+   
+  $form['invaders_rightkey'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Ascii keycode to press to move right'),
+    '#default_value' => variable_get('invaders_rightkey', '88'),
+    '#description' => t('Ascii keycode to move spaceship right. Eg 88 for x or 39 right arrow ')
+  ); 
+
+  $form['invaders_firekey'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Ascii keycode to press to fire'),
+    '#default_value' => variable_get('invaders_firekey', '77'),
+    '#description' => t('Ascii keycode to fire at invaders. Eg 77 for M or 32 space')
+  ); 
+
+    
+  $form['invaders_bestscore'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Best score'),
+    '#default_value' => variable_get('invaders_bestscore', ''),
+    '#description' => t('Set the best game score. Set to blank to reset.')
+  );
+
+  $form['invaders_bestuser'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User with best score'),
+    '#default_value' => variable_get('invaders_bestuser', ''),
+    '#description' => t('Set the user who got the best score')
+  );
+
+  return system_settings_form($form);
+}
+
+
+function invaders_win()
+{      
+  global $user;
+  $ticker=$_POST['invaders_ticker'];
+  $output='';
+  if ($ticker)
+  {
+    if ($user->name)
+    {
+      $message=$_POST['invaders_message'];
+ 
+      if ($message)
+        $output=$message.'<br/>';
+      $output.='Congratulations '.$user->name.' on getting a score of '.$ticker.'.';
+      variable_set('invaders_bestscore',$ticker);
+      variable_set('invaders_bestuser',$user->name);
+    }
+    else
+      $output='Congratulations. You got the best score. If you were logged in your score would have been recorded!';
+
+  }
+    return  $output;
+  //return theme('table', $output);
+
+}
+
+
+
+?>

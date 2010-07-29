@@ -1,0 +1,111 @@
+# $Id: sk.po 18173 2008-10-17 07:14:30Z andy_st $
+#
+# Gallery - a web based photo album viewer and editor
+# Copyright (C) 2000-2008 Bharat Mediratta
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Branislav Hanacek <brango@radegast>, 2006.
+# Branislav Hanacek <brango@brango.sk>, 2006.
+# Matej Spanik <retsamm@gmail.com>, 2007.
+msgid ""
+msgstr ""
+"Project-Id-Version: Gallery: Album Select 1.0.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2006-09-03 10:22+0200\n"
+"PO-Revision-Date: 2007-11-28 19:50+0100\n"
+"Last-Translator: Matej Spanik <retsamm@gmail.com>\n"
+"Language-Team: Slovak <gallery-devel@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"X-Generator: KBabel 1.11.4\n"
+"X-Poedit-Language: Slovak\n"
+"X-Poedit-Country: SLOVAKIA\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+msgid "Album Select"
+msgstr "Vyber Albumu"
+
+msgid "Jump directly to any album using a select box or tree view"
+msgstr "Skocit priamo na akykolvek album pouzitim policka na vyber, alebo stromoveho pohladu"
+
+msgid "Blocks"
+msgstr "Bloky"
+
+msgid "Album Select Settings"
+msgstr "Nastavenia Výberu Albumu"
+
+msgid "Settings saved successfully"
+msgstr "Nastavenia boli úspešne uložené"
+
+msgid "Albums can be displayed in a simple list box or a dynamic tree."
+msgstr "Albumy múžu byť zobrazené v jednoduchom zozname, alebo ako dynamický strom."
+
+msgid "Sort order"
+msgstr "Poradie triedenia"
+
+msgid "Use manual sort order of albums"
+msgstr "Použiť manuálne zoraďovanie albumov"
+
+msgid "Sort albums by title"
+msgstr "Zoraďovať albumy podľa titulku"
+
+msgid "Use sort order defined in each album (affects performance)"
+msgstr "Používať zoradenie nastavené v každom albume (ovplyvňuje výkon)"
+
+msgid "Tree"
+msgstr "Strom"
+
+msgid "Connect tree branches with lines"
+msgstr "Spájať vetvy stromu čiarami."
+
+msgid "Show folder icons"
+msgstr "Zobraz ikonky zloziek"
+
+msgid "Use cookies to remember which branches are open"
+msgstr "Použiť cookies na zapamätanie otvorených vetiev."
+
+msgid "Show expand-all and collapse-all options"
+msgstr "Zobraziť možnosti rozložiť-všetko a zložiť-všetko."
+
+msgid ""
+"Only one branch within a parent can be expanded at the same time. Expand/collapse functions "
+"are disabled with this option."
+msgstr ""
+"Naraz môže byť otvorená iba jedna vetva pod rodičovskou položkou. Funkcie rozložiť/zložiť "
+"budú vypnuté."
+
+msgid "Save"
+msgstr "Uložiť"
+
+msgid "Reset"
+msgstr "Východzie hodnoty"
+
+msgid "&laquo; Jump to Album &raquo;"
+msgstr "&laquo; Skoc na Album &raquo;"
+
+msgid "Expand"
+msgstr "Otvorit"
+
+msgid "Collapse"
+msgstr "Zavriet"
+
+msgid "Album quick links (DHTML)"
+msgstr "Rýchle linky Albumu (DHTML)"
+
+msgid "Album quick links (Dropdown)"
+msgstr "Rýchle linky Albumu (Rolovacie)"

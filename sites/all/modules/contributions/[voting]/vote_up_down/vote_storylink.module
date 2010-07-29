@@ -1,0 +1,542 @@
+<?php
+// $Id: vote_storylink.module,v 1.31.2.3 2008/12/07 06:35:20 lut4rp Exp $
+
+/*
+ * @file
+ * The Storylink module defines a "storylink" node type.
+ * It is a part of the Vote Up/Down Package.
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function vote_storylink_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#vote_storylink':
+      return '<p>'. t('This module is used to create articles that link to other resources -- websites, pages, documents etc. (Part of Vote Up/Down Package)') .'</p>';
+  }
+}
+
+/**
+ * Implementation of hook_node_info().
+ */
+function vote_storylink_node_info() {
+  return array(
+    'storylink' => array(
+      'name' => t('Storylink'),
+      'module' => 'vote_storylink',
+      'description' => t('A story link is an article whose main purpose is to create links to other resources -- websites, pages, documents etc.'),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function vote_storylink_perm() {
+  return array('create storylinks', 'edit own storylinks', 'view storylinks');
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function vote_storylink_access($op, $node, $account) {
+  switch ($op) {
+    case 'view':
+      return $node->status && user_access('view storylinks', $account);
+
+    case 'create':
+      return user_access('create storylinks', $account);
+
+    case 'update':
+    case 'delete':
+      return user_access('edit own storylinks', $account) && ($account->uid == $node->uid);
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function vote_storylink_menu() {
+  global $user;
+  $items = array();
+
+  $defaults = array(
+    'title' => 'Story links',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  $items['storylink'] = array(
+    'page callback' => 'vote_storylink_page_new',
+  ) + $defaults;
+  
+  $items['storylink/%user_uid_optional'] = array(
+    'page callback' => 'vote_storylink_page_user',
+    'title callback' => 'vote_storylink_title',
+    'title arguments' => array(1),
+    'page arguments' => array(1),
+    'type' => MENU_NORMAL_ITEM,
+  ) + $defaults;
+
+  $items['storylink/%user/feed'] = array(
+    'page callback' => 'vote_storylink_feed_user',
+    'page arguments' => array(1),
+  ) + $defaults;
+  
+  $items['storylink/new'] = array(
+    'page callback' => 'vote_storylink_page_new',
+  ) + $defaults;
+  
+  $items['storylink/new/feed'] = array(
+    'page callback' => 'vote_storylink_feed_new',
+  ) + $defaults;
+  
+  $items['storylink/queue'] = array(
+    'page callback' => 'vote_storylink_page_queue',
+  ) + $defaults;
+  
+  $items['storylink/queue/feed'] = array(
+    'page callback' => 'vote_storylink_feed_queue',
+  ) + $defaults;
+  
+  $items['storylink/top'] = array(
+    'page callback' => 'vote_storylink_page_top',
+  ) + $defaults;
+  
+  $items['storylink/top/feed'] = array(
+    'page callback' => 'vote_storylink_feed_top',
+  ) + $defaults;
+  
+  $items['storylink/top/%vote_storylink_interval'] = array(
+    'page callback' => 'vote_storylink_page_interval_top',
+    'page arguments' => array(2),
+  ) + $defaults;
+  
+  $items['storylink/top/%vote_storylink_interval/feed'] = array(
+    'page callback' => 'vote_storylink_feed_interval_top',
+    'page arguments' => array(2),
+  ) + $defaults;
+
+  return $items;
+}
+
+function vote_storylink_title($account) {
+  return user_access('create storylinks') && ($account->uid == $GLOBALS['user']->uid) ? t('My story links') : t('Story links');
+}
+
+function vote_storylink_interval_load($interval) {
+  if (in_array($interval, array('day', 'week', 'month', 'year'))) {
+    return $interval;
+  }
+}
+
+/**
+ * Implementation of hook_user().
+ */
+function vote_storylink_user($type, &$edit, &$account, $category = NULL) {
+  if ($type == 'view' && user_access('create storylinks', $account)) {
+    $account->content['summary']['vote_storylink'] = array(
+      '#attributes' => array('class' => 'storylink'),
+      '#title' => t('Story links'),
+      '#value' => l(t('View recent story links'), "storylink/$account->uid", array('attributes' => array('title' => t("Read @username's latest story links.", array('@username' => $account->name))))),
+    );
+  }
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function vote_storylink_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
+  switch ($op) {
+    case 'rss item':
+      if ($node->type == 'storylink' && variable_get('feed_item_length', 'teaser') == 'teaser') {
+        $node->teaser .= '<p><a href="'. check_url($node->vote_storylink_url) .'" title="'. t('Go to the original news source.') .'">'. t('Original news source') .'</a></p>';
+      }
+      elseif ($node->type == 'storylink' && variable_get('feed_item_length', 'teaser') == 'fulltext') {
+        $node->body .= '<p><a href="'. check_url($node->vote_storylink_url) .'" title="'. t('Go to the original news source.') .'">'. t('Original news source') .'</a></p>';
+      }
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function vote_storylink_form(&$node, $form_state) {
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#required' => TRUE,
+    '#default_value' => $node->title,
+    '#maxlength' => 96,
+    '#description' => t("Title of the story the link goes to, max 96 characters."),
+    '#weight' => -18,
+  );
+
+  $form['vote_storylink_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('URL'),
+    '#default_value' => $node->vote_storylink[0]['url'],
+    '#maxlength' => 256,
+    '#required' => TRUE,
+    '#description' => t('The URL/address of the story.'),
+    '#validate' => array('_vote_storylink_valid_url'),
+    '#_vote_storylink_valid_url_param_1' => 'vote_storylink_url',
+    '#weight' => -17,
+  );
+
+  $form['body_filter']['body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Description'),
+    '#default_value' => $node->body,
+    '#required' => FALSE,
+    '#rows' => 5,
+    '#maxlength' => 600,
+    '#resizable' => TRUE,
+    '#description' => t('A short description of the story. It should be around 2 to 4 sentences.'),
+    '#weight' => -16,
+  );
+
+  $form['body_filter']['filter'] = filter_form($node->format);
+
+  return $form;
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function vote_storylink_view($node, $teaser = FALSE, $page = FALSE) {
+  if ($page) {
+    // Breadcrumb navigation
+    $breadcrumb[] = l(t('Home'), NULL);
+    $breadcrumb[] = l(t('Story links'), 'storylink');
+    $breadcrumb[] = l(t("@name's story links", array('@name' => $node->name)), 'storylink/'. $node->uid);
+    drupal_set_breadcrumb($breadcrumb);
+  }
+  $node = node_prepare($node, $teaser);
+
+  return $node;
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function vote_storylink_load($node) {
+  $links = links_load_links_for_node($node->nid, 'vote_storylink', 0, TRUE);
+  return array('vote_storylink_url' => $links[0]['url'], 'vote_storylink' => $links);
+}
+
+/**
+ * Implementation of hook_prepare().
+ */
+function vote_storylink_prepare(&$node) {
+  // Allow the following fields to be initialized via $_GET (e.g. for use with a "Submit It" bookmarklet):
+  foreach (array('title', 'body') as $field) {
+    if ($_GET['edit'][$field]) {
+      $node->$field = $_GET['edit'][$field];
+    }
+  }
+
+  if (isset($_POST['edit']['vote_storylink_url'])) {
+    $node->vote_storylink_url = $_POST['edit']['vote_storylink_url'];
+  }
+  elseif ($_GET['edit']['url']) {
+    $node->vote_storylink_url = check_url($_GET['edit']['url']);;
+  }
+  elseif (empty($node->vote_storylink_url)) {
+    $node->vote_storylink_url = 'http://';
+  }
+  vote_storylink_node_build($node);
+}
+
+/**
+ * Implementation of hook_validate().
+ */
+function vote_storylink_validate(&$node) {
+  vote_storylink_node_build($node);
+  if ($nid = db_result(db_query("SELECT ln.nid FROM {links} l INNER JOIN {links_node} ln ON l.lid = ln.lid WHERE ln.nid <> %d AND LOWER(l.url) = LOWER('%s')", $node->nid, $node->vote_storylink_url))) {
+    form_set_error('vote_storylink_url', t('This story is already submitted. <a href="@url">Click here</a> to view and vote on it.', array('@url' => url('node/'. $nid))));
+  }
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function vote_storylink_delete(&$node) {
+  // Delete the values from a node that is being erased
+  // Don't care if it's "supposed" to have links -- delete if found anyway
+  vote_storylink_node_build($node);
+  links_delete_links_for_node($node, 'vote_storylink');
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function vote_storylink_insert(&$node) {
+  vote_storylink_node_build($node);
+  links_save_links_for_node($node, 'vote_storylink');
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function vote_storylink_update(&$node) {
+  vote_storylink_node_build($node);
+  links_save_links_for_node($node, 'vote_storylink');
+}
+
+/**
+ * Implementation of hook_link().
+ */
+function vote_storylink_link($type, $node = NULL, $teaser = FALSE) {
+  $links = array();
+
+  if ($teaser && $type == 'node' && $node->type == 'storylink') {
+    $links['vote_storylink'] = array(
+      'title' => t('More info'),
+      'href' => 'node/'. $node->nid,
+      'attributes' => array('title' => t('More information about this post.'))
+    );
+  }
+
+  return $links;
+}
+
+/**
+ * Implementation of hook_block().
+ */
+function vote_storylink_block($op = 'list', $delta = 0) {
+  if ($op == 'list') {
+    $blocks[0]['info'] = t('Top story links');
+    $blocks[1]['info'] = t('User navigation story links');
+    $blocks[1]['cache'] = BLOCK_CACHE_PER_USER;
+    return $blocks;
+  }
+  elseif ($op == 'view') {
+    if (user_access('access content')) {
+      switch ($delta) {
+        case 0:
+          $title = t('Top stories');
+          $items = array();
+          $items[] = l(t('This day'), 'storylink/top/day');
+          $items[] = l(t('This week'), 'storylink/top/week');
+          $items[] = l(t('This month'), 'storylink/top/month');
+          $items[] = l(t('This year'), 'storylink/top/year');
+          $items[] = l(t('All time'), 'storylink/top');
+          break;
+        case 1:
+          global $user;
+          if ($user->uid) {
+            //userpoints integration
+            if (module_exists('userpoints')) {
+              $title = $user->name .' ('. userpoints_get_current_points($user->uid) .')';
+            }
+            else {
+              $title = $user->name;
+            }
+            $items = array();
+            $items[] = l(t('Submit new story'), 'node/add/storylink');
+            $items[] = l(t('My account'), 'user/'. $user->uid);
+            $items[] = l(t('My story links'), 'storylink/'. $user->uid);
+            $items[] = l(t('Log out'), 'logout');
+          }
+          break;
+      }
+
+      if ($items) {
+        $block['subject'] = check_plain($title);
+        $block['content'] = theme('item_list', $items);
+      }
+
+      return $block;
+    }
+  }
+}
+
+/**
+ * Display different views of the storylinks
+ */
+function vote_storylink_page_new() {
+  drupal_set_title($title = t('New story links'));
+  $sql = db_rewrite_sql("SELECT n.nid, n.created FROM {node} n WHERE n.type = 'storylink' AND n.status = 1 ORDER BY n.created DESC");
+  $result = pager_query($sql, variable_get('default_nodes_main', 10));
+  while ($node = db_fetch_object($result)) {
+    $output .= node_view(node_load($node->nid), 1);
+  }
+  $output .= theme('pager', NULL, variable_get('default_nodes_main', 10));
+  $output .= theme('feed_icon', url('storylink/new/feed'), $title);
+
+  $feed_url = url('storylink/new/feed', array('absolute' => TRUE));
+  drupal_add_feed($feed_url, t('RSS - @title', array('@title' => $title)));
+
+  return $output;
+}
+
+function vote_storylink_page_queue() {
+  drupal_set_title($title = t('Queue story links'));
+  $sql = db_rewrite_sql("SELECT n.nid, n.created FROM {node} n WHERE n.type = 'storylink' AND n.status = 1 AND n.promote = 0 ORDER BY n.created DESC");
+  $result = pager_query($sql, variable_get('default_nodes_main', 10));
+  while ($node = db_fetch_object($result)) {
+    $output .= node_view(node_load($node->nid), 1);
+  }
+  $output .= theme('pager', NULL, variable_get('default_nodes_main', 10));
+  $output .= theme('feed_icon', url('storylink/queue/feed'), $title);
+
+  $feed_url = url('storylink/queue/feed', array('absolute' => TRUE));
+  drupal_add_feed($feed_url, t('RSS - @title', array('@title' => $title)));
+
+  return $output;
+}
+
+function vote_storylink_page_top() {
+  drupal_set_title($title = t('Popular story links'));
+  $sql = db_rewrite_sql("SELECT n.nid, n.created, v.content_id, v.value, v.tag, v.function FROM {node} n INNER JOIN {votingapi_cache} v ON n.nid = v.content_id WHERE n.type = 'storylink' AND n.status = 1 AND v.tag = 'vote' AND v.function = 'sum' AND v.content_type = 'node' ORDER BY v.value DESC, n.created DESC");
+  $result = pager_query($sql, variable_get('default_nodes_main', 10));
+  while ($node = db_fetch_object($result)) {
+    $output .= node_view(node_load($node->nid), 1);
+  }
+  $output .= theme('pager', NULL, variable_get('default_nodes_main', 10));
+  $output .= theme('feed_icon', url('storylink/top/feed'), $title);
+
+  $feed_url = url('storylink/top/feed', array('absolute' => TRUE));
+  drupal_add_feed($feed_url, t('RSS - @title', array('@title' => $title)));
+
+  return $output;
+}
+
+function vote_storylink_page_interval_top($interval) {
+  drupal_set_title($title = t('Popular story links this @epoch', array('@epoch' => t($interval))));
+  $epoch = strtotime("-1 $interval");
+  $sql = db_rewrite_sql("SELECT n.nid, n.created, v.content_id, v.value, v.tag, v.function FROM {node} n INNER JOIN {votingapi_cache} v ON n.nid = v.content_id WHERE n.type = 'storylink' AND n.status = 1 AND n.created >= %d AND v.tag = 'vote' AND v.function = 'sum' AND v.content_type = 'node' ORDER BY v.value DESC, n.created DESC");
+  $result = pager_query($sql, variable_get('default_nodes_main', 10), 0, NULL, $epoch);
+  while ($node = db_fetch_object($result)) {
+    $output .= node_view(node_load($node->nid), 1);
+  }
+  $output .= theme('pager', NULL, variable_get('default_nodes_main', 10));
+  $output .= theme('feed_icon', url("storylink/top/$interval/feed"), $title);
+
+  $feed_url = url("storylink/top/$interval/feed", array('absolute' => TRUE));
+  drupal_add_feed($feed_url, t('RSS - @title', array('@title' => $title)));
+
+  return $output;
+}
+
+/**
+ * Displays a Drupal page containing recent storylink entries of a given user.
+ */
+function vote_storylink_page_user($account) {
+  global $user;
+
+  drupal_set_title($title = t("@name's story links", array('@name' => $account->name)));
+  $sql = db_rewrite_sql("SELECT n.nid, n.created FROM {node} n WHERE type = 'storylink' AND n.uid = %d AND n.status = 1 ORDER BY n.created DESC");
+  $result = pager_query($sql, variable_get('default_nodes_main', 10), 0, NULL, $account->uid);
+  while ($node = db_fetch_object($result)) {
+    $output .= node_view(node_load($node->nid), 1);
+  }
+  $output .= theme('pager', NULL, variable_get('default_nodes_main', 10));
+  $output .= theme('feed_icon', url("storylink/$account->uid/feed"), $title);
+
+  $feed_url = url("storylink/$account->uid/feed", array('absolute' => TRUE));
+  drupal_add_feed($feed_url, t('RSS - @title', array('@title' => $title)));
+
+  return $output;
+}
+
+/**
+ * Displays an RSS feed containing recent storylink entries of all users.
+ */
+function vote_storylink_feed_new() {
+  $sql = db_rewrite_sql("SELECT n.nid, n.title, n.created, r.teaser FROM {node} n INNER JOIN {node_revisions} r ON n.vid = r.vid WHERE n.type = 'storylink' AND n.status = 1 ORDER BY n.created DESC");
+  $result = db_query_range($sql, 0, variable_get('feed_default_items', 10));
+  $channel['title'] = variable_get('site_name', 'drupal') .' new';
+  $channel['link'] = url('storylink/new', array('absolute' => TRUE));
+  $channel['description'] = t('New storylinks');
+  node_feed($result, $channel);
+}
+
+function vote_storylink_feed_queue() {
+  $sql = db_rewrite_sql("SELECT n.nid, n.title, n.created, r.teaser FROM {node} n INNER JOIN {node_revisions} r ON n.vid = r.vid WHERE n.type = 'storylink' AND n.status = 1 AND n.promote = 0 ORDER BY n.created DESC");
+  $result = db_query_range($sql, 0, variable_get('feed_default_items', 10));
+  $channel['title'] = variable_get('site_name', 'drupal') .' queue';
+  $channel['link'] = url('storylink/queue', array('absolute' => TRUE));
+  $channel['description'] = t('Queued storylinks');
+  node_feed($result, $channel);
+}
+
+function vote_storylink_feed_top() {
+  $sql = db_rewrite_sql("SELECT n.nid, n.created, n.title, r.teaser, v.content_id, v.value, v.tag, v.function FROM {node} n INNER JOIN {node_revisions} r ON n.vid = r.vid INNER JOIN {votingapi_cache} v ON n.nid = v.content_id WHERE n.type = 'storylink' AND n.status = 1 AND v.tag = 'vote' AND v.function = 'sum' AND v.content_type = 'node' ORDER BY v.value DESC, n.created DESC");
+  $result = db_query_range($sql, 0, variable_get('feed_default_items', 10));
+  $channel['title'] = variable_get('site_name', 'drupal') .' popular';
+  $channel['link'] = url('storylink/top', array('absolute' => TRUE));
+  $channel['description'] = t('Popular storylinks');
+  node_feed($result, $channel);
+}
+
+function vote_storylink_feed_interval_top($interval) {
+  $epoch = strtotime("-1 $interval");
+  $sql = db_rewrite_sql("SELECT n.nid, n.created, n.title, r.teaser, v.content_id, v.value, v.tag, v.function FROM {node} n INNER JOIN {node_revisions} r ON n.vid = r.vid INNER JOIN {votingapi_cache} v ON n.nid = v.content_id WHERE n.type = 'storylink' AND n.status = 1 AND n.created >= %d AND v.tag = 'vote' AND v.function = 'sum' AND v.content_type = 'node' ORDER BY v.value DESC, n.created DESC");
+  $result = db_query_range($sql, $epoch, 0, variable_get('feed_default_items', 10));
+  $channel['title'] = variable_get('site_name', 'drupal') .' popular story links this '. $interval;
+  $channel['link'] = url("storylink/top/$interval", array('absolute' => TRUE));
+  $channel['description'] = t('Popular storylinks');
+  node_feed($result, $channel);
+}
+
+function vote_storylink_feed_user($account = NULL) {
+  global $user;
+
+  if (empty($account)) {
+    $account = $user;
+  }
+  $sql = db_rewrite_sql("SELECT n.nid, n.title, n.created, r.teaser, u.name, u.uid FROM {node} n INNER JOIN {node_revisions} r ON n.vid = r.vid INNER JOIN {users} u ON n.uid = u.uid WHERE n.type = 'storylink' AND u.uid = %d AND n.status = 1 ORDER BY n.created DESC");
+  $result = db_query_range($sql, $account->uid, 0, variable_get('feed_default_items', 10));
+  $channel['title'] = $account->name ."'s story links";
+  $channel['link'] = url("storylink/$uid", array('absolute' => TRUE));
+  $channel['description'] = t('User storylinks');
+  node_feed($result, $channel);
+}
+
+/**
+ * Theme the display of (via example.com).
+ */
+function theme_vote_storylink_via($link_url) {
+  $link_url = parse_url($link_url);
+  $output = '<div class="vote-up-down-via">('. t('via @domain', array('@domain' => $link_url['host'])) .')</div>';
+  return $output;
+}
+
+/**
+ * Validate the URL.
+ */
+function _vote_storylink_valid_url($formelement, $fieldname) {
+  $url = $formelement['#value'];
+  if (!preg_match('/^(http|https):\/\/[a-z0-9]+([\-\.]{1,2}[a-z0-9]+)*\.[a-z]{2,6}((:[0-9]{1,5})?\/.*)?$/i', $url)) {
+    form_set_error($fieldname, t('The URL is not valid.'));
+  }
+}
+
+/**
+ * To use the links API, we sometimes need to populate the internal data
+ * structure $node->vote_storylink, which is an array of link-definition
+ * arrays. In this case, the outer array always contains exactly one element
+ * because we are interested only in the primary URL for the storylink. If
+ * this site allows "related links" for storylink nodes, that's handled
+ * by the links_related module, not here.
+ */
+function vote_storylink_node_build(&$node, $url = '') {
+  if (empty($url)) {
+    $url = links_normalize_url($node->vote_storylink_url);
+  }
+  else {
+    $url = links_normalize_url($url);
+  }
+  $node->vote_storylink_url = $url;
+  $link = array(
+    'url' => $url,
+    'link_title' => $node->title,
+    'weight' => 0,
+  );
+  // Wrap $link as the [0] element of a trivial outer array.
+  $node->vote_storylink = array($link);
+}

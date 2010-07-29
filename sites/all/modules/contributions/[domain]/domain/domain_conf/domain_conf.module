@@ -1,0 +1,438 @@
+<?php
+// $Id: domain_conf.module,v 1.34 2009/02/20 20:02:20 agentken Exp $
+
+/**
+ * @defgroup domain_conf Domain Conf: configuration extension
+ * Functions for the Domain Conf module.
+ */
+
+/**
+ * @file
+ * Domain manager configuration options.
+ *
+ * @ingroup domain_conf
+ */
+
+/**
+ * Implementats hook_domain_bootstrap_full().
+ */
+function domain_conf_domain_bootstrap_full($domain) {
+  $data = array();
+  $data = db_fetch_array(db_query("SELECT settings FROM {domain_conf} WHERE domain_id = %d", $domain['domain_id']));
+  if (!empty($data)) {
+    global $conf;
+    $settings = unserialize($data['settings']);
+    // Overwrite the $conf variables.
+    foreach ($settings as $key => $value) {
+      $conf[$key] = $value;
+    }
+  }
+}
+
+/**
+ * Implements hook_init()
+ */
+function domain_conf_init() {
+  // Allow sites to add implementations of hook_domainconf() without hacking.
+  // See http://drupal.org/node/236877.
+  if (arg(0) == 'admin') {
+    $extra = drupal_get_path('module', 'domain_conf') .'/domain_conf.inc';
+    if (file_exists($extra)) {
+      include $extra;
+    }
+  }
+}
+
+/**
+ * Implements hook_menu()
+ */
+function domain_conf_menu() {
+  $items = array();
+  $items['admin/build/domain/conf/%domain'] = array(
+    'title' => 'Domain site settings',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('administer domains'),
+    'page callback' => 'domain_conf_page',
+    'page arguments' => array(4),
+    'file' => 'domain_conf.admin.inc',
+  );
+  $items['admin/build/domain/conf-reset/%domain'] = array(
+    'title' => 'Domain site settings',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('administer domains'),
+    'page callback' => 'domain_conf_reset',
+    'page arguments' => array(4),
+    'file' => 'domain_conf.admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_theme()
+ */
+function domain_conf_theme() {
+  $themes = array(
+    'domain_conf_reset' => array(
+      'arguments' => array('domain' => array()),
+    ),
+  );
+  return $themes;
+}
+
+/**
+ * Implementation of hook_enable().
+ *
+ * Register the domain_conf with the domain module so it's loaded during domain
+ * bootstrap and can implement domain_bootstrap hooks.
+ */
+function domain_conf_enable() {
+  domain_bootstrap_register();
+}
+
+/**
+ * Implementation of hook_disable().
+ */
+function domain_conf_disable() {
+  domain_bootstrap_unregister('domain_conf');
+}
+
+/**
+ * Implements hook_domainlinks()
+ */
+function domain_conf_domainlinks($domain) {
+  static $extra;
+  if (!isset($extra)) {
+    $extra = domain_conf_api();
+  }
+  if ($domain['domain_id'] > 0 || !empty($extra)) {
+    $links[] = array(
+      'title' => t('settings'),
+      'path' => 'admin/build/domain/conf/'. $domain['domain_id']
+    );
+    return $links;
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_form_alter()
+ *
+ * Since this function is only loaded at the path admin/build/domain/conf, we
+ * don't have to worry about hook_form_alter() being called when not wanted.
+ */
+function domain_conf_form_alter(&$form, &$form_state, $form_id) {
+  // TODO: Replace with hook_domainbatch()?
+  // Check to be certain that we are on the right form page.
+  $module = arg(2);
+  $action = arg(3);
+  // If we are making the form, load our alterations.
+  if ($form_id == 'system_site_information_settings' && $module == 'domain' && $action == 'conf') {
+    domain_conf_system($form, $form_state, $form_id);
+  }
+}
+
+/**
+ * Implements hook_domainwarnings()
+ */
+function domain_conf_domainwarnings() {
+  // These are the forms for variables set by Domain Conf.
+  return array(
+    'system_admin_theme_settings',
+    'system_date_time_settings',
+    'system_site_information_settings',
+    'system_site_maintenance_settings'
+  );
+}
+
+/**
+ * Implements hook_domainbatch()
+ */
+function domain_conf_domainbatch() {
+  $batch = array();
+  // Allows the deletion of all Domain Configuration rows.
+  $batch['domain_conf'] = array(
+    '#form' => array(
+      '#title' => t('Reset configurations'),
+      '#type' => 'checkbox',
+      '#options' => array(0 => 1, 1 => t('Reset')),
+      '#description' => t('Delete custom settings for this domain.'),
+    ),
+    '#domain_action' => 'domain_delete',
+    '#system_default' => 0,
+    '#variable' => 'domain_conf',
+    '#meta_description' => t('Delete custom settings for domains as supplied by Domain Configuration.'),
+    '#table' => 'domain_conf',
+    '#weight' => -2,
+  );
+  // Change the email address.
+  $batch['site_mail'] = array(
+    '#form' => array(
+      '#title' => t('Email address'),
+      '#type' => 'textfield',
+      '#size' => 40,
+      '#maxlength' => 255,
+      '#description' => t('Set the email address for this domain.'),
+    ),
+    '#domain_action' => 'domain_conf',
+    '#system_default' => variable_get('site_mail', ''),
+    '#variable' => 'site_mail',
+    '#meta_description' => t('Set the email address for all domains.'),
+    '#data_type' => 'string',
+    '#weight' => -8,
+  );
+  // Change the site slogan.
+  $batch['site_slogan'] = array(
+    '#form' => array(
+      '#title' => t('Site slogan'),
+      '#type' => 'textfield',
+      '#size' => 60,
+      '#maxlength' => 255,
+      '#description' => t('The slogan of this domain. Some themes display a slogan when available.'),
+    ),
+    '#domain_action' => 'domain_conf',
+    '#system_default' => variable_get('site_slogan', ''),
+    '#variable' => 'site_slogan',
+    '#meta_description' => t('Set the site slogan for all domains.'),
+    '#data_type' => 'string',
+    '#weight' => -8,
+  );
+  // Change the site slogan.
+  $batch['site_mission'] = array(
+    '#form' => array(
+      '#title' => t('Site mission'),
+      '#type' => 'textarea',
+      '#cols' => 30,
+      '#rows' => 5,
+      '#description' => t('The mission statement or focus for this domain.'),
+    ),
+    '#domain_action' => 'domain_conf',
+    '#system_default' => variable_get('site_mission', ''),
+    '#variable' => 'site_mission',
+    '#meta_description' => t('Set the site mission for all domains.'),
+    '#data_type' => 'string',
+    '#weight' => -8,
+  );
+  // Change the site footer.
+  $batch['site_footer'] = array(
+    '#form' => array(
+      '#title' => t('Site footer'),
+      '#type' => 'textarea',
+      '#cols' => 30,
+      '#rows' => 5,
+      '#description' => t('This text will be displayed at the bottom of each page for this domain.'),
+    ),
+    '#domain_action' => 'domain_conf',
+    '#system_default' => variable_get('site_footer', ''),
+    '#variable' => 'site_footer',
+    '#meta_description' => t('Set the site footer for all domains.'),
+    '#data_type' => 'string',
+    '#weight' => -8,
+  );
+  // Change the site frontpage.
+  $batch['site_frontpage'] = array(
+    '#form' => array(
+      '#title' => t('Site frontpage'),
+      '#type' => 'textfield',
+      '#size' => 30,
+      '#maxlength' => 255,
+      '#description' => t('The home page displays content from this relative URL. If unsure, specify "node".'),
+    ),
+    '#domain_action' => 'domain_conf',
+    '#system_default' => variable_get('site_frontpage', 'node'),
+    '#variable' => 'site_frontpage',
+    '#meta_description' => t('Set the site frontpage for all domains.'),
+    '#data_type' => 'string',
+    '#weight' => -8,
+  );
+  // Change the anonymous user name.
+  $batch['anonymous'] = array(
+    '#form' => array(
+      '#title' => t('Anonymous user'),
+      '#type' => 'textfield',
+      '#size' => 30,
+      '#maxlength' => 255,
+      '#description' => t('The name used to indicate anonymous users for this domain.'),
+    ),
+    '#domain_action' => 'domain_conf',
+    '#system_default' => variable_get('anonymous', 'Anonymous'),
+    '#variable' => 'anonymous',
+    '#meta_description' => t('Set the anonymous user label for all domains.'),
+    '#data_type' => 'string',
+    '#weight' => -8,
+  );
+  // Change the administrative theme.
+  $themes = list_themes();
+  ksort($themes);
+  $options[] = t('Use domain default theme');
+  foreach ($themes as $key => $value) {
+    $options[$key] = $key;
+  }
+  $batch['admin_theme'] = array(
+    '#form' => array(
+      '#title' => t('Administrative theme'),
+      '#type' => 'select',
+      '#options' => $options,
+      '#description' => t('Select the administrative theme for this domain.'),
+    ),
+    '#domain_action' => 'domain_conf',
+    '#system_default' => variable_get('admin_theme', 0),
+    '#variable' => 'admin_theme',
+    '#meta_description' => t('Set the administrative theme for all domains.'),
+    '#data_type' => 'string',
+    '#weight' => -8,
+  );
+  // Change the menus
+  $menus = menu_get_menus();
+  $batch['menu_default_node_menu'] = array(
+    '#form' => array(
+      '#title' => t('Default menu for content'),
+      '#type' => 'select',
+      '#options' => $menus,
+      '#description' => t('Choose the menu to be the default in the menu options in the content authoring form.'),
+    ),
+    '#domain_action' => 'domain_conf',
+    '#system_default' => variable_get('menu_default_node_menu', 0),
+    '#variable' => 'menu_default_node_menu',
+    '#meta_description' => t('Set the default menu options for the content authoring form in all domains.'),
+    '#data_type' => 'string',
+    '#weight' => -6,
+  );
+  $menus[0] = t('Do not use for this site');
+  $batch['menu_primary_links_source'] = array(
+    '#form' => array(
+      '#title' => t('Primary links menu'),
+      '#type' => 'select',
+      '#options' => $menus,
+      '#description' => t('Select the primary links for this site.'),
+    ),
+    '#domain_action' => 'domain_conf',
+    '#system_default' => variable_get('menu_primary_links_source', 0),
+    '#variable' => 'menu_primary_links_source',
+    '#meta_description' => t('Set the primary links menu in all domains.'),
+    '#data_type' => 'string',
+    '#weight' => -6,
+  );
+  $batch['menu_secondary_links_source'] = array(
+    '#form' => array(
+      '#title' => t('Secondary links menu'),
+      '#type' => 'select',
+      '#options' => $menus,
+      '#description' => t('Select the secondary links for this site.'),
+    ),
+    '#domain_action' => 'domain_conf',
+    '#system_default' => variable_get('menu_secondary_links_source', 0),
+    '#variable' => 'menu_secondary_links_source',
+    '#meta_description' => t('Set the secondary links menu in all domains.'),
+    '#data_type' => 'string',
+    '#weight' => -6,
+  );
+  // Change the timezone.
+  $zones = _system_zonelist();
+  $batch['date_default_timezone'] = array(
+    '#form' => array(
+      '#title' => t('Timezone default'),
+      '#type' => 'select',
+      '#options' => $zones,
+      '#description' => t('Select the default site time zone.'),
+    ),
+    '#domain_action' => 'domain_conf',
+    '#system_default' => variable_get('date_default_timezone', 0),
+    '#variable' => 'date_default_timezone',
+    '#meta_description' => t('Set the default timezone for all domains.'),
+    '#data_type' => 'string',
+    '#weight' => -4,
+  );
+  // Toggle the site offline status.
+  $batch['site_offline'] = array(
+    '#form' => array(
+      '#title' => t('Site status'),
+      '#type' => 'radios',
+      '#options' => array(t('Online'), t('Off-line')),
+      '#description' => t('Toggle online/offline status.'),
+    ),
+    '#domain_action' => 'domain_conf',
+    '#system_default' => variable_get('site_offline', 0),
+    '#variable' => 'site_offline',
+    '#meta_description' => t('Set the online / offline status for all domains.'),
+    '#data_type' => 'integer',
+    '#weight' => -4,
+  );
+  // Change the site offline message.
+  $batch['site_offline_message'] = array(
+    '#form' => array(
+      '#title' => t('Site offline message'),
+      '#type' => 'textarea',
+      '#cols' => 30,
+      '#rows' => 5,
+      '#description' => t('Message to show visitors when this domain is in off-line mode.'),
+    ),
+    '#domain_action' => 'domain_conf',
+    '#system_default' => variable_get('site_offline_message', ''),
+    '#variable' => 'site_offline_message',
+    '#meta_description' => t('Set the site offline message for all domains.'),
+    '#data_type' => 'string',
+    '#weight' => -4,
+  );
+  return $batch;
+}
+
+/**
+ * Retrieves elements from hook_domainconf() and formats them
+ * as needed.
+ *
+ * @param $all
+ * Should the function return all hook implementations or just those marked
+ * with the domain_settings flag.  Defaults to FALSE.  Used to determine if
+ * we are loading configuration options specific to the Domain Access module.
+ *
+ * @return
+ * An array of form elements according to the FormsAPI or an empty array.
+ */
+function domain_conf_api($all = FALSE) {
+  global $_domain;
+  $options = array();
+  $extra = module_invoke_all('domainconf', $_domain);
+  if (!empty($extra)) {
+    foreach ($extra as $key => $value) {
+      if ($value['#domain_setting'] == TRUE || $all == TRUE) {
+        // Discard the #domain_setting flag; it is not needed.
+        unset($value['#domain_setting']);
+        // Set the $options array.
+        $options[$key] = $value;
+      }
+    }
+  }
+  return $options;
+}
+
+/**
+ * Implements hook_block().
+ *
+ * The primary links and secondary links blocks do not respect our settings,
+ * so we replace it with the following blocks.
+ */
+function domain_conf_block($op = 'list', $delta = 0, $edit = array()) {
+  if ($op == 'list') {
+    $blocks = array();
+    $blocks['domain-primary-links']['info'] = t('Domain primary links');
+    $blocks['domain-secondary-links']['info'] = t('Domain secondary links');
+    // Menu blocks can't be cached because each menu item can have
+    // a custom access callback. menu.inc manages its own caching.
+    $blocks['domain-primary-links']['cache'] = BLOCK_NO_CACHE;
+    $blocks['domain-secondary-links']['cache'] = BLOCK_NO_CACHE;
+    return $blocks;
+  }
+  else if ($op == 'view') {
+    $menus = menu_get_menus();
+    $string = str_replace('domain-', '', $delta);
+    $source = 'menu_'. str_replace('-', '_', $string) .'_source';
+    $delta = variable_get($source, $string);
+    // Some domains can disable primary and secondary links.
+    if (empty($delta)) {
+      return;
+    }
+    $data['subject'] = check_plain($menus[$string]);
+    $data['content'] = menu_tree($delta);
+    return $data;
+  }
+}

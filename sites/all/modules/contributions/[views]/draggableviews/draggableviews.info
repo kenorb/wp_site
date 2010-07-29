@@ -1,0 +1,19 @@
+; $Id: draggableviews.info,v 1.7.2.3 2009/01/09 01:38:33 sevi Exp $
+name = Draggable views
+description = Make views draggable
+dependencies[] = views
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-09-21
+version = "6.x-3.0"
+core = "6.x"
+project = "draggableviews"
+datestamp = "1222032618"
+
+
+; Information added by drupal.org packaging script on 2009-01-12
+version = "6.x-3.x-dev"
+core = "6.x"
+project = "draggableviews"
+datestamp = "1231718690"
+

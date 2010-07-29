@@ -1,0 +1,325 @@
+<?php
+// $Id: lm_paypal_subscriptions.test,v 1.1.2.5 2009/01/19 07:46:57 lyricnz Exp $
+
+/**
+ * Test the behaviour of the LM PayPal Subscriptions module by exercising the
+ * UI, and posting "fake" IPNs to Drupal (while IPN validation is disabled).
+ *
+ * A normal subscription consists of two IPNs, which may arrive in either order:
+ *
+ * - a "payment" IPN (txn_type = subscr_payment).  Example: sandbox-subscription-ipn1.txt
+ *
+ *   [business] => lyricn_1231934529_biz@gmail.com
+ *   [charset] => windows-1252
+ *   [custom] => a:1:{s:3:"uid";s:2:"32";}
+ *   [first_name] => Test
+ *   [item_name] => SUB_fhdsjk
+ *   [item_number] => 1
+ *   [last_name] => User
+ *   [mc_currency] => USD
+ *   [mc_fee] => 0.59
+ *   [mc_gross] => 10.00
+ *   [notify_version] => 2.6
+ *   [payer_email] => lyricn_1231934462_per@gmail.com
+ *   [payer_id] => ZA2CSA84N7VJ2
+ *   [payer_status] => verified
+ *   [payment_date] => 04:09:13 Jan 14, 2009 PST
+ *   [payment_fee] => 0.59
+ *   [payment_gross] => 10.00
+ *   [payment_status] => Completed
+ *   [payment_type] => instant
+ *   [protection_eligibility] => Ineligible
+ *   [receiver_email] => lyricn_1231934529_biz@gmail.com
+ *   [receiver_id] => CR9MEWJQP4VNQ
+ *   [residence_country] => US
+ *   [subscr_id] => S-42682733UT2039407
+ *   [test_ipn] => 1
+ *   [transaction_subject] =>
+ *   [txn_id] => 3F7709228S061651U
+ *   [txn_type] => subscr_payment
+ *   [verify_sign] => AyDOnC5O0V1PYe021HjyiDiWOGj9AhLZBhGigq5PxnL8StmJp3zbjKSX
+ *
+ * - A "signup" IPN (txn_type = subscr_signup).  Example: sandbox-subscription-ipn2.txt
+ *
+ *   [amount3] => 10.00
+ *   [business] => lyricn_1231934529_biz@gmail.com
+ *   [charset] => windows-1252
+ *   [custom] => a:1:{s:3:"uid";s:2:"32";}
+ *   [first_name] => Test
+ *   [item_name] => SUB_fhdsjk
+ *   [item_number] => 1
+ *   [last_name] => User
+ *   [mc_amount3] => 10.00
+ *   [mc_currency] => USD
+ *   [notify_version] => 2.6
+ *   [payer_email] => lyricn_1231934462_per@gmail.com
+ *   [payer_id] => ZA2CSA84N7VJ2
+ *   [payer_status] => verified
+ *   [period3] => 30 D
+ *   [reattempt] => 1
+ *   [receiver_email] => lyricn_1231934529_biz@gmail.com
+ *   [recurring] => 0
+ *   [residence_country] => US
+ *   [subscr_date] => 04:09:06 Jan 14, 2009 PST
+ *   [subscr_id] => S-42682733UT2039407
+ *   [test_ipn] => 1
+ *   [txn_type] => subscr_signup
+ *   [verify_sign] => AtwA42TnpWpE2tERdjX--OmWMdJzAjF-dAPq-9y5tGLw3xUy8I0sYA9d
+ *
+ *
+ */
+class LmPaypalSubscriptionsTestCase extends AbstractLmPaypalTestCase {
+
+  function getInfo() {
+    return array(
+      'name' => t('Subscriptions'),
+      'description' => t('Tests paid subscriptions to nodes/roles/groups.'),
+      'group' => t('LM Paypal'),
+    );
+  }
+
+  /**
+   * SimpleTest core method: code run before each and every test method.
+   */
+  function setUp() {
+    // Always call the setUp() function from the parent class.
+    parent::setUp('lm_paypal_subscriptions');
+
+    // Create users.
+    $admin_permissions = array(
+      'administer lm_paypal',
+      // 'access lm_paypal_donate',
+      // 'view lm_paypal_all_donations',
+      'access administration pages',
+      // 'administer blocks',
+      // 'administer filters',
+      // 'access user profiles',
+      'administer permissions',
+    );
+    $this->admin_user = $this->drupalCreateUser($admin_permissions);
+    $this->web_user = $this->drupalCreateUser(array('access lm_paypal_subscribe'));
+
+    // We don't care where it is, but it needs to be set
+    variable_set('lm_paypal_subscriptions_inprogress', LM_PAYPAL_SUBSCRIPTIONS_INPROGRESS_DEFAULT);
+    variable_set('lm_paypal_subscriptions_menu_rebuild', LM_PAYPAL_SUBSCRIPTIONS_MENU_REBUILD_DEFAULT);
+  }
+
+  /**
+   * SimpleTest core method: code run after each and every test method.
+   */
+  function tearDown() {
+
+    // Always call the tearDown() function from the parent class.
+    parent::tearDown();
+  }
+
+
+  /**
+   * Exercise the basic LM PayPal Donations pages.
+   */
+  function testLmPaypalSubscriptions() {
+    // Check Settings page.
+    $this->drupalLogin($this->admin_user);
+    $this->drupalGet('admin/settings/lm_paypal/subscriptions/settings');
+    $this->assertField('lm_paypal_subscriptions_inprogress');
+    $this->assertRaw(variable_get('lm_paypal_subscriptions_inprogress', NULL)); // TODO: check value is IN field?
+    $this->assertField('lm_paypal_subscriptions_menu_rebuild');
+    // $this->assertRaw(variable_get('lm_paypal_subscriptions_menu_rebuild', NULL)); // TODO: check value is IN field?
+
+    // Check the help page.
+    $this->drupalGet('admin/settings/lm_paypal/subscriptions');
+    $this->clickLink('LM PayPal Subscriptions Help');
+    $this->assertText('LM PayPal Subscriptions');
+    $this->assertText('Initial Configuration');
+
+    // Check the (empty) Subscriptions page.
+    $this->drupalGet('admin/settings/lm_paypal/subscriptions');
+    $this->assertNoRaw('<td');
+    // TODO: check form
+
+    // Check (empty) All Subscriptions page.
+    $this->clickLink('View All Subscribers to All Subscriptions');
+    $this->assertText('Show Subscribers');
+    $this->assertText('No subs found.');
+    $this->assertField('filter');
+    // TODO: check page
+    // TODO: check filter functionality
+
+    // Create Subscription pages.
+    $this->drupalGet('admin/settings/lm_paypal/subscriptions');
+    $this->clickLink('Create New Subscription');
+    $this->assertText('Create New Subscription');
+
+    // There's no point in asserting a bunch of fields - just submit it!
+
+    // Create a dummy user to get the Role that comes with it.
+    $dummy_user = $this->drupalCreateUser(array('access user profiles'));
+    $role_ids = array_keys($dummy_user->roles);
+    $rid = array_pop($role_ids);
+    $role_name = $dummy_user->roles[$rid];
+
+    // Create a basic subscription.
+    $subscription = array(
+      'item_name' => $this->randomName(4, 'SUB_'),
+      'description' => $this->randomName(4, 'DESC_'),
+      'kind' => 0, // role
+      'rid' => $rid,
+      // 'gid' OG
+      'a3' => '10.00', // regular rate
+      'p3' => 30, // regular billing cycle
+      't3' => 'D', // regular billing cycle units DWMY
+      // 'src' // recurring payments
+      // 'srt' // recurring times
+      'currency_code' => 'USD',
+      // 'return_url' => // override default
+      'send_admin_onsub' => FALSE,
+      'send_admin_onend' => FALSE,
+    );
+
+    $this->drupalPost($this->getUrl(), $subscription, t('Create subscription'));
+
+    // After post, redirects to all subscriptions screen
+    $this->assertText($subscription['item_name']);
+    $this->assertText($subscription['description']);
+    $this->assertText($role_name);
+    $this->assertText('live');
+
+    // Click on the link to the subscription.
+    $this->clickLink($subscription['item_name']);
+    $this->assertText('Show Subscription Details');
+    $this->assertText('Subscription 1');
+    $this->assertText($subscription['item_name']);
+    $this->assertText($subscription['description']);
+    $this->assertText($subscription['a3']);
+    $this->assertText(lm_paypal_unit2str(30, 'D'));
+    $this->assertText($subscription['currency_code']);
+
+    // Go back and click on the link to the role.
+    $this->drupalGet('admin/settings/lm_paypal/subscriptions');
+    $this->clickLink($role_name);
+    $this->assertText('Permissions');
+    $this->assertText($role_name);
+
+    // Go back and click on the link to the subscribers.
+    $this->drupalGet('admin/settings/lm_paypal/subscriptions');
+    $this->clickLink('subscribers');
+    $this->assertText('Show Subscribers');
+    $this->assertField('filter');
+    $this->assertText('No subs found.');
+
+
+    // Log in as the user, check they DON'T have the role, or subscription...
+    $this->web_user = $this->drupalLogin($this->web_user);
+    $this->assertFalse(isset($this->web_user->roles[$rid]), "User does not already have role");
+    $this->clickLink('My account');
+    // TODO: check for subscription 'unsubscribe'
+
+    // ...then subscribe to this...
+    $this->clickLink('subscribe');
+    $this->assertText('PayPal Subscribe');
+    $this->assertText($subscription['item_name']);
+    $this->assertText($subscription['description']);
+
+    // Check subscribe screen.
+    $this->assertText($subscription['item_name']);
+    $this->assertText($subscription['description']);
+    // TODO: check text and the generated form
+    $custom = htmlspecialchars(serialize(array('uid' => $this->web_user->uid)));
+    $this->assertRaw('<form action="https://www.sandbox.paypal.com/cgi-bin/webscr" method="post">');
+    $this->assertRaw('<input type="hidden" name="custom" value="' . $custom . '">');
+
+    // Determine the subscription id.
+    $path_elements = explode('/', $this->getUrl());
+    $sub_id = $path_elements[count($path_elements) - 1];
+
+    // Subscribe (using two fake IPNs).
+    $this->assertNoWatchdogErrors(WATCHDOG_WARNING, TRUE);
+    $ipn1 = $this->postPreparedIpn(
+      'sandbox-subscription-ipn1.txt',
+      array(
+        'item_number' => $sub_id,
+        'receiver_email' => variable_get('lm_paypal_business', NULL),
+        'payer_email' => $this->web_user->mail,
+        'custom' => serialize(array('uid' => $this->web_user->uid)),
+      )
+    );
+    $ipn2 = $this->postPreparedIpn(
+      'sandbox-subscription-ipn2.txt',
+      array(
+        // 'txn_type' => 'subscr_signup', // subscription
+        'item_number' => $sub_id,
+        'receiver_email' => $ipn1['receiver_email'],
+        'payer_email' => $ipn1['payer_email'],
+        'custom' => serialize(array('uid' => $this->web_user->uid)),
+
+        'mc_amount3' => $subscription['a3'], // 20
+        'mc_currency' => $subscription['currency_code'], // AUD
+        'period3' => $subscription['p3'] . ' ' . $subscription['t3'], // "30 D"
+
+      )
+    );
+    $this->assertNoWatchdogErrors(WATCHDOG_WARNING, FALSE);
+    // $this->dumpWatchdogErrors(WATCHDOG_DEBUG);
+
+    // $this->assertWatchdogError('Update this $ipn->custom stuff', WATCHDOG_ERROR);
+    // error_log("SUBSCRIPTION IPN = " . print_r($ipn, TRUE));
+
+    // As the user, check their My Account page
+    $this->drupalGet('/');
+    $this->clickLink('My account');
+    // TODO: fail!
+    // $this->writeFile('myaccount.html');
+
+    // As the admin, check all subscribers page
+    $this->drupalLogin($this->admin_user);
+    $this->drupalGet('admin/settings/lm_paypal/subscribers/0');
+    $this->assertNoText('No subs found.');
+    $this->assertText('Role');
+    $this->assertText($this->web_user->name);
+    $this->assertText($subscription['item_name']);
+    $this->assertText('paid');
+    $this->assertNoText('01/01/1970');
+    // $this->writeFile('allsubs.html');
+
+    // Check sub info link.
+    $this->clickLink($sub_id);
+    $this->assertText('Show Subscription Details');
+    $this->assertText('Subscription ' . $sub_id);
+    // $this->writeFile('sub1.html');
+
+    // Check sub edit
+    $this->drupalGet('admin/settings/lm_paypal/subscribers/0');
+    $this->clickLink('edit');
+    $this->assertText('Edit Subscriber');
+    $this->assertText('Uid ' . $this->web_user->uid); // ick, but that's what's shown
+    // $this->writeFile('sub1edit.html');
+    // TODO: test edit subscriber
+
+
+    // TODO: check wrong amount payment, wrong currency, etc
+
+    // TODO: user visits lm_paypal/subscriptions_inprogress  (or override)
+
+    // TODO: check the subscription
+    // $this->clickLink('My account');
+    // $this->assert
+
+
+    // TODO: test "you must login to subscribe" etc
+
+    // TODO: test T&C
+
+    // TODO: test cron expiry
+
+    // TODO: test IPN inprogress / cancellation / failure
+
+    // TODO: test OG
+
+    // TODO: test node sub
+
+    // TODO: inprocessing is via lm_paypal_process_in_subscr()
+    // $in = 'lm_paypal_process_in_';
+    // $f = $in . $ipn->txn_type;
+  }
+
+}

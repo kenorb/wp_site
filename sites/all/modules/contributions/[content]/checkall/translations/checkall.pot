@@ -1,0 +1,45 @@
+# $Id: checkall.pot,v 1.1.2.1 2008/11/18 22:49:24 markuspetrux Exp $
+#
+# LANGUAGE translation of Checkall module for Drupal
+# Copyright 2008 markus_petrux <EMAIL@ADDRESS>
+# Generated from files:
+#  checkall.module: n/a
+#  checkall.info: n/a
+#  checkall.js: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Checkall 6.x-2.x\n"
+"POT-Creation-Date: 2008-11-18 22:56+0100\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: checkall.module:0
+msgid "checkall"
+msgstr ""
+
+#: checkall.info:0
+msgid "Checkall"
+msgstr ""
+
+#: checkall.info:0
+msgid "Extends FormAPI checkboxes with the 'checkall' behavior."
+msgstr ""
+
+#: checkall.info:0
+msgid "User interface"
+msgstr ""
+
+#: checkall.js:0
+msgid "Uncheck all"
+msgstr ""
+
+#: checkall.js:0
+msgid "Check all"
+msgstr ""

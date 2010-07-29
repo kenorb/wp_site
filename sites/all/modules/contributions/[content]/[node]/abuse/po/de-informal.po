@@ -1,0 +1,272 @@
+# translation of de-informal.po to Deutsch
+# $Id: de-informal.po,v 1.1 2007/03/06 19:14:08 btmash Exp $
+# LANGUAGE translation of Drupal (abuse.module)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from file: abuse.module,v 1.2 2007/03/02 15:20:32 btmash
+#
+# Marco Rademacher <Marco.Rademacher@web.de>, 2007.
+msgid ""
+msgstr ""
+"Project-Id-Version: de-informal\n"
+"POT-Creation-Date: 2007-03-06 02:03+0100\n"
+"PO-Revision-Date: 2007-03-06 02:56+0100\n"
+"Last-Translator: Marco Rademacher <Marco.Rademacher@web.de>\n"
+"Language-Team: Deutsch\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#: abuse.module:32
+msgid "allow users to report abusive content"
+msgstr "Erlaubt Benutzern, anstößige Inhalte zu beanstanden"
+
+#: abuse.module:44
+msgid "flag"
+msgstr "Beanstanden"
+
+#: abuse.module:49
+msgid "warn user"
+msgstr "Benutzer verwarnen"
+
+#: abuse.module:54
+msgid "ban user"
+msgstr "Benutzer verbannen"
+
+#: abuse.module:59
+msgid "update"
+msgstr "Aktualisieren"
+
+#: abuse.module:65;0 abuse.info:0;0 watchlist/watchlist.info:0
+msgid "abuse"
+msgstr "Beanstandungen"
+
+#: abuse.module:71
+msgid "item"
+msgstr ""
+
+#: abuse.module:78
+msgid "Abuse"
+msgstr "Beanstandungen"
+
+#: abuse.module:79
+msgid "Describes what the settings generally do."
+msgstr ""
+
+#: abuse.module:91
+msgid "Pending (!num)"
+msgstr "Offene (!num)"
+
+#: abuse.module:97
+msgid "Hidden (!num)"
+msgstr "Versteckte (!num)"
+
+#: abuse.module:103
+msgid "Removed (!num)"
+msgstr "Gelöschte (!num)"
+
+#: abuse.module:116
+msgid "Settings for all abuse content"
+msgstr "Einstellungen für alle anstößigen Inhalte"
+
+#: abuse.module:117
+msgid "These settings apply to all content that is allowed to be flagged into the abuse administration system"
+msgstr "Diese Einstellungen gelten für alle Inhaltstypen, für die die Möglichkeit der Beanstandung eingerichtet wurde"
+
+#: abuse.module:123
+msgid "Abuse threshold"
+msgstr "Entscheidungs-Schwellenwert"
+
+#: abuse.module:132;521;529
+msgid "Warning subject"
+msgstr "Betreff der Verwarnung"
+
+#: abuse.module:141
+msgid "Warning body"
+msgstr "Text der Verwarnung"
+
+#: abuse.module:149
+msgid "Warning BCC"
+msgstr "Blindkopie der Verwarnung"
+
+#: abuse.module:157
+msgid "Abuse form intro text"
+msgstr "Einleitungstext auf dem Beanstandungs-Formular"
+
+#: abuse.module:165
+msgid "Enable flagging for these content types"
+msgstr "Aktiviere Beanstandungsmöglichkeit für diese Inhaltstypen"
+
+#: abuse.module:231;240;257;266
+msgid "Flag as offensive"
+msgstr "Beanstanden"
+
+#: abuse.module:234;243
+msgid "Notify administrators of problematic content"
+msgstr "Administratoren über problematischen Beitrag informieren"
+
+#: abuse.module:260;269
+msgid "Notify administrators of problematic comment"
+msgstr "Administratoren über problematischen Kommentar informieren"
+
+#: abuse.module:299
+msgid "Thank you for your report.  The item in question with be looked at by our moderators shortly."
+msgstr "Vielen Dank für deinen Report. Der fragwürdige Beitrag wird in Kürze von den Administratoren begutachtet."
+
+#: abuse.module:320;334;383
+msgid "from"
+msgstr "von"
+
+#: abuse.module:341
+msgid "email"
+msgstr "E-Mail"
+
+#: abuse.module:349
+msgid "about"
+msgstr "über"
+
+#: abuse.module:354
+msgid "reason"
+msgstr "Grund"
+
+#: abuse.module:360
+msgid "message"
+msgstr "Nachricht"
+
+#: abuse.module:366
+msgid "send"
+msgstr "Senden"
+
+#: abuse.module:370;401;542;549
+msgid "cancel"
+msgstr "Abbrechen"
+
+#: abuse.module:383
+msgid "<em>!field</em> is required"
+msgstr "<em>!field</em> wird benötigt"
+
+#: abuse.module:386
+msgid "a valid email address is required"
+msgstr "Es wird eine gültige E-Mail-Adresse benötigt"
+
+#: abuse.module:389
+msgid "please give a reason"
+msgstr "Bitte einen Grund angeben"
+
+#: abuse.module:407
+msgid "We have already received your report.  Thank you very much!"
+msgstr "Wir haben deinen Report schon bekommen. Vielen Dank dafür!"
+
+#: abuse.module:413
+msgid "You cannot flag your own content"
+msgstr "Du kannst deinen eigenen Beiträge nicht beanstanden"
+
+#: abuse.module:427
+msgid "Thank you for your report."
+msgstr "Vielen Dank für deinen Report."
+
+#: abuse.module:447;479
+msgid "Allow"
+msgstr "Erlauben"
+
+#: abuse.module:451;483
+msgid "Remove"
+msgstr "Entfernen"
+
+#: abuse.module:455;487;583
+msgid "Warn and Remove"
+msgstr "Verwarnen und entfernen"
+
+#: abuse.module:459;490;581
+msgid "Warn and Allow"
+msgstr "Warnen und erlauben"
+
+#: abuse.module:463;493
+msgid "Ban"
+msgstr "Verbannen"
+
+#: abuse.module:481
+msgid "Item allowed"
+msgstr "Erlaubt"
+
+#: abuse.module:485
+msgid "Item removed"
+msgstr "Entfernt"
+
+#: abuse.module:498
+msgid "Unknown operation on content"
+msgstr "Unbekannte Aktion auf Inhalten"
+
+#: abuse.module:534
+msgid "available fields are !title, !url, and !name"
+msgstr "Mögliche Ersetzungen wären !title, !url und !name"
+
+#: abuse.module:570
+msgid "Drupal"
+msgstr "Drupal"
+
+#: abuse.module:586
+msgid "Your email has been sent."
+msgstr "Die E-Mail wurde versendet."
+
+#: abuse.module:604
+msgid "Are you sure you want to ban !name?"
+msgstr "Bist du sicher, dass du !name verbannen möchtest?"
+
+#: abuse.module:608;619
+msgid "Yes"
+msgstr "Ja"
+
+#: abuse.module:612
+msgid "No"
+msgstr "Nein"
+
+#: abuse.module:639
+msgid "The user !name has been banned."
+msgstr "!name wurde verbannt."
+
+#: abuse.module:660
+msgid "by: !name"
+msgstr "Von: !name"
+
+#: abuse.module:661
+msgid "[!offence offences | !warning warnings]"
+msgstr "[!offence Anstößigkeiten | !warning Verwarnungen]"
+
+#: abuse.module:862
+msgid "foul language"
+msgstr "Verletzende Äußerung"
+
+#: abuse.module:863
+msgid "adult themes"
+msgstr "Falsche Altersfreigaben"
+
+#: abuse.module:864
+msgid "racist or sexist language"
+msgstr "Rechtswidrige Inhalte"
+
+#: abuse.module:865
+msgid "contains private information"
+msgstr "Vertraulichkeit missachtet"
+
+#: abuse.module:866
+msgid "other"
+msgstr "Andere"
+
+#: abuse.module:870
+msgid "OK"
+msgstr "OK"
+
+#: abuse.module:871
+msgid "Pending"
+msgstr "Offen"
+
+#: abuse.module:872
+msgid "Hidden"
+msgstr "Versteckt"
+
+#: abuse.module:873
+msgid "Removed"
+msgstr "Entfernt"
+

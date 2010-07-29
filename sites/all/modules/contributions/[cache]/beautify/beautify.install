@@ -1,0 +1,29 @@
+<?php // $Id: beautify.install,v 1.1.2.2 2009/01/09 23:47:02 psynaptic Exp $
+
+/**
+ * Implementation of hook_requirements().
+ */
+function beautify_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+  switch ($phase) {
+    case 'runtime':
+      if (!beautify_htmltidy_test($message, $version)) {
+        $requirements['beautify_htmltidy'] = array(
+          'title' => $t('HTML Tidy'),
+          'description' => $t('Download and install the HTML Tidy binary <a href="http://tidy.sourceforge.net/">http://tidy.sourceforge.net/</a>'),
+          'severity' => $phase == 'install' ? REQUIREMENT_WARNING : REQUIREMENT_ERROR,
+          'value' => $t('Tidy binary not found.'),
+        );
+      }
+      else {
+        $requirements['beautify_htmltidy'] = array(
+          'title' => $t('HTML Tidy'),
+          'severity' => REQUIREMENT_OK,
+          'value' => $t('HTMLTidy was found <code>%tidy_version</code>', array('%tidy_version' => $version)),
+        );
+      }
+    break;
+  }
+  return $requirements;
+}

@@ -1,0 +1,120 @@
+<?php
+// $Id: hs_subscriptions_taxonomy.module,v 1.5 2008/12/01 02:21:17 wimleers Exp $
+
+/**
+ * @file
+ * Makes the Taxonomy Subscriptions module use Hierarchical Select form items
+ * at user/<uid>/subscriptions/taxa.
+ */
+
+
+//----------------------------------------------------------------------------
+// Drupal core hooks.
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function hs_subscriptions_taxonomy_form_alter($form_id, &$form) {
+  if ($form_id == 'subscriptions_taxonomy_taxa_form') {
+    foreach ($form as $name => $element) {
+      if (is_numeric($name)) {
+        // Rip the per-vocabulary settings out of the fieldsets.
+        $form[$name] = $form[$name][0];
+
+        // Remove the #theme property, we don't need that anymore.
+        unset($form[$name]['#theme']);
+
+        // 1) Get the tid of the first checkbox.
+        // 2) Get the term object for this first term, from which we can get
+        //    the vid.
+        // 3) Get the vocabulary object using that vid.
+        $tid = reset(array_keys($form[$name]['checkboxes']));
+        $term = taxonomy_get_term($tid);
+        $vocabulary = taxonomy_get_vocabulary($term->vid);
+
+        // 1) Extract the tids of the selected terms.
+        // 2) Make the checkboxes value form elements, to keep the form
+        // structure (and the $form_state['values'] structure) the same as the original.
+        $selected_tids = array();
+        foreach ($form[$name]['checkboxes'] as $tid => $element) {
+          // Selected?
+          if ($element[-1]['#default_value'] == 1) { // -1 => never selected, 0 => once selected, but not at the moment, 1 => selected
+            $selected_tids[] = $tid;
+          }
+
+          $form[$name]['checkboxes'][$tid][-1]['#type'] = 'value';
+          $form[$name]['checkboxes'][$tid][-1]['#value'] = $form[$name]['checkboxes'][$tid][-1]['#default_value'];
+          unset($form[$name]['checkboxes'][$tid][-1]['#default_value']);
+        }
+
+        // Add a taxonomy select instead.
+        $form[$name]['select'] = _taxonomy_term_select($vocabulary->name, 'this-argument-is-not-used', array(), $vocabulary->vid, '', TRUE, '<'. t('none') .'>', array());
+
+        // Finally, make it a Hierarchical Select!
+        $form[$name]['select']['#type'] = 'hierarchical_select';
+        $form[$name]['select']['#default_value'] = $selected_tids;
+        $form[$name]['select']['#config'] = array(
+          'module' => 'hs_taxonomy',
+          'params' => array(
+            'vid' => $vocabulary->vid,
+          ),
+          'save_lineage'    => 0,
+          'enforce_deepest' => 1,
+          'resizable'       => 1,
+          'level_labels' => array(
+            'status' => 0,
+          ),
+          'dropbox' => array(
+            'status'   => $form[$name]['select']['#multiple'],
+            'title'    => t('Subscribed to:'),
+            'limit'    => 0,
+            'reset_hs' => 0,
+          ),
+          'editability' => array(
+            'status' => 0,
+          ),
+        );
+      }
+    }
+
+    // Since this obviously can't work with the default submit handler, alter
+    // the form back to its original state in our validation handler.
+    $form['#validate']['hs_subscriptions_taxonomy_validate'] = array();
+  }
+  return $form;
+}
+
+
+//----------------------------------------------------------------------------
+// Form API callbacks.
+
+/**
+ * Validate callback; per-user taxonomy subscriptions form.
+ */
+function hs_subscriptions_taxonomy_validate($form_id, $form_state['values'], $form) {
+  if ($form_id == 'subscriptions_taxonomy_taxa_form') {
+    foreach ($form_state['values'] as $vid => $element) {
+      if (is_numeric($vid)) {
+
+        // Collect the tids of the selected terms.
+        $selected_tids = array();
+        foreach ($form_state['values'][$vid]['select'] as $tid) {
+          $selected_tids[] = $tid;
+        }
+
+        // Iterate over all checkboxes.
+        // - When it's in the set of selected tids, then set it to 1.
+        // - When it's *not* in the set of selected tids, and its current value
+        //   is 1, then set it to 0.
+        foreach ($form_state['values'][$vid]['checkboxes'] as $tid => $array) {
+          if (!in_array($tid, $selected_tids) && $form_state['values'][$vid]['checkboxes'][$tid][-1] == 1) {
+            form_set_value($form[$vid]['checkboxes'][$tid][-1], 0);
+          }
+          else if (in_array($tid, $selected_tids)) {
+            form_set_value($form[$vid]['checkboxes'][$tid][-1], 1);
+          }
+        }
+      }
+    }
+  }
+}

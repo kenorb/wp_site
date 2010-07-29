@@ -1,0 +1,7 @@
+; $Id$
+name = "string2module"
+description = "Find which module generated specified string on the page."
+package = "Development"
+core = 6.x
+version = "6.x-1.x-dev" 
+

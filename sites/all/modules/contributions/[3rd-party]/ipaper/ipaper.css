@@ -1,0 +1,18 @@
+div.ipaper-descr-full{
+
+}
+
+div.ipaper-descr-teaser{
+  position: relative;
+  left: 5px;
+}
+
+img.ipaper-thumbnail{
+  float: left;
+  border-style: solid;
+  border-width: 1pt;
+}
+
+div.ipaper-license{
+  text-align: center;
+}

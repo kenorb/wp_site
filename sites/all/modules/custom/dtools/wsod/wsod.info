@@ -1,0 +1,7 @@
+; $Id: wsod.info,v 1.1.2.1 2009/05/19 02:05:26 kenorb Exp $
+name = WSOD (White Screen of Death)
+description = Detect white screen of death and diagnoze what's the reason
+package = Development
+core = 6.x
+version = VERSION
+

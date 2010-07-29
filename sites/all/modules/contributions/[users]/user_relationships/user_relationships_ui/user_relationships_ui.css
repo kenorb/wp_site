@@ -1,0 +1,12 @@
+/* $id */
+
+.user_relationships_ui_popup_form {
+  margin: 5px;
+  padding: 5px;
+  border: 5px solid black;
+  background: #dddddd;
+  display: none;
+  width: 500px;
+  position: absolute;
+  z-index: 1000;
+}

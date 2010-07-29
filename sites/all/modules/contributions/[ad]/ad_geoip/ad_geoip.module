@@ -1,0 +1,560 @@
+<?php
+// $Id: ad_geoip.module,v 1.1.2.9 2008/11/29 01:48:20 jeremy Exp $
+
+/**
+ * @file
+ * Integrates the Drupal ad module with the MaxMind GeoIP database, providing 
+ * GeoTargeting of advertisements.
+ *
+ * Sponsored by Pricescope.com.
+ *
+ * Copyright (c) 2008.
+ *   Jeremy Andrews <jeremy@kerneltrap.org>.  All rights reserved.
+ */
+
+define('AD_GEOIP_ALL', 0);
+define('AD_GEOIP_SELECTED', 1);
+define('AD_GEOIP_NOT_SELECTED', 2);
+
+/**
+ * Implementation of hook_menu.
+ */
+function ad_geoip_menu() {
+  $items['admin/reports/status/geoip'] = array(
+    'title' => 'GeoIP',
+    'callback' => 'ad_geoip_status',
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_requirements.  Be sure that the geoip package is
+ * properly installed.
+ */
+function ad_geoip_requirements($phase) {
+  if (function_exists('geoip_db_get_all_info')) { 
+    $versions = array();
+    // Only check the supported MaxMind databases.
+    foreach (_ad_geoip_supported() as $edition => $name) {
+      if (geoip_db_avail($edition)) {
+        $version = geoip_database_info($edition);
+        if ($version) {
+          $version = split(' ', $version);
+          $versions[] = l($version[0] .' '. $version[1] . $name, 'admin/reports/status/geoip');
+        }
+      }
+    }
+    if (!empty($versions)) {
+      $severity = REQUIREMENT_OK;
+      $message = implode('; ', $versions);
+    }
+    else {
+      $severity = REQUIREMENT_ERROR;
+      $message = t('No valid GeoIP database installed.');
+    }
+  }
+  else {
+    $severity = REQUIREMENT_ERROR;
+    $message = t('Required !extension version 1.0.1 or greater not installed.', array('!extension' => l(t('GeoIP extension'), 'http://pecl.php.net/package/geoip')));
+  }
+
+  return array(
+    'geoip' => array(
+      'title' => t('GeoIP'),
+      'value' => $message,
+      'severity' => $severity,
+    ),
+  );
+}
+
+/**
+ * Drupal hook_form_alter() implementation.
+ */
+function ad_geoip_form_alter(&$form, $form_state, $form_id) {
+  if ($form_id == 'ad_node_form') {
+    $form['geoip'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('GeoTargeting'),
+      '#collapsible' => TRUE,
+    );
+
+    if (is_object($form['#node'])) {
+      $node = $form['#node'];
+    }
+
+    // Determine if we should allow filtering by region.
+    $dbs = array(GEOIP_CITY_EDITION_REV0, GEOIP_CITY_EDITION_REV1, 
+                 GEOIP_REGION_EDITION_REV0, GEOIP_REGION_EDITION_REV1);
+    $region = FALSE;
+    foreach ($dbs as $db) {
+      if (geoip_db_avail($db)) {
+        $region = TRUE;
+        break;
+      }
+    }
+    // Determine if we should allow filtering by city.
+    $dbs = array(GEOIP_CITY_EDITION_REV0, GEOIP_CITY_EDITION_REV);
+    $city = FALSE;
+    foreach ($dbs as $db) {
+      if (geoip_db_avail($db)) {
+        $city = TRUE;
+        break;
+      }
+    }
+
+    if ($city) {
+      $help = t('GeoTargeting allows you to target your advertisement to specific geographical areas.  For example, you can make it so your advertisement is only shown to visitors from the United States and Canada.  Or, you can configure it so your advertisement is only shown to visitors from the city of Rome in Italy.  You can define any combination of countries, regions and cities.');
+    }
+    else if ($region) {
+      $help = t('GeoTargeting allows you to target your advertisement to specific geographical areas.  For example, you can make it so your advertisement is only shown to visitors from the United States and Canada.  Or, you can configure it so your advertisement is only shown to visitors from the state of California in the United States, and the Province of Alberta in Canada.  You can define any combination of countries and regions.');
+    }
+    else {
+      $help = t('GeoTargeting allows you to target your advertisement to specific geographical areas.  For example, you can make it so your advertisement is only shown to visitors from the United States and Canada.  You can define any combination of countries.');
+    }
+
+    $form['geoip']['help'] = array(
+      '#value' => $help,
+      '#prefix' => '<div>',
+      '#suffix' => '</div>',
+    );
+
+    // set defaults
+    $geoip_country_format = isset($node->geoip_country_format) ? $node->geoip_country_format : AD_GEOIP_ALL;
+    $geoip_country_codes = isset($node->geoip_country_codes) ? $node->geoip_country_codes : array();
+    $geoip_region_format = isset($node->geoip_region_format) ? $node->geoip_region_format : AD_GEOIP_ALL;
+    $geoip_region_codes = isset($node->geoip_region_codes) ? $node->geoip_region_codes : array();
+    $geoip_city_format = isset($node->geoip_city_format) ? $node->geoip_city_format : AD_GEOIP_ALL;
+    $geoip_cities = isset($node->geoip_cities) ? $node->geoip_cities: '';
+
+    // geotarget by country
+    $form['geoip']['country'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('By country'),
+      '#collapsible' => TRUE,
+      '#collapsed' => empty($geoip_country_codes) ? TRUE : FALSE,
+    );
+
+    $formats = array( 
+      AD_GEOIP_ALL => t('all visitors, do not target visitors by country.'),
+      AD_GEOIP_SELECTED => t('visitors from the countries selected below.'),
+      AD_GEOIP_NOT_SELECTED => t('visitors from the countries not selected below.'),
+    );
+    $form['geoip']['country']['geoip_country_format'] = array(
+      '#type' => 'radios',
+      '#title' => t('Display advertisements to'),
+      '#options' => $formats,
+      '#default_value' => $geoip_country_format,
+    );
+
+    $form['geoip']['country']['geoip_country_codes'] = array(
+      '#type' => 'select',
+      '#options' => ad_geoip_countries(),
+      '#multiple' => TRUE,
+      '#default_value' => $geoip_country_codes,
+      '#description' => t('If you select <em>all visitors</em> above, or you do not select any countries from this list, your advertisement will be displayed to all visitors.'),
+      '#prefix' => '<div>',
+      '#suffix' => '</div>',
+    );
+
+    if ($region) {
+      // geotarget by region
+      $form['geoip']['region'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('By region'),
+        '#collapsible' => TRUE,
+        '#collapsed' => empty($geoip_region_codes) ? TRUE : FALSE,
+      );
+      $formats = array( 
+        AD_GEOIP_ALL => t('all visitors, do not target visitors by region.'),
+        AD_GEOIP_SELECTED => t('visitors from the regions selected below.'),
+        AD_GEOIP_NOT_SELECTED => t('visitors from the regions not selected below.'),
+      );
+      $form['geoip']['region']['geoip_region_format'] = array(
+        '#type' => 'radios',
+        '#title' => t('Display advertisements to'),
+        '#options' => $formats,
+        '#default_value' => $geoip_region_format,
+      );
+      $form['geoip']['region']['geoip_region_codes'] = array(
+        '#type' => 'select',
+        '#options' => ad_geoip_regions(),
+        '#multiple' => TRUE,
+        '#default_value' => $geoip_region_codes,
+        '#description' => t('If you select <em>all visitors</em> above, or you do not select any regions from this list, your advertisement will be displayed to all visitors.'),
+        '#prefix' => '<div>',
+        '#suffix' => '</div>',
+      );
+    }
+  
+    if ($city) {
+      // geotarget by city
+      $form['geoip']['city'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('By city'),
+        '#collapsible' => TRUE,
+        '#collapsed' => strlen($geoip_cities) ? FALSE : TRUE,
+      );
+      $formats = array( 
+        AD_GEOIP_ALL => t('all visitors, do not target visitors by city.'),
+        AD_GEOIP_SELECTED => t('visitors from the cities listed below.'),
+        AD_GEOIP_NOT_SELECTED => t('visitors from cities not listed below.'),
+      );
+      $form['geoip']['city']['geoip_city_format'] = array(
+        '#type' => 'radios',
+        '#title' => t('Display advertisements to'),
+        '#options' => $formats,
+        '#default_value' => $geoip_city_format,
+      );
+      $form['geoip']['city']['geoip_cities'] = array(
+        '#type' => 'textarea',
+        '#default_value' => $geoip_cities,
+        '#description' => t('Enter multiple cities on their own lines.  You can use the "<em>*</em>" to match any character.  For example, <em>San*</em> will match <em>San Francisco</em> and <em>San Diego</em>.
+'),
+      );
+    }
+  }
+}
+
+/** 
+ * Drupal hook_nodeapi implementation.  Save advertisement geotargeting
+ * configuration.
+ */
+function ad_geoip_nodeapi(&$node, $op, $teaser, $page) {
+  // TODO: Node versioning support.
+  switch ($op) {
+    case 'load':
+      $ad = array();
+      // only load ad_geoip data if node is an advertisement
+      if ($node->adtype) {
+
+        // load countries
+        $result = db_query('SELECT code, format FROM {ad_geoip_ads_country} WHERE aid = %d', $node->nid);
+        while ($country = db_fetch_object($result)) {
+          $geoip_country_codes[] = $country->code;
+          $country_format = $country->format;
+        }
+        if (isset($country_format)) {
+          $ad['geoip_country_codes'] = $geoip_country_codes;
+          $ad['geoip_country_format'] = $country_format;
+        }
+
+        // load regions
+        $result = db_query('SELECT code, format FROM {ad_geoip_ads_region} WHERE aid = %d', $node->nid);
+        while ($region = db_fetch_object($result)) {
+          $geoip_region_codes[] = $region->code;
+          $region_format = $region->format;
+        }
+        if (isset($region_format)) {
+          $ad['geoip_region_codes'] = $geoip_region_codes;
+          $ad['geoip_region_format'] = $region_format;
+        }
+
+        // load cities
+        $result = db_query('SELECT city, format FROM {ad_geoip_ads_city} WHERE aid = %d', $node->nid);
+        $geoip_cities = '';
+        while ($city = db_fetch_object($result)) {
+          $geoip_cities .= "$city->city\n";
+          $city_format = $city->format;
+        }
+        if (isset($city_format)) {
+          $ad['geoip_cities'] = $geoip_cities;
+          $ad['geoip_city_format'] = $city_format;
+        }
+      }
+      return $ad;
+
+    case 'update':
+      db_query('DELETE FROM {ad_geoip_ads_country} WHERE aid = %d', $node->nid);
+      db_query('DELETE FROM {ad_geoip_ads_region} WHERE aid = %d', $node->nid);
+      db_query('DELETE FROM {ad_geoip_ads_city} WHERE aid = %d', $node->nid);
+      // fall through and insert updated geoip information...
+    case 'insert':
+      if (is_array($node->geoip_country_codes)) {
+        foreach($node->geoip_country_codes as $code) {
+          db_query("INSERT INTO {ad_geoip_ads_country} (aid, code, format) VALUES(%d, '%s', %d)", $node->nid, $code, $node->geoip_country_format);
+        }
+      }
+      if (is_array($node->geoip_region_codes)) {
+        foreach($node->geoip_region_codes as $code) {
+          if (strpos($code, '-') === FALSE) {
+            db_query("INSERT INTO {ad_geoip_ads_region} (aid, code, format) VALUES(%d, '%s', %d)", $node->nid, $code, $node->geoip_region_format);
+          }
+        }
+      }
+      if (isset($node->geoip_cities)) {
+        $cities = explode("\n", $node->geoip_cities);
+        if (is_array($cities)) {
+          foreach($cities as $city) {
+            if ($city = trim($city)) {
+              $aid = db_result(db_query("SELECT aid FROM {ad_geoip_ads_city} WHERE aid = %d AND city = '%s'", $node->nid, $city));
+              if (!$aid) {
+                db_query("INSERT INTO {ad_geoip_ads_city} (aid, city, format) VALUES(%d, '%s', %d)", $node->nid, $city, $node->geoip_city_format);
+              }
+            }
+          }
+        }
+      }
+      break;
+
+    case 'delete':
+      db_query('DELETE FROM {ad_geoip_ads_country} WHERE aid = %d', $node->nid);
+      db_query('DELETE FROM {ad_geoip_ads_region} WHERE aid = %d', $node->nid);
+      db_query('DELETE FROM {ad_geoip_ads_city} WHERE aid = %d', $node->nid);
+      break;
+  }
+}
+
+/**
+ * Define ad mdule hook_adapi().
+ */
+function ad_geoip_adapi($op, &$node) {
+  switch ($op) {
+    case 'adserve_select':
+      return array(
+        'geoip' => array(
+          'function' => 'ad_geoip_adserve',
+          'path' => drupal_get_path('module', 'ad_geoip') .'/ad_geoip.inc',
+          'weight' => -10,
+        ),
+      );
+  }
+}
+
+function ad_geoip_status() {
+  $rows = array();
+
+  foreach (_ad_geoip_supported() as $code => $name) {
+    if (geoip_db_avail($code)) {
+      $rows[] = array(t('Available'), check_plain($name) .'<br />'. check_plain(geoip_database_info($code)), check_plain(geoip_db_filename($code)));
+    }
+    else {
+      $rows[] = array(t('Not found'), check_plain($name), check_plain(geoip_db_filename($code)));
+    }
+  }
+
+  $output = theme('table', array(t('Status'), t('Database'), t('Path')), $rows);
+  $output .= theme('box', '', t('The GeoIP databases supported by the ad_geoip module are listed above.  Drupal can only find these databases if they are installed at the listed paths.  Both the free and the commercial versions of these databases are supported.  !url for general installation instructions.', array('!url' => l(t('Click here'), 'http://www.maxmind.com/app/installation'))));
+
+  return $output;
+}
+
+/**
+ * Return an array of countries indexed on their country code.
+ */
+function ad_geoip_countries() {
+  static $codes = array();
+
+  if (empty($codes)) {
+    // Automatically update our ISO country codes every 30 days.
+    if ((int)variable_get('ad_geoip_iso3166', '') <= (86400 * 30)) {
+      ad_geoip_update_iso3166();
+    }
+
+    $result = db_query('SELECT code, country FROM {ad_geoip_codes}');
+    while ($code = db_fetch_object($result)) {
+      $codes[$code->code] = decode_entities($code->country);
+    }
+  }
+
+  return $codes;
+}
+
+/**
+ * Return an array of Unites States and Canada states, provinces and 
+ * territories.
+ */
+function ad_geoip_regions() {
+  // TODO: Add complete support for FIPS 10-4 Subcountry codes.
+  return array(
+    // United States
+    '-0' => t('--- UNITED STATES ---'),
+    'AK' => t('Alaska'),
+    'AL' => t('Alabama'),
+    'AR' => t('Arkansas'),
+    'AZ' => t('Arizona'),
+    'CA' => t('California'),
+    'CO' => t('Colorado'),
+    'CT' => t('Connecticut'),
+    'DC' => t('District of Columbia'),
+    'DE' => t('Delaware'),
+    'FL' => t('Florida'),
+    'GA' => t('Georgia'),
+    'HI' => t('Hawaii'),
+    'IA' => t('Iowa'),
+    'ID' => t('Idaho'),
+    'IL' => t('Illinois'),
+    'IN' => t('Indiana'),
+    'KS' => t('Kansas'),
+    'KY' => t('Kentucky'),
+    'LA' => t('Louisiana'),
+    'MA' => t('Massachusetts'),
+    'MD' => t('Maryland'),
+    'ME' => t('Maine'),
+    'MI' => t('Michigan'),
+    'MN' => t('Minnesota'),
+    'MO' => t('Missouri'),
+    'MS' => t('Mississippi'),
+    'MT' => t('Montana'),
+    'NC' => t('North Carolina'),
+    'ND' => t('North Dakota'),
+    'NE' => t('Nebraska'),
+    'NH' => t('New Hampshire'),
+    'NJ' => t('New Jersey'),
+    'NM' => t('New Mexico'),
+    'NV' => t('Nevada'),
+    'NY' => t('New York'),
+    'OH' => t('Ohio'),
+    'OK' => t('Oklahoma'),
+    'OR' => t('Oregon'),
+    'PA' => t('Pennsylvania'),
+    'RI' => t('Rhode Island'),
+    'SC' => t('South Carolina'),
+    'SD' => t('South Dakota'),
+    'TN' => t('Tennessee'),
+    'TX' => t('Texas'),
+    'UT' => t('Utah'),
+    'VA' => t('Virginia'),
+    'VT' => t('Vermont'),
+    'WA' => t('Washington'),
+    'WV' => t('West Virginia'),
+    'WI' => t('Wisconsin'),
+    'WY' => t('Wyoming'),
+    '-1' => t('--- UNITED STATES OUTLYING REGIONS ---'),
+    'AA' => t('Armed Forces Americas'),
+    'AE' => t('Armed Forces Europe, Middle East, & Canada'),
+    'AP' => t('Armed Forces Pacific'),
+    'AS' => t('American Samoa'),
+    'FM' => t('Federated States of Micronesia'),
+    'GU' => t('Guam'),
+    'MH' => t('Marshall Islands'),
+    'MP' => t('Northern Mariana Islands'),
+    'PR' => t('Puerto Rico'),
+    'PW' => t('Palau'),
+    'VI' => t('Virgin Islands'),
+    '-2' => t('--- CANADA ---'),
+    // Canada
+    'AB' => t('Alberta'),
+    'BC' => t('British Columbia'),
+    'MB' => t('Manitoba'),
+    'NB' => t('New Brunswick'),
+    'NL' => t('Newfoundland and Labrador'),
+    'NT' => t('Northwest Territories'),
+    'NS' => t('Nova Scotia'),
+    'NU' => t('Nunavut'),
+    'ON' => t('Ontario'),
+    'PE' => t('Prince Edward Island'),
+    'QC' => t('Quebec'),
+    'SK' => t('Saskatchewan'),
+    'YT' => t('Yukon Territory'),
+  );
+}
+
+/**
+ * Download the latest ISO3166 list of country codes.
+ */
+function ad_geoip_update_iso3166($verbose = FALSE) {
+  // url for latest iso3166 list of two-character country codes.
+  $url = 'http://www.iso.org/iso/iso3166_en_code_lists.txt';
+  // load list into an array.
+  $codes = file($url);
+
+  if (is_array($codes) && !empty($codes)) {
+    $checksum = md5(implode(' ', $codes));
+    if ($checksum != variable_get('ad_geoip_iso3166_checksum', '')) {
+      // We expect the second line of the file to be essentially empty.  If not, 
+      // the format has changed.
+      if (strlen($codes[1] < 5)) {
+        db_query('TRUNCATE {ad_geoip_codes}');
+        $line = 2;
+        while (!empty($codes[$line])) {
+          list($country, $code) = split(';', $codes[$line++]);
+          $country = check_plain(utf8_encode(ucwords(strtolower($country))));
+          // Manual capitalization cleanup.
+          $country = strtr($country, array(' And ' => ' and ', ' Of' => ' of', '(keeling)' => '(Keeling)', '(malvinas)' => '(Malvinas)', '(vatican' => '(Vatican', 'U.s.' => 'U.S.'));
+          $code = trim($code);
+          if (strlen($code) != 2) {
+            if ($verbose) drupal_set_message(t('ISO3166 import error: invalid country code %code for country %country.', array('%code' => $code, '%country' => $country)), 'error');
+          }
+          else {
+            db_query("INSERT INTO {ad_geoip_codes} (code, country) VALUES('%s', '%s')", $code, $country);
+          }
+        }
+        if ($verbose) drupal_set_message('Your ISO3166 country codes have been updated.');
+        // Store checksum to prevent reloading data if unchanged.
+        variable_set('ad_geoip_iso3166_updated', time());
+        variable_set('ad_geoip_iso3166_checksum', $checksum);
+      }
+      else {
+        if ($verbose) drupal_set_message(t('The format of the file at !url has changed.  Check to see if there has been a !release of the Ad GeoIP module.', array('!url' => l($url, $url), '!release' => l(t('new release'), 'http://drupal.org/project/ad_geoip'))));
+      }
+    }
+  }
+  else {
+    if ($verbose) drupal_set_message(t('Failed to retrieve country codes from !url.', array('!url' => l($url, $url))), 'error');
+  }
+}
+
+/**
+ * Cache geotargeting information about all active advertisements.
+ */
+function ad_geoip_ad_build_cache() {
+  $cache = array();
+
+  $country_format = $region_format = array();
+  $ads = db_query("SELECT aid FROM {ads} WHERE adstatus = '%s'", 'active');
+  while ($ad = db_fetch_object($ads)) {
+    // cache country geotargeting data
+    $codes = array();
+    $result = db_query('SELECT code, format FROM {ad_geoip_ads_country} WHERE aid = %d', $ad->aid);
+    while ($geoip = db_fetch_object($result)) {
+      $codes[$geoip->code] = $geoip->code;
+      // all formats associated with a given aid have to be the same
+      $country_format[$ad->aid] = $geoip->format;
+    }
+    $cache['geoip'][$ad->aid]['country'] = $codes;
+
+    // cache region geotargeting data
+    $codes = array();
+    $result = db_query('SELECT code, format FROM {ad_geoip_ads_region} WHERE aid = %d', $ad->aid);
+    while ($geoip = db_fetch_object($result)) {
+      $codes[$geoip->code] = $geoip->code;
+      // all formats associated with a given aid have to be the same
+      $region_format[$ad->aid] = $geoip->format;
+    }
+    $cache['geoip'][$ad->aid]['region'] = $codes;
+
+    // cache city geotargeting data
+    $cities = array();
+    $result = db_query('SELECT city, format FROM {ad_geoip_ads_city} WHERE aid = %d', $ad->aid);
+    while ($geoip = db_fetch_object($result)) {
+      $cities[$geoip->city] = $geoip->city;
+      // all formats associated with a given aid have to be the same
+      $city_format[$ad->aid] = $geoip->format;
+    }
+    $cache['geoip'][$ad->aid]['city'] = $cities;
+  }
+  $cache['geoip']['country']['format'] = $country_format;
+  $cache['geoip']['region']['format'] = $region_format;
+  $cache['geoip']['city']['format'] = $city_format;
+
+  // define hooks for ad caches
+  $cache['geoip']['hook_select'] = array(
+    'file' => drupal_get_path('module', 'ad_geoip') .'/ad_geoip.inc',
+    'function' => 'ad_geoip_cache_select',
+  );
+
+  return $cache;
+}
+
+function _ad_geoip_supported() {
+  return array(
+    GEOIP_COUNTRY_EDITION => ' GeoIP Country Edition', 
+    GEOIP_CITY_EDITION_REV0 => ' GeoIP City Edition, Rev 0', 
+    GEOIP_CITY_EDITION_REV1 => ' GeoIP City Edition, Rev 1', 
+    GEOIP_REGION_EDITION_REV0 => ' GeoIP Region Edition, Rev 0', 
+    GEOIP_REGION_EDITION_REV1 => ' GeoIP Region Edition, Rev 1'
+  );
+}
+

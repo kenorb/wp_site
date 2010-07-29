@@ -1,0 +1,165 @@
+<?php
+// $Id: stormteammember.module,v 1.1.2.1 2008/12/15 13:23:53 robertogerola Exp $
+
+/**
+ * @file
+ */
+
+function stormteammember_help($path, $arg) {
+  $o = '';
+
+  switch ($path) {
+    case "admin/help#stormteammember":
+      $o = '<p>'. storm_t("Provides team member support for Storm", 'teammember') .'</p>';
+      break;
+  }
+
+  return $o;
+}
+
+function stormteammember_perm() {
+  return array(
+                'Storm teammember: access',
+                'Storm teammember: add',
+                'Storm teammember: delete all',
+                'Storm teammember: delete of user organization',
+                'Storm teammember: edit all',
+                'Storm teammember: edit of user organization',
+                'Storm teammember: view all',
+                'Storm teammember: view of user organization',
+  );
+}
+
+function stormteammember_access($op, $item=NULL, $account=NULL) {
+  if (empty($account)) {
+    global $user;
+    $account = $user;
+  }
+
+  if ($op == 'create') {
+    return user_access('Storm teammember: add');
+  }
+
+  if ($op == 'delete') {
+    if (user_access('Storm teammember: delete all')) {
+      return TRUE;
+    }
+    else if (user_access('Storm teammember: delete of user organization') && ($account->stormorganization_nid == $item->person_organization_nid)) {
+      return TRUE;
+    }
+  }
+
+  if ($op == 'update') {
+    if (user_access('Storm teammember: edit all')) {
+      return TRUE;
+    }
+    else if (user_access('Storm teammember: edit of user organization') && ($account->stormorganization_nid == $item->person_organization_nid)) {
+      return TRUE;
+    }
+  }
+
+  if ($op == 'view') {
+    if (user_access('Storm teammember: view all')) {
+      return TRUE;
+    }
+    else if (user_access('Storm teammember: view of user organization') && ($account->stormorganization_nid == $item->person_organization_nid)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+function stormteammember_access_sql($sql, $where = array()) {
+
+  if (user_access('Storm teammember: view all')) {
+    $where[] = "'storm_access'='storm_access'";
+    return storm_rewrite_sql($sql, $where);
+  }
+
+  global $user;
+
+  $cond = '';
+  if (user_access('Storm teammember: view own')) {
+    $cond .= 'n.uid='. $user->uid;
+  }
+  if (user_access('Storm teammember: view of user organization')) {
+    if (!empty($cond)) $cond .= ' OR ';
+    $cond .= 'stm.person_organization_nid='. $user->stormorganization_nid;
+  }
+  if (empty($cond)) $cond = '0=1';
+  $where[] = $cond;
+
+  $where[] = "'storm_access'='storm_access'";
+  return storm_rewrite_sql($sql, $where);
+}
+
+function stormteammember_menu() {
+  $items = array();
+
+  $items['storm/teammembers'] = array(
+            'title' => storm_t('Team members'),
+            'description' => storm_t('Storm team members'),
+            'page callback' => 'stormteammember_list',
+            'access arguments' => array('Storm teammember: access'),
+            'file' => 'stormteammember.admin.inc',
+            'type' => MENU_NORMAL_ITEM);
+  $items['storm/teammembers/add'] = array(
+            'title' => storm_t('Add a new team member'),
+            'description' => storm_t('Storm team members'),
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('stormteammember_add'),
+            'access arguments' => array('Storm teammember: add'),
+            'file' => 'stormteammember.admin.inc',
+            'type' => MENU_CALLBACK);
+  $items['storm/teammembers/edit/%'] = array(
+            'title' => storm_t('Edit a team member'),
+            'description' => storm_t('Storm team members'),
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('stormteammember_edit', 3),
+            'access arguments' => array('Storm teammember: edit'),
+            'file' => 'stormteammember.admin.inc',
+            'type' => MENU_CALLBACK);
+  $items['storm/teammembers/delete/%'] = array(
+            'title' => storm_t('Delete a team member'),
+            'description' => storm_t('Storm Attributes'),
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('stormteammember_delete', 3),
+            'access arguments' => array('Storm teammember: delete'),
+            'file' => 'stormteammember.admin.inc',
+            'type' => MENU_CALLBACK);
+
+  return $items;
+}
+
+function stormteammember_theme() {
+  return array(
+    'stormteammember_list' => array(
+      'file'      => 'stormteammember.theme.inc',
+      'arguments' => array('header', 'teammembers'),
+    ),
+  );
+}
+
+function stormteammember_stormorganization_change($organization_nid, $organization_title) {
+  $s = "UPDATE {stormteammember} SET organization_title='%s' WHERE organization_nid=%d AND organization_title <> '%s'";
+  db_query($s, $organization_title, $organization_nid, $organization_title);
+  $s = "UPDATE {stormteammember} SET person_organization_title='%s' WHERE person_organization_nid=%d AND person_organization_title <> '%s'";
+  db_query($s, $organization_title, $organization_nid, $organization_title);
+}
+
+function stormteammember_stormproject_change($project_nid, $project_title) {
+  $s = "UPDATE {stormteammember} SET project_title='%s' WHERE project_nid=%d AND project_title <> '%s'";
+  db_query($s, $project_title, $project_nid, $project_title);
+}
+
+function stormteammember_stormtask_change($task_nid, $task_stepno, $task_title) {
+  $s = "UPDATE {stormteammember} SET task_title='%s', task_stepno='%s' WHERE task_nid=%d AND
+      (task_title<>'%s' OR task_stepno<>'%s')";
+  db_query($s, $task_title, $task_stepno, $task_nid, $task_title, $task_stepno);
+}
+
+function stormteammember_stormticket_change($ticket_nid, $ticket_title) {
+  $s = "UPDATE {stormteammember} SET ticket_title='%s' WHERE ticket_nid=%d AND ticket_title <> '%s'";
+  db_query($s, $ticket_title, $ticket_nid, $ticket_title);
+}
+

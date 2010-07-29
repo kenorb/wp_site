@@ -1,0 +1,96 @@
+<?php
+// $Id: beautytips.module,v 1.1.2.1 2009/02/13 01:08:12 kleinmp Exp $
+
+/**
+ * @file
+ * Creates settings page and inserts the javascript onto the site's pages.
+ */
+
+function beautytips_admin() {
+  $form['beautytips_popup'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Turn on Beauty Tips',
+    '#default_value' => variable_get('beautytips_popup', FALSE),
+  );
+  $form['#submit'][] = 'beautytips_admin_submit';
+  return system_settings_form($form);
+}
+
+function beautytips_admin_submit() {
+  drupal_rebuild_theme_registry();
+}
+
+/**
+ * Implementation of hook_menu.
+ */
+function beautytips_menu() {
+  $items = array();
+  $items['admin/settings/beautytips'] = array(
+    'title' => 'Beauty Tips settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('beautytips_admin'),
+    'access arguments' => array('administer site configuration'),
+  );
+  return $items;
+}
+
+
+ 
+/**
+ * Implementation of hook_theme_registry_alter.
+ */
+function beautytips_theme_registry_alter(&$theme_registry) {
+  if (variable_get('beautytips_popup', FALSE)) {
+    $theme_registry['form']['function'] = 'theme_beautytips_form';
+    $theme_registry['textfield']['function'] = 'theme_beautytips_textfield';
+  }
+}
+
+/**
+ * Override of theme_form.
+ */
+function theme_beautytips_form($element) {
+  // Add a jQuery script for the popups
+  $path = drupal_get_path('module', 'beautytips');
+  drupal_add_js( $path .'/jquery.bt.js');
+  drupal_add_js( $path .'/beautytips.js');
+  drupal_add_css($path .'/jquery.bt.css');
+
+  // Anonymous div to satisfy XHTML compliance.
+  $action = $element['#action'] ? 'action="'. check_url($element['#action']) .'" ' : '';
+  return '<form '. $action .' accept-charset="UTF-8" method="'. $element['#method'] .'" id="'. $element['#id'] .'"'. drupal_attributes($element['#attributes']) .">\n<div>". $element['#children'] ."\n</div></form>\n";
+}
+
+/**
+ * Override of theme_textfield
+ */
+function theme_beautytips_textfield($element) {
+  $size = empty($element['#size']) ? '' : ' size="'. $element['#size'] .'"';
+  $maxlength = empty($element['#maxlength']) ? '' : ' maxlength="'. $element['#maxlength'] .'"';
+  $class = array('form-text');
+  $extra = '';
+  $output = '';
+
+  if ($element['#autocomplete_path'] && menu_valid_path(array('link_path' => $element['#autocomplete_path']))) {
+    drupal_add_js('misc/autocomplete.js');
+    $class[] = 'form-autocomplete';
+    $extra =  '<input class="autocomplete" type="hidden" id="'. $element['#id'] .'-autocomplete" value="'. check_url(url($element['#autocomplete_path'], array('absolute' => TRUE))) .'" disabled="disabled" />';
+  }
+  _form_set_class($element, $class);
+
+  if (isset($element['#field_prefix'])) {
+    $output .= '<span class="field-prefix">'. $element['#field_prefix'] .'</span> ';
+  }
+
+  $output .= '<input type="text"'. $maxlength .' name="'. $element['#name'] .'" id="'. $element['#id'] .'"'. $size .' value="'. check_plain($element['#value']) .'"'. drupal_attributes($element['#attributes']);
+  if (!empty($element['#description'])) {
+    $output .= 'title="'. $element['#description'] .'"';
+  }
+  $output .= ' />';
+
+  if (isset($element['#field_suffix'])) {
+    $output .= ' <span class="field-suffix">'. $element['#field_suffix'] .'</span>';
+  }
+
+  return theme('form_element', $element, $output) . $extra;
+}

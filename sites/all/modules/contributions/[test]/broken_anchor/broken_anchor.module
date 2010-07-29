@@ -1,0 +1,401 @@
+<?php
+
+/* This file is part of "Broken Anchor for Node comments Module".
+ *    Copyright 2009, arNuméral
+ *    Author : Yoran Brault
+ *    eMail  : yoran.brault@bad_arnumeral.fr (remove bad_ before sending an email)
+ *    Site   : http://www.arnumeral.fr/node/2
+ *
+ * "Broken Anchor for Node comments Module" is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * "Broken Anchor for Node comments Module" is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with "Broken Anchor for Node comments Module"; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+
+/**
+ * Implementation of hook_menu
+ */
+function broken_anchor_menu() {
+  $items = array (
+  'admin/reports/broken_anchor' => array (
+      'title' => t('Broken Anchors Report'), 
+      'description' => t('Broken anchor report.'), 
+      'page callback' => 'broken_anchor_report',
+      'access arguments' => array ('administer site configuration'),
+      'file' => 'broken_anchor.reports.inc',
+  ),
+  // Main settings tab (for other modules to hook on)
+  'admin/settings/broken_anchor/main' => array(
+    'title' => 'Main settings',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  ),
+  'admin/settings/broken_anchor' => array (
+      'title' => t('Broken anchor settings'), 
+      'description' => t('Broken anchor settings.'), 
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array ('broken_anchor_admin_settings'),
+      'access arguments' => array ('administer site configuration'),
+      'file' => 'broken_anchor.admin.inc',
+  ),
+
+  'admin/reports/broken_anchor/ignore/%' => array (
+      'title' => 'Ignore', 
+      'description' => 'Ignore an error.', 
+      'page callback' => 'broken_anchor_ignore_error',
+      'page arguments' => array (4),
+      'access arguments' => array ('administer site configuration'),
+      'file' => 'broken_anchor.reports.inc',
+  ),
+
+  'admin/reports/broken_anchor/check/%/%' => array (
+      'title' => 'Check node', 
+      'description' => 'Check errors for a node', 
+      'page callback' => 'broken_anchor_update_node',
+      'page arguments' => array (4,5),
+      'access arguments' => array ('administer site configuration'),
+      'file' => 'broken_anchor.reports.inc',
+  ),
+  );
+  return $items;
+}
+
+
+/**
+ * Helper to parse HTTP header.
+ *
+ * @return  a list header field names / values. Note that HTTP status is also converted
+ * as a field name 'status' containing text status and 'code' containing HTTP code.
+ */
+function broken_anchor_parse_http_headers($headers) {
+  $results=array();
+  foreach ($headers as $header) {
+    $header=trim($header);
+    $code="";
+    if (preg_match("/HTTP\/1.\d\s+(\d+)\s+(.*)$/i", $header, $matches)) {
+      $code=$matches[1];
+      $results[$code]['status']=$matches[2];
+      $results[$code]['code']=$code;
+    } elseif (preg_match("/\s*(.*)\s*:\s*(.*)\s*/i", $header, $matches)) {
+      $results[$code][$matches[1]]=$matches[2];
+    } else
+    {
+      $code=-1;
+      $results[$code]['status']=$header;
+      $results[$code]['code']=$code;
+    }
+  }
+  return array_values($results);
+}
+
+/**
+ * PHP error handler.implementation.
+ */
+function broken_anchor_error_handler($errno, $errstr)
+{
+  global $broken_anchor_last_error;
+  $tmp=explode(":",$errstr);
+  $tmp=trim($tmp[count($tmp)-1]);
+  $broken_anchor_last_error=broken_anchor_parse_http_headers(array($tmp));
+  if (count($broken_anchor_last_error)==1 && $broken_anchor_last_error[0]['code']==-1) {
+    $broken_anchor_last_error[0]['code']=1000+$errno;
+  }
+}
+
+/**
+ * check if an URL is broken.
+ *
+ * @param $url
+ * @return true if OK, error else.
+ */
+function broken_anchor_check_url($url) {
+  global $broken_anchor_last_error;
+  global $broken_anchor_check_url_cache;
+
+  // If we already checked this in this session, no need to do it again
+  if (isset($broken_anchor_check_url_cache[$url])) {
+    return $broken_anchor_check_url_cache[$url];
+  }
+
+  $header ="Accept: image/png,image/*;q=0.8,*/*;q=0.5\r\n";
+  $header.="Accept-Language: en-us\r\n";
+  $header.="Accept-Encoding: gzip,deflate\r\n";
+  $header.="Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7\r\n";
+  $header.="Keep-Alive: 300\r\n";
+  $header.="Connection: keep-alive";
+  ini_set('user_agent', broken_anchor_user_agent()."\r\n".$header);
+
+  set_error_handler('broken_anchor_error_handler');
+  $handler = fopen($url, 'r');
+  restore_error_handler();
+  if (!$handler) {
+    restore_error_handler();
+    $broken_anchor_check_url_cache[$url]=$broken_anchor_last_error[0];
+    return $broken_anchor_last_error[0];
+  }
+
+  $headers = stream_get_meta_data($handler);
+  fclose($handler);
+  if ($headers['wrapper_type']=='plainfile') {
+    $broken_anchor_check_url_cache[$url]=true;
+    return true;
+  }
+
+  $results=broken_anchor_parse_http_headers($headers['wrapper_data']);
+  $result=$results[count($results)-1];
+  $broken_anchor_check_url_cache[$url]=($result['code']==200 || $result['code']==302)?true:$result;
+  return $broken_anchor_check_url_cache[$url];
+}
+
+
+
+/**
+ * getter for broken_anchor_job_size setting.
+ */
+function broken_anchor_job_size($type) {
+  return variable_get("broken_anchor_".$type."_job_size",10);
+}
+
+/**
+ * getter for broken_anchor_check_emails setting.
+ */
+function broken_anchor_check_emails() {
+  return variable_get('broken_anchor_check_emails', true);
+}
+
+/**
+ * getter for broken_anchor_last_check_id setting.
+ */
+function broken_anchor_last_check_id($type) {
+  return variable_get("broken_anchor_last_check_id_".$type, 0);
+}
+
+
+/**
+ * getter for broken_anchor_user_agent setting.
+ */
+function broken_anchor_user_agent() {
+  return variable_get("broken_anchor_user_agent", "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.3) Gecko/2008092903 Mandriva/1.9.0.3-1mdv2009.0 (2009.0) Firefox/3.0.3");
+}
+
+/**
+ * getter for broken_anchor_timeout setting.
+ */
+function broken_anchor_timeout() {
+  return variable_get('broken_anchor_timeout',5);
+}
+
+/**
+ * Check if debug logging is enabled.
+ *
+ * @return true if enabled.
+ */
+function broken_anchor_is_debug($level=1) {
+  return (broken_anchor_debug_level()>=$level);
+}
+/**
+ * output a debug message (syslog).
+ *
+ * @param $message message
+ */
+function broken_anchor_debug($message) {
+  $lines=explode("\n", $message);
+  foreach ($lines as $line) {
+    error_log($line);
+  }
+}
+
+/**
+ * Check if watchdog logging is enabled.
+ *
+ * @return true if enabled.
+ */
+function broken_anchor_debug_level() {
+  return variable_get("broken_anchor_debug_level", 1);
+}
+
+
+/**
+ * getter for broken_anchor_report_page_size setting.
+ */
+function broken_anchor_report_page_size() {
+  return variable_get('broken_anchor_report_page_size', 50);
+}
+
+
+function broken_anchor_broken_anchor_types(){
+  return array('node','comment');
+}
+
+/**
+ * Validate module dependencies.
+ *
+ * @return false if a dependency is not found.
+ */
+function broken_anchor_dependencies() {
+  global $broken_anchor_dependencies_checked;
+  if ($broken_anchor_dependencies_checked) return;
+  $broken_anchor_dependencies_checked=true;
+  if (!ini_get('allow_url_fopen')) {
+    $message='PHP INI "allow_url_fopen" is false, unable to check broken anchors...';
+    error_log($message);
+    watchdog('broken_anchor', false, WATCHDOG_NOTICE);
+    drupal_set_message($message);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * hook_cron.
+ */
+function broken_anchor_cron() {
+  if (!broken_anchor_dependencies()) return;
+
+  foreach (module_implements('broken_anchor_info') as $module) {
+    // search for job size
+    $job_size=broken_anchor_job_size($module);
+    if ($job_size==0) {
+      continue;
+    }
+
+    // retreived last checked ID
+    $last_checked_id=broken_anchor_last_check_id($module);
+    variable_set("broken_anchor_statistics_first_id_".$module, $last_checked_id);
+    if (broken_anchor_is_debug()) broken_anchor_debug("Checking with '".$module."' contents : ".$last_checked_id." ".$job_size);
+
+    // Get data cursor
+    $contents = module_invoke($module,'broken_anchor_get_contents', $last_checked_id, $job_size);
+    $current_id=-1;
+    foreach($contents as $content) {
+      broken_anchor_check_content($module, $content);
+      $current_id=$content['id'];
+      error_log('==>$current_id');
+    }
+    if ($current_id==-1) {
+    	$current_id=0;
+    } {
+    	$current_id++;
+    }
+    variable_set("broken_anchor_last_check_id_".$module, $current_id);
+    if (broken_anchor_is_debug()) broken_anchor_debug("Checking terminated. Next ID > ".$current_id);
+  }
+  variable_set("broken_anchor_statistics_last_cron", time());
+}
+
+
+function broken_anchor_link($type, $node = NULL, $teaser = FALSE) {
+  if (!user_access("administer site configuration") || $teaser) return;
+  $links = array ();
+
+  if ($type == 'node') {
+    $links['broken_anchor'] = array (
+      'title' => t('Check links'),
+      'href' => "admin/reports/broken_anchor/check/".$node->nid,
+      'attributes' => array (
+        'title' => t('Check all links in this node.')
+    )
+    );
+  }
+  return $links;
+}
+
+function broken_anchor_check_node($nid) {
+  $node=node_load($nid);
+  $node=node_prepare($node, FALSE);
+  $result=broken_anchor_check_content($nid, 'node',$node->body);
+  return $result;
+}
+
+function broken_anchor_check_content($module, $content) {
+  $cid=$content['id'];
+  $content=$content['content'];
+  // retreive all error records for this content type id
+  $cursor=db_query("
+    select * 
+    from {broken_anchor_errors} 
+    where 
+      cid=%d and 
+      module='%s'",
+  $cid,$module);
+
+  $errors=array();
+  while ($error=db_fetch_array($cursor)) {
+    $error['count']=0;
+    $errors[$error['value']]=$error;
+  }
+
+  // Drop all old errors
+  db_query("
+    delete 
+    from {broken_anchor_errors} 
+    where 
+      cid=%d and
+      module='%s'",
+  $cid,$module);
+
+  // Match all URL's
+  $url_pattern = "`(href|src)=('|\")\s*(https?://([a-zA-Z0-9@:%_+*~#?&=.,/;-]*[a-zA-Z0-9@:%_+*~#&=/;-])([.,?!]*?))\s*('|\")`i";
+  preg_match_all($url_pattern,$content,$matches,PREG_PATTERN_ORDER);
+  foreach ($matches[3] as $url)
+  {
+    $error=$errors[$url];
+    if ($error['ignored']) {
+      continue;
+    }
+
+    if (broken_anchor_is_debug()) broken_anchor_debug(" - ".$cid.":".$url);
+    $result=broken_anchor_check_url($url);
+    if ($result!==true) {
+      if (broken_anchor_is_debug()) broken_anchor_debug(" => ".$result['status']);
+      $error['count']++;
+      $error['cid']=$cid;
+      $error['module']=$module;
+      $error['status']=$result['status'];
+      $error['value']=$url;
+      $error['value_type']=0;
+      $error['checked']=time();
+      $errors[$url]=$error;
+    }
+  }
+
+  // match all emails
+  $emails_pattern="`([A-Za-z0-9._-]+@[A-Za-z0-9._+-]+\.[A-Za-z]{2,4})([.,?!]*?)`i";
+  if (broken_anchor_check_emails()) {
+    preg_match_all($emails_pattern, $content, $matches,PREG_PATTERN_ORDER);
+    foreach ($matches[0] as $email)
+    {
+      if (broken_anchor_is_debug()) broken_anchor_debug(" - ".$cid.":".$email);
+      $error=$errors[$email];
+      if (!$error['ignored']) {
+        $error['count']++;
+        $error['cid']=$cid;
+        $error['module']=$module;
+        $error['status']=t("Clear email address");
+        $error['value']=$email;
+        $error['checked']=time();
+        $error['value_type']=1;
+        $errors[$email]=$error;
+      }
+    }
+  }
+
+  // Dump all record to database
+  foreach($errors as $error) {
+    if ($error['count']>0) {
+      drupal_write_record('broken_anchor_errors', $error);
+    }
+  }
+  return $errors;
+}

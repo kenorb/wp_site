@@ -1,0 +1,227 @@
+<?php
+// $Id: ad_geoip.install,v 1.1.2.5 2008/07/30 00:56:37 jeremy Exp $
+
+/**
+ * Ad GeoIP module database schema.
+ * Copyright (c) 2008 Jeremy Andrews <jeremy@tag1consulting.com>.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function ad_geoip_schema() {
+  $schema['ad_geoip_codes'] = array(
+    'description' => 'Country code lookup table.',
+    'fields' => array(
+      'code' => array(
+        'type' => 'char',
+        'length' => '2',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Two-character country code.',
+      ),
+      'country' => array(
+        'type' => 'varchar',
+        'length' => '64',
+        'not null' => FALSE,
+        'description' => 'Full name of the country.',
+      ),
+    ),
+    'primary key' => array('code'),
+  );
+
+  $schema['ad_geoip_ads_country'] = array(
+    'description' => 'Stores ad-to-country relationship.',
+    'fields' => array(
+      'aid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => '{ad}.aid of the advertisement.',
+      ),
+      'code' => array(
+        'type' => 'char',
+        'length' => '2',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => '{ad_geoip_codes}.code of the country.',
+      ),
+      'format' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Ad format.',
+      ),
+    ),
+    'primary key' => array('aid', 'code'),
+  );
+
+  $schema['ad_geoip_ads_city'] = array(
+    'description' => 'Stores ad-to-city relationship.',
+    'fields' => array(
+      'aid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => '{ad}.aid of the advertisement.',
+      ),
+      'city' => array(
+        'type' => 'varchar',
+        'length' => '64',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The city name.',
+      ),
+      'format' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Ad format.',
+      ),
+    ),
+    'primary key' => array('aid', 'city'),
+  );
+
+  $schema['ad_geoip_ads_region'] = array(
+    'fields' => array(
+      'aid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => '{ad}.aid of the advertisement.',
+      ),
+      'code' => array(
+        'type' => 'char',
+        'length' => '2',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => '{ad_geoip_codes}.code of the country.',
+      ),
+      'format' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Ad format.',
+      ),
+    ),
+    'primary key' => array('aid', 'code'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function ad_geoip_install() {
+  // Create tables.
+  drupal_install_schema('ad_geoip');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function ad_geoip_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('ad_geoip');
+}
+
+/**
+ * Rename ad_geoip_ads table to ad_geoip_ads_country.
+ * Introduce ad_geoip_region table.
+ */
+function ad_geoip_update_5001() {
+  $ret = array();
+
+  db_rename_table($ret, 'ad_geoip_ads', 'ad_geoip_ads_country');
+
+  $schema['ad_geoip_ads_region'] = array(
+    'fields' => array(
+      'aid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => '{ad}.aid of the advertisement.',
+      ),
+      'code' => array(
+        'type' => 'char',
+        'length' => '2',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => '{ad_geoip_codes}.code of the country.',
+      ),
+      'format' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Ad format.',
+      ),
+    ),
+    'primary key' => array('aid', 'code'),
+  );
+
+  db_create_table($ret, 'ad_geoip_ads_region', $schema['ad_geoip_ads_region']);
+
+  return $ret;
+}
+
+/**
+ * Introduce ad_geoip_city table.
+ */
+function ad_geoip_update_5002() {
+  $ret = array();
+
+  $schema['ad_geoip_ads_city'] = array(
+    'description' => 'Stores ad-to-city relationship.',
+    'fields' => array(
+      'aid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => '{ad}.aid of the advertisement.',
+      ),
+      'city' => array(
+        'type' => 'varchar',
+        'length' => '64',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The city name.',
+      ),
+      'format' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Ad format.',
+      ),
+    ),
+    'primary key' => array('aid', 'city'),
+  );
+
+  db_create_table($ret, 'ad_geoip_ads_city', $schema['ad_geoip_ads_city']);
+
+  return $ret;
+}
+
+/**
+ * Table was missing from _install hook.  Providing update for anyone that
+ * installs the 1.1 release version of the module.
+ */
+function ad_geoip_update_5003() {
+  $ret = array();
+
+  // Just re-use 5002, since we already added this table over there.
+  $ret = ad_geoip_update_5002();
+
+  return $ret;
+}
+

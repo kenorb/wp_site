@@ -1,0 +1,47 @@
+<?php
+
+class NodeGalleryModelTestCase extends DrupalWebTestCase {
+  
+  function getInfo() {
+    return array(
+      'name' => t('Node Gallery Model'),
+      'description' => t('Node gallery model testcase.'),
+      'group' => t('Module'),
+    );
+  }
+  
+  function setUp() {
+    parent::setUp('imageapi', 'imagecache', 'upload', 'node_gallery');
+    
+    $perms = array('create page content', 'create story content', 'edit any page content', 'edit any story content',
+      'delete any page content', 'delete any story content');
+    
+    $this->creator = $this->drupalCreateUser($perms);
+    $this->drupalLogin($this->creator);
+    
+    include('node_gallery.fixture.inc');
+    $gc = (object)$gallery_config;
+    drupal_write_record('ng_gallery_config', $gc);
+    
+    $n = (object)$gallery1;
+    $n->uid = $this->creator->uid;
+    node_save($n);
+    $this->gallery = $n;
+    
+    $image = (object)$image1;
+    $image->uid = $n->uid;
+    node_save($image);
+    drupal_write_record('files', $image);
+    $image->gid = $n->nid;
+    drupal_write_record('ng_images', $image);
+    $this->image = $image;
+  }
+  
+  function testImageEdit() {
+    $image = new Image($this->image);
+    $image->delete();
+    $this->assertFalse(db_result(db_query("SELECT nid FROM {node} WHERE nid = %d", $this->image->nid)), 'Deleting image: node.');
+    $this->assertFalse(db_result(db_query("SELECT nid FROM {ng_images} WHERE nid = %d", $this->image->nid)), 'Deleting image: ng_image.');
+    $this->assertFalse(db_result(db_query("SELECT fid FROM {files} WHERE fid = %d", $this->image->fid)), 'Deleting image: files.');
+  }
+}

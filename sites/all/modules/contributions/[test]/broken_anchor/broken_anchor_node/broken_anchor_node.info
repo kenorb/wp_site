@@ -1,0 +1,13 @@
+name = "Broken Anchor for Node contents"
+description = "Broken Anchor for Node contents"
+package = "Administration"
+project = "broken_anchor_node"
+version = "6.x-1.0-rc3"
+core = 6.x
+dependencies[] = broken_anchor
+; Information added by drupal.org packaging script on 2009-02-03
+version = "6.x-1.0-rc3"
+core = "6.x"
+project = "broken_anchor"
+datestamp = "1233680106"
+

@@ -1,0 +1,73 @@
+<?php
+
+/**
+ * Implementation of hook_schema().
+ */
+function bench_chart_schema() {
+  $schema['bench_chart'] = array(
+    'description' => t('Stores statistics of hook execution time.'),
+    'fields' => array(
+      'hook' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => t("The name of hook."),
+      ),
+      'path' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => t('Path'),
+      ),
+      'time' => array(
+        'type' => 'float',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => t('Avarage time.'),
+      ),
+      'totaltime' => array(
+        'type' => 'float',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => t('Total time.'),
+      ),
+      'count' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => t('Execution count'),
+      ),
+    ),
+    'primary key' => array('hook', 'path'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function bench_chart_install() {
+    // Create tables.
+    drupal_install_schema('bench_chart');
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function bench_chart_enable() {
+    db_query("UPDATE {system} SET weight = '-100' WHERE name = 'bench_chart'");
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function bench_chart_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('bench_chart');
+} 

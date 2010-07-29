@@ -1,0 +1,13 @@
+; $Id: autocomplete_node_finder.info,v 1.1.2.2.2.1.2.2 2008/10/11 06:21:13 danielb Exp $
+name = Autocomplete Node Finder
+description = Creates blocks to provide autocomplete search on a predefined node/cck fields to direct you to the corresponding node.
+package = "Search"
+dependencies[] = content
+dependencies[] = taxonomy
+core = 6.x
+; Information added by drupal.org packaging script on 2008-12-05
+version = "6.x-2.16"
+core = "6.x"
+project = "autocomplete_node_finder"
+datestamp = "1228435211"
+

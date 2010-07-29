@@ -1,0 +1,287 @@
+<?php
+// $Id: abuse.install,v 1.5.6.5 2008/11/05 20:04:41 btmash Exp $
+
+/**
+ * @file
+ * Installs the abuse module
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function abuse_install() {
+  drupal_install_schema('abuse');
+  abuse_install_default_reasons();
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function abuse_uninstall() {
+  drupal_uninstall_schema('abuse');
+  db_query("DELETE FROM {variable} WHERE name LIKE 'abuse_%'");
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function abuse_schema() {
+  $schema = array();
+  $schema['abuse'] = array(
+    'description' => t('A way to associate a flag for content by a user'),
+    'fields' => array(
+      'aid' => array(
+        'description' => t('ID of the flag'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'oid' => array(
+        'description' => t('Original content ID'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'description' => t('Content Type'),
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => 'node',
+      ),
+      'uid' => array(
+        'description' => t('ID of user flagging content'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'name' => array(
+        'description' => t('Name of user'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => ''
+      ),
+      'mail' => array(
+        'description' => t('Name of user'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => ''
+      ),
+      'reason' => array(
+        'description' => t('General reason for flagging content'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'body' => array(
+        'description' => t('Text from user on what is wrong with content'),
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+        'valid' => array(
+        'description' => t('Check that the flag is valid'),
+        'type' => 'int',
+        'size' => 'medium',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'created' => array(
+        'description' => t('Timestamp'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('aid'),
+    'indexes' => array('oid_type' => array('oid', 'type'), 'uid' => array('uid')),
+  );
+
+  $schema['abuse_warnings'] = array(
+    'description' => t('A list of warnings that have been sent out to users for inappropriate content'),
+    'fields' => array(
+      'oid' => array(
+        'description' => t('Original content ID'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'description' => t('Content Type'),
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => 'node',
+      ),
+      'uid' => array(
+        'description' => t('Flagged content user ID'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'sent_by_uid' => array(
+        'description' => t('Flagged content user ID'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'created' => array(
+        'description' => t('Timestamp'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'oid_type_created' => array('oid', 'type', 'created'),
+      'uid' => array('uid'),
+      'sent_by_uid' => array('sent_by_uid')
+    ),
+  );
+  $schema['abuse_status'] = array(
+    'description' => t('Current status of a particular piece of content'),
+    'fields' => array(
+      'oid' => array(
+        'description' => t('Original content ID'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'description' => t('Content Type'),
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => 'node',
+      ),
+      'assigned_to_uid' => array(
+        'description' => t('Moderating user content has been assigned to'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changed' => array(
+        'description' => t('Last timestamp of when content status was added/changed'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'status' => array(
+        'description' => t('Current status of the content'),
+        'type' => 'int',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('oid', 'type'),
+    'indexes' => array(
+      'assigned_to_uid_oid' => array('assigned_to_uid', 'oid'),
+      'oid_type' => array('oid', 'type'),
+      'status_oid' => array('status', 'oid'),
+    ),
+  );
+  $schema['abuse_status_log'] = array(
+    'description' => t('A log of the change to the status of a given content'),
+    'fields' => array(
+      'oid' => array(
+        'description' => t('Original content ID'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'description' => t('Content Type'),
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => 'node',
+      ),
+      'uid' => array(
+        'description' => t('Flagged content user ID'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'status' => array(
+        'description' => t('Status of the content'),
+        'type' => 'int',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'timestamp' => array(
+        'description' => t('Timestamp'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'uid' => array('uid'),
+      'oid_type_timestamp' => array('oid', 'type', 'timestamp'),
+    ),
+  );
+  $schema['abuse_reasons'] = array(
+    'description' => t('A customizable reasons (categories) for flagging content on the site'),
+    'fields' => array(
+      'arid' => array(
+        'description' => t('Reason ID'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'reason' => array(
+        'description' => t('Short sentence of reason for flagging content'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => 'other',
+      ),
+      'description' => array(
+        'description' => t('A description for admins on what this reason is'),
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE,
+      ),
+      'argumentation' => array(
+        'description' => t('Text that will be added to the email body'),
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('arid'),
+  );
+
+  return $schema;
+}
+
+function abuse_install_default_reasons() {
+  $sql_template = "INSERT INTO {abuse_reasons} (reason, description, argumentation) VALUES ('%s', '%s', '%s')";
+
+  $result1 = db_query($sql_template, "foul language", t('The user wrote very mean things'), t('Please refrain from writing such mean things'));
+  $result2 = db_query($sql_template, "adult themes", t('The user\'s wrote very explicit language'), t('Please refrain from writing such mean things'));
+  $result3 = db_query($sql_template, "racist or sexist language", t('The user wrote very derogatory comments'), t('Please refrain from writing such mean things'));
+  $result4 = db_query($sql_template, "contains private information", t('The user wrote about private information'), t('Please refrain from writing such mean things'));
+  $result5 = db_query($sql_template, "other", t('The user wrote about other types of mean things'), t('Please refrain from writing such mean things'));
+
+  if ($result1 && $result2 && $result3 && $result4 && $result5) {
+    drupal_set_message('Abuse reason table installation was a success');
+  }
+  else {
+    drupal_set_message('Retry from the start (remove abuse sequence and abuse reasons table)');
+  }
+}
+

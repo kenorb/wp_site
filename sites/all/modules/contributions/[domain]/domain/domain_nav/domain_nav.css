@@ -1,0 +1,5 @@
+/* $Id: domain_nav.css,v 1.1 2007/11/27 00:38:12 agentken Exp $ */
+
+#header-region form.domain-list * {
+  display: block;
+}

@@ -1,0 +1,11 @@
+; $Id: atom.info,v 1.2.2.1 2007/11/30 19:40:16 deekayen Exp $
+name = Atom
+description = "Provides an Atom 1.0 feed"
+package = Syndication
+core = 6.x
+; Information added by drupal.org packaging script on 2007-12-05
+version = "6.x-1.0"
+core = "6.x"
+project = "atom"
+datestamp = "1196865602"
+

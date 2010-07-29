@@ -1,0 +1,232 @@
+/* $Id: gallery.css,v 1.3.2.2 2007/11/27 18:10:32 profix898 Exp $ */
+
+/**
+ * Drupal embeded Gallery2 css overrides.
+ * These do not make a perfect theme, but are not bad as a first step.
+ */
+
+/* Increase font size */
+#gallery {
+  font-size: 100%;
+}
+
+ /* Remove the header */
+#gsHeader {
+  display: none;
+}
+
+/* Removes the Gallery Title (as Drupal displays it) */
+#gallery .gbBlock table h2 {
+  display: none;
+}
+
+/* Drupal 5.x system.css adds a border to tbody */
+#gallery tbody {
+  border-top: none;
+}
+
+/* Garland adds a width: 100% to all tables */
+td.giAlbumCell table, td.giItemCell table {
+  width: auto;
+}
+
+/* Garland adds td and th padding which needs to be removed for imageframes.
+   Have to manually add each imageframe type -- annoying. */
+table.ImageFrame_bamboo, table.ImageFrame_bamboo td,
+table.ImageFrame_book, table.ImageFrame_book td,
+table.ImageFrame_brand, table.ImageFrame_brand td,
+table.ImageFrame_dotapple, table.ImageFrame_dotapple td,
+table.ImageFrame_filmedges, table.ImageFrame_filmedges td,
+table.ImageFrame_flicking, table.ImageFrame_flicking td,
+table.ImageFrame_gold, table.ImageFrame_gold td,
+table.ImageFrame_gold2, table.ImageFrame_gold2 td,
+table.ImageFrame_notebook, table.ImageFrame_notebook td,
+table.ImageFrame_notebooksquare, table.ImageFrame_notebooksquare td,
+table.ImageFrame_photocorners, table.ImageFrame_photocorners td,
+table.ImageFrame_photocorners_small, table.ImageFrame_photocorners_small td,
+table.ImageFrame_polaroid, table.ImageFrame_polaroid td,
+table.ImageFrame_polaroids, table.ImageFrame_polaroids td,
+table.ImageFrame_postage, table.ImageFrame_postage td,
+table.ImageFrame_shell, table.ImageFrame_shell td,
+table.ImageFrame_shadow, table.ImageFrame_shadow td,
+table.ImageFrame_slide, table.ImageFrame_slide td,
+table.ImageFrame_slidesquare, table.ImageFrame_slidesquare td,
+table.ImageFrame_wood, table.ImageFrame_wood td {
+  width: auto;
+  padding: 0px;
+}
+
+/* Brings h2 back for siteAdmin pages */
+#siteAdminForm .gbBlock h2 {
+  display: block;
+}
+
+/* Do not display the breadcrumb */
+#gsNavBar div.gbBreadCrumb {
+  display: none;
+}
+
+/* The system links ("Site Admin", "Your Album") should no longer float as the
+   breadcrumb has been removed. Just align right */
+#gsNavBar div.gbSystemLinks {
+  text-align: right;
+  float: none;
+}
+
+/* .block-gallery is in the sidebar */
+.block-gallery #gsSidebar {
+  border: none;
+  width: auto;
+  overflow: hidden;
+}
+
+/* Flatten left margin for SiteAdminLinks if moved to Drupal sidebar */
+.block-gallery #gsSidebar ul#gbSiteAdminLinks,
+.block-gallery #gsSidebar ul#gbSiteAdminLinks li,
+.block-gallery #gsSidebar ul#gbSiteAdminLinks li ul,
+.block-gallery #gsSidebar ul#gbSiteAdminLinks li ul li {
+  margin-left: 2px;
+}
+
+/* Remove bold font from SiteAdminLinks if moved to Drupal sidebar */
+.block-gallery #gsSidebar #gbSiteAdminLinks a {
+  font-weight: normal;
+}
+
+.block-gallery div.block-core-ItemLinks {
+  margin: 0;
+  border-bottom: 1px solid #aaa;
+}
+
+.block-gallery .gbBlock {
+  padding: 0 5px 3px 5px;
+}
+
+/* Drupal 5.x system.css adds a border to tbody */
+.block-gallery tbody {
+  border-top: none;
+}
+
+/* Garland adds padding which needs to be removed */
+.block-gallery td, th {
+  padding: 0;
+}
+
+/* Navigation Tree */
+.block-gallery .dtree {
+  font-size: 1em;
+}
+
+/* For G2Image */
+img.g2image_float_left, div.g2image_float_left {
+  float: left;
+  margin: 0px 4px 4px 0px;
+}
+
+img.g2image_float_right, div.g2image_float_right {
+  float: right;
+  margin: 0px 4px 4px 0px;
+}
+
+img.g2image_centered, div.g2image_centered {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+/* Need to center images with frames */
+.g2image_centered table {
+  margin: auto;
+}
+
+.g2image_clear_images {
+  clear: both;
+}
+
+.post-content img {
+  float: left;
+  clear: both;
+  margin: 4px;
+}
+
+.page-content img {
+  float: left;
+  clear: both;
+  margin: 4px;
+}
+
+/* Embed success, warning, error messages */
+.g2_embed_success {
+  color: #008800;
+}
+
+.g2_embed_warning {
+  color: #f63;
+}
+.g2_embed_error {
+  color: #880000;
+  font-weight: bold;
+}
+
+/* Gallery Grid Block */
+.gallery-grid-block {
+  padding: 1px;
+/*  width: 500px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;*/
+}
+
+/*.gallery-grid-block .image-grid {
+  width: 182px;
+  width: 300px;
+}*/
+
+/*.gallery-grid-block .one-image {
+  float: left;
+  display: inline;
+  padding: 3px;
+}*/
+
+/*.gallery-grid-block .one-image {
+//  float: left;
+  width: 90px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  padding: 1px;
+}*/
+.gallery-grid-block .one-image {
+  margin: 1px;
+}
+
+/* Drupal 5.x system.css adds a border to tbody */
+.gallery-grid-block tbody {
+  border-top: none;
+}
+
+td.gallery-grid-block {
+  text-align:center;
+}
+
+/* So imageframed thumbs can be centered */
+/*td.gallery-grid-block table {
+  margin: auto;
+}*/
+
+/* Garland adds padding which needs to be removed */
+.gallery-grid-block table,
+.gallery-grid-block .one-image td,
+.gallery-grid-block .one-image table {
+  padding: 0;
+  margin: auto;
+}
+
+.dtree {
+  line-height: 100%;
+}
+
+.dtree a.node, .dtree a.nodeSel {
+  margin-left: 0;
+}

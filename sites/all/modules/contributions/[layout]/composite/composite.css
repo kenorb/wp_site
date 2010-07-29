@@ -1,0 +1,10 @@
+/* $Id: composite.css,v 1.1.2.1 2008/11/21 08:20:52 bengtan Exp $ */
+
+.composite-layout-option {
+  float: left;
+  margin: 2em 3em 0 0;
+}
+
+.composite-layout-set-options {
+  clear: both;
+}

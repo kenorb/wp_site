@@ -1,0 +1,395 @@
+<?php
+// $Id: finder_wizard.module,v 1.2.2.3.2.1 2009/01/03 01:30:05 danielb Exp $
+
+/**
+ * @file
+ * The Finder Wizard module allows users to create and configure a wizard to find nodes
+ */
+
+/**
+ * Implementation of hook_perm().
+ */
+function finder_wizard_perm() {
+  return array('administer finder wizard', 'view finder wizard');
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function finder_wizard_theme() {
+  return array(
+    'finder_wizard_admin_edit_steps_table' => array(
+      'file' => 'finder_wizard.theme.inc',
+      'path' => finder_wizard_inc_path(),
+      'arguments' => array(
+        'form' => NULL,
+      ),
+    ),
+    'finder_wizard_form_page' => array(
+      'file' => 'finder_wizard.theme.inc',
+      'path' => finder_wizard_inc_path(),
+      'arguments' => array(
+        'finder_wizard' => NULL,
+        'form' => NULL,
+        'step' => NULL,
+      ),
+    ),
+    'finder_wizard_form_button' => array(
+      'file' => 'finder_wizard.theme.inc',
+      'path' => finder_wizard_inc_path(),
+      'arguments' => array(
+        'element' => NULL,
+      ),
+    ),
+    'finder_wizard_form_description' => array(
+      'file' => 'finder_wizard.theme.inc',
+      'path' => finder_wizard_inc_path(),
+      'arguments' => array(
+        'description' => NULL,
+      ),
+    ),
+    'finder_wizard_form_responses' => array(
+      'file' => 'finder_wizard.theme.inc',
+      'path' => finder_wizard_inc_path(),
+      'arguments' => array(
+        'responses' => NULL,
+      ),
+    ),
+    'finder_wizard_form_results_page' => array(
+      'file' => 'finder_wizard.theme.inc',
+      'path' => finder_wizard_inc_path(),
+      'arguments' => array(
+        'results' => NULL,
+        'form_state' => NULL,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function finder_wizard_menu() {
+  $items = array();  
+  finder_wizard_inc('crud');
+  $finder_wizards = finder_wizard_crud_read_all_summaries();
+  if (!empty($finder_wizards)) {
+    foreach ($finder_wizards as $finder_wizard) {
+      $items[$finder_wizard->path] = array(
+        'title' => $finder_wizard->title,
+        'page callback' => 'finder_wizard_form_page',
+        'page arguments' => array($finder_wizard->fwid),
+        'access arguments' => array('view finder wizard'),
+        'weight' => -1,
+        'type' => MENU_CALLBACK,
+        'description' => t("Finder wizard"),
+        'file' => 'finder_wizard.form.inc',
+        'file path' => finder_wizard_inc_path(),
+      );
+    }
+  }
+  $items['admin/build/finder_wizard'] = array(
+    'title' => t('Finder wizards'),
+    'page callback' => 'finder_wizard_admin_list',
+    'access arguments' => array('administer finder wizard'),
+    'weight' => 0,
+    'type' => MENU_NORMAL_ITEM,
+    'description' => t("Finder wizards are configurable multistep forms to allow users to find nodes by answering questions about the nodes' values."),
+    'file' => 'finder_wizard.admin.inc',
+    'file path' => finder_wizard_inc_path(),
+  );
+  $items['admin/build/finder_wizard/list'] = array(
+    'title' => t('List finder wizards'),
+    'page callback' => 'finder_wizard_admin_list',
+    'access arguments' => array('administer finder wizard'),
+    'weight' => 1,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'file' => 'finder_wizard.admin.inc',
+    'file path' => finder_wizard_inc_path(),
+  );
+  $items['admin/build/finder_wizard/add'] = array(
+    'title' => t('New finder wizard'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('finder_wizard_admin_edit'),
+    'access arguments' => array('administer finder wizard'),
+    'weight' => 2,
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'finder_wizard.admin.inc',
+    'file path' => finder_wizard_inc_path(),
+  );
+  $items['admin/build/finder_wizard/edit/%finder_wizard'] = array(
+    'title' => t('Edit finder wizard'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('finder_wizard_admin_edit', 4),
+    'access arguments' => array('administer finder wizard'),
+    'weight' => 3,
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'finder_wizard.admin.inc',
+    'file path' => finder_wizard_inc_path(),
+  );
+  $items['admin/build/finder_wizard/delete/%finder_wizard'] = array(
+    'title' => t('Delete finder wizard'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('finder_wizard_admin_delete', 4),
+    'access arguments' => array('administer finder wizard'),
+    'weight' => 4,
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'finder_wizard.admin.inc',
+    'file path' => finder_wizard_inc_path(),
+  );
+  $items['admin/build/finder_wizard/edit/%finder_wizard/step/add'] = array(
+    'title' => t('New finder wizard step'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('finder_wizard_admin_step_edit', 4),
+    'access arguments' => array('administer finder wizard'),
+    'weight' => 5,
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'finder_wizard.admin.inc',
+    'file path' => finder_wizard_inc_path(),
+  );
+  // Bug: these last two menu items do not have an arg(7) defined (it is tested for manually in the page callback)
+  // this creates a bit of a problem with tabs appearing that don't do anything when you click them
+  // This is related to the fact that menu paths can only have 7 arguments and still work with wildcards
+  // think about shorter URL's, there is no need for step/edit it could be step/% and then test for step/%/delete explicitly
+  $items['admin/build/finder_wizard/edit/%finder_wizard/step/edit'] = array(
+    'title' => t('Edit finder wizard step'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('finder_wizard_admin_step_edit', 4, 7),
+    'access arguments' => array('administer finder wizard'),
+    'weight' => 6,
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'finder_wizard.admin.inc',
+    'file path' => finder_wizard_inc_path(),
+  );
+  $items['admin/build/finder_wizard/edit/%finder_wizard/step/delete'] = array(
+    'title' => t('Delete finder wizard step'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('finder_wizard_admin_step_delete', 4, 7),
+    'access arguments' => array('administer finder wizard'),
+    'weight' => 6,
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'finder_wizard.admin.inc',
+    'file path' => finder_wizard_inc_path(),
+  );
+  return $items;
+}
+
+/**
+ * Custom loader for finder wizards.
+ */
+function finder_wizard_load($fwid) {
+  finder_wizard_inc('crud');
+  $finder_wizard = finder_wizard_crud_read_finder_wizard($fwid);
+  return $finder_wizard;
+}
+
+/**
+ * Helper function to easily include the specified include file.
+ * If the file is finder_wizard.foo.inc then the $inc_string to specify is 'foo'.
+ */
+function finder_wizard_inc($inc_string) {
+  return module_load_include('inc', 'finder_wizard', 'includes/finder_wizard.'. $inc_string);
+}
+
+/**
+ * Returns the path to the includes directory.
+ */
+function finder_wizard_inc_path() {
+  static $inc_path;
+  if (empty($inc_path)) {
+    $inc_path = drupal_get_path('module', 'finder_wizard') .'/includes';
+  }
+  return $inc_path;
+}
+
+/**
+ * Helper function to retrieve fields from field handler functions
+ * if handler is 'foo' it will include finder_wizard.foo.inc from the includes directory
+ * and then try to execute the function finder_wizard_foo_get_fields() to get options
+ */
+function finder_wizard_get_fields() {
+  static $field_options;
+  if (empty($field_options)) {
+    $field_options = array();
+    $field_handlers = finder_wizard_get_handlers();
+    foreach ($field_handlers as $field_handler) {
+      finder_wizard_inc($field_handler);
+      $handler_func = 'finder_wizard_'. $field_handler .'_get_fields';
+      if (function_exists($handler_func)) {
+        $handler_options = $handler_func();
+        if (!empty($handler_options)) {
+          $field_options = array_merge($field_options, $handler_options);
+        }
+      }
+    }
+  }
+  return $field_options;
+}
+
+/**
+ * Helper function to retrieve form element from the field handler function
+ * if handler is 'foo' it will include finder_wizard.foo.inc from the includes directory
+ * and then try to execute the function finder_wizard_foo_get_element() to get an element
+ */
+function finder_wizard_get_element(&$form_state) {
+  $element = array();
+  $finder_wizard = &$form_state['storage']['finder_wizard'];
+  $step = &$form_state['storage']['step'];
+  $field_options = finder_wizard_get_answers($form_state);
+  $form_state['storage']['answers'][$step] = $field_options;
+  $field_handler = &$finder_wizard->steps[$step]['field_handler'];
+  finder_wizard_inc($field_handler);
+  $handler_func = 'finder_wizard_'. $field_handler .'_get_element';
+  if (function_exists($handler_func)) {
+    $element = $handler_func($form_state);
+    if (isset($form_state['storage']['values'][$step][$step])) {
+      $element['#default_value'] = finder_wizard_get_default($form_state);
+    }
+  }
+  return $element;
+}
+
+
+/**
+ * Helper function to retrieve default val from the field handler functions
+ * if handler is 'foo' it will include finder_wizard.foo.inc from the includes directory
+ * and then try to execute the function finder_wizard_foo_get_default() to get value
+*/
+function finder_wizard_get_default(&$form_state) {
+  $finder_wizard = &$form_state['storage']['finder_wizard'];
+  $step = &$form_state['storage']['step'];
+  $default_value = $form_state['storage']['values'][$step][$step];
+  $field_handler = &$finder_wizard->steps[$step]['field_handler'];
+  finder_wizard_inc($field_handler);
+  $handler_func = 'finder_wizard_'. $field_handler .'_get_default';
+  if (function_exists($handler_func)) {
+    $default_value = $handler_func($form_state);
+  }
+  return $default_value;
+}
+
+
+/**
+ * Helper function to retrieve answers from the field handler functions
+ * if handler is 'foo' it will include finder_wizard.foo.inc from the includes directory
+ * and then try to execute the function finder_wizard_foo_get_answers() to get answers
+*/
+function finder_wizard_get_answers(&$form_state) {
+  $finder_wizard = &$form_state['storage']['finder_wizard'];
+  $step = &$form_state['storage']['step'];
+  $step_settings = finder_wizard_get_step_settings($form_state);
+  $field_options = array();
+  $pending_results = finder_wizard_get_results($form_state);
+  $restrict_to_nids = FALSE;
+  if (!empty($pending_results)) {
+    $restrict_to_nids = array_keys($pending_results);
+  }
+  $field_handler = &$step_settings['field_handler'];
+  finder_wizard_inc($field_handler);
+  $handler_func = 'finder_wizard_'. $field_handler .'_get_answers';
+  if (function_exists($handler_func)) {
+      $field_options = $handler_func($form_state, $restrict_to_nids);
+  }
+  if ($step_settings['none_above']) {
+    $field_options[0] = "<span class='none-option'>".t('None of the above')."</span>";
+  }
+  $form_state['storage']['answers'][$step] = $field_options;
+  return $field_options;
+}
+
+/**
+ * Helper function to retrieve final results from the field handler functions
+ * if handler is 'foo' it will include finder_wizard.foo.inc from the includes directory
+ * and then try to execute the function finder_wizard_foo_get_results() to get results
+ */
+function finder_wizard_get_results(&$form_state) {
+  $finder_wizard = &$form_state['storage']['finder_wizard'];
+  $step = &$form_state['storage']['step'];
+  $results = array();
+  for ($i = 0; $i < $step; $i++) {
+    $field_handler = &$finder_wizard->steps[$i]['field_handler'];
+    finder_wizard_inc($field_handler);
+    $handler_func = 'finder_wizard_'. $field_handler .'_get_results';
+    if (function_exists($handler_func)) {
+      if (!empty($results)) {
+        $step_results = $handler_func($form_state, $i);
+        $results = array_intersect_key($results, $step_results);
+      }
+      else {
+        $results = $handler_func($form_state, $i);
+      }
+    }    
+  }
+  $form_state['storage']['results'] = $results;
+  return $results;
+}
+
+/**
+ * Helper function to get altered user submitted answer from the field handler functions
+ * if handler is 'foo' it will include finder_wizard.foo.inc from the includes directory
+ * and then try to execute the function finder_wizard_foo_alter_answer() to get an answer
+ */
+function finder_wizard_alter_answer(&$form_state) {
+  $finder_wizard = &$form_state['storage']['finder_wizard'];
+  $step = &$form_state['storage']['step'];
+  $step_settings = finder_wizard_get_step_settings($form_state);
+  $field_handler = &$step_settings['field_handler'];
+  finder_wizard_inc($field_handler);
+  $handler_func = 'finder_wizard_'. $field_handler .'_alter_answer';
+  $answer = $form_state['values'][$step];
+  if (function_exists($handler_func)) {
+    $answer = $handler_func($form_state);
+  }
+  if (!$answer && $form_state['clicked_button']['#id'] == 'edit-next') {
+    if ($step_settings['none_above'] == 1) {
+      drupal_goto($step_settings['none_above_path']);
+    }
+    form_set_error($step, $step_settings['error_msg']);
+  }
+  $form_state['values'][$step] = $answer;
+}
+
+/**
+ * Helper function to get altered step settings
+ */
+function finder_wizard_get_step_settings($form_state) {
+  $finder_wizard = &$form_state['storage']['finder_wizard'];
+  $step = &$form_state['storage']['step'];
+  $step_settings = &$finder_wizard->steps[$step];
+  if (!$step_settings['none_above']) {
+    $step_settings['none_above'] = $finder_wizard->none_above;
+  }
+  if (!$step_settings['none_above_path']) {
+    $step_settings['none_above_path'] = $finder_wizard->none_above_path;
+  }
+  if (!$step_settings['error_msg']) {
+    $step_settings['error_msg'] = $finder_wizard->error_msg;
+  }
+  return $step_settings;
+}
+
+/**
+ * Loads module specific CSS.
+ */
+function finder_wizard_css() {
+  drupal_add_css(drupal_get_path('module', 'finder_wizard') .'/finder_wizard.css');
+}
+
+/**
+ * Retrieve a list of field handlers
+ * this is basically a config - and I am not proud of this
+ * should be able to lose this in Drupal 7 with no hassle
+ * using the include registry
+ */
+function finder_wizard_get_handlers() {
+  $possible_handlers = array(
+    'taxonomy', 
+    'content',
+  );
+  foreach ($possible_handlers as $key => $possible_handler) {
+    if (!module_exists($possible_handler)) {
+      unset($possible_handlers[$key]);
+    }
+  }
+  return $possible_handlers;
+}

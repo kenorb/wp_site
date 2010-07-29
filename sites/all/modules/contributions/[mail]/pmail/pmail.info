@@ -1,0 +1,11 @@
+; $Id: pmail.info,v 1.1 2007/08/31 22:37:50 smk Exp $
+name = Personalized Mail
+description = Provides system-wide personalized display names for email addresses.
+dependencies[] = token
+package = Mail
+
+; Information added by drupal.org packaging script on 2007-12-04
+version = "6.x-1.0"
+project = "pmail"
+datestamp = "1196784010"
+core = 6.x

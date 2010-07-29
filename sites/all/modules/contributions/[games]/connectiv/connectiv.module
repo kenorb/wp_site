@@ -1,0 +1,317 @@
+<?php
+
+// $Id: connectiv.module,v 1.3 2009/01/25 00:34:51 skinhat Exp $
+
+/*
+ * Drupal Module: Connect IV
+ *
+ * @author: Glenn Linde <www.skinhat.com/contact>
+ */
+
+function connectiv_menu() {
+  $items = array();
+
+
+    $items['admin/settings/connectiv'] = array(
+      'title' => t('Connect IV Configuration'),
+      'description' => t('Configure the game.'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('connectiv_admin_settings'),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM,// optional
+    );
+
+    $items['connectiv/win'] = array(
+      'title' => '',
+      'page callback' => 'connectiv_win',
+      'access callback' => TRUE,
+      'type' => MENU_CALLBACK,
+	  'access' => TRUE
+    );
+  return $items;
+}
+
+/**
+* Display help and module information
+* @param section which section of the site we're displaying help
+* @return help text for section
+*/
+function connectiv_help($path,$arg) {
+
+  $output = '';
+
+  switch ($path) {
+    case "admin/modules#description":
+      $output = t("Displays links to nodes created on this date");
+      break;
+  }
+
+  return $output;
+} // function connectiv_help
+
+
+function connectiv_strip($val) 
+{
+	return str_replace("'","",$val);
+}
+
+/**
+/* Generate HTML for the connectiv block
+* @param op the operation from the URL
+* @param delta offset
+* @returns block HTML
+*/
+function connectiv_block($op='list', $delta=0) {
+  if ($op == "list") {
+    $block[0]["info"] = t('Connect IV');
+    return $block;
+  } else if ($op == 'view') {
+    $block['subject'] = 'Connect IV';
+    //$modulepath=drupal_get_path('module', 'connectiv');
+	drupal_add_js(drupal_get_path('module', 'connectiv') .'/connectiv.js');
+
+
+    $connectiv_board_width=variable_get('connectiv_board_width', 7);
+    $connectiv_board_height=variable_get('connectiv_board_height', 6);
+    $connectiv_piece_width=variable_get('connectiv_piece_width', 25);
+    $connectiv_piece_height=variable_get('connectiv_piece_height', 25);
+    $connectiv_piece_gap=variable_get('connectiv_piece_gap', 0);
+	
+    $connectiv_board_width_pixels=$connectiv_board_width * ($connectiv_piece_width + $connectiv_piece_gap) - $connectiv_piece_gap;
+    $connectiv_board_height_pixels=$connectiv_board_height * ($connectiv_piece_height + $connectiv_piece_gap) - $connectiv_piece_gap;
+	
+    $content='';
+    $content.='<div id="connectiv_formmessage" style="height:20px;"></div>';
+    $content.='<div id="fondo" style="height:0px;" ></div>';
+    $content.='<div id="zone_game_invisible" style=" z-index:10;  position:relative; "></div>';
+    $content.='<div id="zone_game" style="iborder: 1px solid #000;  position:relative;  height:'.$connectiv_board_height_pixels.'px"></div>';
+    $content.='<div id="connectiv_time">&nbsp;</div>';
+    $content.='<input type="button" value="New game" onClick=" clearInterval(ficha_cayendo); ficha_cayendo = false; initiate_game(); " />';
+    $content.='&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    $content.='<span align=\'right\' style=\'font-size:0.6em\'><a href=\'http://www.skinhat.com/drupal\'>Skinhat</a></span>';
+    $content.='<div id="options_shade"  onMouseUp="campo_seleccionable = false; document.onmousemove=function(event) { drag_options(event, false); }" onMouseDown="if (campo_seleccionable) { campo_seleccionable = false; document.onmousemove=function(event) { drag_options(event, false); } } else { document.onmousemove=function(event) { drag_options(event, true); } }"></div>';
+    $content.='<div id="piece" ></div>';
+    $content.='<div id="piece_shade" ></div>';
+    $content.='<div id="connectiv_show_message" style="left:'.(($connectiv_board_width_pixels / 2)-75).'px; top:-'.($connectiv_board_height_pixels).'px; width:150px; height:20px; visibility:visible; position:relative; border:0px; padding:0px; background:#d4eeff; color:#000000; text-align:center; line-height:20px; text-decoration:none; font-weight:bold; ifont-family:verdana; ifont-size:10px; filter:alpha(opacity=90); opacity:0.9; -moz-opacity:0.9; -khtml-opacity:0.9; z-index:10;">';
+    $content.='Loading...';
+    $content.='</div>';
+    $content.='<script language=\'javascript\' >';
+    if (variable_get('connectiv_besttime', '')!='')
+      $content.='connectiv_besttime='.variable_get('connectiv_besttime', '').'; ';
+    $content.='connectiv_board_width='.$connectiv_board_width.';';
+    $content.='connectiv_board_height='.$connectiv_board_height.';';
+    $content.='connectiv_piece_width='.$connectiv_piece_width.';';
+    $content.='connectiv_piece_height='.$connectiv_piece_height.';';
+    $content.='connectiv_board_width_pixels='.$connectiv_board_width_pixels.';';
+    $content.='connectiv_board_height_pixels='.$connectiv_board_height_pixels.';';
+    $content.='connectiv_piece_gap='.connectiv_strip(variable_get('connectiv_piece_gap', 0)).'; ';
+    $content.='connectiv_start_message=\''.connectiv_strip(variable_get('connectiv_start_message', 'Play Connect IV')).'\'; ';
+    $content.='connectiv_win_message=\''.connectiv_strip(variable_get('connectiv_win_message', 'You won.')).'\'; ';
+    $content.='connectiv_loss_message=\''.connectiv_strip(variable_get('connectiv_loss_message', 'You lost.')).'\'; ';	
+    $content.='connectiv_background_image=\''.connectiv_strip(variable_get('connectiv_background_image', '/'.drupal_get_path('module', 'connectiv').'/img/drupal.jpg')).'\'; ';	
+    $content.='connectiv_hollow_image=\''.connectiv_strip(variable_get('connectiv_hollow_image', '/'.drupal_get_path('module', 'connectiv').'/img/hollow.jpg')).'\'; ';	
+    $content.='connectiv_hollow_color=\''.connectiv_strip(variable_get('connectiv_hollow_color', '#333')).'\'; ';	
+    $content.='connectiv_player_image=\''.connectiv_strip(variable_get('connectiv_player_image', '/'.drupal_get_path('module', 'connectiv').'/img/red.jpg')).'\'; ';	
+    $content.='connectiv_player_color=\''.connectiv_strip(variable_get('connectiv_player_color', '#b00')).'\'; ';	
+    $content.='connectiv_colors[1]=connectiv_player_color; ';	
+    $content.='connectiv_images[1]=connectiv_player_image; ';	
+    $content.='connectiv_computer_image=\''.connectiv_strip(variable_get('connectiv_computer_image', '/'.drupal_get_path('module', 'connectiv').'/img/blue.jpg')).'\'; ';	
+    $content.='connectiv_computer_color=\''.connectiv_strip(variable_get('connectiv_computer_color', '#00b')).'\'; ';	
+    $content.='connectiv_colors[0]=connectiv_computer_color; ';	
+    $content.='connectiv_images[0]=connectiv_computer_image; ';
+    $content.='connectiv_background_transparency=\''.connectiv_strip(variable_get('connectiv_background_transparency', 0.7)).'\'; ';	
+	
+	
+    $content.=  ' initiate_game_first_time(); ';
+    $content.=  '</script>';
+ 
+ 
+
+    $content.='<form id=\'connectiv_winform\' method=\'POST\' action=\'/connectiv/win\' > ';
+    $content.='<input type=\'hidden\' id=\'connectiv_message\' name=\'connectiv_message\'/>';
+    $content.='<input type=\'hidden\' id=\'connectiv_ticker\' name=\'connectiv_ticker\'/>';
+    $content.='<input type=\'hidden\' id=\'connectiv_win\'/>';
+    $content.='</form>';
+    if (variable_get('connectiv_besttime', -1)>0)
+      $content.='Best: '.variable_get('connectiv_besttime', -1).' secs by <b>'.variable_get('connectiv_bestuser', 'anon').'</b>';
+
+    $block['content'] = $content;
+    return $block;
+  }
+
+} // end connectiv_block
+
+/**
+ * Implementation of hook_settings()
+ */
+function connectiv_admin_settings() {
+  $form = array();
+  $form['connectiv_start_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Start Message'),
+    '#default_value' => variable_get('connectiv_start_message', 'Play Connect IV'),
+    '#description' => t('When a player first starts what is the message?'), 
+    '#required' => TRUE,
+  );
+
+
+  $form['connectiv_win_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Message when beat computer'),
+    '#default_value' => variable_get('connectiv_win_message', 'You won.'),
+    '#description' => t('Message when player beats the computer'), 
+    '#required' => TRUE,
+  );
+
+  $form['connectiv_loss_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Message when lose'),
+    '#default_value' => variable_get('connectiv_loss_message', 'You lost.'),
+    '#description' => t('Message when player loses'), 
+    '#required' => TRUE,
+  );
+  
+  $form['connectiv_board_width'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of columns in grid'),
+    '#default_value' => variable_get('connectiv_board_width', 7),
+    '#description' => t('How many columns in the Connect IV grid?'), 
+    '#required' => TRUE,
+  ); 
+  
+  $form['connectiv_board_height'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of rows in grid'),
+    '#default_value' => variable_get('connectiv_board_height', 6),
+    '#description' => t('How many rows in the Connect IV grid?'), 
+    '#required' => TRUE,
+  );   
+  
+  $form['connectiv_piece_width'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Width of piece in pixels'),
+    '#default_value' => variable_get('connectiv_piece_width', 25),
+    '#description' => t('How wide is a piece in pixels?'), 
+    '#required' => TRUE,
+  );
+
+  $form['connectiv_piece_height'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Height of piece in pixels'),
+    '#default_value' => variable_get('connectiv_piece_height', 25),
+    '#description' => t('How high is a piece in pixels?'), 
+    '#required' => TRUE,
+  );
+  
+  $form['connectiv_piece_gap'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Gap between pieces in pixels'),
+    '#default_value' => variable_get('connectiv_piece_gap', 0),
+    '#description' => t('How much of a gap between pieces?'), 
+    '#required' => TRUE,
+  );  
+
+  $form['connectiv_background_transparency'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Transparency of board'),
+    '#default_value' => variable_get('connectiv_background_transparency', 0.7),
+    '#description' => t('Transparency of board on page. 1 is no transparency. 0 is completely transparent.'), 
+    '#required' => TRUE,
+  );  
+
+  $form['connectiv_background_image'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Background Image'),
+    '#default_value' => variable_get('connectiv_background_image', '/'.drupal_get_path('module', 'connectiv').'/img/drupal.jpg'),
+    '#description' => t('URL of image to use as background to board. Leave blank if no image.')
+  );
+
+  $form['connectiv_hollow_image'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Image of hollow'),
+    '#default_value' => variable_get('connectiv_hollow_image', '/'.drupal_get_path('module', 'connectiv').'/img/hollow.jpg'),
+    '#description' => t('URL of image to use as hollow in board. Leave blank if no image. Will use hollow color instead.')
+  );
+
+  $form['connectiv_hollow_color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Color of hollow if no image'),
+    '#default_value' => variable_get('connectiv_hollow_color', '#333'),
+    '#description' => t('The color of the hollow if no image set.')
+  );
+
+  $form['connectiv_player_image'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Image of players chip'),
+    '#default_value' => variable_get('connectiv_player_image', '/'.drupal_get_path('module', 'connectiv').'/img/red.jpg'),
+    '#description' => t('URL of image to use as players chip in board. Leave blank if no image. Will use player color instead.')
+  );
+
+  $form['connectiv_player_color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Color of player if no image'),
+    '#default_value' => variable_get('connectiv_player_color', '#b00'),
+    '#description' => t('The color of the player if no image set.')
+  );
+
+  $form['connectiv_computer_image'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Image of computer chip'),
+    '#default_value' => variable_get('connectiv_computer_image', '/'.drupal_get_path('module', 'connectiv').'/img/blue.jpg'),
+    '#description' => t('URL of image to use as computer chip in board. Leave blank if no image. Will use computer color instead.')
+  );
+
+  $form['connectiv_computer_color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Color of computer if no image'),
+    '#default_value' => variable_get('connectiv_computer_color', '#00b'),
+    '#description' => t('The color of the computer if no image set.')
+  );
+  
+  $form['connectiv_besttime'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Best time to beat computer'),
+    '#default_value' => variable_get('connectiv_besttime', ''),
+    '#description' => t('Set the best winning game time. Set to blank to reset.')
+  );
+
+  $form['connectiv_bestuser'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User with fastest time'),
+    '#default_value' => variable_get('connectiv_bestuser', ''),
+    '#description' => t('Set the user who got the best winning time')
+  );
+
+  return system_settings_form($form);
+}
+
+
+function connectiv_win()
+{      
+  global $user;
+  $ticker=$_POST['connectiv_ticker'];
+  $output='';
+  if ($ticker)
+  {
+    if ($user->name)
+    {
+      $message=$_POST['connectiv_message'];
+ 
+      if ($message)
+        $output=$message.'<br/>';
+      $output.='Congratulations '.$user->name.' on getting '.$ticker.' seconds.'; //$user->uid;
+      variable_set('connectiv_besttime',$ticker);
+      variable_set('connectiv_bestuser',$user->name);
+    }
+    else
+      $output='Congratulations you got the best time. If you were logged in your score would have been recorded!';
+
+  }
+    return  $output;
+  //return theme('table', $output);
+
+}
+
+
+
+?>

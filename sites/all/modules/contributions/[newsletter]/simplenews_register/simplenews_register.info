@@ -1,0 +1,13 @@
+; $Id $
+name = Simplenews on register
+description = "Allow signing up for newsletters on registration."
+dependencies[] = simplenews
+package = Mail
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-01-13
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "simplenews_register"
+datestamp = "1231805770"
+

@@ -1,0 +1,1009 @@
+<?php
+// $Id: abuse.module,v 1.34.4.6 2008/10/30 20:45:19 btmash Exp $
+
+/**
+ * @file
+ * Module to flag/allow/hide/remove questionable content on the site
+ */
+
+//Set of content status
+define('ABUSE_LIVE', 0);
+define('ABUSE_PENDING', 1);
+define('ABUSE_HIDDEN', 2);
+define('ABUSE_REMOVED', 3);
+define('ABUSE_SUPERADMIN', 4);
+
+//Set of content allowed for abuse flagging
+define('ABUSE_CONTENT_NODE_TYPE',   'abuse_content_node_type_');
+define('ABUSE_CONTENT_COMMENTS', 'abuse_content_comments');
+define('ABUSE_CONTENT_USERS', 'abuse_content_users');
+
+//Set of permissions
+define('REPORT_ABUSE', 'report abuse');
+define('ADMINISTER_ABUSE_REPORTS', 'administer abuse reports');
+define('CONFIGURE_ABUSE_SETTINGS', 'configure abuse administration settings');
+define('DIRECT_FLAG', 'direct flag');
+define('ADMINISTER_ALL_ABUSE_REPORTS', 'administer all abuse reports');
+
+/**
+ * Implementation of Drupal Hooks
+ */
+
+/**
+ * Implementation of hook_perm().
+ */
+function abuse_perm() {
+  return array(REPORT_ABUSE, DIRECT_FLAG, ADMINISTER_ABUSE_REPORTS, ADMINISTER_ALL_ABUSE_REPORTS, CONFIGURE_ABUSE_SETTINGS);
+}
+
+/**
+ * Implementation of access controls
+ */
+function abuse_access() {
+  $args = func_num_args();
+  if ($args < 1) {
+    return user_access(ADMINISTER_ALL_ABUSE_REPORTS);
+  }
+  else {
+    $perms = func_get_args();
+    for ($i = 0; $i < $args; $i++) {
+      // Because of the arguments, an array could be passed in
+      if (is_array($perms[$i])) {
+        foreach ($perms[$i] as $permission) {
+          if (user_access($permission)) {
+            return true;
+          }
+        }
+      }
+      else {
+        if (user_access($perms[$i])) {
+          return TRUE;
+        }
+      }
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Implementation of more complex controls to swtich between old admin system and new ticketing system
+ */
+function abuse_moderation_system_access($perms, $old_system = FALSE) {
+  if ($old_system && variable_get('abuse_assigned_moderators', FALSE)) {
+    return FALSE;
+  }
+  elseif (!$old_system && !variable_get('abuse_assigned_moderators', FALSE)) {
+    return FALSE;
+  }
+  else {
+    return abuse_access($perms);
+  }
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function abuse_help($section) {
+  switch ($section) {
+    case 'admin/help#abuse':
+    case 'admin/modules#description':
+      return t('allow users to report abusive content');
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function abuse_menu() {
+  //Initial setup work
+  $flagger = array(REPORT_ABUSE, DIRECT_FLAG);
+  $admin = array(ADMINISTER_ABUSE_REPORTS, ADMINISTER_ALL_ABUSE_REPORTS);
+  $superadmin = array(ADMINISTER_ALL_ABUSE_REPORTS);
+  $configure = array(CONFIGURE_ABUSE_SETTINGS);
+  $items = array();
+  // Regular flagging
+  $items['abuse/report/%/%'] = array(
+    'title' => 'Flag',
+    'page callback' => 'abuse_report',
+    'page arguments' => array(2, 3),
+    'access callback' => 'abuse_access',
+    'access arguments' => $flagger,
+    'type' => MENU_CALLBACK,
+  );
+
+  // Abuse system settings
+  $items['admin/settings/abuse'] = array(
+    'title' => 'Abuse Moderation settings',
+    'description' => 'Configure the various parts in moderation',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('abuse_admin_settings'),
+    'access callback' => 'user_access',
+    'access arguments' => $configure,
+    'file' => 'abuse.admin.inc',
+  );
+  $items['admin/settings/abuse/reasons'] = array(
+    'title' => 'Abuse Moderation reasons',
+    'description' => 'Add, edit, or remove reasons for flagging content',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('abuse_admin_reason_settings'),
+    'access callback' => 'user_access',
+    'access arguments' => $configure,
+    'file' => 'abuse.admin.inc',
+  );
+  $items['admin/settings/abuse/reasons/edit/%'] = array(
+    'title' => 'Edit reason',
+    'description' => 'Edit a reason with a provided ID',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('abuse_admin_edit_reason', 5),
+    'access callback' => 'user_access',
+    'access arguments' => $configure,
+    'file' => 'abuse.admin.inc',
+    'type' => MENU_CALLBACK
+  );
+
+  // Callback admin functions
+  $items['admin/abuse/content/moderate/%/%'] = array(
+    'title' => 'Moderate content',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('abuse_admin_moderate_content', 4, 5),
+    'access callback' => 'abuse_access',
+    'access arguments' => $admin,
+    'file' => 'abuse.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/abuse/moderate/content/js'] = array(
+    'page callback' => 'abuse_admin_moderate_content_js',
+    'access callback' => 'abuse_access',
+    'access arguments' => $admin,
+    'file' => 'abuse.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/abuse/ban/%user'] = array(
+    'title' => 'Ban user',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('abuse_admin_ban', 3),
+    'access callback' => 'abuse_access',
+    'access arguments' => $admin,
+    'file' => 'abuse.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/abuse/unban/%user'] = array(
+    'title' => 'Unban user',
+    'page callback' => 'abuse_admin_unban_user',
+    'page arguments' => array(3),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer users'),
+    'file' => 'abuse.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  //Moderation functions
+  $items['admin/content/abuse/pending'] = array(
+    'title' => 'Pending Items (!num)',
+    'title callback' => 'abuse_title_callback',
+    'title arguments' => array('Pending Items (!num)', array(ABUSE_PENDING)),
+    'page callback' => 'abuse_admin_moderate',
+    'page arguments' => array(array(ABUSE_PENDING)),
+    'access callback' => 'abuse_moderation_system_access',
+    'access arguments' => array($admin, TRUE),
+    'file' => 'abuse.admin.inc',
+    'weight' => 0,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  $items['admin/content/abuse/hidden'] = array(
+    'title callback' => 'abuse_title_callback',
+    'title arguments' => array('Hidden Items (!num)', array(ABUSE_HIDDEN)),
+    'page callback' => 'abuse_admin_moderate',
+    'page arguments' => array(array(ABUSE_HIDDEN)),
+    'access callback' => 'abuse_moderation_system_access',
+    'access arguments' => array($admin, TRUE),
+    'file' => 'abuse.admin.inc',
+    'weight' => 1,
+    'type' => MENU_LOCAL_TASK
+  );
+
+  $items['admin/content/abuse/removed'] = array(
+    'title callback' => 'abuse_title_callback',
+    'title arguments' => array('Removed Items (!num)', array(ABUSE_REMOVED)),
+    'page callback' => 'abuse_admin_moderate',
+    'page arguments' => array(array(ABUSE_REMOVED)),
+    'access callback' => 'abuse_moderation_system_access',
+    'access arguments' => array($admin, TRUE),
+    'file' => 'abuse.admin.inc',
+    'weight' => 2,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/content/abuse/assigned'] = array(
+    'title' => 'Removed Items (!num of !num2)',
+    'title callback' => 'abuse_title_assigned_callback',
+    'title arguments' => array('Assigned Items (!assigned of !remaining)'),
+    'page callback' => 'abuse_admin_moderate',
+    'page arguments' => array(array(ABUSE_PENDING, ABUSE_HIDDEN), TRUE),
+    'access callback' => 'abuse_moderation_system_access',
+    'access arguments' => array($admin, FALSE),
+    'file' => 'abuse.admin.inc',
+    'weight' => 0,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  $items['admin/content/abuse/remaining'] = array(
+    'title callback' => 'abuse_title_callback',
+    'title arguments' => array('Remaining Items (!num)', array(ABUSE_PENDING, ABUSE_HIDDEN)),
+    'page callback' => 'abuse_admin_moderate',
+    'page arguments' => array(array(ABUSE_PENDING, ABUSE_HIDDEN)),
+    'access callback' => 'abuse_moderation_system_access',
+    'access arguments' => array($superadmin, FALSE),
+    'file' => 'abuse.admin.inc',
+    'weight' => 1,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/content/abuse'] = array(
+    'title' => 'Moderate',
+    'description' => 'Manage items that were either flagged by the system or by other users',
+    'page callback' => 'abuse_admin_default_callback',
+    'access callback' => 'abuse_access',
+    'access arguments' => $admin,
+    'file' => 'abuse.admin.inc',
+  );
+
+  $items['admin/abuse/status/%/%'] = array(
+    'title' => 'History',
+    'description' => 'Check the status of a particular item',
+    'page callback' => 'abuse_admin_status',
+    'page arguments' => array(3, 4),
+    'access callback' => 'abuse_access',
+    'access arguments' => $admin,
+    'file' => 'abuse.admin.inc'
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function abuse_theme() {
+  $theme = array();
+  $theme['abuse_page'] = array(
+  'template' => 'abuse-page',
+  'file' => 'abuse.admin.inc',
+  'arguments' => array(
+      'reports' => array(),
+    ),
+  );
+  $theme['abuse_report'] = array(
+  'template' => 'abuse-report',
+  'file' => 'abuse.admin.inc',
+  'arguments' => array(
+      'object' => NULL,
+    ),
+  );
+  return $theme;
+}
+
+/**
+ * Implementation of hook_cron().
+ */
+function abuse_cron() {
+  $hour = variable_get('abuse_cleanup_hour', 0);
+  $hour = max(0, $hour);
+  $hour = min(23, $hour);
+  $time = time() - ($hour * 3600);
+  $timestamp = getdate($time);
+  $timestamp = mktime(0, 0, 0, $timestamp['mon'], $timestamp['mday'], $timestamp['year']);
+
+  $last_time = variable_get('abuse_cleanup_timestamp', 0);
+  if ($timestamp > $last_time) {
+      db_query('UPDATE {abuse_status} SET assigned_to_uid=0 WHERE status=%d OR status=%d OR status=%d', ABUSE_PENDING, ABUSE_HIDDEN, ABUSE_SUPERADMIN);
+      variable_set('abuse_cleanup_timestamp', $timestamp);
+  }
+  // Clean out any and all items from abuse status that are no longer in the node, comments or users table.  Used JUST IN CASE nodeapi and comment hook do not properly delete off a node, comment or users.
+  db_query("DELETE FROM {abuse_status} WHERE type='node' AND oid NOT IN (SELECT nid FROM {node})");
+  db_query("DELETE FROM {abuse_status} WHERE type='comment' AND oid NOT IN (SELECT cid FROM {comments})");
+  db_query("DELETE FROM {abuse_status} WHERE type='user' AND oid NOT IN (SELECT uid FROM {users})");
+}
+
+/**
+ * Implementation of hook_link().
+ */
+function abuse_link($type, $object, $teaser = FALSE) {
+  global $user;
+  $links = array();
+  if ($object && $user && $user->uid == $object->uid) {
+    // Don't want user to flag their own content
+    return $$links;
+  }
+  if ($type == 'node' && !$teaser) {
+    if (user_access(ADMINISTER_ABUSE_REPORTS) && variable_get(ABUSE_CONTENT_NODE_TYPE . $object->type, 0)) {
+      $links['abuse_node_history'] = array(
+        'title' => t('View abuse history'),
+        'href' => 'admin/abuse/status/node/'. $object->nid,
+        'attributes' => array('class' => 'node-history'),
+      );
+    }
+    if (variable_get(ABUSE_CONTENT_NODE_TYPE . $object->type, 0) && (user_access(REPORT_ABUSE) || user_access(DIRECT_FLAG))) {
+      if (user_is_logged_in() && ($user->uid != $object->uid)) {
+        $already_reported_check = db_result(db_query("SELECT COUNT(*) FROM {abuse} WHERE type='%s' AND oid=%d AND uid=%d", $type, $object->nid, $user->uid));
+        if ($already_reported_check > 0) {
+
+        }
+        else {
+          $links['abuse_flag_node'] = array(
+            'title' => t('Flag as offensive'),
+            'href' => 'abuse/report/node/'. $object->nid,
+            'attributes' => array('class' => 'flag-content',
+                                  'title' => t('Notify administrators of problematic content')
+                                  )
+          );
+        }
+      }
+      else {
+        $links['abuse_flag_node'] = array(
+          'title' => t('Flag as offensive'),
+          'href' => 'abuse/report/node/'. $object->nid,
+          'attributes' => array('class' => 'flag-content',
+                                'title' => t('Notify administrators of problematic content')
+                                )
+        );
+      }
+    }
+  }
+  elseif ($type == 'comment' &&
+    variable_get(ABUSE_CONTENT_COMMENTS, 0) &&
+    (user_access(REPORT_ABUSE) || user_access(DIRECT_FLAG))) {
+// Commented out as a temporary solution to ticket 178:
+// https://office.zincroe.com/zimmertwins/ticket/178
+//
+//    if (user_access(ADMINISTER_ABUSE_REPORTS)) {
+//      $links['abuse_comment_history'] = array(
+//        'title' => t('View abuse history'),
+//        'href' => 'admin/abuse/status/comment/'. $object->cid,
+//        'attributes' => array('class' => 'node-history'),
+//      );
+//    }
+    if ($user->uid && ($user->uid != $object->uid)) {
+      $already_reported_check = db_result(db_query("SELECT COUNT(*) FROM {abuse} WHERE type='%s' AND oid=%d AND uid=%d", $type, $object->cid, $user->uid));
+      if ($already_reported_check > 0) {
+//        $links['abuse_already_flagged'] = array(
+//          'title' => t('This comment is currently under review'),
+//        );
+      }
+      else {
+        $links['abuse_flag_comment'] = array(
+          'title' => t('Flag as offensive'),
+          'href' => 'abuse/report/comment/'. $object->cid,
+          'attributes' => array('class' => 'flag-content',
+                                'title' => t('Notify administrators of problematic comment')
+                                )
+        );
+      }
+    }
+    else {
+        $links['abuse_flag_comment'] = array(
+          'title' => t('Flag as offensive'),
+          'href' => 'abuse/report/comment/'. $object->cid,
+          'attributes' => array('class' => 'flag-content',
+                                'title' => t('Notify administrators of problematic comment')
+                                )
+        );
+    }
+  }
+  return $links;
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function abuse_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
+  switch ($op) {
+    case 'load':
+      if (user_access(ADMINISTER_ABUSE_REPORTS) || user_access(ADMINISTER_ALL_ABUSE_REPORTS)) {
+        return array('abuse_status' => intval(_abuse_get_object_status('node', $node->nid)));
+      }
+      break;
+    case 'delete':
+      // Delete abuse flags
+      _abuse_cleanup_content('node', $node->nid);
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_comment().
+ */
+function abuse_comment($comment, $op) {
+  switch ($op) {
+    case 'view':
+      if (user_access(ADMINISTER_ABUSE_REPORTS) || user_access(ADMINISTER_ALL_ABUSE_REPORTS)) {
+        $comment->abuse_status = intval(_abuse_get_object_status('comment', $comment->cid));
+      }
+      return $comment;
+    case 'delete':
+      // Delete abuse_flags
+      _abuse_cleanup_content('comment', $comment->cid);
+  }
+}
+
+/**
+ * Implementation of hook_user().
+ */
+function abuse_user($op, &$edit, &$account, $category = NULL) {
+  switch ($op) {
+    case 'form':
+      if (user_is_blocked($account->name) && user_access('administer users')) {
+        $replacement = array(
+          '!link' => l(t('here'), "admin/abuse/unban/$account->uid"),
+          '@username' => $account->name,
+        );
+        $form['unban'] = array(
+          '#type' => 'item',
+          '#value' => t('Click !link to unban @username.', $replacement),
+          '#weight' => -20,
+        );
+        return $form;
+      }
+      break;
+  }
+}
+
+
+/**
+ * Clean out content from the abuse tables - useful when a node/comment/user gets deleted
+ *
+ * @param $type
+ * @param $oid
+ */
+function _abuse_cleanup_content($type, $oid) {
+  db_query("DELETE FROM {abuse} WHERE oid=%d AND type='%s'", $oid, $type);
+  db_query("DELETE FROM {abuse_status} WHERE oid=%d AND type='%s'", $oid, $type);
+  db_query("DELETE FROM {abuse_warnings} WHERE oid=%d AND type='%s'", $oid, $type);
+}
+
+/**
+ * Implementation of hook_forms().
+ */
+function abuse_forms() {
+  $args = func_get_args();
+  $form_id = $args[0];
+
+  $forms = array();
+  if (strpos($form_id, "abuse_admin_warn") === 0) {
+    $forms[$form_id] = array('callback' => 'abuse_admin_warn');
+  }
+  if (strpos($form_id, "abuse_admin_ban") === 0) {
+    $forms[$form_id] = array('callback' => 'abuse_admin_ban');
+  }
+  if (strpos($form_id, "abuse_admin_moderate_content") === 0) {
+    $forms[$form_id] = array('callback' => 'abuse_admin_moderate_content');
+  }
+  return $forms;
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function abuse_form_alter(&$form, $form_state, $form_id) {
+  if ('node_type_form' == $form_id) {
+    $type = $form['#node_type']->type;
+    $form['abuse_settings'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Abuse Moderation Settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $form['abuse_settings'][ABUSE_CONTENT_NODE_TYPE . $type] = array(
+      '#title' => t('Allow flagging for @type nodes', array('@type' => $form['#node_type']->name)),
+      '#type' => 'checkbox',
+      '#return_value' => 1,
+      '#default_value' => variable_get(ABUSE_CONTENT_NODE_TYPE . $type, 0),
+    );
+    $form['#submit'][] = 'abuse_node_type_form_submit';
+  }
+}
+
+/**
+ * Implementation of form_submit().
+ */
+function abuse_node_type_form_submit($form, &$form_state) {
+  $type = $form_state['values']['type'];
+  $flag_value = !empty($form_state['values'][ABUSE_CONTENT_NODE_TYPE . $type]) ? 1 : 0;
+  variable_set(ABUSE_CONTENT_NODE_TYPE . $type, $flag_value);
+}
+
+/**
+ * Implementation of abuse specific functions
+ */
+function abuse_title_callback($title, $type = array()) {
+  return t($title, array('!num' => _abuse_get_tallied_count($type)));
+}
+
+function abuse_title_assigned_callback($title) {
+  $assigned = _abuse_get_assigned_count(FALSE);
+  $remaining = _abuse_get_assigned_pending_count(FALSE);
+  return t($title, array('!assigned' => $assigned, '!remaining' => $remaining));
+}
+
+/**
+ * Flag content on the site - first check if it is a valid item that can be flagged.  If so, return the form.
+ */
+function abuse_report($type, $oid) {
+  global $user;
+
+  if (empty($type) || empty($oid)) {
+    return drupal_not_found();
+  }
+
+  $object = _abuse_load($type, $oid);
+  if (empty($object)) {
+    return drupal_not_found();
+  }
+  elseif ($object->uid === $user->uid) {
+    drupal_set_message(t('Sorry, you cannot flag your own content'));
+    drupal_goto($object->path['URL'], $object->path['QUERY'], $object->path['BREADCRUMB']);
+  }
+  elseif ($type === 'node' && variable_get(ABUSE_CONTENT_NODE_TYPE . $object->content_type, 0) === 0) {
+    drupal_set_message(t('Sorry, you are not allowed to flag this content'));
+    drupal_goto($object->path['URL'], $object->path['QUERY'], $object->path['BREADCRUMB']);
+  }
+  return drupal_get_form('abuse_report_form', $object, $user);
+}
+
+function abuse_report_form($form_state, $object, $user) {
+  $form = array();
+  $form['object_type'] = array(
+    '#type' => 'value',
+    '#value' => $object->type
+  );
+  $form['object_oid'] = array(
+    '#type' => 'value',
+    '#value' => $object->oid
+  );
+  if ($user->uid) {
+    $form['user'] = array(
+      '#type' => 'item',
+      '#title' => t('from'),
+      '#value' => $user->name
+    );
+    $form['name'] = array(
+      '#type' => 'value',
+      '#value' => $user->name
+    );
+    $form['mail'] = array(
+      '#type' => 'value',
+      '#value' => $user->mail
+    );
+  }
+  else {
+    $form['name'] = array(
+      '#type' => 'textfield',
+      '#title' => t('from'),
+      '#size' => 30,
+      '#maxlength' => 30,
+      '#required' => TRUE
+    );
+    $form['mail'] = array(
+      '#type' => 'textfield',
+      '#title' => t('email'),
+      '#size' => 30,
+      '#maxlength' => 30,
+      '#required' => TRUE
+    );
+  }
+  $form['about'] = array(
+    '#type' => 'item',
+    '#title' => t('about'),
+    '#value' => $object->title
+  );
+  $reason_objects = _abuse_reasons();
+  $reasons = array(0 => '');
+  foreach ($reason_objects as $reason) {
+    $reasons[$reason->arid] = t($reason->reason);
+  }
+  $form['reason'] = array(
+    '#type' => 'select',
+    '#title' => t('reason'),
+    '#options' => $reasons,
+    '#required' => TRUE
+  );
+  $form['body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('message'),
+    '#cols' => 30,
+    '#rows' => 10
+  );
+  $form['op']['send'] = array(
+    '#type' => 'submit',
+    '#value' => t('send')
+  );
+  $form['op']['cancel'] = array(
+    '#type' => 'submit',
+    '#value' => t('cancel')
+  );
+  return $form;
+}
+
+function abuse_report_form_validate($form, &$form_state) {
+  $form_values = $form_state['values'];
+  if ($form_state['clicked_button']['#value'] == t('send')) {
+    if (empty($form_values['name'])) {
+      form_set_error('name', t('<em>!field</em> is required', array('!field' => t('from'))));
+    }
+    if (empty($form_values['mail']) || !valid_email_address($form_values['mail'])) {
+      form_set_error('mail', t('A valid email address is required.'));
+    }
+    if (empty($form_values['reason'])) {
+      form_set_error('reason', t('Please give a reason.'));
+    }
+    $body = trim(drupal_strtolower($form_values['body']));
+    if (empty($body)) {
+      form_set_error('body', t('Please provide a more detailed description - no links please.'));
+    }
+    elseif (
+      strpos($body, 'href=') !== FALSE ||
+      strpos($body, 'url=') !== FALSE ||
+      strpos($body, 'http://') !== FALSE
+    ) {
+      form_set_error('body', t('Please do not use links in your description of the problem.'));
+    }
+  }
+}
+
+function abuse_report_form_submit($form, &$form_state) {
+  global $user;
+  $form_values = $form_state['values'];
+  $form_values['op'] = $form_state['clicked_button']['#value'];
+  $oid = $form_values['object_oid'];
+  $type = $form_values['object_type'];
+  $object = _abuse_load($type, $oid);
+  $reason = db_result(db_query("SELECT reason FROM {abuse_reasons} WHERE arid=%d", $form_values['reason']));
+  if (!$object) {
+    drupal_not_found();
+  }
+  // Object was found - system is alright from this point
+  $form_state['redirect'] = array($object->path['URL'], $object->path['QUERY'], $object->path['BREADCRUMB']);
+  $errors = ($form_values['op'] == t('cancel')) ? TRUE : FALSE;
+  if ($user->uid) {
+    if (db_result(db_query("SELECT COUNT(*) FROM {abuse} WHERE type='%s' AND oid=%d AND uid=%d", $type, $oid, $user->uid)) > 0) {
+      drupal_set_message(t('We have already received your report.  Thank you very much!'));
+      $errors = TRUE;
+    }
+
+    // ENSURE USER IS NOT TRYING TO FLAG OWN CONTENT
+    if ($user->uid == $object->uid) {
+      drupal_set_message(t('You cannot flag your own content'));
+      $errors = TRUE;
+    }
+  }
+
+  if (!$errors) {
+    db_query("INSERT INTO {abuse} (type, oid, created, body, reason, uid, name, mail) VALUES ('%s', %d, %d, '%s', '%s', %d, '%s', '%s')",
+      $type, $oid,  time(), $form_values['body'], $form_values['reason'], $user->uid, $form_values['name'], $form_values['mail']);
+    _abuse_set_status($type, $oid, ABUSE_PENDING);
+    $result = _abuse_disable($type, $oid);
+    // Call the sequencer for sequencing content
+    if ($result) {
+      drupal_set_message(t('Thank you for your report.  We will look into this shortly.'));
+      $form_state['redirect'] = '';
+    }
+    else {
+      drupal_set_message(t('Thank you for your report.'));
+    }
+  }
+}
+
+/**
+ * PRIVATE FUNCTIONS
+ */
+
+/**
+ * Load an Abuse Object
+ */
+function _abuse_load($obj, $second_value = NULL) {
+  if ($second_value !== NULL) {
+    $object->type = $type = $obj;
+    $object->oid = $oid = $second_value;
+  }
+  else {
+    $object->type = $type = $obj->type;
+    $object->oid = $oid = $obj->oid;
+    $object->abuse_status_number = $obj->status;
+    $object->abuse_status_string = _abuse_retrieve_status($object->abuse_status_number);
+    $object->abuse_assigned_to_uid = $obj->assigned_to_uid;
+    $object->abuse_assigned_to_name = db_result(db_query("SELECT name FROM {users} WHERE uid=%d", $object->abuse_assigned_to_uid));
+    if (!$object->abuse_assigned_to_name) {
+      $object->abuse_assigned_to_name = 'N/A';
+    }
+  }
+  switch ($type) {
+    case 'node' :
+      $node = node_load(array('nid' => $oid));
+      if (!$node->nid) {
+        return false;
+      }
+      $object->title = $node->title;
+      $object->uid = $node->uid;
+      $object->name = check_plain($node->name);
+      $object->description = $node->body;
+      $object->content_type = $node->type;
+      if (function_exists($node->type .'_replacement_content')) {
+        $function = $node->type .'_replacement_content';
+        $object->content = filter_xss_admin($function($node));
+      }
+      else {
+        $object->content = check_markup($node->body, $node->format, FALSE);
+      }
+      $object->status = $node->status;
+      $object->path = array('URL' => 'node/'. $node->nid, 'QUERY' => NULL, 'BREADCRUMB' => NULL);
+      $object->link = 'node/'. $node->nid;
+      break;
+    case 'comment':
+      $result = db_query('SELECT c.*, u.name AS registered_name, u.uid FROM {comments} c INNER JOIN {users} u ON c.uid = u.uid WHERE c.cid = %d', $oid);
+      $comment = db_fetch_object($result);
+      $comment->name = $comment->uid ? $comment->registered_name : $comment->name;
+      $comment = drupal_unpack($comment);
+      if (!$comment->cid) {
+        return false;
+      }
+      $object->title = check_plain($comment->subject);
+      $object->name = check_plain($comment->name);
+      $object->uid = $comment->uid;
+      $object->content_type = 'comment';
+      $object->description = check_markup($comment->comment, $comment->format, FALSE);
+      $object->status = ( $comment->status == 0);
+      $object->path = array('URL' => 'node/'. $comment->nid, 'QUERY' => NULL, 'BREADCRUMB' => 'comment-'. $comment->cid);
+      $object->link = 'node/'. $comment->nid .'#comment-'. $comment->cid;
+      break;
+    case 'user':
+      $account = user_load(array('uid' => $oid));
+      user_build_content($account);
+      $object->title = check_plain($account->name);
+      $object->uid = $oid;
+      $object->content_type = 'user';
+      $object->description = theme('user_profile', $account);
+      $object->status = $user->status;
+      $object->path = array('URL' => 'user/'. $oid, 'QUERY' => NULL, 'BREADCRUMB' => NULL);
+      $object->link = 'user/'. $oid;
+      break;
+  }
+  $object->reports = _abuse_load_reports($object->type, $object->oid);
+  $object->history = _abuse_load_history($object->type, $object->oid);
+  $object->warnings = _abuse_load_warnings($object->type, $object->oid);
+  return $object;
+}
+
+function _abuse_load_reports($type, $oid) {
+  $reports = array();
+  $result = db_query("SELECT a.*, u.name as registered_name, u.uid FROM {abuse} a INNER JOIN {users} u ON u.uid=a.uid WHERE a.type = '%s' AND a.oid = %d", $type, $oid);
+  while ($report = db_fetch_object($result)) {
+    $report->name = $report->uid ? $report->registered_name : $report->name;
+    $reports[] = $report;
+  }
+  return $reports;
+}
+
+function _abuse_load_history($type, $oid) {
+  $history = array();
+  $result = db_query("SELECT a.*, u.name as flagger FROM {abuse_status_log} a INNER JOIN {users} u ON u.uid=a.uid WHERE a.type='%s' AND a.oid=%d ORDER BY timestamp DESC", $type, $oid);
+  while ($log = db_fetch_object($result)) {
+    $log->readable_status = _abuse_retrieve_status($log->status);
+    $history[] = $log;
+  }
+  return $history;
+}
+
+function _abuse_load_warnings($type, $oid) {
+  $warnings = array();
+  $result = db_query("SELECT a.*, u.name FROM {abuse_warnings} a INNER JOIN {users} u ON a.sent_by_uid=u.uid WHERE a.type='%s' AND a.oid=%d ORDER BY created DESC",
+    $type, $oid);
+  while ($warning = db_fetch_object($result)) {
+    $warning->date = date("d/m/Y - h:i", $warning->created);
+    $warning->name = (empty($warning->name)) ? t('Anonymous Admin') : $warning->name;
+    $warnings[] = $warning;
+  }
+  return $warnings;
+}
+
+function _abuse_get_offence_count($uid) {
+  static $offences_count;
+  if (!isset($offences_count["uid-$uid"])) {
+    $offences_count["uid-$uid"] = db_result(db_query("SELECT count(*) FROM {node} n INNER JOIN {abuse_status} a ON a.oid=n.nid WHERE a.type='node' AND n.uid=%d AND a.status=%d", $uid, ABUSE_REMOVED));
+    $offences_count["uid-$uid"] += db_result(db_query("SELECT count(*) FROM {comments} c INNER JOIN {abuse_status} a ON a.oid=c.cid WHERE a.type='comment' AND c.uid=%d AND a.status=%d", $uid, ABUSE_REMOVED));
+  }
+  return $offences_count["uid-$uid"];
+}
+
+function _abuse_get_warning_count($uid) {
+  static $warnings_count;
+  if (!isset($warnings_count["uid-$uid"])) {
+    $warnings_count["uid-$uid"] = db_result(db_query('SELECT count(*) FROM {abuse_warnings} WHERE uid=%d', $uid));
+  }
+  return $warnings_count["uid-$uid"];
+}
+
+function _abuse_reasons($arid = NULL) {
+  static $reasons;
+  if (!$reasons) {
+    $reasons = array();
+    $resultset = db_query("SELECT * FROM {abuse_reasons}");
+    while ($reason = db_fetch_object($resultset)) {
+      $reasons["reason-$reason->arid"] = $reason;
+    }
+  }
+  if (!is_null($arid)) {
+    return $reasons["reason-$arid"];
+  }
+  return $reasons;
+}
+
+function _abuse_get_assigned_count($status = FALSE) {
+  global $user;
+  $result = 0;
+  if ($status !== FALSE) {
+    $query = db_query("UPDATE {abuse_status} SET assigned_to_uid=%d WHERE (assigned_to_uid=0 OR assigned_to_uid=%d) AND status=%d ORDER BY assigned_to_uid DESC, oid DESC LIMIT %d",
+      $user->uid, $user->uid, $status, variable_get('abuse_num_assigned', 20));
+  }
+  else {
+    if (user_access('administer all abuse reports')) {
+      $result = db_query("UPDATE {abuse_status} SET assigned_to_uid=%d WHERE (assigned_to_uid=0 OR assigned_to_uid=%d) AND (status=%d OR status=%d OR status=%d) ORDER BY assigned_to_uid DESC, oid DESC LIMIT %d",
+        $user->uid, $user->uid, ABUSE_PENDING, ABUSE_HIDDEN, ABUSE_SUPERADMIN, variable_get('abuse_num_assigned', 20));
+    }
+    else {
+      $result = db_query("UPDATE {abuse_status} SET assigned_to_uid=%d WHERE (assigned_to_uid=0 OR assigned_to_uid=%d) AND (status=%d OR status=%d) ORDER BY assigned_to_uid DESC, oid DESC LIMIT %d",
+        $user->uid, $user->uid, ABUSE_PENDING, ABUSE_HIDDEN, variable_get('abuse_num_assigned', 20));
+    }
+    $result = db_result(db_query("SELECT count(*) FROM {abuse_status} WHERE assigned_to_uid=%d AND (status=%d OR status=%d OR status=%d)",
+        $user->uid, ABUSE_PENDING, ABUSE_HIDDEN, ABUSE_SUPERADMIN));
+  }
+  return $result;
+}
+
+function _abuse_get_assigned_pending_count($status = FALSE) {
+  global $user;
+  $result = 0;
+  if ($status !== FALSE) {
+    $result = db_result(db_query("SELECT COUNT(*) FROM {abuse_status} WHERE (assigned_to_uid=0 OR assigned_to_uid=%d) AND status=%d",
+      $user->uid, $status));
+  }
+  else {
+    if (user_access('administer all abuse reports')) {
+      $result = db_result(db_query("SELECT COUNT(*) FROM {abuse_status} WHERE (assigned_to_uid=0 OR assigned_to_uid=%d) AND (status=%d OR status=%d OR status=%d)",
+        $user->uid, ABUSE_PENDING, ABUSE_HIDDEN, ABUSE_SUPERADMIN));
+    }
+    else {
+      $result = db_result(db_query("SELECT COUNT(*) FROM {abuse_status} WHERE (assigned_to_uid=0 OR assigned_to_uid=%d) AND (status=%d OR status=%d OR status=%d)",
+        $user->uid, ABUSE_PENDING, ABUSE_HIDDEN, ABUSE_SUPERADMIN));
+    }
+  }
+  return intval($result);
+}
+function _abuse_get_tallied_count($status = array(ABUSE_LIVE)) {
+  $query = "SELECT COUNT(*) FROM {abuse_status}";
+  $run_once = FALSE;
+  foreach ($status as $type) {
+    $query .= ($run_once) ? " OR status=%d" : " WHERE status=%d";
+    $run_once = TRUE;
+  }
+  return db_result(db_query($query, $status));
+}
+
+function _abuse_get_object_status($type, $oid) {
+  $res = db_result(db_query("SELECT status FROM {abuse_status} WHERE type='%s' AND oid=%d", $type, $oid));
+  return (empty($res)) ? 0 : $res;
+}
+
+function _abuse_get_status($type, $oid) {
+  $res = _abuse_get_object_status($type, $oid);
+  return _abuse_retrieve_status((int)$res);
+}
+
+function _abuse_retrieve_status($current_status) {
+  static $status;
+  if (!$status) {
+    $status = array(
+      ABUSE_LIVE => t('OK'),
+      ABUSE_PENDING => t('Pending'),
+      ABUSE_HIDDEN => t('Hidden'),
+      ABUSE_REMOVED => t('Removed'),
+      ABUSE_SUPERADMIN => t('Superadmin Assigned'),
+    );
+  }
+  return $status[$current_status];
+}
+
+function _abuse_set_status($type, $oid, $status) {
+  $nid = $oid;
+  global $user;
+  $assigned_to_uid = 0;
+  if (user_access('administer abuse reports')) {
+    $assigned_to_uid = (ABUSE_SUPERADMIN == $status) ? 0 : $user->uid;
+    db_query("INSERT IGNORE INTO {abuse_status_log} (oid, type, uid, status, timestamp) VALUES (%d, '%s', %d, %d, %d)",
+      $oid, $type, $user->uid, $status, time());
+  }
+  db_query("DELETE FROM {abuse_status} WHERE type='%s' AND oid=%d", $type, $oid);
+  db_query("INSERT INTO {abuse_status} (type, oid, changed, status, assigned_to_uid) VALUES ('%s', %d, %d, %d, %d)",
+    $type, $oid, time(), $status, $assigned_to_uid);
+  if ('comment' == $type) {
+    $nid = db_result(db_query("SELECT nid FROM {comments} where cid=%d", $oid));
+  } if ($nid) {
+    db_query("UPDATE {node} SET changed=%d WHERE nid=%d", time(), $nid);
+  }
+}
+
+function _abuse_allow($type, $oid) {
+  $object = _abuse_load($type, $oid);
+  $account = user_load(array('uid' => $object->uid, 'status' => 1));
+  if ($account->uid) {
+    // Re-Save the node so it can get indexed if not already done so and any other important functionality is carried out by being published
+    switch ($type) {
+      case 'node':
+        // Resave the node so it can get reindexed correctly.
+        $node = node_load($oid);
+        $node->status = 1;
+        node_save($node);
+        // Update the status just in case
+        db_query("UPDATE {node} SET status=1 WHERE nid=%d", $oid);
+        break;
+      case 'comment':
+        db_query("UPDATE {comments} SET status=0 WHERE cid=%d", $object->oid);
+        break;
+    }
+    db_query("UPDATE {abuse} SET valid=-1 WHERE type='%s' AND oid=%d", $type, $oid);
+    _abuse_set_status($type, $oid, ABUSE_LIVE);
+    _abuse_clear_oid_cache($oid);
+    return true;
+  }
+  else {
+    drupal_set_message(t('Invalid user account - content cannot be allowed'), 'error');
+    return false;
+  }
+}
+
+function _abuse_remove($type, $oid) {
+  db_query("UPDATE {abuse} SET valid=1 WHERE type='%s' AND oid=%d", $type, $oid);
+  switch ($type) {
+    case 'node':
+      db_query("UPDATE {node} SET status=-1 WHERE nid=%d", $oid);
+      break;
+    case 'comment':
+      db_query("UPDATE {comments} SET status=1 WHERE cid=%d", $oid);
+      break;
+  }
+  _abuse_clear_oid_cache($oid);
+  _abuse_set_status($type, $oid, ABUSE_REMOVED);
+}
+
+function _abuse_assign_superadmin($type, $oid) {
+  _abuse_clear_oid_cache($oid);
+  _abuse_set_status($type, $oid, ABUSE_SUPERADMIN);
+}
+
+function _abuse_disable($type, $oid) {
+  $count = db_result(db_query("SELECT count(*) FROM {abuse} WHERE type='%s' AND oid=%d AND valid >= 0", $type, $oid));
+  if (user_access('direct flag') || $count >= variable_get('abuse_threshold', 3)) {
+    switch ($type) {
+      case 'node':
+        db_query("UPDATE {node} SET status=-1 WHERE nid=%d", $oid);
+        break;
+      case 'comment':
+        db_query("UPDATE {comments} SET status=1 WHERE cid=%d", $oid);
+        break;
+    }
+    _abuse_set_status($type, $oid, ABUSE_HIDDEN);
+    _abuse_clear_oid_cache($oid);
+    return true;
+  }
+  return false;
+}
+
+function _abuse_clear_oid_cache($oid) {
+  $cache_tables = array('cache', 'cache_block', 'cache_filter', 'cache_page');
+  foreach ($cache_tables as $table) {
+    cache_clear_all($oid, $table, TRUE);
+  }
+}
